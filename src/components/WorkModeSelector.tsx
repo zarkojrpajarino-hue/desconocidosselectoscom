@@ -28,6 +28,23 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       const mode = WORK_MODES.find(m => m.id === modeId);
       if (!mode) return;
 
+      // RESTRICCIÓN: Verificar tareas completadas antes de cambiar a modo menor
+      const { data: completedTasks } = await supabase
+        .from('task_completions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('validated_by_leader', true);
+
+      const completedCount = completedTasks?.length || 0;
+
+      if (completedCount > mode.tasks) {
+        toast.error('No puedes cambiar a este modo', {
+          description: `Ya has completado ${completedCount} tareas. Este modo solo permite ${mode.tasks} tareas.`
+        });
+        setLoading(false);
+        return;
+      }
+
       // Get current week start and deadline using utility functions
       const weekStart = getCurrentWeekStart();
       const deadline = getCurrentWeekDeadline();

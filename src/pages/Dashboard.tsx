@@ -75,27 +75,33 @@ const Dashboard = () => {
   const fetchTasksAndCompletions = async () => {
     if (!user || !systemConfig || !userWeeklyData) return;
 
-    const taskLimit = userWeeklyData.task_limit || 8;
+    try {
+      const taskLimit = userWeeklyData.task_limit || 8;
 
-    const { data: taskData } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('phase', systemConfig.current_phase)
-      .order('order_index')
-      .limit(taskLimit);
+      const { data: taskData } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('phase', systemConfig.current_phase)
+        .order('order_index')
+        .limit(taskLimit);
 
-    const { data: completionData } = await supabase
-      .from('task_completions')
-      .select('*')
-      .eq('user_id', user.id);
+      // IMPORTANTE: Solo contar completaciones VALIDADAS
+      const { data: completionData } = await supabase
+        .from('task_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('validated_by_leader', true);
 
-    if (taskData) setTasks(taskData);
-    if (completionData) setCompletions(completionData);
+      if (taskData) setTasks(taskData);
+      if (completionData) setCompletions(completionData);
+    } catch (error) {
+      console.error('Error fetching tasks and completions:', error);
+    }
   };
 
-  // Calcular tareas completadas al 100%
-  const fullyCompletedCount = completions.filter(c => c.validated_by_leader).length;
+  // Calcular tareas completadas al 100% (validated_by_leader = true)
+  const fullyCompletedCount = completions.length; // Ya están filtradas por validated_by_leader en el fetch
 
   const handleLogout = async () => {
     await signOut();
