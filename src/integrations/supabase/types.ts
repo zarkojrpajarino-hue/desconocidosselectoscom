@@ -78,6 +78,7 @@ export type Database = {
       }
       task_completions: {
         Row: {
+          collaborator_feedback: Json | null
           completed_at: string | null
           completed_by_user: boolean | null
           id: string
@@ -88,6 +89,7 @@ export type Database = {
           validated_by_leader: boolean | null
         }
         Insert: {
+          collaborator_feedback?: Json | null
           completed_at?: string | null
           completed_by_user?: boolean | null
           id?: string
@@ -98,6 +100,7 @@ export type Database = {
           validated_by_leader?: boolean | null
         }
         Update: {
+          collaborator_feedback?: Json | null
           completed_at?: string | null
           completed_by_user?: boolean | null
           id?: string
