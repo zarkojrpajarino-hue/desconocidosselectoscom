@@ -73,7 +73,7 @@ const Setup = () => {
               onClick={handleSeedTasks}
               className="w-full"
               variant="secondary"
-              disabled={loadingTasks || !results}
+              disabled={loadingTasks}
             >
               {loadingTasks && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {tasksSeeded && <CheckCircle2 className="mr-2 h-4 w-4" />}
