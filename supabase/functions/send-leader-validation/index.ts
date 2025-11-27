@@ -194,7 +194,7 @@ serve(async (req) => {
     `;
 
     await resend.emails.send({
-      from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+      from: 'Desconocidos Selectos <tareas@desconocidosselectos.com>',
       to: task.user.email,
       subject: `⭐ ${task.leader?.full_name} validó tu tarea '${task.title}'`,
       html: htmlContent
