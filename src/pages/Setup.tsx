@@ -7,7 +7,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Setup = () => {
   const [loading, setLoading] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [tasksSeeded, setTasksSeeded] = useState(false);
 
   const handleSetup = async () => {
     setLoading(true);
@@ -28,6 +30,25 @@ const Setup = () => {
     }
   };
 
+  const handleSeedTasks = async () => {
+    setLoadingTasks(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('seed-tasks');
+      
+      if (error) throw error;
+      
+      setTasksSeeded(true);
+      toast.success('¡Tareas creadas!', {
+        description: `${data.count} tareas de prueba para Zarko en Fase 1`
+      });
+    } catch (error) {
+      toast.error('Error al crear tareas');
+      console.error(error);
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-primary p-4">
       <Card className="w-full max-w-2xl shadow-premium">
@@ -38,14 +59,27 @@ const Setup = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
-            onClick={handleSetup}
-            className="w-full bg-gradient-primary hover:opacity-90"
-            disabled={loading}
-          >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Configurar Sistema
-          </Button>
+          <div className="space-y-3">
+            <Button
+              onClick={handleSetup}
+              className="w-full bg-gradient-primary hover:opacity-90"
+              disabled={loading}
+            >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              1. Crear Usuarios
+            </Button>
+
+            <Button
+              onClick={handleSeedTasks}
+              className="w-full"
+              variant="secondary"
+              disabled={loadingTasks || !results}
+            >
+              {loadingTasks && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {tasksSeeded && <CheckCircle2 className="mr-2 h-4 w-4" />}
+              2. Crear Tareas de Prueba (Fase 1)
+            </Button>
+          </div>
 
           {results && (
             <div className="mt-6 space-y-2">
