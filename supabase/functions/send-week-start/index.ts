@@ -17,6 +17,14 @@ serve(async (req) => {
   }
 
   try {
+    // Verificar que RESEND_API_KEY existe
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    console.log("✅ RESEND_API_KEY configurada:", resendKey ? "Sí (oculta)" : "❌ NO ENCONTRADA");
+    
+    if (!resendKey) {
+      throw new Error("RESEND_API_KEY no está configurada en las variables de entorno");
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Obtener todos los usuarios con su configuración semanal
@@ -39,10 +47,18 @@ serve(async (req) => {
 
     const consejoSemanal = consejos[Math.floor(Math.random() * consejos.length)];
 
+    console.log(`📧 Iniciando envío de emails a ${users.length} usuarios...`);
+    
+    let sentCount = 0;
+    let errorCount = 0;
+
     // Enviar email a cada usuario
     for (const user of users) {
       const weeklyData = user.user_weekly_data?.[0];
-      if (!weeklyData) continue;
+      if (!weeklyData) {
+        console.log(`⚠️ Usuario ${user.email} no tiene datos semanales, omitiendo...`);
+        continue;
+      }
 
       const taskLimit = weeklyData.task_limit;
       const mode = weeklyData.mode;
@@ -177,18 +193,40 @@ serve(async (req) => {
 </html>
       `;
 
-      await resend.emails.send({
-        from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
-        to: user.email,
-        subject: `🚀 Nueva semana comenzó - Tus ${taskLimit} tareas te esperan`,
-        html: htmlContent
-      });
+      console.log(`📤 Enviando email a: ${user.email} (${user.full_name})`);
+      console.log(`   - Tareas: ${taskLimit}`);
+      console.log(`   - Modo: ${mode}`);
+      
+      try {
+        const response = await resend.emails.send({
+          from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+          to: user.email,
+          subject: `🚀 Nueva semana comenzó - Tus ${taskLimit} tareas te esperan`,
+          html: htmlContent
+        });
 
-      console.log(`Week start email sent to ${user.email}`);
+        console.log(`✅ Email enviado exitosamente a ${user.email}`);
+        console.log(`   Resend Response:`, JSON.stringify(response));
+        sentCount++;
+      } catch (emailError: any) {
+        console.error(`❌ Error enviando email a ${user.email}:`, emailError);
+        console.error(`   Error details:`, emailError.message || emailError);
+        errorCount++;
+      }
     }
 
+    console.log(`\n📊 Resumen de envío:`);
+    console.log(`   ✅ Enviados: ${sentCount}`);
+    console.log(`   ❌ Errores: ${errorCount}`);
+    console.log(`   📋 Total usuarios procesados: ${users.length}`);
+
     return new Response(
-      JSON.stringify({ success: true, sent: users.length }),
+      JSON.stringify({ 
+        success: true, 
+        sent: sentCount,
+        errors: errorCount,
+        total: users.length 
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
