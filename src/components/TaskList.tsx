@@ -8,9 +8,10 @@ import TaskEvaluationModal from './TaskEvaluationModal';
 interface TaskListProps {
   userId: string | undefined;
   currentPhase: number | undefined;
+  isLocked?: boolean;
 }
 
-const TaskList = ({ userId, currentPhase }: TaskListProps) => {
+const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
@@ -114,7 +115,9 @@ const TaskList = ({ userId, currentPhase }: TaskListProps) => {
   if (tasks.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No hay tareas asignadas para esta fase
+        {isLocked 
+          ? 'La semana ha terminado. Las tareas estarán disponibles en la próxima semana.' 
+          : 'No hay tareas asignadas para esta fase'}
       </div>
     );
   }
@@ -133,11 +136,12 @@ const TaskList = ({ userId, currentPhase }: TaskListProps) => {
                   : 'bg-card hover:shadow-sm'
               }`}
             >
-              <Checkbox
-                checked={isCompleted}
-                onCheckedChange={() => handleToggleTask(task, isCompleted)}
-                className="mt-1"
-              />
+            <Checkbox
+              checked={isCompleted}
+              onCheckedChange={() => handleToggleTask(task, isCompleted)}
+              className="mt-1"
+              disabled={isLocked}
+            />
               <div className="flex-1 space-y-2">
                 <p className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
                   {task.title}

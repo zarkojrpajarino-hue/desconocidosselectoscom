@@ -20,6 +20,7 @@ const Dashboard = () => {
   const [userWeeklyData, setUserWeeklyData] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<any[]>([]);
+  const [isWeekLocked, setIsWeekLocked] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -141,11 +142,14 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
         {/* Countdown */}
         {systemConfig && (
-          <CountdownTimer deadline={systemConfig.week_deadline} />
+          <CountdownTimer 
+            deadline={systemConfig.week_deadline}
+            onTimeExpired={setIsWeekLocked}
+          />
         )}
 
         {/* Urgent Alert */}
-        {systemConfig && (
+        {systemConfig && !isWeekLocked && (
           <UrgentAlert
             deadline={systemConfig.week_deadline}
             totalTasks={tasks.length}
@@ -175,6 +179,7 @@ const Dashboard = () => {
             <TaskList
               userId={user?.id}
               currentPhase={systemConfig?.current_phase}
+              isLocked={isWeekLocked}
             />
           </CardContent>
         </Card>
