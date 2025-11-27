@@ -90,6 +90,16 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
   const handleSwap = async () => {
     if (!selectedId || remainingSwaps <= 0) return;
 
+    // VALIDACIÓN DE SEGURIDAD: Solo el usuario asignado puede cambiar la tarea
+    if (task.user_id !== userId) {
+      toast({
+        title: "⛔ Acción no permitida",
+        description: "Solo puedes cambiar tus propias tareas asignadas",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const selected = alternatives.find(a => a.id === selectedId);
     if (!selected) return;
 
