@@ -56,3 +56,15 @@ verify_jwt = false
 
 [functions.send-task-completed-celebration]
 verify_jwt = false
+
+[functions.send-week-start]
+verify_jwt = false
+
+[functions.send-week-end]
+verify_jwt = false
+
+[functions.send-leader-validation]
+verify_jwt = false
+
+[functions.send-validation-reminder]
+verify_jwt = false
