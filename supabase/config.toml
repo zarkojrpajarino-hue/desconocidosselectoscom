@@ -15,11 +15,20 @@ verify_jwt = false
 [functions.send-task-reminder]
 verify_jwt = true
 
+[functions.send-task-reminder-batch]
+verify_jwt = false
+
 [functions.send-weekly-summary]
 verify_jwt = true
 
+[functions.send-weekly-summary-batch]
+verify_jwt = false
+
 [functions.send-urgent-alert]
 verify_jwt = true
+
+[functions.send-urgent-alert-batch]
+verify_jwt = false
 
 [functions.send-admin-report]
 verify_jwt = false
