@@ -19,25 +19,57 @@ const PHASES = [
 
 const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
   const [loading, setLoading] = useState(false);
+  const [generatingPhase, setGeneratingPhase] = useState<number | null>(null);
 
-  const handlePhaseChange = async (phaseId: number) => {
-    setLoading(true);
+  const handlePhaseChange = async (newPhase: number) => {
+    if (newPhase === currentPhase || loading) return;
+
     try {
-      const { error } = await supabase
+      setLoading(true);
+      setGeneratingPhase(newPhase);
+
+      // 1. Generar tareas de la nueva fase
+      const { data: tasksData, error: tasksError } = await supabase.functions.invoke(
+        'generate-phase-tasks',
+        { body: { phase: newPhase } }
+      );
+
+      if (tasksError) throw tasksError;
+
+      // 2. Actualizar fase en system_config
+      const { data: configData } = await supabase
         .from('system_config')
-        .update({ current_phase: phaseId })
-        .eq('id', (await supabase.from('system_config').select('id').single()).data?.id);
+        .select('id')
+        .single();
 
-      if (error) throw error;
+      if (!configData) throw new Error('System config not found');
 
-      toast.success('Fase actualizada', {
-        description: `Ahora estamos en ${PHASES[phaseId - 1].label}`
+      const { error: configError } = await supabase
+        .from('system_config')
+        .update({ current_phase: newPhase })
+        .eq('id', configData.id);
+
+      if (configError) throw configError;
+
+      // 3. Éxito
+      toast.success(`✅ Fase ${newPhase} activada`, {
+        description: `${tasksData.tasksGenerated} tareas generadas para el equipo`
       });
+
+      // 4. Refrescar
       onPhaseChange();
-    } catch (error) {
-      toast.error('Error al actualizar fase');
+
+      // Reload para que todos vean las nuevas tareas
+      setTimeout(() => window.location.reload(), 1000);
+
+    } catch (error: any) {
+      console.error('Error changing phase:', error);
+      toast.error('Error al cambiar fase', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setLoading(false);
+      setGeneratingPhase(null);
     }
   };
 
@@ -51,23 +83,43 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PHASES.map((phase) => (
-            <Button
-              key={phase.id}
-              onClick={() => handlePhaseChange(phase.id)}
-              variant={currentPhase === phase.id ? 'default' : 'outline'}
-              disabled={loading}
-              className={`h-auto py-4 flex flex-col gap-2 ${
-                currentPhase === phase.id
-                  ? 'bg-gradient-primary hover:opacity-90'
-                  : ''
-              }`}
-            >
-              <span className="font-bold text-lg">{phase.label}</span>
-              <span className="text-xs opacity-80">{phase.desc}</span>
-            </Button>
-          ))}
+          {PHASES.map((phase) => {
+            const isGenerating = generatingPhase === phase.id;
+            const isDisabled = loading;
+            
+            return (
+              <Button
+                key={phase.id}
+                onClick={() => handlePhaseChange(phase.id)}
+                variant={currentPhase === phase.id ? 'default' : 'outline'}
+                disabled={isDisabled}
+                className={`h-auto py-4 flex flex-col gap-2 ${
+                  currentPhase === phase.id
+                    ? 'bg-gradient-primary hover:opacity-90'
+                    : ''
+                }`}
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+                    <span className="font-bold text-sm">Generando...</span>
+                    <span className="text-xs opacity-80">Fase {phase.id}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-lg">{phase.label}</span>
+                    <span className="text-xs opacity-80">{phase.desc}</span>
+                  </>
+                )}
+              </Button>
+            );
+          })}
         </div>
+        {loading && (
+          <p className="text-sm text-muted-foreground text-center mt-4">
+            ⏳ Generando tareas de Fase {generatingPhase}... Esto puede tomar unos segundos.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
