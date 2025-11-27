@@ -100,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p>No olvides completarlas antes del deadline de esta semana para mantener tu progreso al día.</p>
               
               <div style="text-align: center;">
-                <a href="${Deno.env.get('VITE_SUPABASE_URL')}/dashboard" class="button">Ver mis tareas</a>
+                <a href="${Deno.env.get('VITE_SUPABASE_URL')}/login?redirect=/dashboard" class="button">Ver mis tareas</a>
               </div>
 
               <p>¡Mucho éxito!</p>
