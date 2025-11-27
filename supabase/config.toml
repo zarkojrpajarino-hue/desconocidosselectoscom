@@ -38,3 +38,18 @@ verify_jwt = true
 
 [functions.send-evaluation-notification]
 verify_jwt = true
+
+[functions.send-collaborator-feedback-notification]
+verify_jwt = false
+
+[functions.send-leader-feedback-notification]
+verify_jwt = false
+
+[functions.send-insights-reminder]
+verify_jwt = false
+
+[functions.send-insights-reminder-batch]
+verify_jwt = false
+
+[functions.send-task-completed-celebration]
+verify_jwt = false
