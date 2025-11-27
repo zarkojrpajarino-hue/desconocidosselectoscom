@@ -55,14 +55,17 @@ serve(async (req) => {
     // Enviar email a cada usuario
     for (const user of users) {
       const weeklyData = user.user_weekly_data?.[0];
+      
+      // Si no tiene datos semanales, usar valores por defecto
+      const taskLimit = weeklyData?.task_limit || 5;
+      const mode = weeklyData?.mode || 'moderado';
+      const deadline = weeklyData?.week_deadline 
+        ? new Date(weeklyData.week_deadline)
+        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // +7 días desde ahora
+      
       if (!weeklyData) {
-        console.log(`⚠️ Usuario ${user.email} no tiene datos semanales, omitiendo...`);
-        continue;
+        console.log(`⚠️ Usuario ${user.email} no tiene datos semanales, usando valores por defecto`);
       }
-
-      const taskLimit = weeklyData.task_limit;
-      const mode = weeklyData.mode;
-      const deadline = new Date(weeklyData.week_deadline);
 
       const modeLabels: Record<string, string> = {
         'conservador': '🐢 Conservador',
