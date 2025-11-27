@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock } from 'lucide-react';
+import { LogOut, Users, Clock, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import WorkModeSelector from '@/components/WorkModeSelector';
@@ -14,6 +14,7 @@ import StatsCards from '@/components/StatsCards';
 import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
+import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 
 const Dashboard = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<any[]>([]);
   const [isWeekLocked, setIsWeekLocked] = useState(false);
+  const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -175,6 +177,36 @@ const Dashboard = () => {
         {/* Stats */}
         <StatsCards userId={user?.id} />
 
+        {/* Swaps Info Card */}
+        {userWeeklyData?.mode && (
+          <Card className="shadow-card bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5" />
+                    Cambios de Tareas Disponibles
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    Puedes intercambiar tareas que no te convengan esta semana
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="text-lg px-4 py-2">
+                  {remainingSwaps}/{limit}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Modo <span className="font-semibold">{userWeeklyData.mode}</span>: 
+                {remainingSwaps > 0 
+                  ? ` Te quedan ${remainingSwaps} cambio${remainingSwaps !== 1 ? 's' : ''} esta semana.`
+                  : ' Has usado todos tus cambios esta semana.'}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Work Mode Selector */}
         <WorkModeSelector
           userId={user?.id}
@@ -192,6 +224,7 @@ const Dashboard = () => {
               userId={user?.id}
               currentPhase={systemConfig?.current_phase}
               isLocked={isWeekLocked}
+              mode={userWeeklyData?.mode || 'moderado'}
             />
           </CardContent>
         </Card>

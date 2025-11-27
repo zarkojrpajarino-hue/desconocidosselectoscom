@@ -118,6 +118,57 @@ export type Database = {
           },
         ]
       }
+      task_swaps: {
+        Row: {
+          created_at: string
+          id: string
+          mode: string
+          new_description: string | null
+          new_title: string
+          old_title: string
+          task_id: string
+          user_id: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode: string
+          new_description?: string | null
+          new_title: string
+          old_title: string
+          task_id: string
+          user_id: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: string
+          new_description?: string | null
+          new_title?: string
+          old_title?: string
+          task_id?: string
+          user_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_swaps_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_swaps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           area: string | null
@@ -239,7 +290,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      count_user_swaps_for_week: {
+        Args: { p_user_id: string; p_week_number: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
