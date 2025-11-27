@@ -216,7 +216,7 @@ serve(async (req) => {
       `;
 
       await resend.emails.send({
-        from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+        from: 'Desconocidos Selectos <tareas@desconocidosselectos.com>',
         to: user.email,
         subject: `🏁 Semana terminada - Completaste ${completedCount}/${taskLimit} tareas (${percentage}%)`,
         html: htmlContent

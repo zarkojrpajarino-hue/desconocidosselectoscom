@@ -208,7 +208,7 @@ serve(async (req) => {
       `;
 
       await resend.emails.send({
-        from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+        from: 'Desconocidos Selectos <tareas@desconocidosselectos.com>',
         to: user.email,
         subject: `🚨 URGENTE - Quedan ${hoursRemaining} horas y tienes ${pendingCount} tareas pendientes`,
         html: htmlContent

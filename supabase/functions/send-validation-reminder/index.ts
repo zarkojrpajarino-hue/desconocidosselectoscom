@@ -215,7 +215,7 @@ serve(async (req) => {
         `;
 
         await resend.emails.send({
-          from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+          from: 'Desconocidos Selectos <tareas@desconocidosselectos.com>',
           to: leader.email,
           subject: `👥 Tienes ${pendingTasks.length} tareas esperando tu validación`,
           html: htmlContent

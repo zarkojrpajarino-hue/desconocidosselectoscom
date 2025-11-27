@@ -199,7 +199,7 @@ serve(async (req) => {
       
       try {
         const response = await resend.emails.send({
-          from: 'Experiencia Selecta <tareas@experienciaselecta.com>',
+          from: 'Desconocidos Selectos <tareas@desconocidosselectos.com>',
           to: user.email,
           subject: `🚀 Nueva semana comenzó - Tus ${taskLimit} tareas te esperan`,
           html: htmlContent
