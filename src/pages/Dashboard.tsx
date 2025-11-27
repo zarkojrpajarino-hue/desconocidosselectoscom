@@ -178,7 +178,7 @@ const Dashboard = () => {
         )}
 
         {/* Stats */}
-        <StatsCards userId={user?.id} />
+        <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
 
         {/* Swaps Info Card */}
         {userWeeklyData?.mode && (
@@ -228,6 +228,7 @@ const Dashboard = () => {
               currentPhase={systemConfig?.current_phase}
               isLocked={isWeekLocked}
               mode={userWeeklyData?.mode || 'moderado'}
+              taskLimit={userWeeklyData?.task_limit}
             />
           </CardContent>
         </Card>

@@ -15,9 +15,10 @@ interface TaskListProps {
   currentPhase: number | undefined;
   isLocked?: boolean;
   mode?: 'conservador' | 'moderado' | 'agresivo';
+  taskLimit?: number;
 }
 
-const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }: TaskListProps) => {
+const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', taskLimit }: TaskListProps) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
@@ -25,6 +26,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [taskToSwap, setTaskToSwap] = useState<any>(null);
   const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || '', mode);
+  const [leadersById, setLeadersById] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -35,19 +37,50 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
   const fetchTasks = async () => {
     if (!userId || !currentPhase) return;
 
-    const { data: taskData } = await supabase
+    let query = supabase
       .from('tasks')
       .select('*')
       .eq('user_id', userId)
       .eq('phase', currentPhase)
       .order('order_index');
 
+    if (taskLimit) {
+      query = query.limit(taskLimit);
+    }
+
+    const { data: taskData } = await query;
+
     const { data: completionData } = await supabase
       .from('task_completions')
       .select('task_id')
       .eq('user_id', userId);
 
-    if (taskData) setTasks(taskData);
+    if (taskData) {
+      setTasks(taskData);
+
+      const leaderIds = Array.from(
+        new Set(
+          taskData
+            .map((t: any) => t.leader_id)
+            .filter((id: string | null) => Boolean(id))
+        )
+      ) as string[];
+
+      if (leaderIds.length > 0) {
+        const { data: leaders } = await supabase
+          .from('users')
+          .select('id, full_name, username')
+          .in('id', leaderIds);
+
+        if (leaders) {
+          const map: Record<string, string> = {};
+          leaders.forEach((leader: any) => {
+            map[leader.id] = leader.full_name || leader.username;
+          });
+          setLeadersById(map);
+        }
+      }
+    }
     if (completionData) {
       setCompletions(new Set(completionData.map(c => c.task_id)));
     }
@@ -202,13 +235,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
                       {task.area}
                     </Badge>
                   )}
-                  {task.area && getLeadersForArea(task.area).length > 0 && (
+                  {task.leader_id && (
                     <Badge variant="outline" className="text-xs flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      Líder: {getLeaderDisplayName(getLeadersForArea(task.area))}
+                      Líder: {leadersById[task.leader_id] || 'Por asignar'}
                     </Badge>
                   )}
                 </div>
+                <details className="mt-1 text-xs md:text-sm text-muted-foreground">
+                  <summary className="cursor-pointer font-medium">Instrucciones / Pasos a seguir</summary>
+                  <p className="mt-1">
+                    {task.description
+                      ? task.description
+                      : 'Revisa los objetivos de la tarea, coordina con tu líder si aplica y deja evidencias claras al finalizar.'}
+                  </p>
+                </details>
               </div>
               {!isCompleted && !isLocked && canUserSwapTask(task) && (
                 <Button

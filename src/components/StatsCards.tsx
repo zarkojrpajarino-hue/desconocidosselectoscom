@@ -5,9 +5,11 @@ import { CheckCircle2, Circle, TrendingUp } from 'lucide-react';
 
 interface StatsCardsProps {
   userId: string | undefined;
+  currentPhase: number | undefined;
+  taskLimit: number | undefined;
 }
 
-const StatsCards = ({ userId }: StatsCardsProps) => {
+const StatsCards = ({ userId, currentPhase, taskLimit }: StatsCardsProps) => {
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -16,25 +18,40 @@ const StatsCards = ({ userId }: StatsCardsProps) => {
   });
 
   useEffect(() => {
-    if (userId) {
+    if (userId && currentPhase && taskLimit) {
       fetchStats();
     }
-  }, [userId]);
+  }, [userId, currentPhase, taskLimit]);
 
   const fetchStats = async () => {
-    if (!userId) return;
+    if (!userId || !currentPhase || !taskLimit) return;
 
-    const { data: tasks } = await supabase
+    // Limit tasks and stats to the current phase and the selected weekly task limit
+    let tasksQuery = supabase
       .from('tasks')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('phase', currentPhase)
+      .order('order_index');
+
+    tasksQuery = tasksQuery.limit(taskLimit);
+
+    const { data: tasks } = await tasksQuery;
+
+    if (!tasks || tasks.length === 0) {
+      setStats({ total: 0, completed: 0, pending: 0, progress: 0 });
+      return;
+    }
+
+    const taskIds = tasks.map((t) => t.id);
 
     const { data: completions } = await supabase
       .from('task_completions')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .in('task_id', taskIds);
 
-    const total = tasks?.length || 0;
+    const total = tasks.length;
     const completed = completions?.length || 0;
     const pending = total - completed;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
