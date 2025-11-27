@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { toast } from 'sonner';
 import PhaseSelector from '@/components/PhaseSelector';
+import NotificationBell from '@/components/NotificationBell';
 import { format } from 'date-fns';
 
 const Admin = () => {
@@ -106,6 +107,23 @@ const Admin = () => {
 
       if (error) throw error;
 
+      // Create notification for user
+      const { data: completion } = await supabase
+        .from('task_completions')
+        .select('*, tasks:task_id(title)')
+        .eq('id', completionId)
+        .single();
+
+      if (completion) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: userId,
+            type: 'task_validated',
+            message: `Tu tarea "${completion.tasks.title}" ha sido validada`
+          });
+      }
+
       toast.success('Tarea validada exitosamente');
       fetchTeamData();
     } catch (error) {
@@ -147,6 +165,7 @@ const Admin = () => {
               Panel de Administración
             </h1>
           </div>
+          {userProfile && <NotificationBell userId={userProfile.id} />}
         </div>
       </header>
 

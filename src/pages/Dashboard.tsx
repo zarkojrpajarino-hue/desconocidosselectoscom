@@ -12,6 +12,8 @@ import WorkModeSelector from '@/components/WorkModeSelector';
 import TaskList from '@/components/TaskList';
 import StatsCards from '@/components/StatsCards';
 import UrgentAlert from '@/components/UrgentAlert';
+import NotificationBell from '@/components/NotificationBell';
+import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 
 const Dashboard = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -87,6 +89,14 @@ const Dashboard = () => {
     toast.success('Sesión cerrada');
   };
 
+  // Send urgent notification when conditions are met
+  useUrgentNotification({
+    userId: user?.id,
+    deadline: systemConfig?.week_deadline,
+    totalTasks: tasks.length,
+    completedTasks: completions.length
+  });
+
   if (loading || !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -125,6 +135,7 @@ const Dashboard = () => {
                 Revisar Equipo
               </Button>
             )}
+            {user && <NotificationBell userId={user.id} />}
             <Button
               onClick={handleLogout}
               variant="outline"
