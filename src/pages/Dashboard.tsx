@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { LogOut, Users, Clock, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
+import PhaseSelector from '@/components/PhaseSelector';
 import WorkModeSelector from '@/components/WorkModeSelector';
 import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
@@ -162,6 +163,14 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
+        {/* Phase Selector - Only for Admins */}
+        {userProfile?.role === 'admin' && systemConfig && (
+          <PhaseSelector
+            currentPhase={systemConfig.current_phase}
+            onPhaseChange={fetchSystemConfig}
+          />
+        )}
+
         {/* Countdown */}
         <CountdownTimer 
           deadline={getCurrentWeekDeadline().toISOString()}

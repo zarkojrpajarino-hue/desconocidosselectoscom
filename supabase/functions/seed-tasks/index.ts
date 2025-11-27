@@ -16,11 +16,19 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user IDs
+    // Get system config to know current phase
+    const { data: systemConfig } = await supabaseAdmin
+      .from('system_config')
+      .select('current_phase')
+      .single();
+    
+    const currentPhase = systemConfig?.current_phase || 1;
+
+    // Get all users
     const { data: users, error: usersError } = await supabaseAdmin
       .from('users')
       .select('id, username')
-      .in('username', ['zarko', 'fer', 'miguel', 'fernando', 'angel', 'manu', 'casti', 'diego']);
+      .in('username', ['zarko', 'fer', 'miguel', 'fernando', 'angel', 'manu', 'casti', 'diego', 'carla']);
 
     if (usersError) throw usersError;
 
@@ -29,8 +37,8 @@ Deno.serve(async (req) => {
       return acc;
     }, {});
 
-    // Clear existing tasks for zarko
-    await supabaseAdmin.from('tasks').delete().eq('user_id', userMap.zarko);
+    // Clear existing tasks for all users for current phase
+    await supabaseAdmin.from('tasks').delete().eq('phase', currentPhase);
 
     const tasks = [
       {
@@ -119,21 +127,31 @@ Deno.serve(async (req) => {
       },
     ];
 
-    // Insert tasks with zarko as user_id and phase 1
-    const tasksToInsert = tasks.map((task) => ({
-      ...task,
-      user_id: userMap.zarko,
-      phase: 1,
-    }));
+    // Insert tasks for ALL users with current phase
+    const allTasksToInsert = [];
+    
+    for (const user of users) {
+      const userTasks = tasks.map((task) => ({
+        ...task,
+        user_id: user.id,
+        phase: currentPhase,
+      }));
+      allTasksToInsert.push(...userTasks);
+    }
 
     const { error: insertError } = await supabaseAdmin
       .from('tasks')
-      .insert(tasksToInsert);
+      .insert(allTasksToInsert);
 
     if (insertError) throw insertError;
 
     return new Response(
-      JSON.stringify({ success: true, count: tasks.length }),
+      JSON.stringify({ 
+        success: true, 
+        count: allTasksToInsert.length, 
+        users: users.length,
+        phase: currentPhase 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
