@@ -111,21 +111,21 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="relative gap-2">
-          <Bell className="h-4 w-4" />
+        <Button variant="outline" size="sm" className="relative gap-2 h-8 md:h-9 px-2 md:px-3">
+          <Bell className="h-3 w-3 md:h-4 md:w-4" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              className="absolute -top-1 -right-1 md:-top-2 md:-right-2 h-4 w-4 md:h-5 md:w-5 p-0 flex items-center justify-center text-[10px] md:text-xs"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-w-md z-50 bg-card">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notificaciones</span>
+          <span className="text-sm md:text-base">Notificaciones</span>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -138,7 +138,7 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[50vh] sm:h-[400px]">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               No tienes notificaciones
@@ -153,12 +153,12 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
                 onClick={() => !notification.read && markAsRead(notification.id)}
               >
                 <div className="flex items-center gap-2 w-full">
-                  <span className="text-lg">{getNotificationIcon(notification.type)}</span>
-                  <div className="flex-1">
-                    <p className={`text-sm ${!notification.read ? 'font-semibold' : ''}`}>
+                  <span className="text-base md:text-lg">{getNotificationIcon(notification.type)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs md:text-sm ${!notification.read ? 'font-semibold' : ''}`}>
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(notification.created_at), {
                         addSuffix: true,
                         locale: es

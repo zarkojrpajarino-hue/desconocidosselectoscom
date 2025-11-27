@@ -84,21 +84,21 @@ const CountdownTimer = ({ deadline, onTimeExpired }: CountdownTimerProps) => {
 
   return (
     <Card className={`shadow-card ${visualState.bgClass} ${visualState.textClass}`}>
-      <CardContent className="py-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-3">
+      <CardContent className="py-4 md:py-6">
+        <div className="flex flex-col items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {visualState.icon}
             <div className="text-center">
-              <p className="text-sm font-medium opacity-90">
+              <p className="text-xs md:text-sm font-medium opacity-90">
                 {isExpired ? 'SEMANA CERRADA' : 'Tiempo restante'}
               </p>
-              <p className={`text-3xl font-bold ${isExpired ? 'text-destructive-foreground' : ''}`}>
+              <p className={`text-xl md:text-3xl font-bold ${isExpired ? 'text-destructive-foreground' : ''}`}>
                 {timeLeft}
               </p>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-sm opacity-90 capitalize">
+            <p className="text-xs md:text-sm opacity-90 capitalize">
               Cierre: {formattedDeadline}
             </p>
             {visualState.message && (

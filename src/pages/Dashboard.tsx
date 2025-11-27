@@ -112,27 +112,28 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
               Bienvenido, {userProfile.full_name}
             </h1>
             {userProfile.role === 'admin' && (
-              <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground">
+              <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground text-xs shrink-0">
                 Admin
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2 shrink-0">
             {userProfile.role === 'admin' && (
               <Button
                 onClick={() => navigate('/admin')}
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                className="gap-1 md:gap-2 text-xs md:text-sm"
               >
-                <Users className="h-4 w-4" />
-                Revisar Equipo
+                <Users className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Revisar Equipo</span>
+                <span className="sm:hidden">Admin</span>
               </Button>
             )}
             {user && <NotificationBell userId={user.id} />}
@@ -140,17 +141,17 @@ const Dashboard = () => {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-1 md:gap-2 text-xs md:text-sm"
             >
-              <LogOut className="h-4 w-4" />
-              Salir
+              <LogOut className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Salir</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
         {/* Countdown */}
         {systemConfig && (
           <CountdownTimer 

@@ -67,25 +67,25 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
 
   return (
     <Card className="shadow-card">
-      <CardHeader>
-        <CardTitle>Modo de Trabajo</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base md:text-lg">Modo de Trabajo</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {WORK_MODES.map((mode) => (
             <Button
               key={mode.id}
               onClick={() => handleModeChange(mode.id)}
               variant={currentMode === mode.id ? 'default' : 'outline'}
               disabled={loading}
-              className={`h-auto py-4 flex flex-col gap-2 ${
+              className={`h-auto py-4 px-3 md:px-4 flex flex-col gap-2 ${
                 currentMode === mode.id
                   ? 'bg-gradient-primary hover:opacity-90'
                   : ''
               }`}
             >
-              <span className="text-2xl">{mode.label.split(' ')[0]}</span>
-              <span className="font-semibold">{mode.label.split(' ')[1]}</span>
+              <span className="text-2xl md:text-3xl">{mode.label.split(' ')[0]}</span>
+              <span className="font-semibold text-sm md:text-base">{mode.label.split(' ')[1]}</span>
               <div className="text-xs opacity-80">
                 <div>{mode.tasks} tareas/semana</div>
                 <div>{mode.hours}</div>
