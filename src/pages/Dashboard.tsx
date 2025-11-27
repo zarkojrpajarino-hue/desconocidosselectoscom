@@ -13,6 +13,7 @@ import WorkModeSelector from '@/components/WorkModeSelector';
 import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
 import StatsCards from '@/components/StatsCards';
+import TeamProgress from '@/components/TeamProgress';
 import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
@@ -191,6 +192,9 @@ const Dashboard = () => {
 
         {/* Stats */}
         <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
+
+        {/* Team Progress */}
+        <TeamProgress currentPhase={systemConfig?.current_phase || 1} />
 
         {/* Swaps Info Card */}
         {userWeeklyData?.mode && (
