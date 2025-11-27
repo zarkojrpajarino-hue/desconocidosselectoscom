@@ -90,20 +90,47 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
   const handleSwap = async () => {
     if (!selectedId || remainingSwaps <= 0) return;
 
-    // VALIDACIÓN DE SEGURIDAD: Solo el usuario asignado puede cambiar la tarea
-    if (task.user_id !== userId) {
-      toast({
-        title: "⛔ Acción no permitida",
-        description: "Solo puedes cambiar tus propias tareas asignadas",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const selected = alternatives.find(a => a.id === selectedId);
     if (!selected) return;
 
     try {
+      // VALIDACIÓN DE SEGURIDAD: Verificar permisos
+      const { data: userData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+      if (!userData) {
+        toast({
+          title: "⛔ Error",
+          description: "No se pudo verificar el usuario",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // REGLA 1: Tarea individual - solo el asignado puede cambiarla
+      const isIndividual = !task.leader_id;
+      const isAssignedUser = task.user_id === userId;
+
+      // REGLA 2: Tarea con líder - solo el líder del área puede cambiarla
+      const { isUserLeaderOfArea } = await import('@/lib/areaLeaders');
+      const isAreaLeader = isUserLeaderOfArea(userData.username, task.area);
+
+      const hasPermission = (isIndividual && isAssignedUser) || (!isIndividual && isAreaLeader);
+
+      if (!hasPermission) {
+        toast({
+          title: "⛔ Acción no permitida",
+          description: isIndividual 
+            ? "Solo puedes cambiar tus propias tareas individuales"
+            : "Solo el líder del área puede cambiar esta tarea",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Obtener número de semana actual
       const { data: systemConfig } = await supabase
         .from('system_config')
@@ -116,7 +143,18 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
       const now = new Date();
       const weekNumber = Math.floor((now.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
-      // Registrar el cambio en task_swaps
+      // 1. ACTUALIZAR LA TAREA EN LA DB
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({
+          title: selected.title,
+          description: selected.description
+        })
+        .eq('id', task.id);
+
+      if (updateError) throw updateError;
+
+      // 2. REGISTRAR EL CAMBIO EN task_swaps
       const { error: swapError } = await supabase
         .from('task_swaps')
         .insert({
