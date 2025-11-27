@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
 
               <p><strong>Sin los insights, la tarea no puede marcarse como completada.</strong></p>
 
-              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/dashboard" class="button">
+              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/login?redirect=/dashboard" class="button">
                 Completar Insights Ahora
               </a>
 

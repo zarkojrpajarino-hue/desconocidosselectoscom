@@ -76,27 +76,8 @@ serve(async (req) => {
         'agresivo': '🚀 Agresivo'
       };
 
-      // Generar magic link para login automático
-      let magicLink = 'https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/dashboard';
-      
-      try {
-        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-          type: 'magiclink',
-          email: user.email,
-          options: {
-            redirectTo: 'https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/dashboard'
-          }
-        });
-
-        if (!linkError && linkData?.properties?.action_link) {
-          magicLink = linkData.properties.action_link;
-          console.log(`🔑 Magic link generado para ${user.email}`);
-        } else {
-          console.warn(`⚠️ No se pudo generar magic link para ${user.email}, usando link normal`);
-        }
-      } catch (linkGenError) {
-        console.warn(`⚠️ Error generando magic link:`, linkGenError);
-      }
+      // Helper function to delay between emails (avoid rate limits)
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
       const htmlContent = `
 <!DOCTYPE html>
@@ -207,7 +188,7 @@ serve(async (req) => {
       <p><strong>Tienes 7 días para completar tus objetivos. ¡Vamos por ello!</strong></p>
       
       <div style="text-align: center;">
-        <a href="${magicLink}" class="button">Ver Mis Tareas 🎯</a>
+        <a href="https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/login?redirect=/dashboard" class="button">Ver Mis Tareas 🎯</a>
       </div>
     </div>
     <div class="footer">

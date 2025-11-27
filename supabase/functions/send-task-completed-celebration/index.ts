@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
                 </div>
               ` : ''}
 
-              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/dashboard" class="button">
+              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/login?redirect=/dashboard" class="button">
                 Ver Todas tus Tareas
               </a>
 

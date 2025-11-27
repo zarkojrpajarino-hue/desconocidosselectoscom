@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
               }
               
               <div style="text-align: center;">
-                <a href="${Deno.env.get('VITE_SUPABASE_URL')}/dashboard" class="button">Ver Dashboard</a>
+                <a href="${Deno.env.get('VITE_SUPABASE_URL')}/login?redirect=/dashboard" class="button">Ver Dashboard</a>
               </div>
 
               <p>¡Sigue así!</p>

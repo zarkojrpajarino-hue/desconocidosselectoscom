@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
                 <p>La tarea está pendiente de que completes tus insights para llegar al 100%.</p>
               </div>
 
-              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/dashboard" class="button">
+              <a href="${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com')}/login?redirect=/dashboard" class="button">
                 Ver Tarea en el Dashboard
               </a>
 
