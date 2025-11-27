@@ -168,7 +168,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
 
     try {
       // Colaborador da feedback al líder (40%)
-      await supabase
+      const { data: newCompletion } = await supabase
         .from('task_completions')
         .insert({
           task_id: selectedTask.id,
@@ -176,11 +176,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
           completed_by_user: true,
           validated_by_leader: false,
           leader_evaluation: evaluation
-        });
+        })
+        .select()
+        .single();
       
       await fetchTasks();
       
-      // Notificar al líder
+      // Notificar al líder y enviar email
       if (selectedTask.leader_id) {
         await supabase
           .from('notifications')
@@ -189,6 +191,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
             type: 'evaluation_pending',
             message: `${leadersById[userId] || 'Un colaborador'} completó la tarea "${selectedTask.title}" y envió feedback`
           });
+
+        // Enviar email al líder
+        if (newCompletion) {
+          await supabase.functions.invoke('send-collaborator-feedback-notification', {
+            body: {
+              leaderId: selectedTask.leader_id,
+              taskId: selectedTask.id,
+              collaboratorId: userId,
+              completionId: newCompletion.id
+            }
+          });
+        }
       }
       
       // Abrir modal de insights después del feedback
@@ -210,6 +224,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     try {
       // Líder da feedback a colaboradores (90%)
       const completion = completions.get(selectedTask.id);
+      let completionId = completion?.id;
       
       if (completion) {
         // Actualizar completion existente
@@ -221,7 +236,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
           .eq('id', completion.id);
       } else {
         // Crear nuevo completion
-        await supabase
+        const { data: newCompletion } = await supabase
           .from('task_completions')
           .insert({
             task_id: selectedTask.id,
@@ -229,10 +244,26 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
             completed_by_user: true,
             validated_by_leader: false,
             collaborator_feedback: feedback
-          });
+          })
+          .select()
+          .single();
+        
+        completionId = newCompletion?.id;
       }
       
       await fetchTasks();
+
+      // Enviar email al colaborador
+      if (completionId) {
+        await supabase.functions.invoke('send-leader-feedback-notification', {
+          body: {
+            collaboratorId: selectedTask.user_id,
+            taskId: selectedTask.id,
+            leaderId: userId,
+            completionId
+          }
+        });
+      }
       
       // Abrir modal de insights después del feedback
       setInsightsModalOpen(true);
@@ -266,8 +297,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
                 user_insights: insights
               })
               .eq('id', completion.id);
+
+            // Enviar email de celebración al colaborador
+            await supabase.functions.invoke('send-task-completed-celebration', {
+              body: {
+                collaboratorId: selectedTask.user_id,
+                taskId: selectedTask.id,
+                leaderId: userId,
+                completionId: completion.id
+              }
+            });
           } else {
-            await supabase
+            const { data: newCompletion } = await supabase
               .from('task_completions')
               .insert({
                 task_id: selectedTask.id,
@@ -275,7 +316,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
                 completed_by_user: true,
                 validated_by_leader: true,
                 user_insights: insights
+              })
+              .select()
+              .single();
+
+            // Enviar email de celebración al colaborador
+            if (newCompletion) {
+              await supabase.functions.invoke('send-task-completed-celebration', {
+                body: {
+                  collaboratorId: selectedTask.user_id,
+                  taskId: selectedTask.id,
+                  leaderId: userId,
+                  completionId: newCompletion.id
+                }
               });
+            }
           }
 
           // Notificar al colaborador
