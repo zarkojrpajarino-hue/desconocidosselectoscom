@@ -50,17 +50,17 @@ const StatsCards = ({ userId }: StatsCardsProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
       {statCards.map((stat, index) => (
         <Card key={index} className="shadow-card hover:shadow-premium transition-shadow">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold">{stat.value}</p>
+          <CardContent className="pt-4 md:pt-6">
+            <div className="flex flex-col items-center gap-2">
+              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full bg-muted/50 flex items-center justify-center ${stat.color}`}>
+                <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
               </div>
-              <div className={`h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center ${stat.color}`}>
-                <stat.icon className="h-6 w-6" />
+              <div className="text-center">
+                <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.label}</p>
+                <p className="text-xl md:text-3xl font-bold">{stat.value}</p>
               </div>
             </div>
           </CardContent>

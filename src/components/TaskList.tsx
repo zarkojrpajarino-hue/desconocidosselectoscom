@@ -136,30 +136,30 @@ const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => 
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-2 md:space-y-3">
         {tasks.map((task) => {
           const isCompleted = completions.has(task.id);
           return (
             <div
               key={task.id}
-              className={`flex items-start gap-4 p-4 rounded-lg border transition-all ${
+              className={`flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg border transition-all min-h-[72px] ${
                 isCompleted
                   ? 'bg-success/5 border-success/20'
                   : 'bg-card hover:shadow-sm'
               }`}
             >
-            <Checkbox
-              checked={isCompleted}
-              onCheckedChange={() => handleToggleTask(task, isCompleted)}
-              className="mt-1"
-              disabled={isLocked}
-            />
+              <Checkbox
+                checked={isCompleted}
+                onCheckedChange={() => handleToggleTask(task, isCompleted)}
+                className="mt-1 h-5 w-5 md:h-4 md:w-4"
+                disabled={isLocked}
+              />
               <div className="flex-1 space-y-2">
-                <p className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                <p className={`font-medium text-sm md:text-base ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className="text-sm text-muted-foreground">{task.description}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">{task.description}</p>
                 )}
                 <div className="flex items-center gap-2 flex-wrap">
                   {task.area && (

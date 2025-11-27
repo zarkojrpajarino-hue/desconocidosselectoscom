@@ -152,16 +152,17 @@ const Admin = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3">
             <Button
               onClick={() => navigate('/dashboard')}
               variant="ghost"
               size="icon"
+              className="h-8 w-8 md:h-10 md:w-10"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Panel de Administración
             </h1>
           </div>
@@ -170,7 +171,7 @@ const Admin = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
         {/* Phase Selector */}
         {systemConfig && (
           <PhaseSelector
@@ -181,10 +182,10 @@ const Admin = () => {
 
         {/* Filters */}
         <Card className="shadow-card">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="pt-4 md:pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Miembro del Equipo</label>
+                <label className="text-xs md:text-sm font-medium">Miembro del Equipo</label>
                 <Select value={selectedMember} onValueChange={setSelectedMember}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todos los miembros" />
@@ -200,7 +201,7 @@ const Admin = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Estado de Validación</label>
+                <label className="text-xs md:text-sm font-medium">Estado de Validación</label>
                 <Select value={validationFilter} onValueChange={setValidationFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todos" />
