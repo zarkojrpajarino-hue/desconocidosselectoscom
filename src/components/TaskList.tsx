@@ -43,13 +43,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
   const fetchTasks = async () => {
     if (!userId || !currentPhase) return;
 
-    // Obtener tareas principales del usuario (individuales sin líder)
+    // Obtener TODAS las tareas asignadas al usuario (según su modo: 5, 8 o 12 tareas)
+    // Esto incluye tanto tareas individuales como tareas donde el usuario es el asignado principal
     let query = supabase
       .from('tasks')
       .select('*')
       .eq('user_id', userId)
       .eq('phase', currentPhase)
-      .is('leader_id', null)
       .order('order_index');
 
     if (taskLimit) {
@@ -58,12 +58,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
 
     const { data: taskData } = await query;
 
-    // Obtener tareas compartidas (donde hay líder o el usuario es líder de otros)
+    // Obtener tareas de OTROS USUARIOS donde este usuario está involucrado como colaborador
+    // Es decir, tareas donde:
+    // 1. El user_id NO es este usuario (es tarea de otro)
+    // 2. Y este usuario aparece como leader_id (está involucrado como líder/colaborador)
     const { data: sharedTaskData } = await supabase
       .from('tasks')
       .select('*')
       .eq('phase', currentPhase)
-      .or(`and(user_id.eq.${userId},leader_id.not.is.null),and(leader_id.eq.${userId},user_id.neq.${userId})`)
+      .eq('leader_id', userId)
+      .neq('user_id', userId)
       .order('order_index');
 
     // Obtener completaciones con detalles
