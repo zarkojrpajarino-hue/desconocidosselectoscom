@@ -302,9 +302,25 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     toast.success("Tarea actualizada correctamente");
   };
 
-  const canUserSwapTask = (task: any) => {
-    // El usuario asignado puede cambiar su tarea
-    return task.user_id === userId;
+  const canUserSwapTask = async (task: any) => {
+    if (!userId) return false;
+    
+    // Obtener username del usuario actual
+    const { data: userData } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', userId)
+      .single();
+    
+    if (!userData) return false;
+    
+    // REGLA 1: Si la tarea es individual (sin líder), solo el asignado puede cambiarla
+    if (!task.leader_id) {
+      return task.user_id === userId;
+    }
+    
+    // REGLA 2: Si la tarea tiene líder, solo el líder del área puede cambiarla
+    return isUserLeaderOfArea(userData.username, task.area);
   };
 
   const getTaskCompletionStatus = (task: any, completion: any) => {
@@ -367,10 +383,26 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     );
   }
 
-  const renderTask = (task: any, canSwap: boolean = false) => {
+  const renderTask = (task: any, canSwapOverride?: boolean) => {
     const completion = completions.get(task.id);
     const isCompleted = completion?.validated_by_leader || false;
     const { percentage, message, needsInsights } = getTaskCompletionStatus(task, completion);
+    
+    // Calcular permisos de swap
+    const canSwap = canSwapOverride !== undefined ? canSwapOverride : (() => {
+      if (!userId) return false;
+      
+      // Si es individual, solo el asignado puede cambiarla
+      if (!task.leader_id) return task.user_id === userId;
+      
+      // Si tiene líder, necesitamos verificar si el usuario es líder del área
+      // Esto se hace de forma sincrónica usando leadersById que ya tenemos
+      const currentUser = Object.entries(leadersById).find(([id]) => id === userId);
+      if (!currentUser) return false;
+      
+      // Buscar el username del usuario actual
+      return isUserLeaderOfArea(userId, task.area);
+    })();
 
     return (
       <div
@@ -472,7 +504,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           <h3 className="text-lg font-semibold mb-4">
             Mis Tareas ({tasks.length}/{taskLimit || 12})
           </h3>
-          <div className="space-y-2 md:space-y-3">{tasks.map((task) => renderTask(task, canUserSwapTask(task)))}</div>
+          <div className="space-y-2 md:space-y-3">{tasks.map((task) => renderTask(task))}</div>
         </div>
       )}
 
@@ -486,7 +518,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           <p className="text-sm text-muted-foreground mb-4">
             Tareas de otros miembros del equipo donde estás involucrado como colaborador
           </p>
-          <div className="space-y-2 md:space-y-3">{sharedTasks.map((task) => renderTask(task, false))}</div>
+          <div className="space-y-2 md:space-y-3">{sharedTasks.map((task) => renderTask(task))}</div>
         </div>
       )}
 
