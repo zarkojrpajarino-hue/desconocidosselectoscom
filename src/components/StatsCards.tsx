@@ -26,37 +26,43 @@ const StatsCards = ({ userId, currentPhase, taskLimit }: StatsCardsProps) => {
   const fetchStats = async () => {
     if (!userId || !currentPhase || !taskLimit) return;
 
-    // Limit tasks and stats to the current phase and the selected weekly task limit
-    let tasksQuery = supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('phase', currentPhase)
-      .order('order_index');
+    try {
+      // Limit tasks and stats to the current phase and the selected weekly task limit
+      let tasksQuery = supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('phase', currentPhase)
+        .order('order_index');
 
-    tasksQuery = tasksQuery.limit(taskLimit);
+      tasksQuery = tasksQuery.limit(taskLimit);
 
-    const { data: tasks } = await tasksQuery;
+      const { data: tasks } = await tasksQuery;
 
-    if (!tasks || tasks.length === 0) {
-      setStats({ total: 0, completed: 0, pending: 0, progress: 0 });
-      return;
+      if (!tasks || tasks.length === 0) {
+        setStats({ total: 0, completed: 0, pending: 0, progress: 0 });
+        return;
+      }
+
+      const taskIds = tasks.map((t) => t.id);
+
+      // IMPORTANTE: Solo contar tareas VALIDADAS por el líder
+      const { data: completions } = await supabase
+        .from('task_completions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('validated_by_leader', true)
+        .in('task_id', taskIds);
+
+      const total = tasks.length;
+      const completed = completions?.length || 0;
+      const pending = total - completed;
+      const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      setStats({ total, completed, pending, progress });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
     }
-
-    const taskIds = tasks.map((t) => t.id);
-
-    const { data: completions } = await supabase
-      .from('task_completions')
-      .select('*')
-      .eq('user_id', userId)
-      .in('task_id', taskIds);
-
-    const total = tasks.length;
-    const completed = completions?.length || 0;
-    const pending = total - completed;
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    setStats({ total, completed, pending, progress });
   };
 
   const statCards = [
