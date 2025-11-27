@@ -38,17 +38,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     if (userId && currentPhase) {
       fetchTasks();
     }
-  }, [userId, currentPhase]);
+  }, [userId, currentPhase, taskLimit]);
 
   const fetchTasks = async () => {
     if (!userId || !currentPhase) return;
 
-    // Obtener tareas principales del usuario
+    // Obtener tareas principales del usuario (individuales sin líder)
     let query = supabase
       .from('tasks')
       .select('*')
       .eq('user_id', userId)
       .eq('phase', currentPhase)
+      .is('leader_id', null)
       .order('order_index');
 
     if (taskLimit) {
@@ -57,13 +58,12 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
 
     const { data: taskData } = await query;
 
-    // Obtener tareas donde el usuario es líder o colaborador (pero no el asignado principal)
+    // Obtener tareas compartidas (donde hay líder o el usuario es líder de otros)
     const { data: sharedTaskData } = await supabase
       .from('tasks')
       .select('*')
       .eq('phase', currentPhase)
-      .or(`leader_id.eq.${userId}`)
-      .neq('user_id', userId)
+      .or(`and(user_id.eq.${userId},leader_id.not.is.null),and(leader_id.eq.${userId},user_id.neq.${userId})`)
       .order('order_index');
 
     // Obtener completaciones con detalles
@@ -507,12 +507,12 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
         </div>
       )}
 
-      {/* Tareas en las que participa */}
+      {/* Tareas en las que participa como colaborador o líder */}
       {sharedTasks.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            Tareas en las que Participas
+            Tareas en Colaboración
           </h3>
           <div className="space-y-2 md:space-y-3">
             {sharedTasks.map((task) => renderTask(task, false))}
