@@ -9,6 +9,7 @@ import { LogOut, Users, Clock, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import WorkModeSelector from '@/components/WorkModeSelector';
+import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
 import StatsCards from '@/components/StatsCards';
 import UrgentAlert from '@/components/UrgentAlert';
@@ -71,7 +72,6 @@ const Dashboard = () => {
   const fetchTasksAndCompletions = async () => {
     if (!user || !systemConfig || !userWeeklyData) return;
 
-    // Obtener límite de tareas según el modo
     const taskLimit = userWeeklyData.task_limit || 8;
 
     const { data: taskData } = await supabase
@@ -80,7 +80,7 @@ const Dashboard = () => {
       .eq('user_id', user.id)
       .eq('phase', systemConfig.current_phase)
       .order('order_index')
-      .limit(taskLimit); // Limitar según el modo
+      .limit(taskLimit);
 
     const { data: completionData } = await supabase
       .from('task_completions')
@@ -90,6 +90,9 @@ const Dashboard = () => {
     if (taskData) setTasks(taskData);
     if (completionData) setCompletions(completionData);
   };
+
+  // Calcular tareas completadas al 100%
+  const fullyCompletedCount = completions.filter(c => c.validated_by_leader).length;
 
   const handleLogout = async () => {
     await signOut();
@@ -215,6 +218,12 @@ const Dashboard = () => {
           userId={user?.id}
           currentMode={userWeeklyData?.mode}
           onModeChange={fetchUserWeeklyData}
+        />
+
+        {/* Progress Bar */}
+        <ProgressBar
+          completedTasks={fullyCompletedCount}
+          totalTasks={tasks.length}
         />
 
         {/* Task List */}
