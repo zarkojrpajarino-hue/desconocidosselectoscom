@@ -8,6 +8,7 @@ import { RefreshCw, Users, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import TaskEvaluationModal from './TaskEvaluationModal';
 import TaskInsightsModal from './TaskInsightsModal';
+import TaskCollaboratorFeedbackModal from './TaskCollaboratorFeedbackModal';
 import { TaskSwapModal } from './TaskSwapModal';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { isUserLeaderOfArea } from '@/lib/areaLeaders';
@@ -25,6 +26,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
   const [sharedTasks, setSharedTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<Map<string, any>>(new Map());
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
+  const [collaboratorFeedbackModalOpen, setCollaboratorFeedbackModalOpen] = useState(false);
   const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
@@ -137,11 +139,11 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
         if (isSharedTask) {
           // Tarea compartida
           if (isLeader) {
-            // Líder completa la tarea - abrir modal de insights
+            // Líder completa la tarea - primero feedback a colaboradores
             setSelectedTask(task);
-            setInsightsModalOpen(true);
+            setCollaboratorFeedbackModalOpen(true);
           } else {
-            // Colaborador - marcar al 50% y pedir feedback del líder
+            // Colaborador - primero feedback al líder
             setSelectedTask(task);
             setEvaluationModalOpen(true);
           }
@@ -165,7 +167,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     if (!userId || !selectedTask) return;
 
     try {
-      // Colaborador marca tarea al 50% y da feedback al líder
+      // Colaborador da feedback al líder (40%)
       await supabase
         .from('task_completions')
         .insert({
@@ -189,9 +191,53 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
           });
       }
       
-      toast.success('¡Tarea marcada al 50%! Esperando validación del líder');
+      // Abrir modal de insights después del feedback
+      setInsightsModalOpen(true);
     } catch (error) {
       toast.error('Error al completar tarea');
+      throw error;
+    }
+  };
+
+  const handleSubmitCollaboratorFeedback = async (feedback: {
+    q1: string;
+    q2: string;
+    q3: string;
+    stars: number;
+  }) => {
+    if (!userId || !selectedTask) return;
+
+    try {
+      // Líder da feedback a colaboradores (90%)
+      const completion = completions.get(selectedTask.id);
+      
+      if (completion) {
+        // Actualizar completion existente
+        await supabase
+          .from('task_completions')
+          .update({
+            collaborator_feedback: feedback
+          })
+          .eq('id', completion.id);
+      } else {
+        // Crear nuevo completion
+        await supabase
+          .from('task_completions')
+          .insert({
+            task_id: selectedTask.id,
+            user_id: selectedTask.user_id,
+            completed_by_user: true,
+            validated_by_leader: false,
+            collaborator_feedback: feedback
+          });
+      }
+      
+      await fetchTasks();
+      
+      // Abrir modal de insights después del feedback
+      setInsightsModalOpen(true);
+    } catch (error) {
+      toast.error('Error al guardar feedback');
       throw error;
     }
   };
@@ -207,29 +253,54 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     try {
       const isSharedTask = selectedTask.leader_id !== null;
       const isLeader = selectedTask.area && isUserLeaderOfArea(userId, selectedTask.area);
+      const completion = completions.get(selectedTask.id);
 
-      if (isSharedTask && isLeader) {
-        // Líder valida la tarea al 100%
-        await supabase
-          .from('task_completions')
-          .insert({
-            task_id: selectedTask.id,
-            user_id: selectedTask.user_id,
-            completed_by_user: true,
-            validated_by_leader: true,
-            user_insights: insights
-          });
+      if (isSharedTask) {
+        if (isLeader) {
+          // Líder completa insights - marcar al 100%
+          if (completion) {
+            await supabase
+              .from('task_completions')
+              .update({
+                validated_by_leader: true,
+                user_insights: insights
+              })
+              .eq('id', completion.id);
+          } else {
+            await supabase
+              .from('task_completions')
+              .insert({
+                task_id: selectedTask.id,
+                user_id: selectedTask.user_id,
+                completed_by_user: true,
+                validated_by_leader: true,
+                user_insights: insights
+              });
+          }
 
-        // Notificar al colaborador
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: selectedTask.user_id,
-            type: 'task_validated',
-            message: `El líder ha marcado como completada la tarea "${selectedTask.title}"`
-          });
+          // Notificar al colaborador
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: selectedTask.user_id,
+              type: 'task_validated',
+              message: `El líder ha completado la tarea "${selectedTask.title}" al 100%`
+            });
 
-        toast.success('¡Tarea validada al 100%! El colaborador será notificado');
+          toast.success('¡Tarea completada al 100%!');
+        } else {
+          // Colaborador completa insights - queda al 50% esperando validación del líder
+          if (completion) {
+            await supabase
+              .from('task_completions')
+              .update({
+                user_insights: insights
+              })
+              .eq('id', completion.id);
+          }
+
+          toast.success('¡Insights completados! Tarea al 50%, esperando validación del líder');
+        }
       } else {
         // Tarea individual completada al 100%
         await supabase
@@ -271,29 +342,53 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
   };
 
   const getTaskCompletionStatus = (task: any, completion: any) => {
-    if (!completion) return { percentage: 0, message: '' };
+    if (!completion) return { percentage: 0, message: '', needsInsights: false };
 
     const isSharedTask = task.leader_id !== null;
+    const isLeader = task.area && isUserLeaderOfArea(userId || '', task.area);
     
     if (!isSharedTask) {
       // Tarea individual
       return completion.validated_by_leader 
-        ? { percentage: 100, message: '' }
-        : { percentage: 0, message: '' };
+        ? { percentage: 100, message: '', needsInsights: false }
+        : { percentage: 0, message: '', needsInsights: false };
     }
 
     // Tarea compartida
     if (completion.validated_by_leader) {
-      return { percentage: 100, message: '✓ Tarea completada y validada' };
-    } else if (completion.completed_by_user) {
-      const leaderName = leadersById[task.leader_id] || 'el líder';
-      return { 
-        percentage: 50, 
-        message: `⏳ 50% completado. Esperando validación de ${leaderName}` 
-      };
+      return { percentage: 100, message: '✓ Tarea completada y validada', needsInsights: false };
     }
     
-    return { percentage: 0, message: '' };
+    if (isLeader) {
+      // Líder
+      if (completion.collaborator_feedback && completion.user_insights) {
+        return { percentage: 100, message: '✓ Tarea completada', needsInsights: false };
+      } else if (completion.collaborator_feedback && !completion.user_insights) {
+        return { 
+          percentage: 90, 
+          message: '⏳ 90% completado. Faltan insights por completar',
+          needsInsights: true
+        };
+      }
+    } else {
+      // Colaborador
+      if (completion.leader_evaluation && completion.user_insights) {
+        const leaderName = leadersById[task.leader_id] || 'el líder';
+        return { 
+          percentage: 50, 
+          message: `⏳ 50% completado. Esperando validación de ${leaderName}`,
+          needsInsights: false
+        };
+      } else if (completion.leader_evaluation && !completion.user_insights) {
+        return { 
+          percentage: 40, 
+          message: '⏳ 40% completado. Faltan insights por completar',
+          needsInsights: true
+        };
+      }
+    }
+    
+    return { percentage: 0, message: '', needsInsights: false };
   };
 
   if (tasks.length === 0 && sharedTasks.length === 0) {
@@ -309,8 +404,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
   const renderTask = (task: any, canSwap: boolean = false) => {
     const completion = completions.get(task.id);
     const isCompleted = completion?.validated_by_leader || false;
-    const { percentage, message } = getTaskCompletionStatus(task, completion);
-    const needsInsights = completion?.completed_by_user && !completion?.user_insights;
+    const { percentage, message, needsInsights } = getTaskCompletionStatus(task, completion);
 
     return (
       <div
@@ -355,12 +449,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
           </div>
 
           {needsInsights && (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
-              <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-1 font-medium">
-                <AlertCircle className="w-3 h-3" />
-                ⚠️ Hasta que no rellenes los campos obligatorios no se podrá marcar como completada
-              </p>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedTask(task);
+                setInsightsModalOpen(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-950/30"
+            >
+              <AlertCircle className="w-4 h-4" />
+              ⚠️ Completar insights obligatorios para avanzar
+            </Button>
           )}
 
           {percentage > 0 && percentage < 100 && (
@@ -427,6 +527,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
             onOpenChange={setEvaluationModalOpen}
             taskTitle={selectedTask.title}
             onSubmit={handleSubmitEvaluation}
+          />
+          
+          <TaskCollaboratorFeedbackModal
+            open={collaboratorFeedbackModalOpen}
+            onOpenChange={setCollaboratorFeedbackModalOpen}
+            taskTitle={selectedTask.title}
+            onSubmit={handleSubmitCollaboratorFeedback}
           />
           
           <TaskInsightsModal
