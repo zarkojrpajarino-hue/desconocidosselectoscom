@@ -79,26 +79,32 @@ export type Database = {
       task_completions: {
         Row: {
           completed_at: string | null
+          completed_by_user: boolean | null
           id: string
           leader_evaluation: Json | null
           task_id: string
           user_id: string
+          user_insights: Json | null
           validated_by_leader: boolean | null
         }
         Insert: {
           completed_at?: string | null
+          completed_by_user?: boolean | null
           id?: string
           leader_evaluation?: Json | null
           task_id: string
           user_id: string
+          user_insights?: Json | null
           validated_by_leader?: boolean | null
         }
         Update: {
           completed_at?: string | null
+          completed_by_user?: boolean | null
           id?: string
           leader_evaluation?: Json | null
           task_id?: string
           user_id?: string
+          user_insights?: Json | null
           validated_by_leader?: boolean | null
         }
         Relationships: [

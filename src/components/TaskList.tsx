@@ -3,12 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { RefreshCw, Users, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import TaskEvaluationModal from './TaskEvaluationModal';
+import TaskInsightsModal from './TaskInsightsModal';
 import { TaskSwapModal } from './TaskSwapModal';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
-import { getLeadersForArea, getLeaderDisplayName, isUserLeaderOfArea } from '@/lib/areaLeaders';
+import { isUserLeaderOfArea } from '@/lib/areaLeaders';
 
 interface TaskListProps {
   userId: string | undefined;
@@ -20,8 +22,10 @@ interface TaskListProps {
 
 const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', taskLimit }: TaskListProps) => {
   const [tasks, setTasks] = useState<any[]>([]);
-  const [completions, setCompletions] = useState<Set<string>>(new Set());
+  const [sharedTasks, setSharedTasks] = useState<any[]>([]);
+  const [completions, setCompletions] = useState<Map<string, any>>(new Map());
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
+  const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [taskToSwap, setTaskToSwap] = useState<any>(null);
@@ -37,6 +41,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
   const fetchTasks = async () => {
     if (!userId || !currentPhase) return;
 
+    // Obtener tareas principales del usuario
     let query = supabase
       .from('tasks')
       .select('*')
@@ -50,43 +55,63 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
 
     const { data: taskData } = await query;
 
+    // Obtener tareas donde el usuario es líder o colaborador (pero no el asignado principal)
+    const { data: sharedTaskData } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('phase', currentPhase)
+      .or(`leader_id.eq.${userId}`)
+      .neq('user_id', userId)
+      .order('order_index');
+
+    // Obtener completaciones con detalles
     const { data: completionData } = await supabase
       .from('task_completions')
-      .select('task_id')
+      .select('*')
       .eq('user_id', userId);
 
     if (taskData) {
       setTasks(taskData);
 
-      const leaderIds = Array.from(
-        new Set(
-          taskData
-            .map((t: any) => t.leader_id)
-            .filter((id: string | null) => Boolean(id))
-        )
+      // Obtener IDs de todos los líderes y usuarios involucrados
+      const allTasks = [...taskData, ...(sharedTaskData || [])];
+      const userIds = Array.from(
+        new Set([
+          ...allTasks.map((t: any) => t.leader_id).filter(Boolean),
+          ...allTasks.map((t: any) => t.user_id).filter(Boolean)
+        ])
       ) as string[];
 
-      if (leaderIds.length > 0) {
-        const { data: leaders } = await supabase
+      if (userIds.length > 0) {
+        const { data: users } = await supabase
           .from('users')
           .select('id, full_name, username')
-          .in('id', leaderIds);
+          .in('id', userIds);
 
-        if (leaders) {
+        if (users) {
           const map: Record<string, string> = {};
-          leaders.forEach((leader: any) => {
-            map[leader.id] = leader.full_name || leader.username;
+          users.forEach((user: any) => {
+            map[user.id] = user.full_name || user.username;
           });
           setLeadersById(map);
         }
       }
     }
+
+    if (sharedTaskData) {
+      setSharedTasks(sharedTaskData);
+    }
+
     if (completionData) {
-      setCompletions(new Set(completionData.map(c => c.task_id)));
+      const map = new Map();
+      completionData.forEach(c => {
+        map.set(c.task_id, c);
+      });
+      setCompletions(map);
     }
   };
 
-  const handleToggleTask = async (task: any, isCompleted: boolean) => {
+  const handleToggleTask = async (task: any, completion: any, isCompleted: boolean) => {
     if (!userId) return;
 
     try {
@@ -99,36 +124,31 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
           .eq('user_id', userId);
         
         setCompletions(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(task.id);
-          return newSet;
+          const newMap = new Map(prev);
+          newMap.delete(task.id);
+          return newMap;
         });
         toast.success('Tarea marcada como pendiente');
       } else {
-        // Check if task has leader
-        if (task.leader_id) {
-          // Solo el líder puede marcar como completada
-          const isLeader = task.area && isUserLeaderOfArea(userId, task.area);
-          if (!isLeader) {
-            toast.error('Solo el líder puede completar esta tarea compartida');
-            return;
+        // Verificar si es tarea compartida
+        const isSharedTask = task.leader_id !== null;
+        const isLeader = task.area && isUserLeaderOfArea(userId, task.area);
+
+        if (isSharedTask) {
+          // Tarea compartida
+          if (isLeader) {
+            // Líder completa la tarea - abrir modal de insights
+            setSelectedTask(task);
+            setInsightsModalOpen(true);
+          } else {
+            // Colaborador - marcar al 50% y pedir feedback del líder
+            setSelectedTask(task);
+            setEvaluationModalOpen(true);
           }
-          
-          // Leader completes directly
-          await supabase
-            .from('task_completions')
-            .insert({
-              task_id: task.id,
-              user_id: task.user_id,
-              validated_by_leader: true
-            });
-          
-          setCompletions(prev => new Set(prev).add(task.id));
-          toast.success('¡Tarea completada!');
         } else {
-          // Tarea individual - abrir evaluación
+          // Tarea individual - abrir modal de insights
           setSelectedTask(task);
-          setEvaluationModalOpen(true);
+          setInsightsModalOpen(true);
         }
       }
     } catch (error) {
@@ -145,29 +165,87 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     if (!userId || !selectedTask) return;
 
     try {
+      // Colaborador marca tarea al 50% y da feedback al líder
       await supabase
         .from('task_completions')
         .insert({
           task_id: selectedTask.id,
           user_id: userId,
+          completed_by_user: true,
           validated_by_leader: false,
           leader_evaluation: evaluation
         });
       
-      setCompletions(prev => new Set(prev).add(selectedTask.id));
+      await fetchTasks();
       
-      // Create notification for leader
+      // Notificar al líder
       if (selectedTask.leader_id) {
         await supabase
           .from('notifications')
           .insert({
             user_id: selectedTask.leader_id,
             type: 'evaluation_pending',
-            message: `Nueva evaluación pendiente: "${selectedTask.title}"`
+            message: `${leadersById[userId] || 'Un colaborador'} completó la tarea "${selectedTask.title}" y envió feedback`
           });
       }
       
-      toast.success('¡Tarea completada! Evaluación enviada al líder');
+      toast.success('¡Tarea marcada al 50%! Esperando validación del líder');
+    } catch (error) {
+      toast.error('Error al completar tarea');
+      throw error;
+    }
+  };
+
+  const handleSubmitInsights = async (insights: {
+    learnings: string;
+    contribution: string;
+    futureDecisions: string;
+    suggestions: string;
+  }) => {
+    if (!userId || !selectedTask) return;
+
+    try {
+      const isSharedTask = selectedTask.leader_id !== null;
+      const isLeader = selectedTask.area && isUserLeaderOfArea(userId, selectedTask.area);
+
+      if (isSharedTask && isLeader) {
+        // Líder valida la tarea al 100%
+        await supabase
+          .from('task_completions')
+          .insert({
+            task_id: selectedTask.id,
+            user_id: selectedTask.user_id,
+            completed_by_user: true,
+            validated_by_leader: true,
+            user_insights: insights
+          });
+
+        // Notificar al colaborador
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: selectedTask.user_id,
+            type: 'task_validated',
+            message: `El líder ha marcado como completada la tarea "${selectedTask.title}"`
+          });
+
+        toast.success('¡Tarea validada al 100%! El colaborador será notificado');
+      } else {
+        // Tarea individual completada al 100%
+        await supabase
+          .from('task_completions')
+          .insert({
+            task_id: selectedTask.id,
+            user_id: userId,
+            completed_by_user: true,
+            validated_by_leader: true,
+            user_insights: insights
+          });
+
+        toast.success('¡Tarea completada al 100%!');
+      }
+
+      await fetchTasks();
     } catch (error) {
       toast.error('Error al completar tarea');
       throw error;
@@ -192,7 +270,33 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     return task.user_id === userId;
   };
 
-  if (tasks.length === 0) {
+  const getTaskCompletionStatus = (task: any, completion: any) => {
+    if (!completion) return { percentage: 0, message: '' };
+
+    const isSharedTask = task.leader_id !== null;
+    
+    if (!isSharedTask) {
+      // Tarea individual
+      return completion.validated_by_leader 
+        ? { percentage: 100, message: '' }
+        : { percentage: 0, message: '' };
+    }
+
+    // Tarea compartida
+    if (completion.validated_by_leader) {
+      return { percentage: 100, message: '✓ Tarea completada y validada' };
+    } else if (completion.completed_by_user) {
+      const leaderName = leadersById[task.leader_id] || 'el líder';
+      return { 
+        percentage: 50, 
+        message: `⏳ 50% completado. Esperando validación de ${leaderName}` 
+      };
+    }
+    
+    return { percentage: 0, message: '' };
+  };
+
+  if (tasks.length === 0 && sharedTasks.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         {isLocked 
@@ -202,79 +306,127 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     );
   }
 
+  const renderTask = (task: any, canSwap: boolean = false) => {
+    const completion = completions.get(task.id);
+    const isCompleted = completion?.validated_by_leader || false;
+    const { percentage, message } = getTaskCompletionStatus(task, completion);
+
+    return (
+      <div
+        key={task.id}
+        className={`flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg border transition-all min-h-[72px] ${
+          isCompleted
+            ? 'bg-success/5 border-success/20'
+            : percentage > 0
+            ? 'bg-primary/5 border-primary/20'
+            : 'bg-card hover:shadow-sm'
+        }`}
+      >
+        <Checkbox
+          checked={isCompleted}
+          onCheckedChange={() => handleToggleTask(task, completion, isCompleted)}
+          className="mt-1 h-5 w-5 md:h-4 md:w-4"
+          disabled={isLocked}
+        />
+        <div className="flex-1 space-y-2">
+          <p className={`font-medium text-sm md:text-base ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+            {task.title}
+          </p>
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            {task.area && (
+              <Badge variant="secondary" className="text-xs">
+                {task.area}
+              </Badge>
+            )}
+            {task.leader_id && (
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                Líder: {leadersById[task.leader_id] || 'Por asignar'}
+              </Badge>
+            )}
+            {task.user_id !== userId && (
+              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                Asignado: {leadersById[task.user_id] || 'Usuario'}
+              </Badge>
+            )}
+          </div>
+
+          {percentage > 0 && percentage < 100 && (
+            <div className="space-y-1">
+              <Progress value={percentage} className="h-2" />
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {message}
+              </p>
+            </div>
+          )}
+
+          <details className="mt-1 text-xs md:text-sm text-muted-foreground">
+            <summary className="cursor-pointer font-medium">Instrucciones / Pasos a seguir</summary>
+            <p className="mt-1">
+              {task.description
+                ? task.description
+                : 'Revisa los objetivos de la tarea, coordina con tu líder si aplica y deja evidencias claras al finalizar.'}
+            </p>
+          </details>
+        </div>
+        {!isCompleted && !isLocked && canSwap && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleOpenSwapModal(task)}
+            disabled={remainingSwaps === 0}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span className="hidden md:inline">Cambiar</span>
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
-      <div className="space-y-2 md:space-y-3">
-        {tasks.map((task) => {
-          const isCompleted = completions.has(task.id);
-          return (
-            <div
-              key={task.id}
-              className={`flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg border transition-all min-h-[72px] ${
-                isCompleted
-                  ? 'bg-success/5 border-success/20'
-                  : 'bg-card hover:shadow-sm'
-              }`}
-            >
-              <Checkbox
-                checked={isCompleted}
-                onCheckedChange={() => handleToggleTask(task, isCompleted)}
-                className="mt-1 h-5 w-5 md:h-4 md:w-4"
-                disabled={isLocked}
-              />
-              <div className="flex-1 space-y-2">
-                <p className={`font-medium text-sm md:text-base ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-                  {task.title}
-                </p>
-                {task.description && (
-                  <p className="text-xs md:text-sm text-muted-foreground">{task.description}</p>
-                )}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {task.area && (
-                    <Badge variant="secondary" className="text-xs">
-                      {task.area}
-                    </Badge>
-                  )}
-                  {task.leader_id && (
-                    <Badge variant="outline" className="text-xs flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      Líder: {leadersById[task.leader_id] || 'Por asignar'}
-                    </Badge>
-                  )}
-                </div>
-                <details className="mt-1 text-xs md:text-sm text-muted-foreground">
-                  <summary className="cursor-pointer font-medium">Instrucciones / Pasos a seguir</summary>
-                  <p className="mt-1">
-                    {task.description
-                      ? task.description
-                      : 'Revisa los objetivos de la tarea, coordina con tu líder si aplica y deja evidencias claras al finalizar.'}
-                  </p>
-                </details>
-              </div>
-              {!isCompleted && !isLocked && canUserSwapTask(task) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleOpenSwapModal(task)}
-                  disabled={remainingSwaps === 0}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span className="hidden md:inline">Cambiar</span>
-                </Button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Tareas principales del usuario */}
+      {tasks.length > 0 && (
+        <div className="space-y-2 md:space-y-3">
+          {tasks.map((task) => renderTask(task, canUserSwapTask(task)))}
+        </div>
+      )}
+
+      {/* Tareas en las que participa */}
+      {sharedTasks.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            Tareas en las que Participas
+          </h3>
+          <div className="space-y-2 md:space-y-3">
+            {sharedTasks.map((task) => renderTask(task, false))}
+          </div>
+        </div>
+      )}
 
       {selectedTask && (
-        <TaskEvaluationModal
-          open={evaluationModalOpen}
-          onOpenChange={setEvaluationModalOpen}
-          taskTitle={selectedTask.title}
-          onSubmit={handleSubmitEvaluation}
-        />
+        <>
+          <TaskEvaluationModal
+            open={evaluationModalOpen}
+            onOpenChange={setEvaluationModalOpen}
+            taskTitle={selectedTask.title}
+            onSubmit={handleSubmitEvaluation}
+          />
+          
+          <TaskInsightsModal
+            open={insightsModalOpen}
+            onOpenChange={setInsightsModalOpen}
+            taskTitle={selectedTask.title}
+            isLeader={selectedTask.area && isUserLeaderOfArea(userId || '', selectedTask.area)}
+            onSubmit={handleSubmitInsights}
+          />
+        </>
       )}
 
       {taskToSwap && swapModalOpen && userId && (
