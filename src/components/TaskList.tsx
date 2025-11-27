@@ -2,20 +2,28 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import TaskEvaluationModal from './TaskEvaluationModal';
+import { TaskSwapModal } from './TaskSwapModal';
+import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 
 interface TaskListProps {
   userId: string | undefined;
   currentPhase: number | undefined;
   isLocked?: boolean;
+  mode?: 'conservador' | 'moderado' | 'agresivo';
 }
 
-const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => {
+const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }: TaskListProps) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [taskToSwap, setTaskToSwap] = useState<any>(null);
+  const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || '', mode);
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -124,6 +132,27 @@ const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => 
     }
   };
 
+  const handleOpenSwapModal = (task: any) => {
+    setTaskToSwap(task);
+    setSwapModalOpen(true);
+  };
+
+  const handleSwapComplete = async () => {
+    setSwapModalOpen(false);
+    setTaskToSwap(null);
+    await fetchTasks();
+    await reloadSwaps();
+    toast.success('Tarea actualizada correctamente');
+  };
+
+  const canUserSwapTask = (task: any) => {
+    // Si es tarea individual (sin leader_id), el usuario puede cambiarla
+    if (!task.leader_id) return true;
+    
+    // Si tiene líder, solo el líder puede cambiarla (esto se puede extender con lógica de roles)
+    return task.leader_id === userId;
+  };
+
   if (tasks.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -174,6 +203,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => 
                   )}
                 </div>
               </div>
+              {!isCompleted && !isLocked && canUserSwapTask(task) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenSwapModal(task)}
+                  disabled={remainingSwaps === 0}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span className="hidden md:inline">Cambiar</span>
+                </Button>
+              )}
             </div>
           );
         })}
@@ -185,6 +226,20 @@ const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => 
           onOpenChange={setEvaluationModalOpen}
           taskTitle={selectedTask.title}
           onSubmit={handleSubmitEvaluation}
+        />
+      )}
+
+      {taskToSwap && swapModalOpen && userId && (
+        <TaskSwapModal
+          task={taskToSwap}
+          userId={userId}
+          mode={mode}
+          remainingSwaps={remainingSwaps}
+          onSwapComplete={handleSwapComplete}
+          onCancel={() => {
+            setSwapModalOpen(false);
+            setTaskToSwap(null);
+          }}
         />
       )}
     </>
