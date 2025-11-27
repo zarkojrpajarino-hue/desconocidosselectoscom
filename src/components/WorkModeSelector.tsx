@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCurrentWeekStart, getCurrentWeekDeadline } from '@/lib/weekUtils';
 
 interface WorkModeSelectorProps {
   userId: string | undefined;
@@ -27,24 +28,16 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       const mode = WORK_MODES.find(m => m.id === modeId);
       if (!mode) return;
 
-      // Get current week start and deadline
-      const now = new Date();
-      const dayOfWeek = now.getDay();
-      const daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
-      const nextWednesday = new Date(now);
-      nextWednesday.setDate(now.getDate() + daysUntilWednesday);
-      nextWednesday.setHours(13, 30, 0, 0);
-
-      const deadline = new Date(nextWednesday);
-      deadline.setDate(deadline.getDate() + 7);
-      deadline.setHours(10, 30, 0, 0);
+      // Get current week start and deadline using utility functions
+      const weekStart = getCurrentWeekStart();
+      const deadline = getCurrentWeekDeadline();
 
       // Upsert user weekly data
       const { error } = await supabase
         .from('user_weekly_data')
         .upsert({
           user_id: userId,
-          week_start: nextWednesday.toISOString(),
+          week_start: weekStart.toISOString(),
           week_deadline: deadline.toISOString(),
           mode: modeId,
           task_limit: mode.tasks
