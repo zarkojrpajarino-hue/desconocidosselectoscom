@@ -52,6 +52,9 @@ serve(async (req) => {
     let sentCount = 0;
     let errorCount = 0;
 
+    // Helper function to delay between emails (avoid rate limits)
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     // Enviar email a cada usuario
     for (const user of users) {
       const weeklyData = user.user_weekly_data?.[0];
@@ -72,6 +75,28 @@ serve(async (req) => {
         'moderado': '🚶 Moderado',
         'agresivo': '🚀 Agresivo'
       };
+
+      // Generar magic link para login automático
+      let magicLink = 'https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/dashboard';
+      
+      try {
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: user.email,
+          options: {
+            redirectTo: 'https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/dashboard'
+          }
+        });
+
+        if (!linkError && linkData?.properties?.action_link) {
+          magicLink = linkData.properties.action_link;
+          console.log(`🔑 Magic link generado para ${user.email}`);
+        } else {
+          console.warn(`⚠️ No se pudo generar magic link para ${user.email}, usando link normal`);
+        }
+      } catch (linkGenError) {
+        console.warn(`⚠️ Error generando magic link:`, linkGenError);
+      }
 
       const htmlContent = `
 <!DOCTYPE html>
@@ -182,13 +207,13 @@ serve(async (req) => {
       <p><strong>Tienes 7 días para completar tus objetivos. ¡Vamos por ello!</strong></p>
       
       <div style="text-align: center;">
-        <a href="https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/dashboard" class="button">Ver Mis Tareas 🎯</a>
+        <a href="${magicLink}" class="button">Ver Mis Tareas 🎯</a>
       </div>
     </div>
     <div class="footer">
       <p>Este es un correo automático del sistema de gestión de tareas</p>
       <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">
-        Experiencia Selecta © 2024
+        Desconocidos Selectos © 2024
       </p>
     </div>
   </div>
@@ -215,6 +240,11 @@ serve(async (req) => {
         console.error(`❌ Error enviando email a ${user.email}:`, emailError);
         console.error(`   Error details:`, emailError.message || emailError);
         errorCount++;
+      }
+
+      // Delay de 700ms entre emails para evitar rate limits
+      if (users.indexOf(user) < users.length - 1) {
+        await delay(700);
       }
     }
 
