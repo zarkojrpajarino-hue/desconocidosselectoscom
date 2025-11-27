@@ -12,6 +12,7 @@ import PhaseSelector from '@/components/PhaseSelector';
 import WorkModeSelector from '@/components/WorkModeSelector';
 import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
+import CollaborationTaskList from '@/components/CollaborationTaskList';
 import StatsCards from '@/components/StatsCards';
 import TeamProgress from '@/components/TeamProgress';
 import UrgentAlert from '@/components/UrgentAlert';
@@ -242,7 +243,10 @@ const Dashboard = () => {
         {/* Task List */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Mis Tareas</CardTitle>
+            <CardTitle>Mis Tareas Esta Semana</CardTitle>
+            <CardDescription>
+              Tareas asignadas a ti en esta fase
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <TaskList
@@ -251,6 +255,25 @@ const Dashboard = () => {
               isLocked={isWeekLocked}
               mode={userWeeklyData?.mode || 'moderado'}
               taskLimit={userWeeklyData?.task_limit}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Collaboration Tasks */}
+        <Card className="shadow-card bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/10 dark:to-purple-950/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Tareas en las que Colaboras
+            </CardTitle>
+            <CardDescription>
+              Tareas de otros miembros donde tú eres el líder/validador
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CollaborationTaskList
+              userId={user?.id}
+              currentPhase={systemConfig?.current_phase}
             />
           </CardContent>
         </Card>
