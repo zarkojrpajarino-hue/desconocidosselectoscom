@@ -8,3 +8,24 @@ verify_jwt = false
 
 [functions.generate-task-alternatives]
 verify_jwt = true
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-task-reminder]
+verify_jwt = true
+
+[functions.send-weekly-summary]
+verify_jwt = true
+
+[functions.send-urgent-alert]
+verify_jwt = true
+
+[functions.send-admin-report]
+verify_jwt = false
+
+[functions.send-swap-confirmation]
+verify_jwt = true
+
+[functions.send-evaluation-notification]
+verify_jwt = true
