@@ -16,6 +16,19 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Contraseñas específicas para cada usuario
+    const passwords: Record<string, string> = {
+      zarko: 'Zk8mP2xL!',
+      angel: 'Ag7nW4qR!',
+      carla: 'Cr5tY9sM!',
+      miguel: 'Mg3vB6pN!',
+      fer: 'Fr9hK2wJ!',
+      fernando: 'Fn4dL7xQ!',
+      manu: 'Mn8pT5yR!',
+      casti: 'Cs6wM3nV!',
+      diego: 'Dg2kH9xB!',
+    };
+
     const users = [
       { username: 'zarko', email: 'zarko@experienciaselecta.com', full_name: 'Zarko', role: 'admin' },
       { username: 'angel', email: 'angel@experienciaselecta.com', full_name: 'Ángel', role: 'member' },
@@ -34,10 +47,10 @@ Deno.serve(async (req) => {
     const results = [];
 
     for (const user of users) {
-      // Create auth user with default password (username123)
+      // Create auth user with specific password
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: user.email,
-        password: `${user.username}123`,
+        password: passwords[user.username],
         email_confirm: true,
       });
 
@@ -60,7 +73,7 @@ Deno.serve(async (req) => {
       if (insertError) {
         results.push({ user: user.username, error: insertError.message });
       } else {
-        results.push({ user: user.username, success: true, password: `${user.username}123` });
+        results.push({ user: user.username, success: true, password: passwords[user.username] });
       }
     }
 
