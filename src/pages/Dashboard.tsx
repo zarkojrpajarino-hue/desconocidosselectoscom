@@ -11,12 +11,15 @@ import CountdownTimer from '@/components/CountdownTimer';
 import WorkModeSelector from '@/components/WorkModeSelector';
 import TaskList from '@/components/TaskList';
 import StatsCards from '@/components/StatsCards';
+import UrgentAlert from '@/components/UrgentAlert';
 
 const Dashboard = () => {
   const { user, userProfile, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [systemConfig, setSystemConfig] = useState<any>(null);
   const [userWeeklyData, setUserWeeklyData] = useState<any>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [completions, setCompletions] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -30,6 +33,12 @@ const Dashboard = () => {
       fetchUserWeeklyData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && systemConfig) {
+      fetchTasksAndCompletions();
+    }
+  }, [user, systemConfig]);
 
   const fetchSystemConfig = async () => {
     const { data } = await supabase
@@ -48,9 +57,28 @@ const Dashboard = () => {
       .eq('user_id', user.id)
       .order('week_start', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     
     if (data) setUserWeeklyData(data);
+  };
+
+  const fetchTasksAndCompletions = async () => {
+    if (!user || !systemConfig) return;
+
+    const { data: taskData } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('phase', systemConfig.current_phase)
+      .order('order_index');
+
+    const { data: completionData } = await supabase
+      .from('task_completions')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (taskData) setTasks(taskData);
+    if (completionData) setCompletions(completionData);
   };
 
   const handleLogout = async () => {
@@ -114,6 +142,18 @@ const Dashboard = () => {
         {/* Countdown */}
         {systemConfig && (
           <CountdownTimer deadline={systemConfig.week_deadline} />
+        )}
+
+        {/* Urgent Alert */}
+        {systemConfig && (
+          <UrgentAlert
+            deadline={systemConfig.week_deadline}
+            totalTasks={tasks.length}
+            completedTasks={completions.length}
+            pendingTasks={tasks.filter(
+              task => !completions.some(c => c.task_id === task.id)
+            )}
+          />
         )}
 
         {/* Stats */}
