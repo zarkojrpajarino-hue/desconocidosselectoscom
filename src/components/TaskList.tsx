@@ -105,6 +105,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false }: TaskListProps) => 
         });
       
       setCompletions(prev => new Set(prev).add(selectedTask.id));
+      
+      // Create notification for leader
+      if (selectedTask.leader_id) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: selectedTask.leader_id,
+            type: 'evaluation_pending',
+            message: `Nueva evaluación pendiente: "${selectedTask.title}"`
+          });
+      }
+      
       toast.success('¡Tarea completada! Evaluación enviada al líder');
     } catch (error) {
       toast.error('Error al completar tarea');
