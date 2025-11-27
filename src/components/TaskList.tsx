@@ -3,11 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import TaskEvaluationModal from './TaskEvaluationModal';
 import { TaskSwapModal } from './TaskSwapModal';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
+import { getLeadersForArea, getLeaderDisplayName, isUserLeaderOfArea } from '@/lib/areaLeaders';
 
 interface TaskListProps {
   userId: string | undefined;
@@ -71,22 +72,30 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
         });
         toast.success('Tarea marcada como pendiente');
       } else {
-        // Check if task requires evaluation
+        // Check if task has leader
         if (task.leader_id) {
-          setSelectedTask(task);
-          setEvaluationModalOpen(true);
-        } else {
-          // Direct completion for individual tasks
+          // Solo el líder puede marcar como completada
+          const isLeader = task.area && isUserLeaderOfArea(userId, task.area);
+          if (!isLeader) {
+            toast.error('Solo el líder puede completar esta tarea compartida');
+            return;
+          }
+          
+          // Leader completes directly
           await supabase
             .from('task_completions')
             .insert({
               task_id: task.id,
-              user_id: userId,
-              validated_by_leader: null
+              user_id: task.user_id,
+              validated_by_leader: true
             });
           
           setCompletions(prev => new Set(prev).add(task.id));
           toast.success('¡Tarea completada!');
+        } else {
+          // Tarea individual - abrir evaluación
+          setSelectedTask(task);
+          setEvaluationModalOpen(true);
         }
       }
     } catch (error) {
@@ -146,11 +155,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
   };
 
   const canUserSwapTask = (task: any) => {
-    // Si es tarea individual (sin leader_id), el usuario puede cambiarla
-    if (!task.leader_id) return true;
-    
-    // Si tiene líder, solo el líder puede cambiarla (esto se puede extender con lógica de roles)
-    return task.leader_id === userId;
+    // El usuario asignado puede cambiar su tarea
+    return task.user_id === userId;
   };
 
   if (tasks.length === 0) {
@@ -196,9 +202,10 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado' }:
                       {task.area}
                     </Badge>
                   )}
-                  {task.leader_id && (
-                    <Badge variant="outline" className="text-xs">
-                      Requiere evaluación
+                  {task.area && getLeadersForArea(task.area).length > 0 && (
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      Líder: {getLeaderDisplayName(getLeadersForArea(task.area))}
                     </Badge>
                   )}
                 </div>

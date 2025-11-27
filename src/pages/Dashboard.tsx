@@ -15,6 +15,7 @@ import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
+import { getCurrentWeekDeadline, isWeekActive } from '@/lib/weekUtils';
 
 const Dashboard = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -40,10 +41,10 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-    if (user && systemConfig) {
+    if (user && systemConfig && userWeeklyData) {
       fetchTasksAndCompletions();
     }
-  }, [user, systemConfig]);
+  }, [user, systemConfig, userWeeklyData]);
 
   const fetchSystemConfig = async () => {
     const { data } = await supabase
@@ -68,14 +69,18 @@ const Dashboard = () => {
   };
 
   const fetchTasksAndCompletions = async () => {
-    if (!user || !systemConfig) return;
+    if (!user || !systemConfig || !userWeeklyData) return;
+
+    // Obtener límite de tareas según el modo
+    const taskLimit = userWeeklyData.task_limit || 8;
 
     const { data: taskData } = await supabase
       .from('tasks')
       .select('*')
       .eq('user_id', user.id)
       .eq('phase', systemConfig.current_phase)
-      .order('order_index');
+      .order('order_index')
+      .limit(taskLimit); // Limitar según el modo
 
     const { data: completionData } = await supabase
       .from('task_completions')
@@ -94,7 +99,7 @@ const Dashboard = () => {
   // Send urgent notification when conditions are met
   useUrgentNotification({
     userId: user?.id,
-    deadline: systemConfig?.week_deadline,
+    deadline: getCurrentWeekDeadline().toISOString(),
     totalTasks: tasks.length,
     completedTasks: completions.length
   });
@@ -155,17 +160,15 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
         {/* Countdown */}
-        {systemConfig && (
-          <CountdownTimer 
-            deadline={systemConfig.week_deadline}
-            onTimeExpired={setIsWeekLocked}
-          />
-        )}
+        <CountdownTimer 
+          deadline={getCurrentWeekDeadline().toISOString()}
+          onTimeExpired={setIsWeekLocked}
+        />
 
         {/* Urgent Alert */}
-        {systemConfig && !isWeekLocked && (
+        {!isWeekLocked && (
           <UrgentAlert
-            deadline={systemConfig.week_deadline}
+            deadline={getCurrentWeekDeadline().toISOString()}
             totalTasks={tasks.length}
             completedTasks={completions.length}
             pendingTasks={tasks.filter(
