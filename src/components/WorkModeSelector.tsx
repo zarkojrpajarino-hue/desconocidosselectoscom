@@ -32,18 +32,39 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       const weekStart = getCurrentWeekStart();
       const deadline = getCurrentWeekDeadline();
 
-      // Upsert user weekly data
-      const { error } = await supabase
+      // Check if user already has data for this week
+      const { data: existingData } = await supabase
         .from('user_weekly_data')
-        .upsert({
-          user_id: userId,
-          week_start: weekStart.toISOString(),
-          week_deadline: deadline.toISOString(),
-          mode: modeId,
-          task_limit: mode.tasks
-        }, {
-          onConflict: 'user_id,week_start'
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .eq('week_start', weekStart.toISOString())
+        .maybeSingle();
+
+      let error;
+      if (existingData) {
+        // Update existing record
+        const updateResult = await supabase
+          .from('user_weekly_data')
+          .update({
+            mode: modeId,
+            task_limit: mode.tasks,
+            week_deadline: deadline.toISOString()
+          })
+          .eq('id', existingData.id);
+        error = updateResult.error;
+      } else {
+        // Insert new record
+        const insertResult = await supabase
+          .from('user_weekly_data')
+          .insert({
+            user_id: userId,
+            week_start: weekStart.toISOString(),
+            week_deadline: deadline.toISOString(),
+            mode: modeId,
+            task_limit: mode.tasks
+          });
+        error = insertResult.error;
+      }
 
       if (error) throw error;
 
@@ -52,6 +73,7 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       });
       onModeChange();
     } catch (error) {
+      console.error('Error updating work mode:', error);
       toast.error('Error al actualizar modo de trabajo');
     } finally {
       setLoading(false);

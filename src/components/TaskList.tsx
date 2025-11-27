@@ -310,6 +310,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
     const completion = completions.get(task.id);
     const isCompleted = completion?.validated_by_leader || false;
     const { percentage, message } = getTaskCompletionStatus(task, completion);
+    const needsInsights = completion?.completed_by_user && !completion?.user_insights;
 
     return (
       <div
@@ -352,6 +353,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = 'moderado', t
               </Badge>
             )}
           </div>
+
+          {needsInsights && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
+              <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3 h-3" />
+                ⚠️ Hasta que no rellenes los campos obligatorios no se podrá marcar como completada
+              </p>
+            </div>
+          )}
 
           {percentage > 0 && percentage < 100 && (
             <div className="space-y-1">
