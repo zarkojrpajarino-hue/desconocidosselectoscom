@@ -30,15 +30,15 @@ Deno.serve(async (req) => {
     };
 
     const users = [
-      { username: 'zarko', email: 'zarko@experienciaselecta.com', full_name: 'Zarko', role: 'admin' },
-      { username: 'angel', email: 'angel@experienciaselecta.com', full_name: 'Ángel', role: 'member' },
-      { username: 'carla', email: 'carla@experienciaselecta.com', full_name: 'Carla', role: 'member' },
-      { username: 'miguel', email: 'miguel@experienciaselecta.com', full_name: 'Miguel', role: 'member' },
-      { username: 'fer', email: 'fer@experienciaselecta.com', full_name: 'Fer', role: 'member' },
-      { username: 'fernando', email: 'fernando@experienciaselecta.com', full_name: 'Fernando', role: 'member' },
-      { username: 'manu', email: 'manu@experienciaselecta.com', full_name: 'Manu', role: 'member' },
-      { username: 'casti', email: 'casti@experienciaselecta.com', full_name: 'Casti', role: 'member' },
-      { username: 'diego', email: 'diego@experienciaselecta.com', full_name: 'Diego', role: 'member' },
+      { username: 'zarko', email: 'zarkojr.nova@gmail.com', full_name: 'Zarko', role: 'admin' },
+      { username: 'angel', email: 'angeltc.nova@gmail.com', full_name: 'Ángel', role: 'member' },
+      { username: 'carla', email: 'carlarey.nova@gmail.com', full_name: 'Carla', role: 'member' },
+      { username: 'miguel', email: 'majimenezm.nova@gmail.com', full_name: 'Miguel', role: 'member' },
+      { username: 'fer', email: 'fernandosf.nova@gmail.com', full_name: 'Fer', role: 'member' },
+      { username: 'fernando', email: 'fernandogg.nova@gmail.com', full_name: 'Fernando', role: 'member' },
+      { username: 'manu', email: 'manuelure.nova@gmail.com', full_name: 'Manu', role: 'member' },
+      { username: 'casti', email: 'luiscastillonn.nova@gmail.com', full_name: 'Casti', role: 'member' },
+      { username: 'diego', email: 'diegob.nova@gmail.com', full_name: 'Diego', role: 'member' },
     ];
 
     // First, clear existing users
