@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import WeeklyAgenda from '@/components/WeeklyAgenda';
+import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { toast } from 'sonner';
 
 const Agenda = () => {
@@ -13,6 +14,8 @@ const Agenda = () => {
   const navigate = useNavigate();
   const [isWeekLocked, setIsWeekLocked] = useState(false);
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
+  const [hasAvailability, setHasAvailability] = useState<boolean | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,8 +26,27 @@ const Agenda = () => {
   useEffect(() => {
     if (user) {
       calculateNextWeekStart();
+      checkAvailability();
     }
   }, [user]);
+
+  const checkAvailability = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_weekly_availability')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      setHasAvailability(!!data);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      setHasAvailability(false);
+    }
+  };
 
   const calculateNextWeekStart = () => {
     // Calcular próximo miércoles
@@ -85,7 +107,44 @@ const Agenda = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {nextWeekStart ? (
+            {hasAvailability === null ? (
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground">Cargando agenda...</p>
+              </div>
+            ) : !hasAvailability && !showQuestionnaire ? (
+              <div className="text-center py-12 space-y-4">
+                <AlertCircle className="w-16 h-16 mx-auto mb-4 text-warning" />
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-foreground">
+                    Configura tu disponibilidad
+                  </h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Para generar tu agenda semanal, primero necesitas configurar tus horarios disponibles.
+                    Esto permitirá al sistema coordinar tus tareas con el resto del equipo.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowQuestionnaire(true)}
+                  className="bg-gradient-primary"
+                  size="lg"
+                >
+                  📅 Configurar Disponibilidad
+                </Button>
+              </div>
+            ) : showQuestionnaire ? (
+              <AvailabilityQuestionnaire
+                userId={user!.id}
+                weekStart={nextWeekStart}
+                onComplete={() => {
+                  setShowQuestionnaire(false);
+                  setHasAvailability(true);
+                  toast.success('✅ Disponibilidad guardada', {
+                    description: 'Tu agenda se generará automáticamente el próximo lunes'
+                  });
+                }}
+              />
+            ) : nextWeekStart ? (
               <WeeklyAgenda
                 userId={user!.id}
                 weekStart={nextWeekStart}
