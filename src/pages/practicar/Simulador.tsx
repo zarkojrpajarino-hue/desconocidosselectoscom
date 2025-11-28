@@ -1,10 +1,11 @@
 const Simulador = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Simulador de Ventas</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se implementará el simulador interactivo)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/simulador.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Simulador de Ventas"
+      />
     </div>
   );
 };

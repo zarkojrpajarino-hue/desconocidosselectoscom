@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Ventas - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+        
+        .header p {
+            font-size: 22px;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 50px;
+        }
+        
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .selector-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .selector-section {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 20px;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .selector-section h3 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .option-btn:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: translateX(5px);
+        }
+        
+        .option-btn.active {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+        
+        .start-btn {
+            display: block;
+            margin: 40px auto;
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+            transition: transform 0.2s;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .simulation-area {
+            display: none;
+            background: #f8fafc;
+            padding: 40px;
+            border-radius: 20px;
+            margin-top: 40px;
+        }
+        
+        .simulation-area.active {
+            display: block;
+        }
+        
+        .scenario-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .scenario-info h3 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 30px;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 15px;
+            max-width: 70%;
+            line-height: 1.6;
+        }
+        
+        .message-vendor {
+            background: #10b981;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message-client {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        
+        .message-system {
+            background: #fef3c7;
+            color: #92400e;
+            max-width: 85%;
+            margin: 0 auto;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid #fbbf24;
+        }
+        
+        .suggested-speech {
+            background: #ede9fe;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #8b5cf6;
+        }
+        
+        .suggested-speech h4 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #7c3aed;
+            margin-bottom: 15px;
+        }
+        
+        .suggested-speech p {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #1e293b;
+        }
+        
+        .response-options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .response-btn {
+            padding: 15px 20px;
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .response-btn:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .custom-input-area {
+            margin-top: 20px;
+        }
+        
+        .custom-input-area textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .send-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .tips-box {
+            background: #dbeafe;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 5px solid #3b82f6;
+        }
+        
+        .tips-box h4 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .tips-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .tips-box li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        
+        .tips-box li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .reset-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: #64748b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Simulador de Ventas</h1>
+            <p>Practica diferentes escenarios hasta dominar el arte de vender Experiencia Selecta</p>
+        </div>
+        
+        <div class="content">
+            <div id="selectionArea">
+                <h2 class="section-title">Selecciona tu Escenario de Práctica</h2>
+                
+                <div class="selector-grid">
+                    <div class="selector-section">
+                        <h3>👤 Tipo de Cliente</h3>
+                        <button class="option-btn" data-type="client" data-value="pareja">💑 Pareja Joven</button>
+                        <button class="option-btn" data-type="client" data-value="familia">👨‍👩‍👧‍👦 Familia</button>
+                        <button class="option-btn" data-type="client" data-value="amigos">🎉 Grupo de Amigos</button>
+                        <button class="option-btn" data-type="client" data-value="desconocidos">🎭 Desconocidos (icebreaker)</button>
+                        <button class="option-btn" data-type="client" data-value="empresa-f3">🏢 Empresa F3 (cercana)</button>
+                        <button class="option-btn" data-type="client" data-value="empresa-real">💼 Empresa B2B Real</button>
+                    </div>
+                    
+                    <div class="selector-section">
+                        <h3>📱 Canal de Venta</h3>
+                        <button class="option-btn" data-type="channel" data-value="instagram">📸 Instagram DM</button>
+                        <button class="option-btn" data-type="channel" data-value="whatsapp">💬 WhatsApp</button>
+                        <button class="option-btn" data-type="channel" data-value="email">📧 Email</button>
+                        <button class="option-btn" data-type="channel" data-value="llamada">📞 Llamada Telefónica</button>
+                        <button class="option-btn" data-type="channel" data-value="presencial">🤝 Presencial</button>
+                    </div>
+                </div>
+                
+                <button class="start-btn" id="startBtn" disabled>INICIAR SIMULACIÓN</button>
+            </div>
+            
+            <div class="simulation-area" id="simulationArea">
+                <div class="scenario-info" id="scenarioInfo"></div>
+                
+                <div class="suggested-speech" id="suggestedSpeech"></div>
+                
+                <div class="chat-container" id="chatContainer"></div>
+                
+                <div id="responseArea"></div>
+                
+                <div class="tips-box" id="tipsBox"></div>
+                
+                <button class="reset-btn" onclick="resetSimulation()">🔄 Nueva Simulación</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedClient = null;
+        let selectedChannel = null;
+        let conversationStep = 0;
+        
+        // Scenarios data
+        const scenarios = {
+            pareja: {
+                name: "Pareja Joven",
+                icon: "💑",
+                tone: "Íntimo, romántico, experiencia única",
+                speech: {
+                    instagram: "Hola! 👋 Vi que te encanta la gastronomía. ¿Y si tu próximo plan no es salir de fiesta sino una EXPERIENCIA GOURMET en casa? 🍷✨ Imagina una noche especial con productos premium + dinámicas para conectar como pareja.",
+                    whatsapp: "Hey! 😊 Tengo algo que te va a encantar. ¿Conoces Experiencia Selecta? Es una forma de tener una NOCHE ESPECIAL en casa sin el ruido de los bares. Jamón, vinos, quesos + un QR con juegos para parejas. ¿Te cuento más?",
+                    email: "Asunto: Una noche diferente para vosotros dos ✨\n\nHola!\n\nSé que siempre buscáis planes originales. ¿Qué os parecería una EXPERIENCIA GOURMET en casa? No es una cesta cualquiera - es un plan completo: productos ibéricos premium + dinámicas interactivas para conectar.\n\nEs la alternativa perfecta al típico \"salir de fiesta\". Más íntimo, más especial, más memorable.",
+                    llamada: "Hola! Soy [nombre] de Experiencia Selecta. Te llamo porque tengo algo perfecto para parejas como vosotros que buscan PLANES DIFERENTES. ¿Tienes 2 minutos? Te cuento una idea que os va a encantar.",
+                    presencial: "Mira, te traigo algo especial. Es Experiencia Selecta - imagina que en vez de salir este viernes, montáis una EXPERIENCIA GOURMET en casa. Productos premium + dinámicas para parejas. ¿Quieres que te cuente cómo funciona?"
+                },
+                conversation: [
+                    {
+                        client: "Suena interesante, ¿de qué va exactamente?",
+                        responses: [
+                            "Es una cesta con jamón ibérico, quesos, vinos + un QR que activa juegos y preguntas para parejas. La idea es crear una EXPERIENCIA MEMORABLE en casa.",
+                            "No vendemos cestas - vendemos EXPERIENCIAS. Es gastronomía premium + dinámicas interactivas. Un plan completo para una noche especial.",
+                            "Piensa en una cita romántica pero en tu casa. Productos ibéricos de lujo + actividades diseñadas para conectar como pareja."
+                        ],
+                        tips: ["Enfatiza EXPERIENCIA sobre producto", "Usa palabras como 'especial', 'memorable', 'único'", "Conecta con emociones, no características"]
+                    },
+                    {
+                        client: "¿Cuánto cuesta?",
+                        responses: [
+                            "Tenemos desde €50 para dos personas. Piensa que es el precio de 2 copas en un bar, pero con una experiencia que recordaréis. ¿Prefieres algo más premium o empezamos con la opción romántica?",
+                            "Nuestras cestas van desde €50. Es menos de lo que gastáis en una noche de fiesta, pero créeme que el recuerdo vale mucho más. ¿Para cuándo lo necesitarías?",
+                            "Entre €50-100 según el tamaño. La buena noticia es que NO es un gasto - es una INVERSIÓN en crear recuerdos. ¿Te muestro las opciones?"
+                        ],
+                        tips: ["Reencuadra el precio como inversión en experiencia", "Compara con alternativas (bares, restaurantes)", "Mueve rápido a siguiente paso"]
+                    },
+                    {
+                        client: "Me interesa, ¿cómo lo compro?",
+                        responses: [
+                            "¡Perfecto! Te paso el link directo: [web]. Elige la cesta que prefieras y en 24-48h la tienes en casa lista para disfrutar. ¿Alguna duda antes de pedirla?",
+                            "Genial! Entra en experienciaselecta.com, seleccionas la cesta y listo. Enviamos en 24h. ¿Necesitas que sea para alguna fecha especial?",
+                            "Súper fácil - web, escoges, pagas y te llega. ¿Quieres que te ayude a elegir la mejor opción para vosotros?"
+                        ],
+                        tips: ["CIERRA LA VENTA", "Da el siguiente paso claro", "Ofrece ayuda adicional"]
+                    }
+                ]
+            },
+            familia: {
+                name: "Familia",
+                icon: "👨‍👩‍👧‍👦",
+                tone: "Cálido, tradicional, compartir momentos",
+                speech: {
+                    instagram: "Hola! 😊 ¿Buscas un plan familiar diferente? Experiencia Selecta es perfecta para REUNIR A LA FAMILIA sin salir de casa. Productos ibéricos + juegos para todas las edades. ¡Los abuelos lo van a amar!",
+                    whatsapp: "Hey! Te escribo porque sé que valoras el tiempo en familia. ¿Conoces Experiencia Selecta? Es una forma de crear MOMENTOS ESPECIALES todos juntos con gastronomía de calidad + dinámicas para compartir. ¿Te interesa?",
+                    email: "Asunto: Un plan para toda la familia 👨‍👩‍👧‍👦\n\nHola!\n\nSé lo difícil que es encontrar planes que gusten a todos. Experiencia Selecta es justo eso: una EXPERIENCIA FAMILIAR con jamón, quesos, vinos (y opciones sin alcohol) + actividades para todas las edades.\n\nEs tradición + diversión juntas.",
+                    llamada: "Hola! Soy [nombre]. Te llamo porque tenemos algo perfecto para familias que quieren DISFRUTAR JUNTAS sin complicaciones. ¿Tienes un momento para que te cuente?",
+                    presencial: "Mira esto - Experiencia Selecta. Es perfecta para vuestra familia. Productos tradicionales que les encantan a todos + dinámicas para compartir. ¿Cuándo es vuestra próxima comida familiar?"
+                },
+                conversation: [
+                    {
+                        client: "¿Qué incluye para familias?",
+                        responses: [
+                            "Cestas familiares con jamón, lomo, quesos, patés + opciones sin alcohol para los más jóvenes. El QR tiene juegos y preguntas adaptadas para todas las edades - desde abuelos hasta niños.",
+                            "Lo mejor de la gastronomía ibérica + dinámicas familiares. No es solo comer - es COMPARTIR, reír, recordar. Para 4-6 personas.",
+                            "Productos premium + una experiencia diseñada para CREAR RECUERDOS FAMILIARES. Todo lo necesario para una tarde/noche especial juntos."
+                        ],
+                        tips: ["Enfatiza 'para todas las edades'", "Menciona tradición + modernidad", "Habla de crear recuerdos"]
+                    },
+                    {
+                        client: "¿Los niños pueden participar?",
+                        responses: [
+                            "¡Claro! Tenemos cestas sin alcohol y las dinámicas están adaptadas para que todos participen. Es perfecto para que los peques descubran sabores nuevos de forma divertida.",
+                            "Absolutamente. De hecho, muchas familias nos dicen que es una forma genial de que los niños prueben productos de calidad mientras se divierten con los juegos.",
+                            "Sí! Las cestas familiares incluyen opciones para niños y las actividades son aptas para todas las edades. La idea es que TODOS disfruten."
+                        ],
+                        tips: ["Tranquiliza sobre contenido apropiado", "Destaca aprendizaje + diversión", "Menciona testimonios si aplica"]
+                    },
+                    {
+                        client: "Ok, ¿cómo lo pido?",
+                        responses: [
+                            "Genial! Entra en experienciaselecta.com/familia y elige la cesta. Te llega en 24-48h. ¿Para cuántas personas la necesitas?",
+                            "Perfecto! Web → Cesta Familiar → Pedido → Envío 24h. ¿Quieres la Familiar Clásica (€65) o la Festín Selecto (€90)?",
+                            "Te paso el link: [web]. Recomiendote la Familiar Clásica para empezar - perfecta para 4-6 personas. ¿La pedimos?"
+                        ],
+                        tips: ["CIERRA", "Sugiere producto específico", "Pregunta detalles para personalizar"]
+                    }
+                ]
+            },
+            amigos: {
+                name: "Grupo de Amigos",
+                icon: "🎉",
+                tone: "Divertido, alternativo, diferente",
+                speech: {
+                    instagram: "Ey! 🔥 ¿Cansados del típico salir de fiesta? Experiencia Selecta es la ALTERNATIVA que necesitáis. Productos premium + dinámicas para el grupo. Sin resaca, sin gastar una pasta, pero con diversión garantizada.",
+                    whatsapp: "Tío! Te tengo que contar esto. ¿Conoces Experiencia Selecta? Es un plan DIFERENTE para cuando quedáis. En vez de ir de bares, montáis una experiencia gourmet con juegos. Suena raro pero créeme, es brutal.",
+                    email: "Asunto: El plan que no sabías que necesitabais 🎉\n\nHola!\n\nSé que siempre buscáis planes originales para el grupo. Experiencia Selecta es justo eso: UNA ALTERNATIVA REAL a salir de fiesta.\n\nGastronomía ibérica premium + dinámicas de grupo + cero resaca al día siguiente.\n\n¿Hablamos?",
+                    llamada: "Hey! Soy [nombre]. Te llamo porque creo que tengo el plan perfecto para vuestro grupo. ¿Puedo contarte en 2 minutos? Prometo que es diferente a todo.",
+                    presencial: "Tío mira - Experiencia Selecta. Es el plan que necesitáis cuando estáis hartos de lo mismo. Buenos productos + diversión + al día siguiente estáis bien. ¿Te mola la idea?"
+                },
+                conversation: [
+                    {
+                        client: "¿Y qué hacemos exactamente?",
+                        responses: [
+                            "Quedáis en casa de alguien, abrís la cesta (jamón, quesos, vinos premium) y el QR activa dinámicas de grupo - juegos, retos, preguntas. Es tipo 'salir de fiesta' pero en plan gourmet.",
+                            "No es 'quedarse en casa' aburrido - es una EXPERIENCIA. Productos top + actividades diseñadas para grupos. Muchos nos dicen que se ríen más que cuando salen.",
+                            "Piensa en vuestra mejor noche de fiesta pero sin ruido, sin gastar 50€ por cabeza, y sin sentirte fatal al día siguiente. Eso + jamón ibérico."
+                        ],
+                        tips: ["Usa lenguaje informal", "Compara con salir de fiesta", "Enfatiza diversión sin consecuencias negativas"]
+                    },
+                    {
+                        client: "¿No es muy caro para todos?",
+                        responses: [
+                            "Mira, una noche de fiesta normal: 15€ bar, 20€ copas, taxi... Ya son 40-50€. Nuestra cesta para grupos va desde €60-90 y sois 4-6. Sale a 15€ por cabeza. ¿Dónde está más caro?",
+                            "Al contrario tío. Si dividís el coste entre todos sale a precio de dos copas. Pero la experiencia es mucho mejor. Y al día siguiente no tienes resaca.",
+                            "Para grupos tenemos desde €60. Entre 4 personas son 15€ cada uno. Menos que salir y con productos que en un bar jamás probaríais."
+                        ],
+                        tips: ["Divide el precio entre personas", "Compara con alternativa realista", "Reencuadra valor"]
+                    },
+                    {
+                        client: "Vale, me convenciste. ¿Cómo va?",
+                        responses: [
+                            "Fácil! Entras en experienciaselecta.com, pillas la Gran Tertulia (€79.75) que es perfecta para grupos, pagas y en 24h la tienes. ¿La pedimos para este finde?",
+                            "Web → Elige cesta (te recomiendo Gran Tertulia o Festín Selecto) → Pago → Te llega. Súper simple. ¿Para cuándo la necesitas?",
+                            "Te paso el link ahora. Pedís, llega en 1-2 días, y ya tenéis plan. ¿Os juntáis este finde o el que viene?"
+                        ],
+                        tips: ["CIERRA con energía", "Recomienda producto específico para grupos", "Crea urgencia suave"]
+                    }
+                ]
+            },
+            desconocidos: {
+                name: "Desconocidos (Icebreaker)",
+                icon: "🎭",
+                tone: "Intrigante, romper el hielo, único",
+                speech: {
+                    instagram: "Hey! 👋 Qué tal si te digo que tenemos una forma de conocer gente nueva que NO es apps ni eventos random? Experiencia Selecta crea ENCUENTROS AUTÉNTICOS con desconocidos a través de gastronomía + dinámicas. Raro pero funciona.",
+                    whatsapp: "Hola! Sé que esto suena diferente, pero me encantaría contarte sobre Experiencia Selecta. Es una forma ÚNICA de conocer personas: quedas con desconocidos, compartís productos premium + dinámicas diseñadas para conectar. ¿Te cuento más?",
+                    email: "Asunto: La forma más original de conocer gente\n\nHola!\n\nVas a pensar que esto es raro, pero escúchame: ¿Y si pudieras conocer personas nuevas de forma auténtica, sin apps, sin eventos forzados?\n\nExperiencia Selecta hace eso: JUNTA DESCONOCIDOS con gastronomía premium + dinámicas para romper el hielo.\n\n¿Hablamos?",
+                    llamada: "Hola! Soy [nombre]. Te llamo con una propuesta diferente. ¿Alguna vez has pensado en conocer gente nueva de forma más auténtica? Tengo algo que creo que te va a sorprender.",
+                    presencial: "Mira, sé que suena loco, pero Experiencia Selecta organiza encuentros entre desconocidos con gastronomía + dinámicas. Es como... Tinder pero en persona, con jamón ibérico. Funciona mejor de lo que suena, te lo juro."
+                },
+                conversation: [
+                    {
+                        client: "¿Cómo funciona eso de desconocidos?",
+                        responses: [
+                            "Creamos grupos pequeños (4-6 personas que no se conocen), os enviamos la cesta premium y el QR tiene dinámicas específicas para ROMPER EL HIELO. Preguntas, juegos, retos... Todo diseñado para conectar de forma natural.",
+                            "Es matchmaking pero mejor. Te emparejamos con personas afines, montamos la experiencia gourmet, y las dinámicas hacen el trabajo de conexión. Sin incomodidad, todo fluye.",
+                            "Piensa en una cena entre amigos... pero sin conocer a nadie todavía. Nuestra experiencia hace que en 2 horas ya sientas que los conoces de toda la vida."
+                        ],
+                        tips: ["Tranquiliza sobre lo 'raro' del concepto", "Enfatiza diseño profesional", "Menciona resultados (testimonios si existen)"]
+                    },
+                    {
+                        client: "¿No es incómodo?",
+                        responses: [
+                            "Para nada! De hecho es lo contrario. Los productos premium crean un ambiente relajado y las dinámicas están diseñadas para que la conversación fluya. No hay silencios incómodos.",
+                            "Esa es la magia - las actividades eliminan la incomodidad. No estás ahí 'mirándoos', estás jugando, probando, riendo. Es MUCHO más natural que un café o una primera cita típica.",
+                            "Te sorprendería. La gente nos dice que conectan más en una Experiencia Selecta que en meses de apps. El formato lo hace fácil."
+                        ],
+                        tips: ["Aborda la objeción directamente", "Usa social proof", "Explica la psicología detrás"]
+                    },
+                    {
+                        client: "Me gusta la idea, ¿cómo me apunto?",
+                        responses: [
+                            "¡Genial! Ahora mismo estamos en fase de lanzamiento. Te añado a la lista y cuando tengamos el próximo grupo para tu zona te aviso. ¿Qué días de la semana te van mejor?",
+                            "Perfecto! Necesito un par de datos: tu ciudad, edad aproximada, y preferencias (más gastro, más juegos, etc). Te emparejamos y te avisamos. ¿Te parece?",
+                            "Excelente. Te paso un form rápido para conocerte mejor y te matcheamos con el grupo ideal. ¿Cuándo estarías disponible para la experiencia?"
+                        ],
+                        tips: ["CIERRA con siguiente paso claro", "Recoge datos necesarios", "Crea expectativa"]
+                    }
+                ]
+            },
+            "empresa-f3": {
+                name: "Empresa F3 (Cercana)",
+                icon: "🏢",
+                tone: "Profesional pero cercano, propuesta amigable",
+                speech: {
+                    instagram: "Hola [nombre]! 😊 Tengo una propuesta que creo que puede encajar perfecto en [empresa]. ¿Tienes 2 minutos? Es sobre regalos corporativos / team building que realmente funcionan.",
+                    whatsapp: "Hey [nombre]! ¿Qué tal? Mira, llevo tiempo pensando que Experiencia Selecta sería PERFECTA para [empresa]. ¿Te puedo contar la idea? Creo que te va a gustar.",
+                    email: "Asunto: Una idea para [Empresa]\n\nHola [Nombre]!\n\nEspero que todo bien. Te escribo porque creo que Experiencia Selecta puede aportar mucho valor a [empresa]:\n\n- Regalos corporativos que realmente gustan\n- Team building diferente\n- Detalles para clientes VIP\n\n¿Hablamos esta semana? Creo que podemos hacer algo genial juntos.",
+                    llamada: "Hola [nombre]! ¿Qué tal todo? Mira, te llamo porque tengo una propuesta que creo que os puede interesar mucho. ¿Tienes 5 minutos para que te cuente?",
+                    presencial: "Oye [nombre], tengo que enseñarte esto. Es Experiencia Selecta - cestas premium con dinámicas. Creo que para [empresa] puede ser perfecta como regalo corporativo o team building. ¿Qué te parece?"
+                },
+                conversation: [
+                    {
+                        client: "Cuéntame, ¿de qué va?",
+                        responses: [
+                            "Es gastronomía premium + experiencias interactivas. Para empresas funciona brutal como regalo corporativo, detalles para clientes, o team building. La clave es que NO es una cesta normal - es memorable.",
+                            "Piensa en esto: en vez de dar un jamón suelto o un pack aburrido, das una EXPERIENCIA completa. Los empleados/clientes la recuerdan porque es diferente. Además puedes personalizar con vuestro branding.",
+                            "Lo mejor que hacemos es convertir un regalo corporativo típico en algo que la gente realmente disfruta. Productos top + dinámicas + packaging premium. Para [empresa] sería perfecto."
+                        ],
+                        tips: ["Usa su nombre de empresa", "Enfatiza diferenciación", "Menciona personalización"]
+                    },
+                    {
+                        client: "¿Qué volumen manejáis?",
+                        responses: [
+                            "Empezamos con pedidos desde 10 unidades. Para empresas como la vuestra normalmente hacemos packs de 20-50 cestas. Tenemos descuentos por volumen y personalización incluida.",
+                            "Desde 10 unidades hasta lo que necesitéis. Lo bueno es que escalamos según demanda. ¿Cuántas personas hay en [empresa] aproximadamente?",
+                            "Flexibles total. Hacemos desde pedidos pequeños de prueba (10-15) hasta grandes campañas (100+). ¿Qué estabais pensando?"
+                        ],
+                        tips: ["Demuestra capacidad", "Pregunta su necesidad específica", "Menciona flexibilidad"]
+                    },
+                    {
+                        client: "Vale, me interesa. ¿Siguiente paso?",
+                        responses: [
+                            "Perfecto! Te preparo una propuesta personalizada para [empresa] con precios por volumen, opciones de personalización, y podemos hacer una demo si queréis. ¿Te viene bien que hablemos esta semana?",
+                            "Genial! Te mando un email con catálogo corporativo, tarifas y ejemplos de otras empresas. Luego hacemos una call y si os gusta, podemos empezar con un pedido de prueba. ¿Te parece?",
+                            "Excelente. Primer paso: te envío propuesta. Segundo paso: demo si queréis ver el producto. Tercero: pedido piloto. ¿Cuándo necesitarías tenerlo listo?"
+                        ],
+                        tips: ["CIERRA con pasos claros", "Propuesta profesional", "Sugiere piloto/prueba"]
+                    }
+                ]
+            },
+            "empresa-real": {
+                name: "Empresa B2B Real",
+                icon: "💼",
+                tone: "Profesional, ROI, beneficios corporativos",
+                speech: {
+                    instagram: "Buenos días. Soy [nombre] de Experiencia Selecta. Ayudamos a empresas como [empresa] a mejorar su estrategia de regalos corporativos y team building con experiencias gastronómicas premium. ¿Sería de interés?",
+                    whatsapp: "Buenos días [nombre]. Soy [nombre] de Experiencia Selecta. Nos especializamos en soluciones de regalo corporativo y team building para empresas. ¿Tendría sentido agendar una llamada breve para presentarle nuestra propuesta?",
+                    email: "Asunto: Propuesta de valor para [Empresa] - Experiencia Selecta\n\nEstimado/a [Nombre],\n\nMe dirijo a usted para presentar Experiencia Selecta, una solución innovadora en regalos corporativos y team building.\n\nNuestro valor:\n• Impacto medible en satisfacción de empleados/clientes\n• Personalización completa con branding corporativo\n• Alternativa diferenciadora a opciones tradicionales\n• ROI demostrable en retención y engagement\n\n¿Estaría disponible para una call de 15 minutos esta semana?\n\nSaludos cordiales,\n[Tu nombre]",
+                    llamada: "Buenos días, habla [nombre] de Experiencia Selecta. ¿Es [nombre del contacto]? Perfecto. Le llamo porque hemos trabajado con empresas del sector y creo que nuestra solución puede aportar valor a [empresa]. ¿Tiene 5 minutos?",
+                    presencial: "Buenos días [nombre]. Soy [nombre] de Experiencia Selecta. Nos especializamos en regalos corporativos y team building para empresas como la suya. ¿Tiene un momento para que le presente nuestra propuesta?"
+                },
+                conversation: [
+                    {
+                        client: "¿Qué ofrecen exactamente?",
+                        responses: [
+                            "Experiencias gastronómicas premium diseñadas para empresas. Tres casos de uso principales: 1) Regalos corporativos para clientes VIP, 2) Incentivos para empleados, 3) Team building. Todo personalizable con su branding y mensaje corporativo.",
+                            "Soluciones B2B en experiencias gastronómicas. Transformamos el regalo corporativo tradicional en algo memorable y medible. Incluye productos premium españoles + dinámicas interactivas + personalización completa.",
+                            "Un producto que resuelve varios pain points: regalos corporativos diferenciadores, team building efectivo, y fidelización de clientes. Todo en un formato escalable y con ROI medible."
+                        ],
+                        tips: ["Lenguaje profesional", "Habla de beneficios empresariales", "Menciona ROI/medible"]
+                    },
+                    {
+                        client: "¿Qué precios manejan?",
+                        responses: [
+                            "Nuestras soluciones van desde €42 hasta €100 por unidad según configuración. Para pedidos corporativos desde 20 unidades aplicamos descuentos por volumen. ¿Qué cantidad estarían considerando?",
+                            "Modelo flexible: desde €42/unidad para volúmenes altos hasta €100 para cestas premium. Incluimos personalización sin coste adicional desde 20 unidades. Le puedo preparar una cotización específica.",
+                            "Rango €42-100 por cesta según línea. Para empresas trabajamos con descuentos por volumen y paquetes anuales. ¿Prefiere que le envíe una propuesta formal con pricing detallado?"
+                        ],
+                        tips: ["Da rango profesional", "Menciona descuentos por volumen", "Ofrece propuesta formal"]
+                    },
+                    {
+                        client: "Envíeme información",
+                        responses: [
+                            "Perfecto. Le envío esta tarde: catálogo corporativo, casos de éxito, propuesta de precios, y opciones de personalización. ¿Cuál es su email corporativo? Después coordinamos una call para resolver dudas.",
+                            "Por supuesto. Le preparo un deck con: nuestra propuesta de valor, líneas de producto, estructura de precios corporativos, y casos de uso. ¿A qué email se lo envío? Luego agendamos 15 minutos para presentarlo.",
+                            "Excelente. Le hago llegar documentación completa. Para personalizar mejor la propuesta: ¿cuál es el caso de uso principal que consideran? ¿Regalos clientes, incentivos empleados, o team building?"
+                        ],
+                        tips: ["CIERRA con acción específica", "Pide email", "Asegura follow-up"]
+                    }
+                ]
+            }
+        };
+        
+        // Handle option selection
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.dataset.type;
+                const value = this.dataset.value;
+                
+                // Remove active from same type
+                document.querySelectorAll(`[data-type="${type}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                
+                // Add active to clicked
+                this.classList.add('active');
+                
+                // Store selection
+                if (type === 'client') {
+                    selectedClient = value;
+                } else {
+                    selectedChannel = value;
+                }
+                
+                // Enable button if both selected
+                const startBtn = document.getElementById('startBtn');
+                if (selectedClient && selectedChannel) {
+                    startBtn.disabled = false;
+                }
+            });
+        });
+        
+        // Start simulation
+        document.getElementById('startBtn').addEventListener('click', startSimulation);
+        
+        function startSimulation() {
+            const scenario = scenarios[selectedClient];
+            
+            // Hide selection
+            document.getElementById('selectionArea').style.display = 'none';
+            
+            // Show simulation
+            const simArea = document.getElementById('simulationArea');
+            simArea.classList.add('active');
+            
+            // Set scenario info
+            document.getElementById('scenarioInfo').innerHTML = `
+                <h3>${scenario.icon} ${scenario.name} - ${getChannelName(selectedChannel)}</h3>
+                <p>Tono: ${scenario.tone}</p>
+            `;
+            
+            // Set suggested speech
+            document.getElementById('suggestedSpeech').innerHTML = `
+                <h4>📝 Speech Sugerido:</h4>
+                <p>"${scenario.speech[selectedChannel]}"</p>
+            `;
+            
+            // Start conversation
+            conversationStep = 0;
+            showNextStep();
+        }
+        
+        function showNextStep() {
+            const scenario = scenarios[selectedClient];
+            const step = scenario.conversation[conversationStep];
+            
+            if (!step) {
+                // Conversation complete
+                showComplete();
+                return;
+            }
+            
+            // Add client message
+            addMessage('client', step.client);
+            
+            // Show response options
+            const responseArea = document.getElementById('responseArea');
+            responseArea.innerHTML = `
+                <div class="response-options">
+                    ${step.responses.map((resp, idx) => `
+                        <button class="response-btn" onclick="selectResponse(${idx})">${String.fromCharCode(65 + idx)}) ${resp}</button>
+                    `).join('')}
+                </div>
+                <div class="custom-input-area">
+                    <textarea id="customResponse" placeholder="O escribe tu propia respuesta..."></textarea>
+                    <button class="send-btn" onclick="sendCustomResponse()">Enviar mi respuesta</button>
+                </div>
+            `;
+            
+            // Show tips
+            document.getElementById('tipsBox').innerHTML = `
+                <h4>💡 Tips para esta respuesta:</h4>
+                <ul>
+                    ${step.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            `;
+        }
+        
+        function selectResponse(index) {
+            const scenario = scenarios[selectedClient];
+            const step = scenario.conversation[conversationStep];
+            const response = step.responses[index];
+            
+            addMessage('vendor', response);
+            
+            conversationStep++;
+            
+            setTimeout(() => {
+                showNextStep();
+            }, 1000);
+        }
+        
+        function sendCustomResponse() {
+            const textarea = document.getElementById('customResponse');
+            const response = textarea.value.trim();
+            
+            if (!response) {
+                alert('Escribe una respuesta primero');
+                return;
+            }
+            
+            addMessage('vendor', response);
+            addMessage('system', '✅ Buena respuesta! Recuerda siempre enfatizar la EXPERIENCIA sobre el producto.');
+            
+            conversationStep++;
+            
+            setTimeout(() => {
+                showNextStep();
+            }, 1000);
+        }
+        
+        function addMessage(type, text) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function showComplete() {
+            document.getElementById('responseArea').innerHTML = `
+                <div class="message-system">
+                    🎉 ¡Simulación completada! Has practicado todo el flujo de venta.
+                    <br><br>
+                    Recuerda: NO vendes cestas, vendes EXPERIENCIAS MEMORABLES.
+                </div>
+            `;
+            
+            document.getElementById('tipsBox').innerHTML = `
+                <h4>🏆 Resumen Final:</h4>
+                <ul>
+                    <li>Siempre enfatiza EXPERIENCIA sobre producto</li>
+                    <li>Usa palabras emocionales: memorable, especial, único, diferente</li>
+                    <li>Compara con alternativas reales (bares, restaurantes)</li>
+                    <li>Reencuadra el precio como inversión en recuerdos</li>
+                    <li>Cierra rápido con el siguiente paso claro</li>
+                </ul>
+            `;
+        }
+        
+        function resetSimulation() {
+            window.location.reload();
+        }
+        
+        function getChannelName(channel) {
+            const names = {
+                instagram: '📸 Instagram DM',
+                whatsapp: '💬 WhatsApp',
+                email: '📧 Email',
+                llamada: '📞 Llamada',
+                presencial: '🤝 Presencial'
+            };
+            return names[channel];
+        }
+    </script>
+</body>
+</html>

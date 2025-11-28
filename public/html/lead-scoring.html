@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Scoring - Modelo BANT - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #581c87 0%, #7c3aed 100%);
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #581c87 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 10px auto 0;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            padding: 0;
+        }
+        
+        .bant-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1400px;
+        }
+        
+        .bant-table thead {
+            background: linear-gradient(135deg, #581c87 0%, #7c3aed 100%);
+        }
+        
+        .bant-table thead th {
+            color: white;
+            padding: 25px 15px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            border-right: 2px solid rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .bant-table thead th:first-child {
+            background: #3f1163;
+            width: 200px;
+        }
+        
+        .bant-table thead th:last-child {
+            border-right: none;
+        }
+        
+        .icon-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        
+        .bant-table tbody tr {
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .bant-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .bant-table tbody td {
+            padding: 25px 15px;
+            vertical-align: middle;
+            border-right: 2px solid #e5e7eb;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .bant-table tbody td:last-child {
+            border-right: none;
+        }
+        
+        .lead-name {
+            background: linear-gradient(135deg, #3f1163 0%, #581c87 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .budget-cell {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .budget-detail {
+            font-size: 12px;
+            color: #1e3a8a;
+            margin-top: 5px;
+        }
+        
+        .authority-cell {
+            background: #fef3c7;
+            color: #78350f;
+        }
+        
+        .authority-cell ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .authority-cell li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .authority-cell li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #f59e0b;
+            font-weight: 700;
+        }
+        
+        .authority-cell .no-authority:before {
+            content: "✗";
+            color: #dc2626;
+        }
+        
+        .need-cell {
+            background: #fce7f3;
+            color: #831843;
+        }
+        
+        .timeline-cell {
+            background: #dcfce7;
+            color: #14532d;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .timeline-detail {
+            font-size: 12px;
+            color: #166534;
+            margin-top: 5px;
+        }
+        
+        .behavior-cell {
+            background: #e0e7ff;
+            color: #312e81;
+            font-size: 13px;
+        }
+        
+        .behavior-cell ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .behavior-cell li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .behavior-cell li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #4f46e5;
+            font-size: 18px;
+            line-height: 16px;
+        }
+        
+        .qualified-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .qualified-yes {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        
+        .qualified-no {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #7f1d1d;
+        }
+        
+        .qualified-conditional {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #78350f;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            background: rgba(0,0,0,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .lead-type {
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .scoring-system {
+            padding: 40px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        }
+        
+        .scoring-system h2 {
+            color: #581c87;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .scoring-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-top: 5px solid #7c3aed;
+        }
+        
+        .scoring-card h3 {
+            color: #581c87;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .scoring-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .scoring-card li {
+            padding: 8px 0;
+            color: #374151;
+            font-size: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .scoring-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .classification-section {
+            padding: 40px;
+            background: white;
+        }
+        
+        .classification-section h2 {
+            color: #581c87;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .classification-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .classification-card {
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .classification-card.hot {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 3px solid #ef4444;
+        }
+        
+        .classification-card.warm {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+        }
+        
+        .classification-card.cold {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 3px solid #3b82f6;
+        }
+        
+        .classification-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .classification-card.hot h3 { color: #7f1d1d; }
+        .classification-card.warm h3 { color: #78350f; }
+        .classification-card.cold h3 { color: #1e3a8a; }
+        
+        .classification-card h4 {
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .classification-card.hot h4 { color: #991b1b; }
+        .classification-card.warm h4 { color: #92400e; }
+        .classification-card.cold h4 { color: #1e40af; }
+        
+        .classification-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .classification-card li {
+            padding: 5px 0 5px 25px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .classification-card.hot li { color: #7f1d1d; }
+        .classification-card.warm li { color: #78350f; }
+        .classification-card.cold li { color: #1e3a8a; }
+        
+        .classification-card li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+            line-height: 20px;
+        }
+        
+        .classification-card.hot li:before { color: #ef4444; }
+        .classification-card.warm li:before { color: #f59e0b; }
+        .classification-card.cold li:before { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UTILIZANDO EL MODELO BANT PARA CLASIFICACIÓN DE LEADS</h1>
+            <p>La siguiente tabla ilustra la utilización del modelo BANT adaptado a Experiencia Selecta para clasificar y cualificar leads según presupuesto, autoridad, necesidad, timeline y comportamiento.</p>
+        </div>
+        
+        <div class="table-container">
+            <table class="bant-table">
+                <thead>
+                    <tr>
+                        <th>LEADS</th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">💰</div>
+                                <span>BUDGET USD</span>
+                                <span style="font-size: 12px; font-weight: 400;">(Presupuesto)</span>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">👤</div>
+                                <span>AUTHORITY</span>
+                                <span style="font-size: 12px; font-weight: 400;">(Autoridad)</span>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">🎯</div>
+                                <span>NEED</span>
+                                <span style="font-size: 12px; font-weight: 400;">(Necesidad)</span>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">⏰</div>
+                                <span>TIMELINE</span>
+                                <span style="font-size: 12px; font-weight: 400;">(Urgencia)</span>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">📊</div>
+                                <span>BEHAVIOR</span>
+                                <span style="font-size: 12px; font-weight: 400;">(Comportamiento)</span>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="icon-header">
+                                <div class="icon-circle">✅</div>
+                                <span>LEAD QUALIFIED</span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="lead-name">LEAD 1<br>Director RRHH<br>Empresa</td>
+                        <td class="budget-cell">
+                            €500-1,000
+                            <div class="budget-detail">Pedido corporativo múltiple (20 personas)</div>
+                        </td>
+                        <td class="authority-cell">
+                            <ul>
+                                <li>Tomador de decisión</li>
+                                <li>Presupuesto aprobado</li>
+                            </ul>
+                        </td>
+                        <td class="need-cell">
+                            Regalo fin de año para equipo directivo (20 personas)
+                        </td>
+                        <td class="timeline-cell">
+                            2 meses
+                            <div class="timeline-detail">Octubre - Diciembre</div>
+                        </td>
+                        <td class="behavior-cell">
+                            <ul>
+                                <li>Visitó 5+ veces web</li>
+                                <li>Descargó catálogo B2B</li>
+                                <li>Abrió 3/3 últimos emails</li>
+                                <li>Tiempo web >8 min</li>
+                            </ul>
+                        </td>
+                        <td class="qualified-cell qualified-yes">
+                            <strong>SÍ</strong>
+                            <div class="score-badge">95 puntos</div>
+                            <span class="lead-type">🔥 Lead CALIENTE</span>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="lead-name">LEAD 2<br>Emprendedor</td>
+                        <td class="budget-cell">
+                            €80-150
+                            <div class="budget-detail">Pedido individual</div>
+                        </td>
+                        <td class="authority-cell">
+                            <ul>
+                                <li>Decisión propia</li>
+                                <li>Sin aprobaciones necesarias</li>
+                            </ul>
+                        </td>
+                        <td class="need-cell">
+                            Regalo cliente importante para cerrar acuerdo comercial
+                        </td>
+                        <td class="timeline-cell">
+                            1 mes
+                            <div class="timeline-detail">Urgente</div>
+                        </td>
+                        <td class="behavior-cell">
+                            <ul>
+                                <li>Añadió al carrito</li>
+                                <li>No completó compra</li>
+                                <li>Abrió 1/3 emails</li>
+                                <li>Buscó "envío express"</li>
+                            </ul>
+                        </td>
+                        <td class="qualified-cell qualified-yes">
+                            <strong>SÍ</strong>
+                            <div class="score-badge">75 puntos</div>
+                            <span class="lead-type">🔥 Lead CALIENTE</span>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="lead-name">LEAD 3<br>Asistente<br>Dirección</td>
+                        <td class="budget-cell">
+                            €200-400
+                            <div class="budget-detail">Pedido individual premium</div>
+                        </td>
+                        <td class="authority-cell">
+                            <ul>
+                                <li class="no-authority">Debe consultar</li>
+                                <li class="no-authority">No es decisor final</li>
+                            </ul>
+                        </td>
+                        <td class="need-cell">
+                            Regalo navideño para CEO y miembros del board
+                        </td>
+                        <td class="timeline-cell">
+                            3 meses
+                            <div class="timeline-detail">Septiembre - Diciembre</div>
+                        </td>
+                        <td class="behavior-cell">
+                            <ul>
+                                <li>Solicitó presupuesto</li>
+                                <li>Preguntó por facturación</li>
+                                <li>Tiempo web 4 min</li>
+                            </ul>
+                        </td>
+                        <td class="qualified-cell qualified-conditional">
+                            <strong>CONDICIONAL</strong>
+                            <div class="score-badge">50 puntos</div>
+                            <span class="lead-type">🟡 Lead TIBIO<br><small>(Necesita validación decisor)</small></span>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="lead-name">LEAD 4<br>Usuario Web</td>
+                        <td class="budget-cell">
+                            N/A
+                            <div class="budget-detail">No especificado</div>
+                        </td>
+                        <td class="authority-cell">
+                            <ul>
+                                <li class="no-authority">Sin identificar</li>
+                            </ul>
+                        </td>
+                        <td class="need-cell">
+                            Sin identificar - navegación general exploratoria
+                        </td>
+                        <td class="timeline-cell">
+                            Sin urgencia
+                            <div class="timeline-detail">-</div>
+                        </td>
+                        <td class="behavior-cell">
+                            <ul>
+                                <li>1 visita única</li>
+                                <li>&lt;2 min en web</li>
+                                <li>No abrió emails</li>
+                                <li>Rebote alto</li>
+                            </ul>
+                        </td>
+                        <td class="qualified-cell qualified-no">
+                            <strong>NO</strong>
+                            <div class="score-badge">15 puntos</div>
+                            <span class="lead-type">❄️ Lead FRÍO</span>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="lead-name">LEAD 5<br>Contacto<br>Networking</td>
+                        <td class="budget-cell">
+                            €300-500
+                            <div class="budget-detail">Interés futuro recurrente</div>
+                        </td>
+                        <td class="authority-cell">
+                            <ul>
+                                <li>Potencial decisor</li>
+                                <li>Recomendado</li>
+                            </ul>
+                        </td>
+                        <td class="need-cell">
+                            Busca proveedor recurrente para regalos corporativos trimestrales
+                        </td>
+                        <td class="timeline-cell">
+                            6 meses - 1 año
+                            <div class="timeline-detail">Relación largo plazo</div>
+                        </td>
+                        <td class="behavior-cell">
+                            <ul>
+                                <li>Reunión presencial</li>
+                                <li>Solicitó información</li>
+                                <li>No visitó web aún</li>
+                                <li>Alta intención</li>
+                            </ul>
+                        </td>
+                        <td class="qualified-cell qualified-conditional">
+                            <strong>SÍ</strong>
+                            <div class="score-badge">60 puntos</div>
+                            <span class="lead-type">🟡 Lead TIBIO<br><small>(Nurturing largo plazo)</small></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="scoring-system">
+            <h2>SISTEMA DE PUNTUACIÓN DETALLADO</h2>
+            
+            <div class="scoring-grid">
+                <div class="scoring-card">
+                    <h3>💰 BUDGET (0-25 pts)</h3>
+                    <ul>
+                        <li>€0-50: <strong>5 puntos</strong></li>
+                        <li>€51-150: <strong>10 puntos</strong></li>
+                        <li>€151-300: <strong>15 puntos</strong></li>
+                        <li>€301-500: <strong>20 puntos</strong></li>
+                        <li>€501+: <strong>25 puntos</strong></li>
+                        <li>Corporativo/recurrente: <strong>+5 bonus</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="scoring-card">
+                    <h3>👤 AUTHORITY (0-25 pts)</h3>
+                    <ul>
+                        <li>Tomador decisión final: <strong>25 puntos</strong></li>
+                        <li>Influenciador con poder: <strong>15 puntos</strong></li>
+                        <li>Debe consultar superior: <strong>10 puntos</strong></li>
+                        <li>Sin autoridad identificada: <strong>0 puntos</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="scoring-card">
+                    <h3>🎯 NEED (0-20 pts)</h3>
+                    <ul>
+                        <li>Urgente y específica: <strong>20 puntos</strong></li>
+                        <li>Clara pero no urgente: <strong>15 puntos</strong></li>
+                        <li>Interés exploratorio: <strong>10 puntos</strong></li>
+                        <li>Sin necesidad identificada: <strong>0 puntos</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="scoring-card">
+                    <h3>⏰ TIMELINE (0-15 pts)</h3>
+                    <ul>
+                        <li>Menos de 1 mes: <strong>15 puntos</strong></li>
+                        <li>1-3 meses: <strong>10 puntos</strong></li>
+                        <li>3-6 meses: <strong>5 puntos</strong></li>
+                        <li>Más de 6 meses: <strong>2 puntos</strong></li>
+                        <li>Sin timeline: <strong>0 puntos</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="scoring-card">
+                    <h3>📊 BEHAVIOR (0-30 pts)</h3>
+                    <ul>
+                        <li>Añadió al carrito: <strong>10 puntos</strong></li>
+                        <li>Descargó contenido B2B: <strong>8 puntos</strong></li>
+                        <li>Visitó 3+ veces: <strong>6 puntos</strong></li>
+                        <li>Tiempo >5 min: <strong>5 puntos</strong></li>
+                        <li>Abrió emails (c/u): <strong>2 puntos</strong></li>
+                        <li>Click en email: <strong>3 puntos</strong></li>
+                        <li>Solicitó presupuesto: <strong>8 puntos</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="scoring-card">
+                    <h3>📱 ENGAGEMENT RRSS (0-15 pts BONUS)</h3>
+                    <ul>
+                        <li>Sigue Instagram/LinkedIn: <strong>5 puntos</strong></li>
+                        <li>Comparte contenido: <strong>5 puntos</strong></li>
+                        <li>Comenta publicaciones: <strong>5 puntos</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="classification-section">
+            <h2>CLASIFICACIÓN Y ACCIONES POR TIPO DE LEAD</h2>
+            
+            <div class="classification-grid">
+                <div class="classification-card hot">
+                    <h3>🔥 LEAD CALIENTE (70-100 puntos)</h3>
+                    
+                    <h4>CARACTERÍSTICAS:</h4>
+                    <ul>
+                        <li>BANT completo o casi completo</li>
+                        <li>Alta intención de compra</li>
+                        <li>Comportamiento activo</li>
+                        <li>Timeline definido</li>
+                    </ul>
+                    
+                    <h4>ACCIONES:</h4>
+                    <ul>
+                        <li>Contacto directo (llamada/WhatsApp) en <24h</li>
+                        <li>Oferta personalizada con 15% descuento</li>
+                        <li>Envío de casos de éxito similares</li>
+                        <li>Seguimiento cada 48h hasta cierre</li>
+                        <li>Atención prioritaria en todo el proceso</li>
+                    </ul>
+                </div>
+                
+                <div class="classification-card warm">
+                    <h3>🟡 LEAD TIBIO (40-69 puntos)</h3>
+                    
+                    <h4>CARACTERÍSTICAS:</h4>
+                    <ul>
+                        <li>BANT parcialmente completo</li>
+                        <li>Necesidad identificada pero barreras</li>
+                        <li>Interés moderado</li>
+                        <li>Requiere nurturing</li>
+                    </ul>
+                    
+                    <h4>ACCIONES:</h4>
+                    <ul>
+                        <li>Email personalizado específico</li>
+                        <li>Descuento 10% con urgencia (72h)</li>
+                        <li>Remarketing en redes sociales</li>
+                        <li>Recordatorio carrito abandonado</li>
+                        <li>Seguimiento quincenal</li>
+                        <li>Invitación a contenido educativo</li>
+                    </ul>
+                </div>
+                
+                <div class="classification-card cold">
+                    <h3>❄️ LEAD FRÍO (0-39 puntos)</h3>
+                    
+                    <h4>CARACTERÍSTICAS:</h4>
+                    <ul>
+                        <li>BANT incompleto o sin identificar</li>
+                        <li>Bajo engagement</li>
+                        <li>Sin necesidad clara</li>
+                        <li>Comportamiento pasivo</li>
+                    </ul>
+                    
+                    <h4>ACCIONES:</h4>
+                    <ul>
+                        <li>Inclusión en newsletter mensual</li>
+                        <li>Contenido educativo productos ibéricos</li>
+                        <li>Campañas awareness (sin presión)</li>
+                        <li>Seguimiento pasivo</li>
+                        <li>Remarketing genérico de marca</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

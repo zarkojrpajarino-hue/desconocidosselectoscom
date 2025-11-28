@@ -1,10 +1,11 @@
 const LeadScoring = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Lead Scoring</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se importará el HTML de Lead Scoring)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/lead-scoring.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Lead Scoring"
+      />
     </div>
   );
 };

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Persona - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 40px 30px;
+            border-right: 3px solid #3b82f6;
+        }
+        
+        .profile-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            color: white;
+            border: 6px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .profile-title {
+            font-size: 16px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .info-block {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .info-block h3 {
+            color: #1e3a8a;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            color: #1e3a8a;
+            min-width: 90px;
+        }
+        
+        .info-value {
+            color: #334155;
+            flex: 1;
+        }
+        
+        .personality-bar {
+            margin: 15px 0;
+        }
+        
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+        }
+        
+        .bar-container {
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .content-section {
+            margin-bottom: 35px;
+        }
+        
+        .content-section h2 {
+            color: #1e3a8a;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .bio-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 6px solid #f59e0b;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #78350f;
+            font-style: italic;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+        
+        .pain-points {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .pain-card {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+        
+        .pain-card p {
+            color: #7f1d1d;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        .motivations {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .motivation-card {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            border: 3px solid #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+        
+        .motivation-card h4 {
+            color: #065f46;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .motivation-card p {
+            color: #047857;
+            font-size: 13px;
+        }
+        
+        .channels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .channel-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .channel-percentage {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .goal-card {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-top: 5px solid #8b5cf6;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+        
+        .goal-card h4 {
+            color: #5b21b6;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .goal-card p {
+            color: #6b21a8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .help-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #22c55e;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        }
+        
+        .help-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .help-box li {
+            color: #14532d;
+            font-size: 14px;
+            line-height: 1.8;
+            padding-left: 30px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .help-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .content-preferences {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 6px solid #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+        
+        .content-preferences p {
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .content-preferences strong {
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BUYER PERSONA</h1>
+            <p style="font-size: 20px; opacity: 0.9;">Experiencia Selecta</p>
+        </div>
+        
+        <div class="content">
+            <div class="sidebar">
+                <div class="profile-section">
+                    <div class="avatar">👩‍💼</div>
+                    <div class="profile-name">Laura García</div>
+                    <div class="profile-title">Directora Comercial</div>
+                </div>
+                
+                <div class="info-block">
+                    <h3>DEMOGRAFÍA</h3>
+                    <div class="info-item">
+                        <span class="info-label">EDAD:</span>
+                        <span class="info-value">35-50 años</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">SEXO:</span>
+                        <span class="info-value">60% Mujer / 40% Hombre</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">OCUPACIÓN:</span>
+                        <span class="info-value">Directivos PYMES, RRHH, Emprendedores</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ESTADO:</span>
+                        <span class="info-value">Casado/a con hijos</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">DIRECCIÓN:</span>
+                        <span class="info-value">Madrid, Barcelona, Valencia, Sevilla</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">NSE:</span>
+                        <span class="info-value">B - C+: €40K-€70K</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">EDUCACIÓN:</span>
+                        <span class="info-value">Grado / Postgrado</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CARÁCTER:</span>
+                        <span class="info-value">Detallista, exigente, busca exclusividad</span>
+                    </div>
+                </div>
+                
+                <div class="info-block">
+                    <h3>PERSONALIDAD</h3>
+                    <div class="personality-bar">
+                        <div class="bar-label">
+                            <span>Introvertido</span>
+                            <span>Extrovertido</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    <div class="personality-bar">
+                        <div class="bar-label">
+                            <span>Analítico</span>
+                            <span>Creativo</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                    <div class="personality-bar">
+                        <div class="bar-label">
+                            <span>Reservado</span>
+                            <span>Amigable</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                    <div class="personality-bar">
+                        <div class="bar-label">
+                            <span>Pragmático</span>
+                            <span>Emocional</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="content-section">
+                    <h2><span class="icon">📖</span> BIOGRAFÍA</h2>
+                    <div class="bio-box">
+                        Laura es una directora comercial de 42 años que vive en Madrid. Está casada y tiene dos hijos adolescentes. Valora mucho las relaciones profesionales y personales de calidad. Le encanta la gastronomía española auténtica y busca constantemente formas de destacar en su entorno profesional a través de detalles que marquen la diferencia.
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">😰</span> PUNTOS DE DOLOR</h2>
+                    <div class="pain-points">
+                        <div class="pain-card">
+                            <p><strong>💼 Falta de tiempo:</strong> "No tengo tiempo para buscar regalos corporativos originales"</p>
+                        </div>
+                        <div class="pain-card">
+                            <p><strong>😕 Productos genéricos:</strong> "Los productos genéricos no transmiten el valor que quiero dar"</p>
+                        </div>
+                        <div class="pain-card">
+                            <p><strong>🎯 Necesidad de impactar:</strong> "Necesito impresionar a clientes importantes con algo memorable"</p>
+                        </div>
+                        <div class="pain-card">
+                            <p><strong>✨ Experiencias únicas:</strong> "Quiero ofrecer experiencias únicas, no solo objetos"</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">🎯</span> MOTIVACIONES DE COMPRA</h2>
+                    <div class="motivations">
+                        <div class="motivation-card">
+                            <h4>💰 PRECIO</h4>
+                            <p>Premium por calidad</p>
+                        </div>
+                        <div class="motivation-card">
+                            <h4>⭐ EXPERIENCIA</h4>
+                            <p>Momentos memorables</p>
+                        </div>
+                        <div class="motivation-card">
+                            <h4>🏆 CALIDAD</h4>
+                            <p>Origen verificado</p>
+                        </div>
+                        <div class="motivation-card">
+                            <h4>🇪🇸 TRADICIÓN</h4>
+                            <p>Cultura española</p>
+                        </div>
+                        <div class="motivation-card">
+                            <h4>💎 EXCLUSIVIDAD</h4>
+                            <p>Diferenciación</p>
+                        </div>
+                        <div class="motivation-card">
+                            <h4>😊 PLACER</h4>
+                            <p>Productos gourmet</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">📱</span> CANALES PREFERIDOS</h2>
+                    <div class="channels">
+                        <div class="channel-badge">
+                            📊 LinkedIn <span class="channel-percentage">85%</span>
+                        </div>
+                        <div class="channel-badge">
+                            📸 Instagram <span class="channel-percentage">75%</span>
+                        </div>
+                        <div class="channel-badge">
+                            🔍 Google <span class="channel-percentage">70%</span>
+                        </div>
+                        <div class="channel-badge">
+                            💬 WhatsApp <span class="channel-percentage">60%</span>
+                        </div>
+                        <div class="channel-badge">
+                            📧 Email <span class="channel-percentage">50%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">🎯</span> METAS Y OBJETIVOS</h2>
+                    <div class="goals-grid">
+                        <div class="goal-card">
+                            <h4>💼 PROFESIONALES</h4>
+                            <p>Fortalecer relaciones con clientes clave a través de detalles memorables</p>
+                        </div>
+                        <div class="goal-card">
+                            <h4>❤️ PERSONALES</h4>
+                            <p>Disfrutar y compartir experiencias gastronómicas auténticas</p>
+                        </div>
+                        <div class="goal-card">
+                            <h4>👥 SOCIALES</h4>
+                            <p>Ser reconocida por su buen gusto y atención al detalle</p>
+                        </div>
+                        <div class="goal-card">
+                            <h4>😊 EMOCIONALES</h4>
+                            <p>Sentir que sus regalos generan impacto y son apreciados</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">💡</span> ¿CÓMO LE PODEMOS AYUDAR?</h2>
+                    <div class="help-box">
+                        <ul>
+                            <li>Selección curada de productos ibéricos premium con denominación de origen</li>
+                            <li>Servicio de personalización para regalos corporativos</li>
+                            <li>Sistema de compra ágil con activación QR para experiencias</li>
+                            <li>Garantía de calidad y entrega puntual</li>
+                            <li>Experiencias gastronómicas exclusivas que generan conexiones auténticas</li>
+                            <li>Atención personalizada y seguimiento post-venta</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <h2><span class="icon">📝</span> PREFERENCIAS DE CONTENIDO</h2>
+                    <div class="content-preferences">
+                        <p><strong>Tipo de contenido:</strong> Casos de éxito, unboxing, origen de productos, maridajes</p>
+                        <p><strong>Formato preferido:</strong> Videos cortos, infografías, testimonios visuales</p>
+                        <p><strong>Tono:</strong> Cercano pero profesional, educativo pero no técnico</p>
+                        <p><strong>Frecuencia:</strong> Semanal en redes, quincenal en email</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

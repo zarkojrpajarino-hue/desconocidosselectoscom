@@ -1,10 +1,11 @@
 const Guia = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Guía de Comunicación</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se importará el HTML de la Guía de Comunicación)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/guia.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Guía de Comunicación"
+      />
     </div>
   );
 };
