@@ -16,9 +16,10 @@ interface TeamMemberProgress {
 
 interface TeamProgressProps {
   currentPhase: number;
+  currentUserId?: string;
 }
 
-const TeamProgress = ({ currentPhase }: TeamProgressProps) => {
+const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [teamData, setTeamData] = useState<TeamMemberProgress[]>([]);
   const [totalCompleted, setTotalCompleted] = useState(0);
@@ -34,7 +35,7 @@ const TeamProgress = ({ currentPhase }: TeamProgressProps) => {
   const fetchTeamProgress = async () => {
     setLoading(true);
     try {
-      // Obtener todos los usuarios (excepto admin)
+      // Obtener todos los usuarios (incluido el actual si no está en la lista)
       const { data: users } = await supabase
         .from('users')
         .select('id, username, full_name')
@@ -42,6 +43,20 @@ const TeamProgress = ({ currentPhase }: TeamProgressProps) => {
         .order('username');
 
       if (!users) return;
+
+      // Asegurarse de que el usuario actual está en la lista
+      const userIds = users.map(u => u.id);
+      if (currentUserId && !userIds.includes(currentUserId)) {
+        const { data: currentUser } = await supabase
+          .from('users')
+          .select('id, username, full_name')
+          .eq('id', currentUserId)
+          .single();
+        
+        if (currentUser) {
+          users.push(currentUser);
+        }
+      }
 
       // Para cada usuario, obtener sus tareas y completaciones
       const progressData = await Promise.all(
@@ -105,8 +120,18 @@ const TeamProgress = ({ currentPhase }: TeamProgressProps) => {
   const remainingTasks = totalTasks - totalCompleted;
   const teamPercentage = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
 
-  // Calcular rango de cestas (aproximado, ajusta según tu lógica)
-  const basketsRange = `0 a ${Math.floor(totalCompleted * 2.5)}`;
+  // Calcular rango de cestas según la fase (cada fase tiene un rango específico)
+  const getBasketRange = (phase: number) => {
+    switch (phase) {
+      case 1: return '0 a 25';
+      case 2: return '25 a 50';
+      case 3: return '50 a 75';
+      case 4: return '75 a 100';
+      default: return '0 a 25';
+    }
+  };
+  
+  const basketsRange = getBasketRange(currentPhase);
 
   if (loading) {
     return (
@@ -181,7 +206,14 @@ const TeamProgress = ({ currentPhase }: TeamProgressProps) => {
             {teamData
               .sort((a, b) => b.completed - a.completed) // Ordenar por completadas
               .map((member) => (
-                <div key={member.id} className="space-y-2 p-3 rounded-lg bg-muted/50">
+                 <div 
+                  key={member.id} 
+                  className={`space-y-2 p-3 rounded-lg ${
+                    member.id === currentUserId 
+                      ? 'bg-primary/10 border-2 border-primary/30' 
+                      : 'bg-muted/50'
+                  }`}
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{member.full_name}</p>

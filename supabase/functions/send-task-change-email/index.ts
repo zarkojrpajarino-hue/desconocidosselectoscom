@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to_user_id, old_title, new_title, new_description, leader_name } = await req.json();
+    const { to_user_id, old_title, new_title, new_description, leader_name, leader_comment } = await req.json();
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -74,7 +74,14 @@ serve(async (req) => {
                 ` : ''}
               </div>
               
-              <p style="margin-top: 30px; background: #fef3c7; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+              ${leader_comment ? `
+                <div style="margin-top: 20px; background: #fef3c7; padding: 20px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                  <div class="label">💬 Razón del cambio:</div>
+                  <p style="margin: 8px 0 0 0; font-style: italic;">"${leader_comment}"</p>
+                </div>
+              ` : ''}
+              
+              <p style="margin-top: 30px; background: #e0f2fe; padding: 15px; border-radius: 6px; border-left: 4px solid #0284c7;">
                 ⚠️ <strong>Acción requerida:</strong> Revisa los nuevos objetivos y ajusta tu plan de trabajo.
               </p>
               

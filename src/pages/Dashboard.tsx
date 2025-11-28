@@ -220,7 +220,10 @@ const Dashboard = () => {
         <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
 
         {/* Team Progress */}
-        <TeamProgress currentPhase={systemConfig?.current_phase || 1} />
+        <TeamProgress 
+          currentPhase={systemConfig?.current_phase || 1}
+          currentUserId={user?.id}
+        />
 
         {/* Swaps Info Card */}
         {userWeeklyData?.mode && (

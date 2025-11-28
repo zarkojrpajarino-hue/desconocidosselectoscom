@@ -105,6 +105,8 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
         return '🚨';
       case 'mode_change_alert':
         return '📢';
+      case 'task_changed_by_leader':
+        return '🔄';
       default:
         return '📬';
     }
