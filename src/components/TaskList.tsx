@@ -33,6 +33,9 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [taskToSwap, setTaskToSwap] = useState<any>(null);
   const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || "", mode);
   const [leadersById, setLeadersById] = useState<Record<string, string>>({});
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [impactMeasurementModalOpen, setImpactMeasurementModalOpen] = useState(false);
+  const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -324,53 +327,110 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   };
 
   const getTaskCompletionStatus = (task: any, completion: any) => {
-    if (!completion) return { percentage: 0, message: "", needsInsights: false };
+    if (!completion) {
+      return {
+        percentage: 0,
+        message: "",
+        needsFeedback: false,
+        needsImpactMeasurement: false,
+        buttonText: ""
+      };
+    }
 
     const isSharedTask = task.leader_id !== null;
-    const isLeader = task.area && isUserLeaderOfArea(userId || "", task.area);
+    const isLeader = task.user_id !== userId; // Si la tarea no es mía, soy líder
 
+    // TAREA INDIVIDUAL
     if (!isSharedTask) {
-      // Tarea individual
-      return completion.validated_by_leader
-        ? { percentage: 100, message: "", needsInsights: false }
-        : { percentage: 0, message: "", needsInsights: false };
+      return completion.impact_measurement && completion.user_insights
+        ? { percentage: 100, message: "✅ Completada", needsFeedback: false, needsImpactMeasurement: false, buttonText: "" }
+        : { percentage: 0, message: "", needsFeedback: false, needsImpactMeasurement: false, buttonText: "" };
     }
 
-    // Tarea compartida
-    if (completion.validated_by_leader) {
-      return { percentage: 100, message: "✓ Tarea completada y validada", needsInsights: false };
-    }
-
-    if (isLeader) {
-      // Líder
-      if (completion.collaborator_feedback && completion.user_insights) {
-        return { percentage: 100, message: "✓ Tarea completada", needsInsights: false };
-      } else if (completion.collaborator_feedback && !completion.user_insights) {
-        return {
-          percentage: 90,
-          message: "⏳ 90% completado. Faltan insights por completar",
-          needsInsights: true,
-        };
-      }
-    } else {
-      // Colaborador
-      if (completion.leader_evaluation && completion.user_insights) {
-        const leaderName = leadersById[task.leader_id] || "el líder";
-        return {
-          percentage: 50,
-          message: `⏳ 50% completado. Esperando validación de ${leaderName}`,
-          needsInsights: false,
-        };
-      } else if (completion.leader_evaluation && !completion.user_insights) {
+    // TAREA COLABORATIVA - SOY EJECUTOR
+    if (!isLeader) {
+      // Estado 1: Solo feedback al líder (40%)
+      if (completion.leader_evaluation && !completion.impact_measurement) {
         return {
           percentage: 40,
-          message: "⏳ 40% completado. Faltan insights por completar",
-          needsInsights: true,
+          message: "Para llegar al 50%:",
+          needsFeedback: false,
+          needsImpactMeasurement: true,
+          buttonText: "Completar Medición de Impacto"
+        };
+      }
+
+      // Estado 2: Feedback + Medición (50%)
+      if (completion.leader_evaluation && completion.impact_measurement && !completion.validated_by_leader) {
+        return {
+          percentage: 50,
+          message: "⏳ Esperando validación de " + (leadersById[task.leader_id] || "líder"),
+          needsFeedback: false,
+          needsImpactMeasurement: false,
+          buttonText: ""
+        };
+      }
+
+      // Estado 3: Líder validó (100%)
+      if (completion.validated_by_leader) {
+        return {
+          percentage: 100,
+          message: "✅ Completada y validada",
+          needsFeedback: false,
+          needsImpactMeasurement: false,
+          buttonText: ""
         };
       }
     }
 
-    return { percentage: 0, message: "", needsInsights: false };
+    // TAREA COLABORATIVA - SOY LÍDER
+    if (isLeader) {
+      const executorCompletion = completions.get(task.id);
+
+      // ESCENARIO A: Ejecutor completó primero
+      if (executorCompletion?.leader_evaluation && executorCompletion?.impact_measurement) {
+        // Líder validó (90%)
+        if (completion.collaborator_feedback && !completion.impact_measurement) {
+          return {
+            percentage: 90,
+            message: "Para llegar al 100%:",
+            needsFeedback: false,
+            needsImpactMeasurement: true,
+            buttonText: "Completar Medición de Impacto"
+          };
+        }
+
+        // Líder completó todo (100%)
+        if (completion.collaborator_feedback && completion.impact_measurement) {
+          return {
+            percentage: 100,
+            message: "✅ Completada",
+            needsFeedback: false,
+            needsImpactMeasurement: false,
+            buttonText: ""
+          };
+        }
+      }
+
+      // ESCENARIO B: Líder validó primero (líder 90%, ejecutor 80%)
+      if (completion.collaborator_feedback && !executorCompletion?.leader_evaluation) {
+        return {
+          percentage: 90,
+          message: "Esperando que ejecutor complete feedback + medición. Para tu 100%:",
+          needsFeedback: false,
+          needsImpactMeasurement: true,
+          buttonText: "Completar tu Medición de Impacto"
+        };
+      }
+    }
+
+    return { 
+      percentage: 0, 
+      message: "", 
+      needsFeedback: false, 
+      needsImpactMeasurement: false,
+      buttonText: ""
+    };
   };
 
   if (tasks.length === 0 && sharedTasks.length === 0) {
@@ -386,7 +446,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const renderTask = (task: any, canSwapOverride?: boolean) => {
     const completion = completions.get(task.id);
     const isCompleted = completion?.validated_by_leader || false;
-    const { percentage, message, needsInsights } = getTaskCompletionStatus(task, completion);
+    const { percentage, message, needsFeedback, needsImpactMeasurement, buttonText } = getTaskCompletionStatus(task, completion);
     
     // Calcular permisos de swap
     const canSwap = canSwapOverride !== undefined ? canSwapOverride : (() => {
@@ -446,28 +506,50 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             )}
           </div>
 
-          {needsInsights && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedTask(task);
-                setInsightsModalOpen(true);
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-950/30"
-            >
-              <AlertCircle className="w-4 h-4" />
-              ⚠️ Completar insights obligatorios para avanzar
-            </Button>
-          )}
-
           {percentage > 0 && percentage < 100 && (
-            <div className="space-y-1">
-              <Progress value={percentage} className="h-2" />
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {message}
-              </p>
+            <div className="mt-3 space-y-2">
+              {/* Barra de progreso */}
+              <div className="flex items-center gap-2">
+                <Progress value={percentage} className="h-2 flex-1" />
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {percentage}%
+                </span>
+              </div>
+
+              {/* Mensaje + botón si es necesario */}
+              {message && (
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                  <p className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-2">
+                    ⚠️ {message}
+                  </p>
+
+                  {needsImpactMeasurement && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTask(task);
+                        setImpactMeasurementModalOpen(true);
+                      }}
+                      className="w-full bg-primary hover:bg-primary/90"
+                    >
+                      {buttonText || "Completar Medición de Impacto"}
+                    </Button>
+                  )}
+
+                  {needsFeedback && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTask(task);
+                        setFeedbackModalOpen(true);
+                      }}
+                      className="w-full bg-primary hover:bg-primary/90"
+                    >
+                      Dar Feedback (OBLIGATORIO)
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -508,15 +590,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         </div>
       )}
 
-      {/* TAREAS EN COLABORACIÓN - Adicionales, no cuentan para el límite */}
+      {/* TAREAS QUE VALIDO - Adicionales, no cuentan para el límite */}
       {sharedTasks.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            Tareas en Colaboración ({sharedTasks.length})
+            <Users className="w-5 h-5 text-purple-600" />
+            🤝 Tareas que Valido ({sharedTasks.length})
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Tareas de otros miembros del equipo donde estás involucrado como colaborador
+            Tareas de otros miembros donde tú eres el líder validador
           </p>
           <div className="space-y-2 md:space-y-3">{sharedTasks.map((task) => renderTask(task))}</div>
         </div>
