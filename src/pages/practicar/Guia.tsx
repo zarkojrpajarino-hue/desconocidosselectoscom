@@ -1,10 +1,15 @@
+import HTMLDocumentViewer from '@/components/HTMLDocumentViewer';
+
 const Guia = () => {
   return (
-    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
-      <iframe
-        src="/html/guia.html"
-        className="w-full h-full border-0 rounded-lg"
-        title="Guía de Comunicación"
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Guía de Comunicación</h2>
+      <p className="text-muted-foreground">
+        Mejora tus habilidades de comunicación con clientes y equipo de trabajo.
+      </p>
+      <HTMLDocumentViewer 
+        htmlPath="/html/guia.html"
+        title="Guía de Comunicación - Experiencia Selecta"
       />
     </div>
   );

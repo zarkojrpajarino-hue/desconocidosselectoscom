@@ -1,9 +1,14 @@
+import HTMLDocumentViewer from '@/components/HTMLDocumentViewer';
+
 const Simulador = () => {
   return (
-    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
-      <iframe
-        src="/html/simulador.html"
-        className="w-full h-full border-0 rounded-lg"
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Simulador de Ventas</h2>
+      <p className="text-muted-foreground">
+        Practica tus habilidades de venta con escenarios realistas y obtén feedback inmediato.
+      </p>
+      <HTMLDocumentViewer 
+        htmlPath="/html/simulador.html"
         title="Simulador de Ventas"
       />
     </div>
