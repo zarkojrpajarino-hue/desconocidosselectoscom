@@ -188,7 +188,7 @@ serve(async (req) => {
       <p><strong>Tienes 7 días para completar tus objetivos. ¡Vamos por ello!</strong></p>
       
       <div style="text-align: center;">
-        <a href="https://7601fa16-c666-4f01-b370-6cee93c40cc0.lovableproject.com/login?redirect=/dashboard" class="button">Ver Mis Tareas 🎯</a>
+        <a href="https://desconocidosselectos.com/login?redirect=/dashboard" class="button">Ver Mis Tareas 🎯</a>
       </div>
     </div>
     <div class="footer">
