@@ -1,10 +1,15 @@
+import HTMLDocumentViewer from '@/components/HTMLDocumentViewer';
+
 const BuyerPersona = () => {
   return (
-    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
-      <iframe
-        src="/html/buyer-persona.html"
-        className="w-full h-full border-0 rounded-lg"
-        title="Buyer Persona"
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Buyer Persona</h2>
+      <p className="text-muted-foreground">
+        Perfil detallado del cliente ideal para enfocar estrategias de marketing y ventas.
+      </p>
+      <HTMLDocumentViewer 
+        htmlPath="/html/buyer-persona.html"
+        title="Buyer Persona - Experiencia Selecta"
       />
     </div>
   );

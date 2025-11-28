@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import HTMLDocumentViewer from '@/components/HTMLDocumentViewer';
 
 const Calculadora = () => {
   const navigate = useNavigate();
@@ -20,15 +21,15 @@ const Calculadora = () => {
       <div className="container max-w-6xl mx-auto px-4 py-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">💰 Calculadora de Oportunidad</h1>
+          <p className="text-muted-foreground mt-2">
+            Calcula el potencial de tu negocio y proyecta tu crecimiento.
+          </p>
         </div>
         
-        <div className="w-full h-[calc(100vh-200px)] min-h-[600px]">
-          <iframe
-            src="/html/calculadora.html"
-            className="w-full h-full border-0 rounded-lg shadow-lg"
-            title="Calculadora de Oportunidad de Negocio"
-          />
-        </div>
+        <HTMLDocumentViewer 
+          htmlPath="/html/calculadora.html"
+          title="Calculadora de Oportunidad de Negocio"
+        />
       </div>
     </div>
   );
