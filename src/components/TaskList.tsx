@@ -260,6 +260,24 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             });
           }
 
+          // Award points to collaborator for completing task
+          await supabase.functions.invoke('award-points', {
+            body: {
+              user_id: selectedTask.user_id,
+              action: 'task_completed_collaborative',
+              task_id: selectedTask.id
+            }
+          });
+
+          // Award points to leader for validating
+          await supabase.functions.invoke('award-points', {
+            body: {
+              user_id: userId,
+              action: 'task_validated',
+              task_id: selectedTask.id
+            }
+          });
+
           // NOTIFICACIÓN 2: Líder valida → Notificar ejecutor
           await supabase.from("notifications").insert({
             user_id: selectedTask.user_id,
@@ -308,6 +326,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           completed_by_user: true,
           validated_by_leader: true,
           user_insights: insights,
+        });
+
+        // Award points for completing individual task
+        await supabase.functions.invoke('award-points', {
+          body: {
+            user_id: userId,
+            action: 'task_completed_individual',
+            task_id: selectedTask.id
+          }
         });
 
         toast.success("¡Tarea completada al 100%!");

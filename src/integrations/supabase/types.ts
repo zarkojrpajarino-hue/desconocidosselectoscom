@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string | null
+          description: string | null
+          icon_emoji: string | null
+          id: string
+          name: string
+          points_required: number | null
+          rarity: string | null
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          name: string
+          points_required?: number | null
+          rarity?: string | null
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          name?: string
+          points_required?: number | null
+          rarity?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -42,6 +78,48 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          points: number
+          reason: string | null
+          task_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points: number
+          reason?: string | null
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points?: number
+          reason?: string | null
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_history_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -222,6 +300,92 @@ export type Database = {
           },
           {
             foreignKeyName: "tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          best_streak: number | null
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          perfect_weeks: number | null
+          tasks_completed_total: number | null
+          tasks_validated_total: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          best_streak?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          perfect_weeks?: number | null
+          tasks_completed_total?: number | null
+          tasks_validated_total?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          best_streak?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          perfect_weeks?: number | null
+          tasks_completed_total?: number | null
+          tasks_validated_total?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string | null
+          earned_at: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
