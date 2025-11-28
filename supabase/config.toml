@@ -86,3 +86,12 @@ verify_jwt = false
 
 [functions.award-points]
 verify_jwt = true
+
+[functions.google-auth-url]
+verify_jwt = true
+
+[functions.google-auth-callback]
+verify_jwt = true
+
+[functions.sync-calendar-events]
+verify_jwt = true

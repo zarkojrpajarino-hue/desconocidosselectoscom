@@ -50,6 +50,92 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_event_mappings: {
+        Row: {
+          calendar_id: string
+          created_at: string | null
+          google_event_id: string
+          id: string
+          task_schedule_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          calendar_id: string
+          created_at?: string | null
+          google_event_id: string
+          id?: string
+          task_schedule_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          calendar_id?: string
+          created_at?: string | null
+          google_event_id?: string
+          id?: string
+          task_schedule_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_event_mappings_task_schedule_id_fkey"
+            columns: ["task_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "task_schedule"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_event_mappings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      google_calendar_tokens: {
+        Row: {
+          access_token: string
+          calendar_id: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          refresh_token: string
+          token_expiry: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          refresh_token: string
+          token_expiry: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          refresh_token?: string
+          token_expiry?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_calendar_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

@@ -136,6 +136,18 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
       if (error) throw error;
 
       toast.success('✅ Tarea aceptada');
+
+      // 🔄 Sincronizar con Google Calendar automáticamente
+      try {
+        await supabase.functions.invoke('sync-calendar-events', {
+          body: { user_id: userId },
+        });
+        console.log('✅ Calendar synced after task acceptance');
+      } catch (syncError) {
+        console.error('Error syncing calendar:', syncError);
+        // No mostrar error al usuario, es opcional
+      }
+
       fetchSchedule();
     } catch (error) {
       console.error('Error accepting task:', error);
