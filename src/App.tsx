@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -13,7 +13,6 @@ import Herramientas from "./pages/Herramientas";
 import Practicar from "./pages/Practicar";
 import Calculadora from "./pages/Calculadora";
 import NotFound from "./pages/NotFound";
-import BottomNavbar from "@/components/BottomNavbar";
 
 // Herramientas sub-pages
 import LeadScoring from "./pages/herramientas/LeadScoring";
@@ -29,39 +28,33 @@ import Guia from "./pages/practicar/Guia";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const location = useLocation();
-  const showNavbar = location.pathname !== '/login' && location.pathname !== '/setup';
-
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/setup" element={<Setup />} />
-        
-        {/* Herramientas con sub-rutas */}
-        <Route path="/herramientas" element={<Herramientas />}>
-          <Route path="lead-scoring" element={<LeadScoring />} />
-          <Route path="growth-model" element={<GrowthModel />} />
-          <Route path="buyer-persona" element={<BuyerPersona />} />
-          <Route path="customer-journey" element={<CustomerJourney />} />
-        </Route>
-        
-        {/* Practicar con sub-rutas */}
-        <Route path="/practicar" element={<Practicar />}>
-          <Route path="simulador" element={<Simulador />} />
-          <Route path="playbook" element={<Playbook />} />
-          <Route path="guia" element={<Guia />} />
-        </Route>
-        
-        <Route path="/calculadora" element={<Calculadora />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      {showNavbar && <BottomNavbar />}
-    </>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/setup" element={<Setup />} />
+      
+      {/* Herramientas con sub-rutas */}
+      <Route path="/herramientas" element={<Herramientas />}>
+        <Route path="lead-scoring" element={<LeadScoring />} />
+        <Route path="growth-model" element={<GrowthModel />} />
+        <Route path="buyer-persona" element={<BuyerPersona />} />
+        <Route path="customer-journey" element={<CustomerJourney />} />
+      </Route>
+      
+      {/* Practicar con sub-rutas */}
+      <Route path="/practicar" element={<Practicar />}>
+        <Route path="simulador" element={<Simulador />} />
+        <Route path="playbook" element={<Playbook />} />
+        <Route path="guia" element={<Guia />} />
+      </Route>
+      
+      <Route path="/calculadora" element={<Calculadora />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

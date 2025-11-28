@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock, RefreshCw } from 'lucide-react';
+import { LogOut, Users, Clock, RefreshCw, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -129,6 +129,16 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      {/* Botón Volver al Menú */}
+      <Button
+        variant="outline"
+        onClick={() => navigate('/home')}
+        className="fixed top-4 right-4 z-50 gap-2 shadow-lg"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Volver al Menú</span>
+      </Button>
+
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">

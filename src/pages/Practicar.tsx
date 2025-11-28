@@ -22,18 +22,19 @@ const Practicar = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background">
+      {/* Botón Volver al Menú */}
+      <Button
+        variant="outline"
+        onClick={() => navigate('/home')}
+        className="fixed top-4 right-4 z-50 gap-2 shadow-lg"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Volver al Menú</span>
+      </Button>
+
       <div className="container max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver
-          </Button>
+        <div className="mb-6">
           <h1 className="text-2xl font-bold">🎯 Practicar</h1>
         </div>
 
