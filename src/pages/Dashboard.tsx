@@ -16,6 +16,8 @@ import StatsCards from '@/components/StatsCards';
 import TeamProgress from '@/components/TeamProgress';
 import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
+import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
+import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline, isWeekActive } from '@/lib/weekUtils';
@@ -28,6 +30,10 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<any[]>([]);
   const [isWeekLocked, setIsWeekLocked] = useState(false);
+  const [showAvailabilityBlock, setShowAvailabilityBlock] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
+  const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
 
   useEffect(() => {
@@ -49,6 +55,12 @@ const Dashboard = () => {
     }
   }, [user, systemConfig, userWeeklyData]);
 
+  useEffect(() => {
+    if (user) {
+      checkAvailabilityStatus();
+    }
+  }, [user]);
+
   const fetchSystemConfig = async () => {
     const { data } = await supabase
       .from('system_config')
@@ -69,6 +81,59 @@ const Dashboard = () => {
       .maybeSingle();
     
     if (data) setUserWeeklyData(data);
+  };
+
+  const checkAvailabilityStatus = async () => {
+    if (!user) return;
+
+    try {
+      // Calcular próximo miércoles
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
+      
+      // Si hoy es miércoles y ya pasó la 13:30, siguiente miércoles
+      if (dayOfWeek === 3 && today.getHours() >= 13 && today.getMinutes() >= 30) {
+        daysUntilWednesday = 7;
+      }
+      
+      const nextWed = new Date(today);
+      nextWed.setDate(today.getDate() + daysUntilWednesday);
+      nextWed.setHours(13, 30, 0, 0);
+      
+      setNextWeekStart(nextWed.toISOString().split('T')[0]);
+
+      // Calcular deadline (Lunes 13:00 de esa semana)
+      const deadline = new Date(nextWed);
+      deadline.setDate(nextWed.getDate() - 2); // 2 días antes = Lunes
+      deadline.setHours(13, 0, 0, 0);
+      
+      setAvailabilityDeadline(deadline);
+
+      // Verificar si ya pasó el deadline
+      if (today > deadline) {
+        // Ya pasó el deadline, no bloquear
+        setShowAvailabilityBlock(false);
+        return;
+      }
+
+      // Verificar si usuario completó disponibilidad
+      const { data } = await supabase
+        .from('user_weekly_availability')
+        .select('submitted_at')
+        .eq('user_id', user.id)
+        .eq('week_start', nextWed.toISOString().split('T')[0])
+        .maybeSingle();
+
+      if (!data || !data.submitted_at) {
+        // No ha completado, mostrar bloqueo
+        setShowAvailabilityBlock(true);
+      } else {
+        setShowAvailabilityBlock(false);
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    }
   };
 
   const fetchTasksAndCompletions = async () => {
@@ -190,102 +255,128 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
-        {/* Phase Selector - Only for Admins */}
-        {userProfile?.role === 'admin' && systemConfig && (
-          <PhaseSelector
-            currentPhase={systemConfig.current_phase}
-            onPhaseChange={fetchSystemConfig}
+        {/* MOSTRAR BLOQUEO SI NO COMPLETÓ DISPONIBILIDAD */}
+        {showAvailabilityBlock && !showQuestionnaire && availabilityDeadline && (
+          <AvailabilityBlockScreen
+            deadlineDate={availabilityDeadline}
+            onConfigure={() => setShowQuestionnaire(true)}
           />
         )}
 
-        {/* Countdown */}
-        <CountdownTimer 
-          deadline={getCurrentWeekDeadline().toISOString()}
-          onTimeExpired={setIsWeekLocked}
-        />
+        {/* MOSTRAR CUESTIONARIO SI LO PIDIÓ */}
+        {showQuestionnaire && (
+          <AvailabilityQuestionnaire
+            userId={user!.id}
+            weekStart={nextWeekStart}
+            onComplete={() => {
+              setShowQuestionnaire(false);
+              setShowAvailabilityBlock(false);
+              toast.success('Disponibilidad guardada correctamente');
+            }}
+          />
+        )}
 
-        {/* Urgent Alert */}
-        {!isWeekLocked && (
-          <UrgentAlert
-            deadline={getCurrentWeekDeadline().toISOString()}
-            totalTasks={tasks.length}
-            completedTasks={completions.length}
-            pendingTasks={tasks.filter(
-              task => !completions.some(c => c.task_id === task.id)
+        {/* DASHBOARD NORMAL (solo si no está bloqueado) */}
+        {!showAvailabilityBlock && !showQuestionnaire && (
+          <>
+            {/* Phase Selector - Only for Admins */}
+            {userProfile?.role === 'admin' && systemConfig && (
+              <PhaseSelector
+                currentPhase={systemConfig.current_phase}
+                onPhaseChange={fetchSystemConfig}
+              />
             )}
-          />
-        )}
 
-        {/* Stats */}
-        <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
-
-        {/* Team Progress */}
-        <TeamProgress 
-          currentPhase={systemConfig?.current_phase || 1}
-          currentUserId={user?.id}
-        />
-
-        {/* Swaps Info Card */}
-        {userWeeklyData?.mode && (
-          <Card className="shadow-card bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <RefreshCw className="h-5 w-5" />
-                    Cambios de Tareas Disponibles
-                  </CardTitle>
-                  <CardDescription className="mt-1">
-                    Puedes intercambiar tareas que no te convengan esta semana
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {remainingSwaps}/{limit}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Modo <span className="font-semibold">{userWeeklyData.mode}</span>: 
-                {remainingSwaps > 0 
-                  ? ` Te quedan ${remainingSwaps} cambio${remainingSwaps !== 1 ? 's' : ''} esta semana.`
-                  : ' Has usado todos tus cambios esta semana.'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Work Mode Selector */}
-        <WorkModeSelector
-          userId={user?.id}
-          currentMode={userWeeklyData?.mode}
-          onModeChange={fetchUserWeeklyData}
-        />
-
-        {/* Progress Bar */}
-        <ProgressBar
-          completedTasks={fullyCompletedCount}
-          totalTasks={tasks.length}
-        />
-
-        {/* Task List */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Mis Tareas Esta Semana</CardTitle>
-            <CardDescription>
-              Tareas asignadas a ti en esta fase
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TaskList
-              userId={user?.id}
-              currentPhase={systemConfig?.current_phase}
-              isLocked={isWeekLocked}
-              mode={userWeeklyData?.mode || 'moderado'}
-              taskLimit={userWeeklyData?.task_limit}
+            {/* Countdown */}
+            <CountdownTimer 
+              deadline={getCurrentWeekDeadline().toISOString()}
+              onTimeExpired={setIsWeekLocked}
             />
-          </CardContent>
-        </Card>
+
+            {/* Urgent Alert */}
+            {!isWeekLocked && (
+              <UrgentAlert
+                deadline={getCurrentWeekDeadline().toISOString()}
+                totalTasks={tasks.length}
+                completedTasks={completions.length}
+                pendingTasks={tasks.filter(
+                  task => !completions.some(c => c.task_id === task.id)
+                )}
+              />
+            )}
+
+            {/* Stats */}
+            <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
+
+            {/* Team Progress */}
+            <TeamProgress 
+              currentPhase={systemConfig?.current_phase || 1}
+              currentUserId={user?.id}
+            />
+
+            {/* Swaps Info Card */}
+            {userWeeklyData?.mode && (
+              <Card className="shadow-card bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <RefreshCw className="h-5 w-5" />
+                        Cambios de Tareas Disponibles
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        Puedes intercambiar tareas que no te convengan esta semana
+                      </CardDescription>
+                    </div>
+                    <Badge variant="secondary" className="text-lg px-4 py-2">
+                      {remainingSwaps}/{limit}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Modo <span className="font-semibold">{userWeeklyData.mode}</span>: 
+                    {remainingSwaps > 0 
+                      ? ` Te quedan ${remainingSwaps} cambio${remainingSwaps !== 1 ? 's' : ''} esta semana.`
+                      : ' Has usado todos tus cambios esta semana.'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Work Mode Selector */}
+            <WorkModeSelector
+              userId={user?.id}
+              currentMode={userWeeklyData?.mode}
+              onModeChange={fetchUserWeeklyData}
+            />
+
+            {/* Progress Bar */}
+            <ProgressBar
+              completedTasks={fullyCompletedCount}
+              totalTasks={tasks.length}
+            />
+
+            {/* Task List */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Mis Tareas Esta Semana</CardTitle>
+                <CardDescription>
+                  Tareas asignadas a ti en esta fase
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TaskList
+                  userId={user?.id}
+                  currentPhase={systemConfig?.current_phase}
+                  isLocked={isWeekLocked}
+                  mode={userWeeklyData?.mode || 'moderado'}
+                  taskLimit={userWeeklyData?.task_limit}
+                />
+              </CardContent>
+            </Card>
+          </>
+        )}
       </main>
     </div>
   );
