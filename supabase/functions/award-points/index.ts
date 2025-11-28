@@ -191,14 +191,24 @@ async function checkAndAwardBadges(supabase: any, userId: string) {
         badge_id: badge.id,
       });
       
-      // Notificación de badge ganado
+      // Notificación de badge ganado con datos completos para animación
       await supabase.from('notifications').insert({
         user_id: userId,
         type: 'badge_earned',
         title: `¡Nuevo badge desbloqueado! ${badge.icon_emoji}`,
         message: `Has ganado el badge "${badge.name}": ${badge.description}`,
-        metadata: { badge_code: badge.code },
+        metadata: { 
+          badge_code: badge.code,
+          badge_data: {
+            name: badge.name,
+            description: badge.description,
+            icon_emoji: badge.icon_emoji,
+            rarity: badge.rarity,
+          }
+        },
       });
+
+      console.log(`✨ Badge awarded: ${badge.name}`);
     }
   }
 }
