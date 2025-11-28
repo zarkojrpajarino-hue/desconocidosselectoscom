@@ -11,6 +11,8 @@ import TaskImpactMeasurementModal from "./TaskImpactMeasurementModal";
 import { TaskSwapModal } from "./TaskSwapModal";
 import { useTaskSwaps } from "@/hooks/useTaskSwaps";
 import { isUserLeaderOfArea } from "@/lib/areaLeaders";
+import ConfettiEffect from "./ConfettiEffect";
+import BadgeUnlockAnimation from "./BadgeUnlockAnimation";
 
 interface TaskListProps {
   userId: string | undefined;
@@ -32,12 +34,42 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [impactMeasurementModalOpen, setImpactMeasurementModalOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
 
   useEffect(() => {
     if (userId && currentPhase) {
       fetchTasks();
     }
   }, [userId, currentPhase, taskLimit]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // Suscribirse a notificaciones de badges
+    const channel = supabase
+      .channel('badge-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const notification = payload.new as any;
+          if (notification.type === 'badge_earned' && notification.metadata?.badge_data) {
+            setUnlockedBadge(notification.metadata.badge_data);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   const fetchTasks = async () => {
     if (!userId || !currentPhase) return;
@@ -269,6 +301,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           });
 
           toast.success("¡Tarea completada al 100%! +30 puntos 🎮");
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 100);
         } else {
           // Colaborador completa medición → 50%
           if (completion) {
@@ -317,6 +351,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         });
 
         toast.success("¡Tarea completada al 100%! +50 puntos 🎮");
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 100);
       }
 
       await fetchTasks();
@@ -697,6 +733,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           }}
         />
       )}
+
+      {/* Confetti al completar tareas */}
+      <ConfettiEffect trigger={showConfetti} type="task" />
+
+      {/* Animación de badge desbloqueado */}
+      <BadgeUnlockAnimation
+        badge={unlockedBadge}
+        onClose={() => setUnlockedBadge(null)}
+      />
     </>
   );
 };

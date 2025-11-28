@@ -56,6 +56,12 @@ const RescheduleModal = ({
     }
   }, [open, task]);
 
+  const calculateDurationForUI = (start: string, end: string): number => {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  };
+
   const checkAlternatives = async () => {
     if (!selectedDate || !selectedStart || !selectedEnd) return;
 
@@ -96,24 +102,34 @@ const RescheduleModal = ({
     }
   };
 
+  const calculateDuration = (start: string, end: string): number => {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  };
+
   const findAlternativeSlots = async (): Promise<AlternativeSlot[]> => {
-    // Aquí deberías llamar a una edge function que busque slots compatibles
-    // Por ahora, retornamos ejemplo
-    return [
-      {
-        date: selectedDate,
-        start: '14:00',
-        end: '16:00',
-        is_available: true,
-      },
-      {
-        date: selectedDate,
-        start: '16:00',
-        end: '18:00',
-        is_available: false,
-        conflict_reason: 'Colaborador ocupado',
-      },
-    ];
+    try {
+      const duration = calculateDuration(task.scheduled_start, task.scheduled_end);
+      
+      const { data, error } = await supabase.functions.invoke('find-alternative-slots', {
+        body: {
+          user_id: userId,
+          collaborator_user_id: task.collaborator_user_id,
+          week_start: weekStart,
+          duration_hours: duration / 60,
+          exclude_schedule_id: task.id,
+        },
+      });
+
+      if (error) throw error;
+
+      return data.alternatives || [];
+    } catch (error) {
+      console.error('Error finding alternatives:', error);
+      toast.error('Error al buscar horarios alternativos');
+      return [];
+    }
   };
 
   const timesOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
