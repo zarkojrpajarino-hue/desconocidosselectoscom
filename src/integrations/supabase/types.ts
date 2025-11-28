@@ -218,6 +218,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          leader_comment: string | null
           mode: string
           new_description: string | null
           new_title: string
@@ -229,6 +230,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          leader_comment?: string | null
           mode: string
           new_description?: string | null
           new_title: string
@@ -240,6 +242,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          leader_comment?: string | null
           mode?: string
           new_description?: string | null
           new_title?: string

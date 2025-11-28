@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RefreshCw, Check, X, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -50,7 +51,12 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
   const [alternatives, setAlternatives] = useState<TaskAlternative[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [leaderComment, setLeaderComment] = useState('');
+  const [showCommentError, setShowCommentError] = useState(false);
   const { toast } = useToast();
+  
+  // Determinar si el usuario actual es líder de la tarea
+  const isLeaderSwapping = task.leader_id === userId;
 
   useEffect(() => {
     generateAlternatives();
@@ -92,6 +98,17 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
 
     const selected = alternatives.find(a => a.id === selectedId);
     if (!selected) return;
+
+    // Validar que el líder haya escrito el comentario (obligatorio)
+    if (isLeaderSwapping && !leaderComment.trim()) {
+      setShowCommentError(true);
+      toast({
+        title: "⚠️ Campo obligatorio",
+        description: "Debes explicar por qué cambias esta tarea",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       // VALIDACIÓN DE SEGURIDAD: Verificar permisos
@@ -164,10 +181,40 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
           new_title: selected.title,
           new_description: selected.description,
           week_number: weekNumber,
-          mode: mode
+          mode: mode,
+          leader_comment: isLeaderSwapping ? leaderComment.trim() : null
         });
 
       if (swapError) throw swapError;
+
+      // 3. Si un líder cambia la tarea de otra persona, enviar notificación
+      if (isLeaderSwapping && task.user_id !== userId) {
+        // Insertar notificación en la base de datos
+        await supabase.from('notifications').insert({
+          user_id: task.user_id,
+          type: 'task_changed_by_leader',
+          message: `🔄 Tu líder cambió tu tarea: "${task.title}" → "${selected.title}". Razón: ${leaderComment.trim()}`
+        });
+
+        // Obtener datos del líder para el email
+        const { data: leaderData } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', userId)
+          .single();
+
+        // Enviar email al usuario afectado
+        await supabase.functions.invoke('send-task-change-email', {
+          body: {
+            to_user_id: task.user_id,
+            old_title: task.title,
+            new_title: selected.title,
+            new_description: selected.description,
+            leader_name: leaderData?.full_name || 'Tu líder',
+            leader_comment: leaderComment.trim()
+          }
+        });
+      }
 
       toast({
         title: "✅ Tarea actualizada",
@@ -233,6 +280,26 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
               {mode === 'conservador' && ' Prueba cambiar a modo Moderado (7 cambios) o Agresivo (10 cambios).'}
             </AlertDescription>
           </Alert>
+        )}
+
+        {isLeaderSwapping && (
+          <div className="mb-4 space-y-2">
+            <label className="text-sm font-semibold text-foreground">
+              ¿Por qué quieres cambiar esta tarea? <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={leaderComment}
+              onChange={(e) => {
+                setLeaderComment(e.target.value);
+                setShowCommentError(false);
+              }}
+              placeholder="Explica la razón del cambio al colaborador..."
+              className={`min-h-[100px] ${showCommentError && !leaderComment.trim() ? 'border-red-500' : ''}`}
+            />
+            {showCommentError && !leaderComment.trim() && (
+              <p className="text-xs text-red-500">Este campo es obligatorio</p>
+            )}
+          </div>
         )}
 
         {loading ? (
