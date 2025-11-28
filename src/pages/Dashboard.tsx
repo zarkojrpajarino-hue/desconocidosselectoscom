@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock, RefreshCw, ArrowLeft } from 'lucide-react';
+import { LogOut, Users, Clock, RefreshCw, ArrowLeft, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -153,6 +153,16 @@ const Dashboard = () => {
             )}
           </div>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            <Button
+              onClick={() => navigate('/gamification')}
+              variant="outline"
+              size="sm"
+              className="gap-1 md:gap-2 text-xs md:text-sm bg-gradient-primary/10 hover:bg-gradient-primary/20"
+            >
+              <Trophy className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Gamificación</span>
+              <span className="sm:hidden">🎮</span>
+            </Button>
             {userProfile.role === 'admin' && (
               <Button
                 onClick={() => navigate('/admin')}
