@@ -156,33 +156,42 @@ export type Database = {
       }
       task_completions: {
         Row: {
+          ai_questions: Json | null
           collaborator_feedback: Json | null
           completed_at: string | null
           completed_by_user: boolean | null
           id: string
+          impact_measurement: Json | null
           leader_evaluation: Json | null
+          leader_feedback: Json | null
           task_id: string
           user_id: string
           user_insights: Json | null
           validated_by_leader: boolean | null
         }
         Insert: {
+          ai_questions?: Json | null
           collaborator_feedback?: Json | null
           completed_at?: string | null
           completed_by_user?: boolean | null
           id?: string
+          impact_measurement?: Json | null
           leader_evaluation?: Json | null
+          leader_feedback?: Json | null
           task_id: string
           user_id: string
           user_insights?: Json | null
           validated_by_leader?: boolean | null
         }
         Update: {
+          ai_questions?: Json | null
           collaborator_feedback?: Json | null
           completed_at?: string | null
           completed_by_user?: boolean | null
           id?: string
+          impact_measurement?: Json | null
           leader_evaluation?: Json | null
+          leader_feedback?: Json | null
           task_id?: string
           user_id?: string
           user_insights?: Json | null
