@@ -150,18 +150,20 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      {/* Botón Volver al Menú */}
+      <Button
+        variant="outline"
+        onClick={() => navigate('/home')}
+        className="fixed top-4 right-4 z-50 gap-2 shadow-lg"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Volver al Menú</span>
+      </Button>
+
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 md:gap-3">
-            <Button
-              onClick={() => navigate('/dashboard')}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 md:h-10 md:w-10"
-            >
-              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
             <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Panel de Administración
             </h1>
