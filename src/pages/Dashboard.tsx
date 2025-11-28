@@ -22,6 +22,7 @@ import WeeklyAgenda from '@/components/WeeklyAgenda';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline, isWeekActive } from '@/lib/weekUtils';
+import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 
 const Dashboard = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -317,6 +318,9 @@ const Dashboard = () => {
 
             {/* Stats */}
             <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} taskLimit={userWeeklyData?.task_limit} />
+
+            {/* Google Calendar Connect */}
+            {user && <GoogleCalendarConnect userId={user.id} />}
 
             {/* Team Progress */}
             <TeamProgress 
