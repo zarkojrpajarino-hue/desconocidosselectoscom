@@ -1,55 +1,61 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
-import { Gamepad2, BookOpen, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { NavLink } from '@/components/NavLink';
+import { useEffect } from 'react';
 
 const Practicar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const practices = [
-    {
-      title: 'Simulador Ventas',
-      description: 'Practica escenarios de venta',
-      icon: Gamepad2,
-      path: '/practicar/simulador'
-    },
-    {
-      title: 'Sales Playbook',
-      description: 'Libro de jugadas de ventas',
-      icon: BookOpen,
-      path: '/practicar/playbook'
-    },
-    {
-      title: 'Guía Comunicación',
-      description: 'Mejora tu comunicación',
-      icon: MessageSquare,
-      path: '/practicar/comunicacion'
+  // Redirigir a simulador si estamos en /practicar exacto
+  useEffect(() => {
+    if (location.pathname === '/practicar') {
+      navigate('/practicar/simulador', { replace: true });
     }
+  }, [location.pathname, navigate]);
+
+  const tabs = [
+    { path: '/practicar/simulador', label: 'Simulador Ventas' },
+    { path: '/practicar/playbook', label: 'Sales Playbook' },
+    { path: '/practicar/guia', label: 'Guía Comunicación' }
   ];
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">🎯 Practicar</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {practices.map((practice) => {
-            const Icon = practice.icon;
-            return (
-              <Card
-                key={practice.path}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => navigate(practice.path)}
+      <div className="container max-w-6xl mx-auto px-4 py-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/home')}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </Button>
+          <h1 className="text-2xl font-bold">🎯 Practicar</h1>
+        </div>
+
+        {/* Tabs superiores */}
+        <div className="border-b border-border mb-6 overflow-x-auto">
+          <div className="flex gap-1 min-w-max">
+            {tabs.map((tab) => (
+              <NavLink
+                key={tab.path}
+                to={tab.path}
+                className="px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent whitespace-nowrap"
+                activeClassName="text-primary border-primary"
               >
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-3">
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle>{practice.title}</CardTitle>
-                  <CardDescription>{practice.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            );
-          })}
+                {tab.label}
+              </NavLink>
+            ))}
+          </div>
+        </div>
+
+        {/* Contenido de la sub-ruta */}
+        <div className="bg-card rounded-lg border p-6">
+          <Outlet />
         </div>
       </div>
     </div>
