@@ -1,10 +1,11 @@
 const BuyerPersona = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Buyer Persona</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se importará el HTML de Buyer Persona)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/buyer-persona.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Buyer Persona"
+      />
     </div>
   );
 };

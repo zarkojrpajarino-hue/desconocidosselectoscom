@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growth Model - Experiencia Selecta</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 50px;
+        }
+        
+        .intro-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 35px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border-left: 6px solid #3b82f6;
+        }
+        
+        .intro-section h2 {
+            font-size: 28px;
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .intro-section p {
+            font-size: 18px;
+            color: #1e3a8a;
+            line-height: 1.8;
+        }
+        
+        .timeline-container {
+            position: relative;
+            margin: 50px 0;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #e74c3c 0%, #f39c12 25%, #3498db 50%, #27ae60 75%, #27ae60 100%);
+            border-radius: 10px;
+            z-index: 0;
+        }
+        
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .phase-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-top: 8px solid;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .phase-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .phase-card.phase-1 {
+            border-color: #e74c3c;
+            background: linear-gradient(180deg, #ffffff 0%, #fee2e2 100%);
+        }
+        
+        .phase-card.phase-2 {
+            border-color: #f39c12;
+            background: linear-gradient(180deg, #ffffff 0%, #fef3c7 100%);
+        }
+        
+        .phase-card.phase-3 {
+            border-color: #3498db;
+            background: linear-gradient(180deg, #ffffff 0%, #dbeafe 100%);
+        }
+        
+        .phase-card.phase-4 {
+            border-color: #27ae60;
+            background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%);
+        }
+        
+        .phase-number {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            border: 5px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .phase-1 .phase-number {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        .phase-2 .phase-number {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        
+        .phase-3 .phase-number {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+        
+        .phase-4 .phase-number {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        
+        .phase-header {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .phase-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .phase-1 .phase-title {
+            color: #c0392b;
+        }
+        
+        .phase-2 .phase-title {
+            color: #e67e22;
+        }
+        
+        .phase-3 .phase-title {
+            color: #2980b9;
+        }
+        
+        .phase-4 .phase-title {
+            color: #229954;
+        }
+        
+        .phase-timeline {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        
+        .phase-target {
+            background: rgba(0,0,0,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .target-number {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .phase-1 .target-number {
+            color: #e74c3c;
+        }
+        
+        .phase-2 .target-number {
+            color: #f39c12;
+        }
+        
+        .phase-3 .target-number {
+            color: #3498db;
+        }
+        
+        .phase-4 .target-number {
+            color: #27ae60;
+        }
+        
+        .target-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .actions-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        
+        .actions-list li {
+            padding: 10px 0;
+            padding-left: 28px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #2c3e50;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .actions-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .actions-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: 800;
+            font-size: 18px;
+        }
+        
+        .phase-1 .actions-list li:before {
+            color: #e74c3c;
+        }
+        
+        .phase-2 .actions-list li:before {
+            color: #f39c12;
+        }
+        
+        .phase-3 .actions-list li:before {
+            color: #3498db;
+        }
+        
+        .phase-4 .actions-list li:before {
+            color: #27ae60;
+        }
+        
+        .metrics-box {
+            background: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .metric-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-weight: 800;
+        }
+        
+        .phase-1 .metric-value {
+            color: #e74c3c;
+        }
+        
+        .phase-2 .metric-value {
+            color: #f39c12;
+        }
+        
+        .phase-3 .metric-value {
+            color: #3498db;
+        }
+        
+        .phase-4 .metric-value {
+            color: #27ae60;
+        }
+        
+        .how-to-box {
+            background: rgba(255,255,255,0.7);
+            border: 2px dashed rgba(0,0,0,0.15);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .how-to-box .section-title {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .how-to-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .how-to-list li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .how-to-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        
+        .phase-1 .how-to-list li:before {
+            color: #e74c3c;
+        }
+        
+        .phase-2 .how-to-list li:before {
+            color: #f39c12;
+        }
+        
+        .phase-3 .how-to-list li:before {
+            color: #3498db;
+        }
+        
+        .phase-4 .how-to-list li:before {
+            color: #27ae60;
+        }
+        
+        .chart-section {
+            margin: 50px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 40px;
+            border-radius: 20px;
+        }
+        
+        .chart-section h2 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 800;
+        }
+        
+        canvas {
+            max-height: 400px;
+        }
+        
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .summary-section h2 {
+            font-size: 36px;
+            margin-bottom: 25px;
+            font-weight: 800;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .summary-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .summary-card-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .summary-card-value {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card-desc {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+        
+        .kpi-section {
+            margin: 50px 0;
+        }
+        
+        .kpi-section h2 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 800;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+        
+        .kpi-card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-left: 6px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+        }
+        
+        .kpi-card:nth-child(1) {
+            border-color: #e74c3c;
+        }
+        
+        .kpi-card:nth-child(2) {
+            border-color: #f39c12;
+        }
+        
+        .kpi-card:nth-child(3) {
+            border-color: #3498db;
+        }
+        
+        .kpi-card:nth-child(4) {
+            border-color: #27ae60;
+        }
+        
+        .kpi-card:nth-child(5) {
+            border-color: #9b59b6;
+        }
+        
+        .kpi-card:nth-child(6) {
+            border-color: #1abc9c;
+        }
+        
+        .kpi-card:nth-child(7) {
+            border-color: #e67e22;
+        }
+        
+        .kpi-card:nth-child(8) {
+            border-color: #34495e;
+        }
+        
+        .kpi-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+        
+        .kpi-name {
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .kpi-definition {
+            font-size: 13px;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-style: italic;
+        }
+        
+        .kpi-current {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-target {
+            font-size: 14px;
+            font-weight: 600;
+            color: #27ae60;
+            background: #d1fae5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        @media (max-width: 1200px) {
+            .phases-grid,
+            .summary-grid,
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .phases-grid,
+            .summary-grid,
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 GROWTH MODEL</h1>
+            <p>Plan de Crecimiento Experiencia Selecta | 12 Meses</p>
+        </div>
+        
+        <div class="content">
+            <!-- Introducción -->
+            <div class="intro-section">
+                <h2>🎯 Objetivo: Pasar de 0 a 200 Cestas/Mes en 12 Meses</h2>
+                <p>
+                    Este Growth Model define nuestra estrategia de crecimiento en 4 fases progresivas. 
+                    Cada fase tiene objetivos claros, acciones específicas y métricas medibles. 
+                    El plan es realista, basado en nuestros números actuales (34% margen, €16/mes costes fijos) 
+                    y escalable según resultados.
+                </p>
+            </div>
+            
+            <!-- Timeline visual -->
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+                
+                <div class="phases-grid">
+                    <!-- FASE 1 -->
+                    <div class="phase-card phase-1">
+                        <div class="phase-number">1</div>
+                        
+                        <div class="phase-header">
+                            <div class="phase-title">VALIDACIÓN</div>
+                            <div class="phase-timeline">📅 Mes 1-3</div>
+                        </div>
+                        
+                        <div class="phase-target">
+                            <div class="target-number">20</div>
+                            <div class="target-label">cestas/mes</div>
+                        </div>
+                        
+                        <div class="section-title">🎯 Objetivos</div>
+                        <ul class="actions-list">
+                            <li>Validar producto con primeros clientes</li>
+                            <li>Probar canales de marketing</li>
+                            <li>Establecer procesos base</li>
+                            <li>Recoger feedback inicial</li>
+                        </ul>
+                        
+                        <div class="how-to-box">
+                            <div class="section-title">🚀 ¿Cómo Llegar?</div>
+                            <ul class="how-to-list">
+                                <li>Optimizar web: checkout en 3 pasos</li>
+                                <li>Instagram: 3 posts/semana + stories diarias</li>
+                                <li>Google Ads: €500/mes en palabras clave "cestas gourmet"</li>
+                                <li>Contactar 20 empresas por LinkedIn</li>
+                                <li>Pedir reseña a cada cliente (objetivo: 10 testimonios)</li>
+                                <li>Configurar 15 emails automáticos</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="section-title">📊 Métricas</div>
+                        <div class="metrics-box">
+                            <div class="metric-item">
+                                <span class="metric-label">Ingresos:</span>
+                                <span class="metric-value">€1,284/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Beneficio:</span>
+                                <span class="metric-value">€389/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">CAC Max:</span>
+                                <span class="metric-value">< €15</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FASE 2 -->
+                    <div class="phase-card phase-2">
+                        <div class="phase-number">2</div>
+                        
+                        <div class="phase-header">
+                            <div class="phase-title">OPTIMIZACIÓN</div>
+                            <div class="phase-timeline">📅 Mes 4-6</div>
+                        </div>
+                        
+                        <div class="phase-target">
+                            <div class="target-number">50</div>
+                            <div class="target-label">cestas/mes</div>
+                        </div>
+                        
+                        <div class="section-title">🎯 Objetivos</div>
+                        <ul class="actions-list">
+                            <li>Optimizar conversión web</li>
+                            <li>Reducir CAC a €10-12</li>
+                            <li>Aumentar tasa recompra</li>
+                            <li>Escalar lo que funciona</li>
+                        </ul>
+                        
+                        <div class="how-to-box">
+                            <div class="section-title">🚀 ¿Cómo Llegar?</div>
+                            <ul class="how-to-list">
+                                <li>A/B testing de anuncios (probar 5 variantes)</li>
+                                <li>Aumentar presupuesto ads a €1,000/mes</li>
+                                <li>Lanzar programa puntos (10% dto 2ª compra)</li>
+                                <li>Crear 3 packs corporativos especiales</li>
+                                <li>Cerrar 5 cuentas B2B recurrentes</li>
+                                <li>Añadir chat en vivo en web</li>
+                                <li>Reactivar clientes del mes 1-3</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="section-title">📊 Métricas</div>
+                        <div class="metrics-box">
+                            <div class="metric-item">
+                                <span class="metric-label">Ingresos:</span>
+                                <span class="metric-value">€3,210/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Beneficio:</span>
+                                <span class="metric-value">€997/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">CAC:</span>
+                                <span class="metric-value">€10-12</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FASE 3 -->
+                    <div class="phase-card phase-3">
+                        <div class="phase-number">3</div>
+                        
+                        <div class="phase-header">
+                            <div class="phase-title">CRECIMIENTO</div>
+                            <div class="phase-timeline">📅 Mes 7-9</div>
+                        </div>
+                        
+                        <div class="phase-target">
+                            <div class="target-number">100</div>
+                            <div class="target-label">cestas/mes</div>
+                        </div>
+                        
+                        <div class="section-title">🎯 Objetivos</div>
+                        <ul class="actions-list">
+                            <li>Duplicar ventas mensuales</li>
+                            <li>Diversificar canales</li>
+                            <li>Fortalecer B2B</li>
+                            <li>Aumentar ticket medio</li>
+                        </ul>
+                        
+                        <div class="how-to-box">
+                            <div class="section-title">🚀 ¿Cómo Llegar?</div>
+                            <ul class="how-to-list">
+                                <li>Escalar ads a €2,000/mes (multi-canal)</li>
+                                <li>Colaborar con 3 influencers food</li>
+                                <li>Partnership con 2 empresas eventos</li>
+                                <li>Lanzar catálogo corporativo PDF profesional</li>
+                                <li>Email a clientes inactivos (oferta 15%)</li>
+                                <li>Crear cestas premium €120-150</li>
+                                <li>Asistir a 2 ferias B2B</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="section-title">📊 Métricas</div>
+                        <div class="metrics-box">
+                            <div class="metric-item">
+                                <span class="metric-label">Ingresos:</span>
+                                <span class="metric-value">€6,419/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Beneficio:</span>
+                                <span class="metric-value">€2,009/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">LTV:</span>
+                                <span class="metric-value">€120+</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FASE 4 -->
+                    <div class="phase-card phase-4">
+                        <div class="phase-number">4</div>
+                        
+                        <div class="phase-header">
+                            <div class="phase-title">ESCALADO</div>
+                            <div class="phase-timeline">📅 Mes 10-12</div>
+                        </div>
+                        
+                        <div class="phase-target">
+                            <div class="target-number">200</div>
+                            <div class="target-label">cestas/mes</div>
+                        </div>
+                        
+                        <div class="section-title">🎯 Objetivos</div>
+                        <ul class="actions-list">
+                            <li>Consolidar operaciones</li>
+                            <li>Maximizar rentabilidad</li>
+                            <li>Preparar expansión</li>
+                            <li>Sistema sostenible</li>
+                        </ul>
+                        
+                        <div class="how-to-box">
+                            <div class="section-title">🚀 ¿Cómo Llegar?</div>
+                            <ul class="how-to-list">
+                                <li>Automatizar procesos (pedidos, emails, facturación)</li>
+                                <li>Expandir a Amazon + Marketplace</li>
+                                <li>Contratar freelance packaging part-time</li>
+                                <li>Negociar mejores precios proveedores (volumen)</li>
+                                <li>10+ cuentas corporativas activas</li>
+                                <li>Campaña Navidad agresiva (€3K ads)</li>
+                                <li>Planificar 2026: nuevos productos</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="section-title">📊 Métricas</div>
+                        <div class="metrics-box">
+                            <div class="metric-item">
+                                <span class="metric-label">Ingresos:</span>
+                                <span class="metric-value">€12,838/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Beneficio:</span>
+                                <span class="metric-value">€4,034/mes</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">ROI:</span>
+                                <span class="metric-value">100%+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de crecimiento -->
+            <div class="chart-section">
+                <h2>📈 Proyección de Crecimiento</h2>
+                <canvas id="growthChart"></canvas>
+            </div>
+            
+            <!-- KPIs a monitorizar -->
+            <div class="kpi-section">
+                <h2>📊 KPIs Críticos a Monitorizar</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🎯</div>
+                        <div class="kpi-name">Ventas/Mes</div>
+                        <div class="kpi-definition">
+                            Número total de cestas vendidas cada mes. Indica si estamos creciendo al ritmo esperado.
+                        </div>
+                        <div class="kpi-current">20 → 200</div>
+                        <div class="kpi-target">Meta: 200 cestas/mes</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">💰</div>
+                        <div class="kpi-name">Ingresos Mensuales</div>
+                        <div class="kpi-definition">
+                            Dinero total que entra por ventas cada mes. Mide el tamaño del negocio.
+                        </div>
+                        <div class="kpi-current">€1.2K → €12.8K</div>
+                        <div class="kpi-target">Crecimiento 10x</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">💵</div>
+                        <div class="kpi-name">CAC</div>
+                        <div class="kpi-definition">
+                            <strong>Coste de Adquisición de Cliente:</strong> Cuánto gastamos en marketing para conseguir 1 cliente. 
+                            Ejemplo: €500 en ads / 50 clientes = €10 CAC.
+                        </div>
+                        <div class="kpi-current">€15 → €8</div>
+                        <div class="kpi-target">Reducción constante</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🔄</div>
+                        <div class="kpi-name">LTV</div>
+                        <div class="kpi-definition">
+                            <strong>Lifetime Value:</strong> Cuánto dinero gasta un cliente en total (todas sus compras). 
+                            Ejemplo: Si compra 3 veces al año (€64 × 3) = €192 LTV.
+                        </div>
+                        <div class="kpi-current">€64 → €150</div>
+                        <div class="kpi-target">Aumentar recompras</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">📈</div>
+                        <div class="kpi-name">Conversión Web</div>
+                        <div class="kpi-definition">
+                            Porcentaje de visitantes web que compran. Ejemplo: 100 visitas, 2 compras = 2% conversión.
+                        </div>
+                        <div class="kpi-current">2% → 5%</div>
+                        <div class="kpi-target">Optimización continua</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">⭐</div>
+                        <div class="kpi-name">NPS</div>
+                        <div class="kpi-definition">
+                            <strong>Net Promoter Score:</strong> Mide satisfacción del cliente. 
+                            Se pregunta "¿Recomendarías?" (0-10). Puntuación >70 = excelente.
+                        </div>
+                        <div class="kpi-current">- → 70+</div>
+                        <div class="kpi-target">Satisfacción alta</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🏢</div>
+                        <div class="kpi-name">Clientes B2B</div>
+                        <div class="kpi-definition">
+                            Empresas que compran recurrentemente (mensual/trimestral). Ingresos más estables y predecibles.
+                        </div>
+                        <div class="kpi-current">0 → 15</div>
+                        <div class="kpi-target">Cuentas recurrentes</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">📊</div>
+                        <div class="kpi-name">Margen Operativo</div>
+                        <div class="kpi-definition">
+                            Porcentaje de ganancia después de todos los costes. Indica eficiencia del negocio.
+                        </div>
+                        <div class="kpi-current">34% → 36%</div>
+                        <div class="kpi-target">Mantener rentabilidad</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumen final -->
+            <div class="summary-section">
+                <h2>🎯 Resumen: Al Final del Año 1</h2>
+                <p style="font-size: 20px; margin-bottom: 20px; opacity: 0.95;">
+                    Si ejecutamos este plan con disciplina, estos son los resultados esperados:
+                </p>
+                
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-card-title">Ventas Mensuales</div>
+                        <div class="summary-card-value">200</div>
+                        <div class="summary-card-desc">cestas/mes</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="summary-card-title">Ingresos Anuales</div>
+                        <div class="summary-card-value">€77K</div>
+                        <div class="summary-card-desc">en ventas totales</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="summary-card-title">Beneficio Anual</div>
+                        <div class="summary-card-value">€24K</div>
+                        <div class="summary-card-desc">ganancia neta</div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="summary-card-title">Clientes Activos</div>
+                        <div class="summary-card-value">300+</div>
+                        <div class="summary-card-desc">base de clientes</div>
+                    </div>
+                </div>
+                
+                <p style="font-size: 24px; margin-top: 40px; font-weight: 700;">
+                    Con estos números, Experiencia Selecta pasa de ser un proyecto a ser un <strong>NEGOCIO RENTABLE Y ESCALABLE</strong> 🚀
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Gráfico de crecimiento
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4', 'Mes 5', 'Mes 6', 'Mes 7', 'Mes 8', 'Mes 9', 'Mes 10', 'Mes 11', 'Mes 12'],
+                datasets: [{
+                    label: 'Cestas Vendidas',
+                    data: [10, 15, 20, 30, 40, 50, 65, 80, 100, 140, 170, 200],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 4,
+                    fill: true,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#667eea'
+                }, {
+                    label: 'Beneficio Neto (€)',
+                    data: [180, 290, 389, 589, 789, 997, 1284, 1584, 2009, 2784, 3384, 4034],
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 4,
+                    fill: true,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#27ae60'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 15,
+                        titleFont: {
+                            size: 16
+                        },
+                        bodyFont: {
+                            size: 14
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

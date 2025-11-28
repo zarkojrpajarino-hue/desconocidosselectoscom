@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Playbook - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 24px;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 60px 50px;
+        }
+        
+        .intro-section {
+            background: #fef3c7;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            border-left: 8px solid #f59e0b;
+        }
+        
+        .intro-section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #92400e;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .intro-section .big-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #92400e;
+            text-align: center;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .intro-section ul {
+            list-style: none;
+            padding: 0;
+            font-size: 20px;
+            color: #78350f;
+        }
+        
+        .intro-section li {
+            padding: 12px 0;
+            padding-left: 40px;
+            position: relative;
+        }
+        
+        .intro-section li:before {
+            content: "🔑";
+            position: absolute;
+            left: 0;
+            font-size: 24px;
+        }
+        
+        .section-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 60px 0 40px 0;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #10b981;
+        }
+        
+        .scenario-card {
+            background: #f8fafc;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scenario-icon {
+            font-size: 56px;
+        }
+        
+        .scenario-info h3 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .scenario-tone {
+            font-size: 18px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .channel-section {
+            margin: 30px 0;
+        }
+        
+        .channel-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #3b82f6;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            background: #dbeafe;
+            border-radius: 10px;
+        }
+        
+        .speech-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #10b981;
+            margin: 20px 0;
+            font-size: 18px;
+            line-height: 1.8;
+            font-style: italic;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            color: #92400e;
+            font-style: normal;
+        }
+        
+        .key-phrases {
+            background: #ede9fe;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .key-phrases h4 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #7c3aed;
+            margin-bottom: 15px;
+        }
+        
+        .key-phrases ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .key-phrases li {
+            padding: 10px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 17px;
+            font-weight: 600;
+        }
+        
+        .key-phrases li:before {
+            content: "💬";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+        }
+        
+        .objections-section {
+            background: #fee2e2;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #ef4444;
+        }
+        
+        .objections-section h4 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #991b1b;
+            margin-bottom: 20px;
+        }
+        
+        .objection-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .objection-question {
+            font-size: 18px;
+            font-weight: 700;
+            color: #991b1b;
+            margin-bottom: 12px;
+        }
+        
+        .objection-response {
+            font-size: 17px;
+            color: #1e293b;
+            line-height: 1.7;
+        }
+        
+        .closing-section {
+            background: #d1fae5;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #10b981;
+        }
+        
+        .closing-section h4 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #065f46;
+            margin-bottom: 20px;
+        }
+        
+        .closing-section ol {
+            padding-left: 25px;
+            font-size: 17px;
+            color: #1e293b;
+        }
+        
+        .closing-section li {
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .tips-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            text-align: center;
+        }
+        
+        .tips-banner h3 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 30px;
+        }
+        
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .tip-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .tip-card h5 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        
+        .tip-card p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .final-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .final-banner h2 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .final-banner p {
+            font-size: 24px;
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 SALES PLAYBOOK</h1>
+            <p>Guía Completa de Ventas - Experiencia Selecta</p>
+        </div>
+        
+        <div class="content">
+            <!-- INTRO CRÍTICA -->
+            <div class="intro-section">
+                <h2>🔥 CÓMO VENDER EXPERIENCIA SELECTA</h2>
+                <div class="big-text">NO VENDEMOS CESTAS - VENDEMOS EXPERIENCIAS MEMORABLES</div>
+                <ul>
+                    <li><strong>EXPERIENCIA</strong> sobre producto: Nunca digas "cesta gourmet" - di "experiencia gastronómica"</li>
+                    <li><strong>RECUERDOS</strong> sobre objetos: "Crear momentos" / "Vivir una experiencia única"</li>
+                    <li><strong>ALTERNATIVA</strong> a lo monótono: "Diferente a salir de fiesta" / "Romper la rutina"</li>
+                    <li><strong>EMOCIONES</strong> primero: Conectar, compartir, disfrutar, recordar</li>
+                    <li><strong>DEMO</strong> visual si es posible: Una foto/video vale más que mil palabras</li>
+                </ul>
+            </div>
+            
+            <!-- PAREJA -->
+            <h2 class="section-title">💑 PAREJA JOVEN</h2>
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">💑</div>
+                    <div class="scenario-info">
+                        <h3>Pareja Joven (25-35 años)</h3>
+                        <div class="scenario-tone">Tono: Íntimo, romántico, experiencia única</div>
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">📸 Instagram DM</div>
+                    <div class="speech-box">
+                        "Hola! 👋 Vi que te encanta la gastronomía. ¿Y si tu próximo plan no es salir de fiesta sino una <span class="highlight">EXPERIENCIA GOURMET</span> en casa? 🍷✨ Imagina una noche especial con productos premium + dinámicas para <span class="highlight">conectar como pareja</span>."
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">💬 WhatsApp</div>
+                    <div class="speech-box">
+                        "Hey! 😊 Tengo algo que te va a encantar. ¿Conoces Experiencia Selecta? Es una forma de tener una <span class="highlight">NOCHE ESPECIAL</span> en casa sin el ruido de los bares. Jamón, vinos, quesos + un QR con <span class="highlight">juegos para parejas</span>. ¿Te cuento más?"
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">📧 Email</div>
+                    <div class="speech-box">
+                        <strong>Asunto: Una noche diferente para vosotros dos ✨</strong><br><br>
+                        Hola!<br><br>
+                        Sé que siempre buscáis planes originales. ¿Qué os parecería una <span class="highlight">EXPERIENCIA GOURMET</span> en casa? No es una cesta cualquiera - es un <span class="highlight">plan completo</span>: productos ibéricos premium + dinámicas interactivas para conectar.<br><br>
+                        Es la alternativa perfecta al típico "salir de fiesta". Más íntimo, más especial, más memorable.
+                    </div>
+                </div>
+                
+                <div class="key-phrases">
+                    <h4>🔑 Frases Clave para Parejas:</h4>
+                    <ul>
+                        <li>"Una <strong>NOCHE ESPECIAL</strong> sin salir de casa"</li>
+                        <li>"<strong>CONECTAR</strong> como pareja de forma diferente"</li>
+                        <li>"Crear un <strong>RECUERDO MEMORABLE</strong>"</li>
+                        <li>"Más <strong>ÍNTIMO</strong> que un restaurante"</li>
+                        <li>"Una <strong>EXPERIENCIA ROMÁNTICA</strong> única"</li>
+                        <li>"El precio de 2 copas, pero el valor es <strong>INOLVIDABLE</strong>"</li>
+                    </ul>
+                </div>
+                
+                <div class="objections-section">
+                    <h4>🛡️ Manejo de Objeciones - Parejas:</h4>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"¿Cuánto cuesta?"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Tenemos desde €50 para dos personas. Piensa que es el precio de 2 copas en un bar, pero con una <strong>experiencia que recordaréis</strong>. ¿Prefieres algo más premium o empezamos con la opción romántica?"<br><br>
+                            <strong>Reencuadre:</strong> No es un gasto - es una <strong>INVERSIÓN en crear recuerdos</strong> juntos.
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"Preferimos salir"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Totalmente válido! Pero esto es justo para <strong>ALTERNAR</strong>. No es quedarse en casa aburridos - es tener una experiencia que en un bar ruidoso no podríais tener. ¿Cuándo fue la última vez que tuvisteis una conversación profunda en un bar?"<br><br>
+                            <strong>Clave:</strong> Posiciónalo como <strong>COMPLEMENTO</strong>, no sustituto.
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"No tengo tiempo"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Por eso mismo es perfecto. No necesitas planear nada - nosotros te damos <strong>TODO LISTO</strong>. Solo abres, escaneas el QR y disfrutáis. 2 horas de <strong>DESCONEXIÓN REAL</strong>. ¿Cuándo fue la última vez que os desconectasteis juntos?"<br><br>
+                            <strong>Beneficio:</strong> <strong>CERO esfuerzo</strong>, máxima experiencia.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="closing-section">
+                    <h4>✅ Cómo Cerrar la Venta - Parejas:</h4>
+                    <ol>
+                        <li><strong>Crea urgencia suave:</strong> "¿Para qué fecha lo necesitarías? Este finde o el que viene?"</li>
+                        <li><strong>Ofrece opciones:</strong> "¿Prefieres la Pareja Gourmet (€50) o la más premium (€60)?"</li>
+                        <li><strong>Facilita el siguiente paso:</strong> "Te paso el link directo ahora - en 24h lo tenéis en casa"</li>
+                        <li><strong>Refuerza el valor:</strong> "Os prometo que vale cada euro. El recuerdo no tiene precio"</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- FAMILIA -->
+            <h2 class="section-title">👨‍👩‍👧‍👦 FAMILIA</h2>
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">👨‍👩‍👧‍👦</div>
+                    <div class="scenario-info">
+                        <h3>Familia (35-55 años)</h3>
+                        <div class="scenario-tone">Tono: Cálido, tradicional, compartir momentos</div>
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">📸 Instagram DM</div>
+                    <div class="speech-box">
+                        "Hola! 😊 ¿Buscas un plan familiar diferente? Experiencia Selecta es perfecta para <span class="highlight">REUNIR A LA FAMILIA</span> sin salir de casa. Productos ibéricos + juegos para todas las edades. ¡Los abuelos lo van a amar!"
+                    </div>
+                </div>
+                
+                <div class="key-phrases">
+                    <h4>🔑 Frases Clave para Familias:</h4>
+                    <ul>
+                        <li>"<strong>REUNIR A LA FAMILIA</strong> de forma especial"</li>
+                        <li>"<strong>TRADICIÓN</strong> + diversión juntas"</li>
+                        <li>"Crear <strong>RECUERDOS FAMILIARES</strong> que duran"</li>
+                        <li>"Para <strong>TODAS LAS EDADES</strong> - de abuelos a nietos"</li>
+                        <li>"<strong>COMPARTIR</strong> es lo más importante"</li>
+                        <li>"Una tarde que <strong>RECORDARÁN SIEMPRE</strong>"</li>
+                    </ul>
+                </div>
+                
+                <div class="objections-section">
+                    <h4>🛡️ Manejo de Objeciones - Familias:</h4>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"¿Los niños pueden participar?"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "¡Por supuesto! Tenemos cestas <strong>sin alcohol</strong> y las dinámicas están adaptadas para que <strong>TODOS participen</strong>. Es perfecto para que los peques descubran sabores nuevos de forma divertida. Muchas familias nos dicen que es la mejor forma de enseñar sobre productos de calidad."
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"Ya comemos en familia"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Exacto, por eso esto es diferente. No es solo comer - es una <strong>EXPERIENCIA COMPLETA</strong> con dinámicas, juegos, preguntas. Convierte una comida normal en algo <strong>MEMORABLE</strong>. ¿Cuántas comidas familiares recordáis dentro de 5 años? Esta sí la van a recordar."
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="closing-section">
+                    <h4>✅ Cómo Cerrar la Venta - Familias:</h4>
+                    <ol>
+                        <li><strong>Pregunta por el tamaño:</strong> "¿Para cuántas personas sois normalmente?"</li>
+                        <li><strong>Sugiere la cesta ideal:</strong> "Para 4-6 personas la Familiar Clásica (€65) es perfecta"</li>
+                        <li><strong>Vincula a fecha:</strong> "¿La queréis para el próximo domingo en familia?"</li>
+                        <li><strong>Cierra con emoción:</strong> "Los niños van a flipar con las dinámicas"</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- AMIGOS -->
+            <h2 class="section-title">🎉 GRUPO DE AMIGOS</h2>
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">🎉</div>
+                    <div class="scenario-info">
+                        <h3>Grupo de Amigos (20-35 años)</h3>
+                        <div class="scenario-tone">Tono: Divertido, alternativo, diferente</div>
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">💬 WhatsApp</div>
+                    <div class="speech-box">
+                        "Tío! Te tengo que contar esto. ¿Conoces Experiencia Selecta? Es un plan <span class="highlight">DIFERENTE</span> para cuando quedáis. En vez de ir de bares, montáis una <span class="highlight">experiencia gourmet con juegos</span>. Suena raro pero créeme, es <span class="highlight">BRUTAL</span>."
+                    </div>
+                </div>
+                
+                <div class="key-phrases">
+                    <h4>🔑 Frases Clave para Amigos:</h4>
+                    <ul>
+                        <li>"La <strong>ALTERNATIVA</strong> a salir de fiesta"</li>
+                        <li>"<strong>DIVERSIÓN GARANTIZADA</strong> sin resaca"</li>
+                        <li>"El plan que <strong>NO SABÍAIS</strong> que necesitabais"</li>
+                        <li>"Productos <strong>TOP</strong> + risas aseguradas"</li>
+                        <li>"<strong>DIFERENTE</strong> a lo de siempre"</li>
+                        <li>"Gastáis <strong>MENOS</strong> que salir y disfrutáis <strong>MÁS</strong>"</li>
+                    </ul>
+                </div>
+                
+                <div class="objections-section">
+                    <h4>🛡️ Manejo de Objeciones - Amigos:</h4>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"¿No es muy caro para todos?"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Al contrario tío. Una noche normal: 15€ bar, 20€ copas, taxi... Ya son 40-50€. Nuestra cesta para grupos va desde €60-90 y sois 4-6. Sale a <strong>15€ POR CABEZA</strong>. ¿Dónde está más caro? Y al día siguiente <strong>NO TIENES RESACA</strong>."<br><br>
+                            <strong>Matemáticas simples:</strong> Divide el precio entre personas = Más barato que salir.
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"Suena aburrido"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Eso pensarías! Pero las dinámicas son <strong>BRUTALES</strong>. Juegos, retos, preguntas... Muchos grupos nos dicen que <strong>SE RÍEN MÁS</strong> que cuando salen. Plus: productos que en un bar jamás probarías. Créeme, es todo lo contrario a aburrido."
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="closing-section">
+                    <h4>✅ Cómo Cerrar la Venta - Amigos:</h4>
+                    <ol>
+                        <li><strong>Crea FOMO:</strong> "Los colegas que ya lo han probado lo repiten"</li>
+                        <li><strong>Vincula al grupo:</strong> "¿Os juntáis este finde o el que viene?"</li>
+                        <li><strong>Sugiere cesta grupal:</strong> "Gran Tertulia (€79.75) es perfecta para 4-6 personas"</li>
+                        <li><strong>Cierra con energía:</strong> "Tío, vas a flipar. Pedidla YA"</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- EMPRESA B2B -->
+            <h2 class="section-title">💼 EMPRESA B2B REAL</h2>
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-icon">💼</div>
+                    <div class="scenario-info">
+                        <h3>Empresa B2B Real</h3>
+                        <div class="scenario-tone">Tono: Profesional, ROI, beneficios corporativos</div>
+                    </div>
+                </div>
+                
+                <div class="channel-section">
+                    <div class="channel-title">📧 Email Corporativo</div>
+                    <div class="speech-box">
+                        <strong>Asunto: Propuesta de valor para [Empresa] - Experiencia Selecta</strong><br><br>
+                        Estimado/a [Nombre],<br><br>
+                        Me dirijo a usted para presentar Experiencia Selecta, una <span class="highlight">solución innovadora</span> en regalos corporativos y team building.<br><br>
+                        <strong>Nuestro valor:</strong><br>
+                        • <span class="highlight">Impacto medible</span> en satisfacción de empleados/clientes<br>
+                        • Personalización completa con <span class="highlight">branding corporativo</span><br>
+                        • Alternativa <span class="highlight">diferenciadora</span> a opciones tradicionales<br>
+                        • <span class="highlight">ROI demostrable</span> en retención y engagement<br><br>
+                        ¿Estaría disponible para una call de 15 minutos esta semana?<br><br>
+                        Saludos cordiales
+                    </div>
+                </div>
+                
+                <div class="key-phrases">
+                    <h4>🔑 Frases Clave para B2B:</h4>
+                    <ul>
+                        <li>"<strong>SOLUCIÓN DIFERENCIADORA</strong> en regalos corporativos"</li>
+                        <li>"<strong>ROI MEDIBLE</strong> en satisfacción"</li>
+                        <li>"<strong>PERSONALIZACIÓN</strong> completa con su marca"</li>
+                        <li>"<strong>IMPACTO</strong> en retención de talento"</li>
+                        <li>"Alternativa a lo <strong>TRADICIONAL</strong> (que ya no sorprende)"</li>
+                        <li>"<strong>ESCALABLE</strong> según necesidades"</li>
+                    </ul>
+                </div>
+                
+                <div class="objections-section">
+                    <h4>🛡️ Manejo de Objeciones - B2B:</h4>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"¿Qué precios manejan?"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Modelo flexible: desde €42/unidad para <strong>volúmenes altos</strong> hasta €100 para cestas premium. Incluimos <strong>personalización sin coste adicional</strong> desde 20 unidades. ¿Qué cantidad estarían considerando? Le puedo preparar una cotización específica."<br><br>
+                            <strong>Siguiente paso:</strong> Enviar propuesta formal con pricing por volumen.
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"Ya tenemos proveedor"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Perfecto. No busco sustituirlo - busco que tengan una <strong>OPCIÓN DIFERENCIADORA</strong> para momentos especiales. Nuestro valor no es solo el producto - es la <strong>EXPERIENCIA MEMORABLE</strong> que genera engagement real. ¿Cuántos de sus regalos actuales generan conversación después?"<br><br>
+                            <strong>Posicionamiento:</strong> Complemento premium, no sustituto.
+                        </div>
+                    </div>
+                    
+                    <div class="objection-item">
+                        <div class="objection-question">"Envíeme información"</div>
+                        <div class="objection-response">
+                            <strong>Respuesta:</strong> "Por supuesto. Le preparo un deck con: propuesta de valor, líneas de producto, estructura de precios corporativos, y <strong>casos de uso</strong>. ¿A qué email se lo envío? Para personalizar mejor: ¿cuál es el caso de uso principal - regalos clientes, incentivos empleados, o team building?"<br><br>
+                            <strong>CRÍTICO:</strong> Asegurar follow-up - agendar call.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="closing-section">
+                    <h4>✅ Cómo Cerrar la Venta - B2B:</h4>
+                    <ol>
+                        <li><strong>Propuesta formal:</strong> Enviar deck profesional con pricing</li>
+                        <li><strong>Casos de éxito:</strong> Mencionar otras empresas (si existen)</li>
+                        <li><strong>Pedido piloto:</strong> "Empecemos con 20 unidades de prueba"</li>
+                        <li><strong>Timeline claro:</strong> "¿Para qué fecha lo necesitan?"</li>
+                        <li><strong>Siguiente call:</strong> Agendar reunión de seguimiento</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- TIPS UNIVERSALES -->
+            <div class="tips-banner">
+                <h3>🎯 REGLAS DE ORO PARA TODAS LAS VENTAS</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <h5>1. EXPERIENCIA > Producto</h5>
+                        <p>Nunca hables solo de jamón y queso. Habla de la EXPERIENCIA, los RECUERDOS, el MOMENTO.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h5>2. Emociones Primero</h5>
+                        <p>Conecta emocionalmente antes de hablar de precio. Si ven el valor emocional, el precio es secundario.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h5>3. Comparaciones Reales</h5>
+                        <p>Compara con alternativas (bar, restaurante, cine). Reencuadra el precio como inversión.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h5>4. Social Proof</h5>
+                        <p>Menciona testimonios, otros clientes, reacciones. "Todos nos dicen que..."</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h5>5. Urgencia Suave</h5>
+                        <p>"¿Para cuándo lo necesitas?" crea movimiento sin presionar agresivamente.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h5>6. Cierre Rápido</h5>
+                        <p>No alargues. Cuando hay interés, da el siguiente paso CLARO: link, fecha, opción.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BANNER FINAL -->
+            <div class="final-banner">
+                <h2>🚀 Ahora Sal y VENDE</h2>
+                <p>Recuerda: Cada venta es una EXPERIENCIA MEMORABLE que estás regalando a alguien.<br>
+                Cree en el producto. Cree en la experiencia. Y ellos creerán también.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

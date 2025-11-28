@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Journey Map - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 30px 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 35px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .journey-container {
+            overflow-x: auto;
+            padding: 0;
+        }
+        
+        .journey-table {
+            width: 100%;
+            min-width: 1600px;
+            border-collapse: collapse;
+        }
+        
+        .journey-table thead th {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+            color: white;
+            padding: 20px 15px;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            border-right: 2px solid white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .journey-table thead th:last-child {
+            border-right: none;
+        }
+        
+        .stage-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            font-size: 18px !important;
+            padding: 25px 15px !important;
+        }
+        
+        .journey-table tbody tr {
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .journey-table tbody td {
+            padding: 20px 15px;
+            vertical-align: top;
+            border-right: 2px solid #e5e7eb;
+            font-size: 13px;
+            line-height: 1.6;
+            background: white;
+        }
+        
+        .journey-table tbody td:last-child {
+            border-right: none;
+        }
+        
+        .row-label {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+            color: white;
+            font-weight: 700;
+            font-size: 14px !important;
+            text-align: center;
+            width: 180px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .activity-cell {
+            background: #f0f9ff !important;
+            color: #1e40af;
+        }
+        
+        .goal-cell {
+            background: #fef3c7 !important;
+            color: #78350f;
+        }
+        
+        .touchpoint-cell {
+            background: #f3e8ff !important;
+            color: #6b21a8;
+            text-align: center;
+        }
+        
+        .icon-grid {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: 24px;
+        }
+        
+        .experience-cell {
+            background: #ddd6fe !important;
+            text-align: center;
+            font-size: 32px;
+        }
+        
+        .emotion-text {
+            display: block;
+            font-size: 12px;
+            margin-top: 8px;
+            font-style: italic;
+            color: #5b21b6;
+        }
+        
+        .business-goal-cell {
+            background: #dcfce7 !important;
+            color: #14532d;
+            font-weight: 600;
+        }
+        
+        .kpi-cell {
+            background: #fee2e2 !important;
+            color: #7f1d1d;
+        }
+        
+        .kpi-cell ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .kpi-cell li {
+            padding: 4px 0;
+            padding-left: 18px;
+            position: relative;
+        }
+        
+        .kpi-cell li:before {
+            content: "📊";
+            position: absolute;
+            left: 0;
+        }
+        
+        .activities-cell {
+            background: #e0f2fe !important;
+            color: #0c4a6e;
+        }
+        
+        .activities-cell ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .activities-cell li {
+            padding: 4px 0;
+            padding-left: 18px;
+            position: relative;
+        }
+        
+        .activities-cell li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #0284c7;
+            font-size: 20px;
+            line-height: 14px;
+        }
+        
+        .responsible-cell {
+            background: #fef3c7 !important;
+            color: #78350f;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .tech-cell {
+            background: #f3f4f6 !important;
+            color: #1f2937;
+            font-size: 12px;
+        }
+        
+        .stage-1 { border-left: 5px solid #ef4444; }
+        .stage-2 { border-left: 5px solid #f59e0b; }
+        .stage-3 { border-left: 5px solid #10b981; }
+        .stage-4 { border-left: 5px solid #3b82f6; }
+        .stage-5 { border-left: 5px solid #8b5cf6; }
+        
+        strong {
+            color: inherit;
+            font-weight: 700;
+        }
+        
+        .journey-path {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(90deg, #fef3c7 0%, #fde68a 20%, #fcd34d 40%, #10b981 60%, #3b82f6 80%, #8b5cf6 100%);
+        }
+        
+        .path-line {
+            height: 40px;
+            background: white;
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto;
+            max-width: 1400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .path-dots {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 50px;
+        }
+        
+        .path-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CUSTOMER JOURNEY MAP</h1>
+            <p>Experiencia Selecta | www.experienciaselecta.com</p>
+        </div>
+        
+        <div class="journey-path">
+            <div class="path-line">
+                <div class="path-dots">
+                    <div class="path-dot"></div>
+                    <div class="path-dot"></div>
+                    <div class="path-dot"></div>
+                    <div class="path-dot"></div>
+                    <div class="path-dot"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="journey-container">
+            <table class="journey-table">
+                <thead>
+                    <tr>
+                        <th style="width: 180px; background: #1f2937;"></th>
+                        <th class="stage-header">ETAPA 1<br>AWARENESS<br>(Descubrimiento)</th>
+                        <th class="stage-header">ETAPA 2<br>CONSIDERATION<br>(Consideración)</th>
+                        <th class="stage-header">ETAPA 3<br>DECISION<br>(Compra)</th>
+                        <th class="stage-header">ETAPA 4<br>DELIVERY/USE<br>(Entrega y Uso)</th>
+                        <th class="stage-header">ETAPA 5<br>LOYALTY<br>(Fidelización)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-label">ACTIVIDADES<br>DEL CLIENTE</td>
+                        <td class="activity-cell stage-1">
+                            • Escucha de amigos sobre regalos originales<br>
+                            • Ve publicaciones en RRSS sobre gourmet<br>
+                            • Busca en Google "cestas premium"<br>
+                            • Networking y recomendaciones
+                        </td>
+                        <td class="activity-cell stage-2">
+                            • Compara diferentes cestas en la web<br>
+                            • Evalúa precios y contenido<br>
+                            • Lee reseñas de clientes<br>
+                            • Revisa descripción de productos<br>
+                            • Busca info sobre origen y calidad
+                        </td>
+                        <td class="activity-cell stage-3">
+                            • Añade productos al carrito<br>
+                            • Revisa resumen del pedido<br>
+                            • Completa datos de envío<br>
+                            • Realiza el pago online
+                        </td>
+                        <td class="activity-cell stage-4">
+                            • Recibe la cesta o activa QR<br>
+                            • Desempaqueta productos<br>
+                            • Consume o regala la cesta<br>
+                            • Vive la experiencia gastronómica
+                        </td>
+                        <td class="activity-cell stage-5">
+                            • Deja una reseña<br>
+                            • Comparte en redes sociales<br>
+                            • Recomienda a colegas<br>
+                            • Realiza nueva compra
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">OBJETIVOS<br>DEL CLIENTE</td>
+                        <td class="goal-cell stage-1">
+                            <strong>Encontrar</strong> una solución única para un regalo importante.<br><br>
+                            <strong>Descubrir</strong> opciones no genéricas.<br><br>
+                            <strong>Informarse</strong> sobre productos ibéricos de calidad
+                        </td>
+                        <td class="goal-cell stage-2">
+                            <strong>Validar</strong> que el producto cumple expectativas.<br><br>
+                            <strong>Encontrar</strong> la mejor relación precio-calidad.<br><br>
+                            <strong>Asegurarse</strong> de autenticidad y reputación
+                        </td>
+                        <td class="goal-cell stage-3">
+                            <strong>Completar</strong> la compra rápido y seguro.<br><br>
+                            <strong>Asegurarse</strong> de entrega en plazo.<br><br>
+                            <strong>Obtener</strong> confirmación clara
+                        </td>
+                        <td class="goal-cell stage-4">
+                            <strong>Recibir</strong> en perfectas condiciones.<br><br>
+                            <strong>Cumplir/superar</strong> expectativas.<br><br>
+                            <strong>Disfrutar</strong> experiencia completa
+                        </td>
+                        <td class="goal-cell stage-5">
+                            <strong>Repetir</strong> experiencia positiva.<br><br>
+                            <strong>Acceder</strong> a ventajas cliente frecuente.<br><br>
+                            <strong>Sentirse</strong> parte comunidad exclusiva
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">TOUCHPOINTS</td>
+                        <td class="touchpoint-cell stage-1">
+                            <div class="icon-grid">
+                                📱 💬 🔍 👥
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px;">
+                                <strong>Instagram, LinkedIn<br>Google, Word of Mouth<br>Blogs gastronomía</strong>
+                            </div>
+                        </td>
+                        <td class="touchpoint-cell stage-2">
+                            <div class="icon-grid">
+                                🌐 ⭐ 💬 📧
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px;">
+                                <strong>Web, Fichas producto<br>Reseñas, Chat online<br>WhatsApp, Email</strong>
+                            </div>
+                        </td>
+                        <td class="touchpoint-cell stage-3">
+                            <div class="icon-grid">
+                                🛒 💳 📧 📱
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px;">
+                                <strong>Carrito compra<br>Stripe (pago)<br>Email confirmación<br>WhatsApp resumen</strong>
+                            </div>
+                        </td>
+                        <td class="touchpoint-cell stage-4">
+                            <div class="icon-grid">
+                                📦 📲 🎁 ⚡
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px;">
+                                <strong>Mensajería<br>QR activación<br>Packaging premium<br>Tracking</strong>
+                            </div>
+                        </td>
+                        <td class="touchpoint-cell stage-5">
+                            <div class="icon-grid">
+                                📧 🎁 ⭐ 💎
+                            </div>
+                            <div style="margin-top: 10px; font-size: 12px;">
+                                <strong>15 emails automatizados<br>Programa fidelización<br>Ofertas exclusivas<br>Invitación reseña</strong>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">EXPERIENCIA<br>EMOCIONAL</td>
+                        <td class="experience-cell stage-1">
+                            😐 → 🙂
+                            <span class="emotion-text">"Necesito algo especial pero no sé por dónde empezar"</span>
+                        </td>
+                        <td class="experience-cell stage-2">
+                            🙂 → 😊
+                            <span class="emotion-text">"Esto parece justo lo que busco, pero necesito estar seguro"</span>
+                        </td>
+                        <td class="experience-cell stage-3">
+                            😊 → 😟 → 😊
+                            <span class="emotion-text">"¿Es seguro? ¿Llegará a tiempo?<br>...¡Confirmado!"</span>
+                        </td>
+                        <td class="experience-cell stage-4">
+                            😊 → 😍 / 😞
+                            <span class="emotion-text">"¡Wow, mejor de lo esperado!"<br>o "No es lo que pensaba..."</span>
+                        </td>
+                        <td class="experience-cell stage-5">
+                            😍 → 🥰
+                            <span class="emotion-text">"Esto es para mí.<br>Voy a repetir y recomendar"</span>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">OBJETIVO<br>DE NEGOCIO</td>
+                        <td class="business-goal-cell stage-1">
+                            Captar atención y generar interés en la marca
+                        </td>
+                        <td class="business-goal-cell stage-2">
+                            Generar confianza y facilitar decisión de compra
+                        </td>
+                        <td class="business-goal-cell stage-3">
+                            Maximizar conversión y minimizar fricciones checkout
+                        </td>
+                        <td class="business-goal-cell stage-4">
+                            Superar expectativas y generar satisfacción memorable
+                        </td>
+                        <td class="business-goal-cell stage-5">
+                            Maximizar LTV y generar referidos orgánicos
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">KPIs</td>
+                        <td class="kpi-cell stage-1">
+                            <ul>
+                                <li>Número visitas web</li>
+                                <li>Engagement RRSS</li>
+                                <li>CTR en anuncios</li>
+                                <li>Conversión tráfico</li>
+                            </ul>
+                        </td>
+                        <td class="kpi-cell stage-2">
+                            <ul>
+                                <li>Tiempo en página producto</li>
+                                <li>Tasa abandono carrito</li>
+                                <li>Solicitudes info</li>
+                                <li>Páginas vistas/sesión</li>
+                            </ul>
+                        </td>
+                        <td class="kpi-cell stage-3">
+                            <ul>
+                                <li>Tasa conversión</li>
+                                <li>Abandono checkout</li>
+                                <li>Tiempo finalización compra</li>
+                                <li>Ticket medio</li>
+                            </ul>
+                        </td>
+                        <td class="kpi-cell stage-4">
+                            <ul>
+                                <li>Incidencias entrega</li>
+                                <li>NPS Score</li>
+                                <li>Tiempo entrega real</li>
+                                <li>Satisfacción cliente</li>
+                            </ul>
+                        </td>
+                        <td class="kpi-cell stage-5">
+                            <ul>
+                                <li>Tasa recompra</li>
+                                <li>Reseñas positivas</li>
+                                <li>Tasa referidos</li>
+                                <li>Engagement programa</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">ACTIVIDADES<br>ORGANIZACIONALES</td>
+                        <td class="activities-cell stage-1">
+                            <ul>
+                                <li>Campañas contenido educativo productos ibéricos</li>
+                                <li>Publicidad RRSS segmentada</li>
+                                <li>SEO optimizado</li>
+                                <li>Marketing influencers gastronómicos</li>
+                            </ul>
+                        </td>
+                        <td class="activities-cell stage-2">
+                            <ul>
+                                <li>Contenido detallado con fotos HD</li>
+                                <li>Sistema reseñas verificadas</li>
+                                <li>Chat en vivo</li>
+                                <li>Videos unboxing y testimoniales</li>
+                            </ul>
+                        </td>
+                        <td class="activities-cell stage-3">
+                            <ul>
+                                <li>Checkout simplificado</li>
+                                <li>Múltiples opciones pago</li>
+                                <li>Sellos seguridad visibles</li>
+                                <li>Confirmación inmediata email</li>
+                            </ul>
+                        </td>
+                        <td class="activities-cell stage-4">
+                            <ul>
+                                <li>Seguimiento proactivo envíos</li>
+                                <li>Packaging premium</li>
+                                <li>Guías maridaje</li>
+                                <li>Email bienvenida post-entrega</li>
+                            </ul>
+                        </td>
+                        <td class="activities-cell stage-5">
+                            <ul>
+                                <li>15 emails automatizados</li>
+                                <li>Programa puntos/descuentos</li>
+                                <li>Acceso anticipado productos</li>
+                                <li>Contenido exclusivo gastronomía</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">RESPONSABLE</td>
+                        <td class="responsible-cell stage-1">
+                            Equipo de<br><strong>MARKETING</strong>
+                        </td>
+                        <td class="responsible-cell stage-2">
+                            <strong>MARKETING</strong><br>& VENTAS
+                        </td>
+                        <td class="responsible-cell stage-3">
+                            <strong>E-COMMERCE</strong><br>& IT
+                        </td>
+                        <td class="responsible-cell stage-4">
+                            <strong>OPERACIONES</strong><br>& ATENCIÓN CLIENTE
+                        </td>
+                        <td class="responsible-cell stage-5">
+                            <strong>MARKETING</strong><br>& CUSTOMER SUCCESS
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="row-label">SISTEMAS<br>TECNOLÓGICOS</td>
+                        <td class="tech-cell stage-1">
+                            • Google Analytics<br>
+                            • Meta Ads Manager<br>
+                            • Herramientas gestión RRSS<br>
+                            • Email programático
+                        </td>
+                        <td class="tech-cell stage-2">
+                            • CMS web optimizado<br>
+                            • Sistema reseñas integrado<br>
+                            • CRM seguimiento leads<br>
+                            • Chat en vivo
+                        </td>
+                        <td class="tech-cell stage-3">
+                            • Supabase (backend)<br>
+                            • Stripe (pagos)<br>
+                            • Email transaccional<br>
+                            • SSL y certificados
+                        </td>
+                        <td class="tech-cell stage-4">
+                            • Sistema tracking integrado<br>
+                            • CRM seguimiento<br>
+                            • Ticketing incidencias<br>
+                            • QR activación
+                        </td>
+                        <td class="tech-cell stage-5">
+                            • Email marketing automatizado<br>
+                            • CRM segmentación avanzada<br>
+                            • Plataforma fidelización<br>
+                            • Analytics comportamiento
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

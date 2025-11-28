@@ -1,10 +1,11 @@
 const Playbook = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Sales Playbook</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se importará el HTML del Sales Playbook)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/playbook.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Sales Playbook"
+      />
     </div>
   );
 };

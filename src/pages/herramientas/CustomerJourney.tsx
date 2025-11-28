@@ -1,10 +1,11 @@
 const CustomerJourney = () => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Customer Journey</h2>
-      <p className="text-muted-foreground">
-        Contenido próximamente... (aquí se importará el HTML de Customer Journey)
-      </p>
+    <div className="w-full h-[calc(100vh-280px)] min-h-[600px]">
+      <iframe
+        src="/html/customer-journey.html"
+        className="w-full h-full border-0 rounded-lg"
+        title="Customer Journey"
+      />
     </div>
   );
 };

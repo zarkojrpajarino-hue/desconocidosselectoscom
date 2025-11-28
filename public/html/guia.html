@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Comunicación - Experiencia Selecta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 50px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 24px;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 60px 50px;
+        }
+        
+        .section {
+            margin-bottom: 80px;
+        }
+        
+        .section-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #10b981;
+        }
+        
+        .pitch-box {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+        
+        .pitch-label {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+        
+        .pitch-text {
+            font-size: 24px;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+        
+        .post-card {
+            background: #f8fafc;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 25px 0;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .post-type {
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .copy-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .post-content {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #1e293b;
+        }
+        
+        .key-words {
+            background: #fef3c7;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 5px solid #f59e0b;
+        }
+        
+        .key-words h4 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+        
+        .key-words-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .key-word {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #92400e;
+            text-align: center;
+            font-size: 15px;
+        }
+        
+        .example-conversation {
+            background: #ede9fe;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 25px 0;
+        }
+        
+        .conversation-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #7c3aed;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 15px;
+        }
+        
+        .message-them {
+            background: #e2e8f0;
+            color: #1e293b;
+            margin-right: 100px;
+        }
+        
+        .message-you {
+            background: #10b981;
+            color: white;
+            margin-left: 100px;
+            text-align: right;
+        }
+        
+        .message-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        
+        .web-copy-section {
+            background: #f8fafc;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+        
+        .web-copy-section h3 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        
+        .web-copy-section p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #475569;
+            margin-bottom: 15px;
+        }
+        
+        .tips-box {
+            background: #dbeafe;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #3b82f6;
+        }
+        
+        .tips-box h4 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e40af;
+            margin-bottom: 20px;
+        }
+        
+        .tips-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .tips-box li {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 17px;
+            color: #1e293b;
+        }
+        
+        .tips-box li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+        }
+        
+        .emphasize {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📣 Guía de Comunicación</h1>
+            <p>Cómo explicar el verdadero propósito de Experiencia Selecta</p>
+        </div>
+        
+        <div class="content">
+            <!-- ELEVATOR PITCHES -->
+            <div class="section">
+                <h2 class="section-title">⏱️ Elevator Pitches</h2>
+                
+                <div class="pitch-box">
+                    <div class="pitch-label">30 Segundos - Versión Rápida</div>
+                    <div class="pitch-text">
+                        "Experiencia Selecta no vende cestas - vende <span class="emphasize">LIBERTAD</span>. 
+                        Libertad de la monotonía del ocio repetitivo. 
+                        Combinamos productos ibéricos premium con dinámicas únicas que invitan a <span class="emphasize">CONECTAR DE VERDAD</span>. 
+                        Sin móviles, sin filtros, sin máscaras. 
+                        Solo <span class="emphasize">MOMENTOS REALES</span> que sí vas a recordar."
+                    </div>
+                </div>
+                
+                <div class="pitch-box">
+                    <div class="pitch-label">2 Minutos - Versión Completa</div>
+                    <div class="pitch-text">
+                        "¿Cuándo fue la última vez que viviste una experiencia que realmente recordarás en 10 años? 
+                        Ese es el problema que resolvemos.<br><br>
+                        
+                        Vivimos prisioneros de la monotonía: salir de fiesta, gastar dinero, resaca, repetir. 
+                        Mientras tanto, los <span class="emphasize">PRODUCTOS ESPAÑOLES</span> de calidad mueren olvidados, 
+                        y nosotros perdemos la capacidad de <span class="emphasize">CONECTAR DE VERDAD</span> con quien tenemos al lado.<br><br>
+                        
+                        Experiencia Selecta cambia eso. No vendemos jamón y queso - vendemos una <span class="emphasize">EXPERIENCIA TRANSFORMADORA</span>. 
+                        Productos ibéricos con denominación de origen + dinámicas personalizadas que invitan a: 
+                        dejar el móvil, ser auténtico, reflexionar, descubrir a la persona que tienes delante.<br><br>
+                        
+                        Accesible para todos (desde €30), apoyamos a productores españoles, 
+                        y creamos <span class="emphasize">RECUERDOS MEMORABLES</span> que duran para siempre. 
+                        No es una cesta. Es un acto de rebeldía contra lo superficial."
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PALABRAS CLAVE -->
+            <div class="section">
+                <h2 class="section-title">🔑 Palabras Clave que SIEMPRE Usar</h2>
+                
+                <div class="key-words">
+                    <h4>Usa estas palabras constantemente para comunicar el propósito:</h4>
+                    <div class="key-words-list">
+                        <div class="key-word">EXPERIENCIA</div>
+                        <div class="key-word">LIBERTAD</div>
+                        <div class="key-word">CONEXIÓN REAL</div>
+                        <div class="key-word">MEMORABLE</div>
+                        <div class="key-word">AUTÉNTICO</div>
+                        <div class="key-word">TRANSFORMAR</div>
+                        <div class="key-word">RECUERDOS</div>
+                        <div class="key-word">PROPÓSITO</div>
+                        <div class="key-word">ROMPER MONOTONÍA</div>
+                        <div class="key-word">SIN FILTROS</div>
+                        <div class="key-word">PRESENCIA REAL</div>
+                        <div class="key-word">PRODUCTOS ESPAÑOLES</div>
+                        <div class="key-word">ESPACIO SEGURO</div>
+                        <div class="key-word">DESCUBRIR</div>
+                        <div class="key-word">ACTO DE REBELDÍA</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- POSTS INSTAGRAM READY -->
+            <div class="section">
+                <h2 class="section-title">📱 Posts para Instagram (Copy listo)</h2>
+                
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-type">Post #1 - Problema</div>
+                        <button class="copy-btn" onclick="copyPost(1)">Copiar texto</button>
+                    </div>
+                    <div class="post-content" id="post1">
+¿Cuántas noches de fiesta recuerdas realmente? 🤔
+
+Esa es la trampa. Gastamos dinero, tiempo y energía en experiencias que se olvidan al día siguiente.
+
+Mientras tanto, los MOMENTOS REALES - esos que te cambian, que te conectan de verdad con alguien - se vuelven cada vez más raros.
+
+Experiencia Selecta no es una cesta. Es una invitación a recuperar lo que perdimos: CONEXIÓN AUTÉNTICA sin pantallas.
+
+¿Te atreves a algo diferente? 🔓
+
+#ExperienciaSelecta #ConexiónReal #LibertadDeMonotonía
+                    </div>
+                </div>
+                
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-type">Post #2 - Productos Españoles</div>
+                        <button class="copy-btn" onclick="copyPost(2)">Copiar texto</button>
+                    </div>
+                    <div class="post-content" id="post2">
+Los jamones ibéricos de bellota están muriendo. 🇪🇸
+
+Las denominaciones de origen se pierden.
+
+Los productores locales luchan por sobrevivir.
+
+¿Por qué? Porque hemos convertido lo NUESTRO en algo "inalcanzable". Para ocasiones especiales.
+
+BASTA.
+
+Experiencia Selecta trae productos españoles premium a tu mesa de forma ACCESIBLE (desde €30).
+
+Cada compra apoya a un productor español. A una familia. A nuestra tierra.
+
+No es solo gastronomía. Es ORGULLO. Es CULTURA. Es defender lo nuestro.
+
+¿Nos apoyas? 🔥
+
+#ProductosEspañoles #OrgulloNacional #ApoyaLoLocal
+                    </div>
+                </div>
+                
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-type">Post #3 - Invitación</div>
+                        <button class="copy-btn" onclick="copyPost(3)">Copiar texto</button>
+                    </div>
+                    <div class="post-content" id="post3">
+Te invito a algo radical: 📵
+
+Deja el móvil por 2 horas.
+
+Sin stories. Sin fotos para Instagram. Sin notificaciones.
+
+Solo TÚ y quien tienes delante.
+
+Suena aterrador, ¿verdad? Eso es el problema.
+
+Experiencia Selecta crea el espacio para esto: productos premium + dinámicas que invitan a CONECTAR DE VERDAD.
+
+A descubrir quién es realmente esa persona.
+
+A que te descubran a ti.
+
+Sin filtros. Sin máscaras. Solo PRESENCIA REAL.
+
+¿Tienes el coraje? 💪
+
+#DesconectaParaConectar #PresenciaReal #ExperienciaSelecta
+                    </div>
+                </div>
+                
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-type">Post #4 - Manifiesto</div>
+                        <button class="copy-btn" onclick="copyPost(4)">Copiar texto</button>
+                    </div>
+                    <div class="post-content" id="post4">
+No somos una empresa de cestas. 📦
+
+Somos un MOVIMIENTO. 🔥
+
+Un movimiento contra la monotonía del ocio vacío.
+
+Contra la desconexión en un mundo "hiperconectado".
+
+Contra el olvido de nuestros productos y cultura.
+
+Defendemos la CONEXIÓN REAL.
+
+Los RECUERDOS MEMORABLES.
+
+La AUTENTICIDAD sin filtros.
+
+El apoyo a lo NUESTRO.
+
+Experiencia Selecta es un acto de REBELDÍA contra lo superficial.
+
+¿Te unes? 🔓
+
+#MovimientoExperienciaSelecta #ActoDeRebeldía #ContraLaMonotonía
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CONVERSACIONES EJEMPLO -->
+            <div class="section">
+                <h2 class="section-title">💬 Cómo Responder a "¿Qué es esto?"</h2>
+                
+                <div class="example-conversation">
+                    <div class="conversation-title">Escenario 1: Alguien pregunta en persona</div>
+                    
+                    <div class="message message-them">
+                        <div class="message-label">Ellos:</div>
+                        "¿Qué es Experiencia Selecta?"
+                    </div>
+                    
+                    <div class="message message-you">
+                        <div class="message-label">Tú:</div>
+                        "Imagina que tienes una forma de romper con el típico salir de fiesta. Productos españoles premium + dinámicas que te invitan a conectar de verdad con quien tienes delante. Sin móviles, sin superficialidad. Solo momentos reales que sí vas a recordar. No vendemos cestas - vendemos experiencias que transforman."
+                    </div>
+                    
+                    <div class="message message-them">
+                        <div class="message-label">Ellos:</div>
+                        "Ah, ¿cestas de jamón?"
+                    </div>
+                    
+                    <div class="message message-you">
+                        <div class="message-label">Tú:</div>
+                        "Esa es la trampa - la gente piensa en jamón y queso. Pero lo que vendemos es LIBERTAD de la monotonía. Los productos son el vehículo, pero la magia está en las dinámicas personalizadas. Preguntas que invitan a reflexionar, a descubrir, a conectar. Es una experiencia completa."
+                    </div>
+                </div>
+                
+                <div class="example-conversation">
+                    <div class="conversation-title">Escenario 2: DM en Instagram</div>
+                    
+                    <div class="message message-them">
+                        <div class="message-label">Ellos:</div>
+                        "Vi tu post, ¿de qué va exactamente?"
+                    </div>
+                    
+                    <div class="message message-you">
+                        <div class="message-label">Tú:</div>
+                        "Es una forma de tener planes DIFERENTES sin caer en lo de siempre (bares, copas, resaca). Combinamos gastronomía ibérica premium con dinámicas interactivas. El resultado: experiencias memorables que te conectan de verdad con la gente. Es como... un acto de rebeldía contra la monotonía 😊"
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TIPS FINALES -->
+            <div class="section">
+                <h2 class="section-title">💡 Tips de Comunicación</h2>
+                
+                <div class="tips-box">
+                    <h4>Cómo comunicar el propósito efectivamente:</h4>
+                    <ul>
+                        <li><strong>NUNCA empieces con "vendemos cestas"</strong> - Empieza con el problema (monotonía) o la solución (experiencias)</li>
+                        <li><strong>Usa storytelling</strong> - "¿Cuándo fue la última vez que...?" conecta más que listar características</li>
+                        <li><strong>Contrasta con alternativas</strong> - "En vez de gastar €50 en copas que no recordarás..."</li>
+                        <li><strong>Enfatiza lo español</strong> - No es solo gastronomía, es cultura, es orgullo, es apoyar lo nuestro</li>
+                        <li><strong>Sé visual</strong> - Si puedes, muestra la cesta + el QR. La experiencia se entiende mejor viéndola</li>
+                        <li><strong>Habla de emociones</strong> - Conexión, libertad, recuerdos, autenticidad. No de jamón y queso</li>
+                        <li><strong>Invita, no vendas</strong> - "Te invito a algo diferente" funciona mejor que "compra esto"</li>
+                        <li><strong>Usa testimonios</strong> - "La gente nos dice que..." - Social proof es poderoso</li>
+                        <li><strong>Menciona el propósito</strong> - "Cada dinámica tiene intención" - Nada es random</li>
+                        <li><strong>Cierra con la transformación</strong> - No con el producto, sino con el resultado: "Saldrás diferente"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyPost(num) {
+            const text = document.getElementById('post' + num).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('¡Texto copiado al portapapeles!');
+            });
+        }
+    </script>
+</body>
+</html>

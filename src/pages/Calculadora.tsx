@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
@@ -8,7 +7,7 @@ const Calculadora = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="container max-w-4xl mx-auto px-4 py-6">
+      <div className="container max-w-6xl mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
@@ -19,22 +18,16 @@ const Calculadora = () => {
             <ArrowLeft className="w-4 h-4" />
             Volver
           </Button>
-          <h1 className="text-2xl font-bold">💰 Calculadora</h1>
+          <h1 className="text-2xl font-bold">💰 Calculadora de Oportunidad</h1>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Oportunidad de Negocio</CardTitle>
-            <CardDescription>
-              Calcula el potencial de tu oportunidad
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Contenido próximamente... (aquí se importará el HTML)
-            </p>
-          </CardContent>
-        </Card>
+        <div className="w-full h-[calc(100vh-200px)] min-h-[600px]">
+          <iframe
+            src="/html/calculadora.html"
+            className="w-full h-full border-0 rounded-lg shadow-lg"
+            title="Calculadora de Oportunidad de Negocio"
+          />
+        </div>
       </div>
     </div>
   );
