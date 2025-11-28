@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator, Trophy } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -14,6 +14,13 @@ const Home = () => {
       icon: BarChart3,
       path: '/dashboard',
       gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Gamificación',
+      description: 'Badges, leaderboard y progreso del equipo',
+      icon: Trophy,
+      path: '/gamification',
+      gradient: 'from-yellow-500 to-amber-500'
     },
     {
       title: 'Herramientas Visuales',

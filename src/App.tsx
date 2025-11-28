@@ -12,6 +12,7 @@ import Setup from "./pages/Setup";
 import Herramientas from "./pages/Herramientas";
 import Practicar from "./pages/Practicar";
 import Calculadora from "./pages/Calculadora";
+import Gamification from "./pages/Gamification";
 import NotFound from "./pages/NotFound";
 
 // Herramientas sub-pages
@@ -53,6 +54,7 @@ const AppContent = () => {
       </Route>
       
       <Route path="/calculadora" element={<Calculadora />} />
+      <Route path="/gamification" element={<Gamification />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
