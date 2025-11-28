@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Check, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import LeaderValidationModal, { LeaderFeedback } from './LeaderValidationModal';
 
 interface CollaborationTaskListProps {
   userId: string | undefined;
@@ -14,6 +15,8 @@ interface CollaborationTaskListProps {
 const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListProps) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [validationModalOpen, setValidationModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -106,8 +109,13 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
     return { icon: Clock, label: '⏳ Pendiente', color: 'text-muted-foreground', bgColor: 'bg-muted' };
   };
 
-  const handleValidateTask = async (task: any) => {
-    if (!task.completion) {
+  const handleOpenValidationModal = (task: any) => {
+    setSelectedTask(task);
+    setValidationModalOpen(true);
+  };
+
+  const handleSubmitValidation = async (feedback: LeaderFeedback) => {
+    if (!selectedTask?.completion) {
       toast.error('No hay completación para validar');
       return;
     }
@@ -115,16 +123,19 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
     try {
       const { error } = await supabase
         .from('task_completions')
-        .update({ validated_by_leader: true })
-        .eq('id', task.completion.id);
+        .update({ 
+          validated_by_leader: true,
+          leader_feedback: feedback
+        })
+        .eq('id', selectedTask.completion.id);
 
       if (error) throw error;
 
       // Notificar al ejecutor
       await supabase.from('notifications').insert({
-        user_id: task.user_id,
+        user_id: selectedTask.user_id,
         type: 'task_validated',
-        message: `El líder ha validado tu tarea "${task.title}"`
+        message: `El líder ha validado tu tarea "${selectedTask.title}"`
       });
 
       toast.success('Tarea validada exitosamente');
@@ -132,6 +143,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
     } catch (error) {
       console.error('Error validating task:', error);
       toast.error('Error al validar tarea');
+      throw error;
     }
   };
 
@@ -148,8 +160,17 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
   }
 
   return (
-    <div className="space-y-3">
-      <Accordion type="single" collapsible className="space-y-2">
+    <>
+      <LeaderValidationModal
+        open={validationModalOpen}
+        onOpenChange={setValidationModalOpen}
+        onSubmit={handleSubmitValidation}
+        taskTitle={selectedTask?.title || ''}
+        executorName={selectedTask?.executor?.full_name || selectedTask?.executor?.username || 'Usuario'}
+      />
+      
+      <div className="space-y-3">
+        <Accordion type="single" collapsible className="space-y-2">
         {tasks.map((task) => {
           const status = getTaskStatus(task);
           const StatusIcon = status.icon;
@@ -245,10 +266,37 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
                   </div>
                 )}
 
+                {/* Feedback del líder (si existe) */}
+                {task.completion?.leader_feedback && (
+                  <div className="space-y-2 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <p className="text-sm font-medium">👨‍💼 Feedback del líder:</p>
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <p className="font-medium text-muted-foreground">✅ Lo que hizo bien:</p>
+                        <p>{task.completion.leader_feedback.whatWentWell}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium text-muted-foreground">📈 Áreas de mejora:</p>
+                        <p>{task.completion.leader_feedback.whatToImprove}</p>
+                      </div>
+                      {task.completion.leader_feedback.additionalComments && (
+                        <div>
+                          <p className="font-medium text-muted-foreground">💬 Comentarios adicionales:</p>
+                          <p>{task.completion.leader_feedback.additionalComments}</p>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-amber-500">
+                        <p className="font-medium text-muted-foreground">Valoración del líder:</p>
+                        {'⭐'.repeat(task.completion.leader_feedback.rating)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Botón de validación */}
                 {task.completion?.completed_by_user && !task.completion?.validated_by_leader && (
                   <Button
-                    onClick={() => handleValidateTask(task)}
+                    onClick={() => handleOpenValidationModal(task)}
                     className="w-full"
                   >
                     <Check className="h-4 w-4 mr-2" />
@@ -273,8 +321,9 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
             </AccordionItem>
           );
         })}
-      </Accordion>
-    </div>
+        </Accordion>
+      </div>
+    </>
   );
 };
 
