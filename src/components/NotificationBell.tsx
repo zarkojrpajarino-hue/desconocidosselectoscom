@@ -109,6 +109,8 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
         return '🔄';
       case 'agenda_ready':
         return '📅';
+      case 'schedule_change':
+        return '🔄';
       default:
         return '📬';
     }

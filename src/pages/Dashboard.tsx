@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock, RefreshCw, ArrowLeft, Trophy } from 'lucide-react';
+import { LogOut, Users, Clock, RefreshCw, ArrowLeft, Trophy, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -18,6 +18,7 @@ import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
+import WeeklyAgenda from '@/components/WeeklyAgenda';
 import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline, isWeekActive } from '@/lib/weekUtils';
@@ -285,6 +286,28 @@ const Dashboard = () => {
                 currentPhase={systemConfig.current_phase}
                 onPhaseChange={fetchSystemConfig}
               />
+            )}
+
+            {/* AGENDA SEMANAL (solo visible después del Lunes 13:01) */}
+            {nextWeekStart && (
+              <Card className="shadow-card bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/10 dark:to-blue-950/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-6 h-6" />
+                    📅 Mi Agenda Coordinada
+                  </CardTitle>
+                  <CardDescription>
+                    Agenda generada automáticamente según tu disponibilidad y coordinada con tu equipo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <WeeklyAgenda
+                    userId={user!.id}
+                    weekStart={nextWeekStart}
+                    isLocked={isWeekLocked}
+                  />
+                </CardContent>
+              </Card>
             )}
 
             {/* Countdown */}
