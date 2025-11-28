@@ -104,8 +104,45 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
 
       if (error) throw error;
 
+      // Obtener información del usuario
+      const { data: userData } = await supabase
+        .from('users')
+        .select('username, full_name')
+        .eq('id', userId)
+        .single();
+
+      const userName = userData?.full_name || userData?.username || 'Usuario';
+
+      // Obtener todos los líderes de este usuario
+      const { data: tasksWithLeaders } = await supabase
+        .from('tasks')
+        .select('leader_id')
+        .eq('user_id', userId)
+        .eq('phase', currentPhase)
+        .not('leader_id', 'is', null);
+
+      // Obtener IDs únicos de líderes
+      const leaderIds = [...new Set(tasksWithLeaders?.map(t => t.leader_id).filter(Boolean) || [])];
+
+      // Calcular diferencia de tareas
+      const oldMode = WORK_MODES.find(m => m.id === currentMode);
+      const taskDifference = mode.tasks - (oldMode?.tasks || 0);
+
+      // Crear notificaciones para cada líder
+      if (leaderIds.length > 0 && taskDifference !== 0) {
+        const notifications = leaderIds.map(leaderId => ({
+          user_id: leaderId,
+          type: 'mode_change_alert',
+          message: `${userName} cambió de ${oldMode?.label || 'modo anterior'} (${oldMode?.tasks || 0} tareas) a ${mode.label} (${mode.tasks} tareas). Esto significa que tendrás ${Math.abs(taskDifference)} ${taskDifference > 0 ? 'nuevas' : 'menos'} tareas para validar.`
+        }));
+
+        await supabase
+          .from('notifications')
+          .insert(notifications);
+      }
+
       toast.success('Modo de trabajo actualizado', {
-        description: `Ahora trabajas en modo ${mode.label}`
+        description: `Ahora trabajas en modo ${mode.label}${leaderIds.length > 0 ? `. Se notificó a ${leaderIds.length} líder(es).` : ''}`
       });
       onModeChange();
     } catch (error) {

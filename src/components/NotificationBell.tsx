@@ -103,6 +103,8 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
         return '✅';
       case 'urgent_deadline':
         return '🚨';
+      case 'mode_change_alert':
+        return '📢';
       default:
         return '📬';
     }
@@ -155,7 +157,7 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
                 <div className="flex items-center gap-2 w-full">
                   <span className="text-base md:text-lg">{getNotificationIcon(notification.type)}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs md:text-sm ${!notification.read ? 'font-semibold' : ''}`}>
+                    <p className={`text-xs md:text-sm whitespace-pre-wrap ${!notification.read ? 'font-semibold' : ''}`}>
                       {notification.message}
                     </p>
                     <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
