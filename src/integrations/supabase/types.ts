@@ -214,6 +214,76 @@ export type Database = {
           },
         ]
       }
+      task_schedule: {
+        Row: {
+          accepted_at: string | null
+          collaborator_user_id: string | null
+          created_at: string | null
+          id: string
+          is_collaborative: boolean | null
+          scheduled_date: string
+          scheduled_end: string
+          scheduled_start: string
+          status: string | null
+          task_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          week_start: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          collaborator_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_collaborative?: boolean | null
+          scheduled_date: string
+          scheduled_end: string
+          scheduled_start: string
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          week_start: string
+        }
+        Update: {
+          accepted_at?: string | null
+          collaborator_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_collaborative?: boolean | null
+          scheduled_date?: string
+          scheduled_end?: string
+          scheduled_start?: string
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_schedule_collaborator_user_id_fkey"
+            columns: ["collaborator_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_schedule_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_schedule_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_swaps: {
         Row: {
           created_at: string
@@ -405,6 +475,107 @@ export type Database = {
           },
         ]
       }
+      user_weekly_availability: {
+        Row: {
+          created_at: string | null
+          friday_available: boolean | null
+          friday_end: string | null
+          friday_start: string | null
+          id: string
+          monday_available: boolean | null
+          monday_end: string | null
+          monday_start: string | null
+          preferred_hours_per_day: number | null
+          preferred_time_of_day: string | null
+          saturday_available: boolean | null
+          saturday_end: string | null
+          saturday_start: string | null
+          submitted_at: string | null
+          sunday_available: boolean | null
+          sunday_end: string | null
+          sunday_start: string | null
+          thursday_available: boolean | null
+          thursday_end: string | null
+          thursday_start: string | null
+          tuesday_available: boolean | null
+          tuesday_end: string | null
+          tuesday_start: string | null
+          user_id: string | null
+          wednesday_available: boolean | null
+          wednesday_end: string | null
+          wednesday_start: string | null
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          friday_available?: boolean | null
+          friday_end?: string | null
+          friday_start?: string | null
+          id?: string
+          monday_available?: boolean | null
+          monday_end?: string | null
+          monday_start?: string | null
+          preferred_hours_per_day?: number | null
+          preferred_time_of_day?: string | null
+          saturday_available?: boolean | null
+          saturday_end?: string | null
+          saturday_start?: string | null
+          submitted_at?: string | null
+          sunday_available?: boolean | null
+          sunday_end?: string | null
+          sunday_start?: string | null
+          thursday_available?: boolean | null
+          thursday_end?: string | null
+          thursday_start?: string | null
+          tuesday_available?: boolean | null
+          tuesday_end?: string | null
+          tuesday_start?: string | null
+          user_id?: string | null
+          wednesday_available?: boolean | null
+          wednesday_end?: string | null
+          wednesday_start?: string | null
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          friday_available?: boolean | null
+          friday_end?: string | null
+          friday_start?: string | null
+          id?: string
+          monday_available?: boolean | null
+          monday_end?: string | null
+          monday_start?: string | null
+          preferred_hours_per_day?: number | null
+          preferred_time_of_day?: string | null
+          saturday_available?: boolean | null
+          saturday_end?: string | null
+          saturday_start?: string | null
+          submitted_at?: string | null
+          sunday_available?: boolean | null
+          sunday_end?: string | null
+          sunday_start?: string | null
+          thursday_available?: boolean | null
+          thursday_end?: string | null
+          thursday_start?: string | null
+          tuesday_available?: boolean | null
+          tuesday_end?: string | null
+          tuesday_start?: string | null
+          user_id?: string | null
+          wednesday_available?: boolean | null
+          wednesday_end?: string | null
+          wednesday_start?: string | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_weekly_availability_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_weekly_data: {
         Row: {
           created_at: string | null
@@ -470,6 +641,36 @@ export type Database = {
         }
         Relationships: []
       }
+      week_config: {
+        Row: {
+          agendas_generated: boolean | null
+          availability_deadline: string
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          week_start: string
+          week_start_time: string
+        }
+        Insert: {
+          agendas_generated?: boolean | null
+          availability_deadline: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          week_start: string
+          week_start_time: string
+        }
+        Update: {
+          agendas_generated?: boolean | null
+          availability_deadline?: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          week_start?: string
+          week_start_time?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -478,6 +679,11 @@ export type Database = {
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
+      }
+      get_next_week_start: { Args: never; Returns: string }
+      user_completed_availability: {
+        Args: { p_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
