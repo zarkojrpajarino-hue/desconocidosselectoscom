@@ -28,6 +28,21 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
       setLoading(true);
       setGeneratingPhase(newPhase);
 
+      // Verificar si la semana está bloqueada
+      const { data: configCheck } = await supabase
+        .from('system_config')
+        .select('is_week_locked')
+        .single();
+
+      if (configCheck?.is_week_locked) {
+        toast.error('⏸️ Semana cerrada', {
+          description: 'No puedes cambiar de fase hasta el inicio de la próxima semana (miércoles 13:00)'
+        });
+        setLoading(false);
+        setGeneratingPhase(null);
+        return;
+      }
+
       // Actualizar fase en system_config
       const { data: configData } = await supabase
         .from('system_config')
