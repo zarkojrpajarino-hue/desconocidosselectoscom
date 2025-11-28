@@ -119,9 +119,19 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         });
         toast.success("Tarea marcada como pendiente");
       } else {
-        // Abrir modal de medición de impacto directamente
-        setSelectedTask(task);
-        setImpactMeasurementModalOpen(true);
+        const isSharedTask = task.leader_id !== null;
+        const isLeader = task.user_id !== userId;
+
+        if (isSharedTask && !isLeader) {
+          // COLABORADOR: Primero da feedback al líder
+          setSelectedTask(task);
+          setFeedbackType('to_leader');
+          setFeedbackModalOpen(true);
+        } else {
+          // INDIVIDUAL o LÍDER: Abrir medición de impacto directamente
+          setSelectedTask(task);
+          setImpactMeasurementModalOpen(true);
+        }
       }
     } catch (error) {
       toast.error("Error al actualizar tarea");
@@ -138,42 +148,47 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     if (!userId || !selectedTask) return;
 
     try {
-      const isSharedTask = selectedTask.leader_id !== null;
       const isLeader = selectedTask.user_id !== userId;
 
-      if (isSharedTask) {
-        if (isLeader) {
-          // Líder da feedback a colaborador
-          const completion = completions.get(selectedTask.id);
-          
-          if (completion) {
-            await supabase
-              .from("task_completions")
-              .update({ collaborator_feedback: feedback })
-              .eq("id", completion.id);
-          } else {
-            await supabase.from("task_completions").insert({
-              task_id: selectedTask.id,
-              user_id: selectedTask.user_id,
-              completed_by_user: false,
-              validated_by_leader: false,
-              collaborator_feedback: feedback,
-            });
-          }
+      if (isLeader) {
+        // Líder da feedback a colaborador
+        const completion = completions.get(selectedTask.id);
 
-          toast.success("Feedback guardado");
+        if (completion) {
+          await supabase
+            .from("task_completions")
+            .update({ collaborator_feedback: feedback })
+            .eq("id", completion.id);
         } else {
-          // Colaborador da feedback a líder
           await supabase.from("task_completions").insert({
             task_id: selectedTask.id,
-            user_id: userId,
-            completed_by_user: true,
+            user_id: selectedTask.user_id,
+            completed_by_user: false,
             validated_by_leader: false,
-            leader_feedback: feedback,
+            collaborator_feedback: feedback,
           });
-
-          toast.success("Feedback enviado al líder");
         }
+
+        toast.success("Feedback guardado. Ahora completa tu medición de impacto");
+        
+        // Cerrar modal de feedback y abrir medición
+        setFeedbackModalOpen(false);
+        setImpactMeasurementModalOpen(true);
+      } else {
+        // Colaborador da feedback a líder → 40%
+        await supabase.from("task_completions").insert({
+          task_id: selectedTask.id,
+          user_id: userId,
+          completed_by_user: true,
+          validated_by_leader: false,
+          leader_feedback: feedback,
+        });
+
+        toast.success("Feedback enviado (40%). Ahora completa la medición de impacto");
+
+        // Cerrar modal de feedback y abrir medición
+        setFeedbackModalOpen(false);
+        setImpactMeasurementModalOpen(true);
       }
 
       await fetchTasks();
@@ -352,7 +367,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
 
     // TAREA INDIVIDUAL
     if (!isSharedTask) {
-      return completion.impact_measurement && completion.user_insights
+      const hasImpact = completion.impact_measurement && completion.ai_questions;
+      return hasImpact
         ? { percentage: 100, message: "✅ Completada", needsFeedback: false, needsImpactMeasurement: false, buttonText: "" }
         : { percentage: 0, message: "", needsFeedback: false, needsImpactMeasurement: false, buttonText: "" };
     }
@@ -360,7 +376,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     // TAREA COLABORATIVA - SOY EJECUTOR
     if (!isLeader) {
       // Estado 1: Solo feedback al líder (40%)
-      if (completion.leader_evaluation && !completion.impact_measurement) {
+      if (completion.leader_feedback && !completion.impact_measurement) {
         return {
           percentage: 40,
           message: "Para llegar al 50%:",
@@ -371,10 +387,11 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
       }
 
       // Estado 2: Feedback + Medición (50%)
-      if (completion.leader_evaluation && completion.impact_measurement && !completion.validated_by_leader) {
+      if (completion.leader_feedback && completion.impact_measurement && !completion.validated_by_leader) {
+        const leaderName = leadersById[task.leader_id] || "líder";
         return {
           percentage: 50,
-          message: "⏳ Esperando validación de " + (leadersById[task.leader_id] || "líder"),
+          message: `⏳ Esperando validación de ${leaderName}`,
           needsFeedback: false,
           needsImpactMeasurement: false,
           buttonText: ""
@@ -395,18 +412,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
 
     // TAREA COLABORATIVA - SOY LÍDER
     if (isLeader) {
-      const executorCompletion = completions.get(task.id);
+      // Obtener completion del ejecutor
+      const executorCompletionData = Array.from(completions.values()).find(
+        c => c.task_id === task.id && c.user_id === task.user_id
+      );
 
-      // ESCENARIO A: Ejecutor completó primero
-      if (executorCompletion?.leader_evaluation && executorCompletion?.impact_measurement) {
-        // Líder validó (90%)
+      // ESCENARIO A: Ejecutor completó primero (tiene leader_feedback + impact_measurement)
+      if (executorCompletionData?.leader_feedback && executorCompletionData?.impact_measurement) {
+        // Líder dio feedback pero no completó medición (90%)
         if (completion.collaborator_feedback && !completion.impact_measurement) {
           return {
             percentage: 90,
             message: "Para llegar al 100%:",
             needsFeedback: false,
             needsImpactMeasurement: true,
-            buttonText: "Completar Medición de Impacto"
+            buttonText: "Completar tu Medición de Impacto"
           };
         }
 
@@ -420,10 +440,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             buttonText: ""
           };
         }
+
+        // Líder no ha dado feedback aún (0%)
+        if (!completion.collaborator_feedback) {
+          return {
+            percentage: 0,
+            message: "Da feedback al colaborador para validar",
+            needsFeedback: true,
+            needsImpactMeasurement: false,
+            buttonText: "Dar Feedback al Colaborador"
+          };
+        }
       }
 
-      // ESCENARIO B: Líder validó primero (líder 90%, ejecutor 80%)
-      if (completion.collaborator_feedback && !executorCompletion?.leader_evaluation) {
+      // ESCENARIO B: Líder validó primero (sin que ejecutor haya completado)
+      if (completion.collaborator_feedback && !executorCompletionData?.leader_feedback) {
         return {
           percentage: 90,
           message: "Esperando que ejecutor complete feedback + medición. Para tu 100%:",
@@ -434,10 +465,10 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
       }
     }
 
-    return { 
-      percentage: 0, 
-      message: "", 
-      needsFeedback: false, 
+    return {
+      percentage: 0,
+      message: "",
+      needsFeedback: false,
       needsImpactMeasurement: false,
       buttonText: ""
     };
@@ -551,11 +582,12 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
                       size="sm"
                       onClick={() => {
                         setSelectedTask(task);
+                        setFeedbackType('to_collaborator');
                         setFeedbackModalOpen(true);
                       }}
                       className="w-full bg-primary hover:bg-primary/90"
                     >
-                      Dar Feedback (OBLIGATORIO)
+                      {buttonText || "Dar Feedback (OBLIGATORIO)"}
                     </Button>
                   )}
                 </div>
