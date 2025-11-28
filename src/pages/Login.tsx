@@ -18,7 +18,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
+      const redirectTo = searchParams.get('redirect') || '/home';
       navigate(redirectTo);
     }
   }, [user, navigate, searchParams]);
@@ -36,7 +36,7 @@ const Login = () => {
         });
       } else {
         toast.success('¡Bienvenido!');
-        const redirectTo = searchParams.get('redirect') || '/dashboard';
+        const redirectTo = searchParams.get('redirect') || '/home';
         navigate(redirectTo);
       }
     } catch (error) {
