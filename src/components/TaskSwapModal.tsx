@@ -99,12 +99,12 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
     const selected = alternatives.find(a => a.id === selectedId);
     if (!selected) return;
 
-    // Validar que el líder haya escrito el comentario (obligatorio)
-    if (isLeaderSwapping && !leaderComment.trim()) {
+    // Validar que SIEMPRE haya comentario (obligatorio para todos)
+    if (!leaderComment.trim()) {
       setShowCommentError(true);
       toast({
         title: "⚠️ Campo obligatorio",
-        description: "Debes explicar por qué cambias esta tarea",
+        description: "Debes explicar por qué quieres cambiar esta tarea",
         variant: "destructive"
       });
       return;
@@ -166,7 +166,7 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
           new_description: selected.description,
           week_number: weekNumber,
           mode: mode,
-          leader_comment: isLeaderSwapping ? leaderComment.trim() : null
+          leader_comment: leaderComment.trim() // Siempre guardar el comentario
         });
 
       if (swapError) throw swapError;
@@ -266,25 +266,26 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
           </Alert>
         )}
 
-        {isLeaderSwapping && (
-          <div className="mb-4 space-y-2">
-            <label className="text-sm font-semibold text-foreground">
-              ¿Por qué quieres cambiar esta tarea? <span className="text-red-500">*</span>
-            </label>
-            <Textarea
-              value={leaderComment}
-              onChange={(e) => {
-                setLeaderComment(e.target.value);
-                setShowCommentError(false);
-              }}
-              placeholder="Explica la razón del cambio al colaborador..."
-              className={`min-h-[100px] ${showCommentError && !leaderComment.trim() ? 'border-red-500' : ''}`}
-            />
-            {showCommentError && !leaderComment.trim() && (
-              <p className="text-xs text-red-500">Este campo es obligatorio</p>
-            )}
-          </div>
-        )}
+        {/* Campo obligatorio para TODOS */}
+        <div className="mb-4 space-y-2">
+          <label className="text-sm font-semibold text-foreground">
+            ¿Por qué quieres cambiar esta tarea? <span className="text-red-500">*</span>
+          </label>
+          <Textarea
+            value={leaderComment}
+            onChange={(e) => {
+              setLeaderComment(e.target.value);
+              setShowCommentError(false);
+            }}
+            placeholder={isLeaderSwapping 
+              ? "Explica la razón del cambio al colaborador..." 
+              : "Explica por qué quieres cambiar esta tarea..."}
+            className={`min-h-[100px] ${showCommentError && !leaderComment.trim() ? 'border-red-500' : ''}`}
+          />
+          {showCommentError && !leaderComment.trim() && (
+            <p className="text-xs text-red-500">Este campo es obligatorio</p>
+          )}
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
