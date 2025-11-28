@@ -15,6 +15,17 @@ import Calculadora from "./pages/Calculadora";
 import NotFound from "./pages/NotFound";
 import BottomNavbar from "@/components/BottomNavbar";
 
+// Herramientas sub-pages
+import LeadScoring from "./pages/herramientas/LeadScoring";
+import GrowthModel from "./pages/herramientas/GrowthModel";
+import BuyerPersona from "./pages/herramientas/BuyerPersona";
+import CustomerJourney from "./pages/herramientas/CustomerJourney";
+
+// Practicar sub-pages
+import Simulador from "./pages/practicar/Simulador";
+import Playbook from "./pages/practicar/Playbook";
+import Guia from "./pages/practicar/Guia";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -30,8 +41,22 @@ const AppContent = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/setup" element={<Setup />} />
-        <Route path="/herramientas" element={<Herramientas />} />
-        <Route path="/practicar" element={<Practicar />} />
+        
+        {/* Herramientas con sub-rutas */}
+        <Route path="/herramientas" element={<Herramientas />}>
+          <Route path="lead-scoring" element={<LeadScoring />} />
+          <Route path="growth-model" element={<GrowthModel />} />
+          <Route path="buyer-persona" element={<BuyerPersona />} />
+          <Route path="customer-journey" element={<CustomerJourney />} />
+        </Route>
+        
+        {/* Practicar con sub-rutas */}
+        <Route path="/practicar" element={<Practicar />}>
+          <Route path="simulador" element={<Simulador />} />
+          <Route path="playbook" element={<Playbook />} />
+          <Route path="guia" element={<Guia />} />
+        </Route>
+        
         <Route path="/calculadora" element={<Calculadora />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
