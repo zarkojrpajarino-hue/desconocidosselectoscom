@@ -385,28 +385,6 @@ const Dashboard = () => {
                 />
               </CardContent>
             </Card>
-
-            {/* AGENDA SEMANAL (después de las tareas) */}
-            {nextWeekStart && (
-              <Card className="shadow-card bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/10 dark:to-blue-950/10">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-6 h-6" />
-                    📅 Mi Agenda Coordinada
-                  </CardTitle>
-                  <CardDescription>
-                    Agenda generada automáticamente según tu disponibilidad y coordinada con tu equipo
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <WeeklyAgenda
-                    userId={user!.id}
-                    weekStart={nextWeekStart}
-                    isLocked={isWeekLocked}
-                  />
-                </CardContent>
-              </Card>
-            )}
           </>
         )}
       </main>
