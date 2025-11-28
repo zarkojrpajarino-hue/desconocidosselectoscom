@@ -15,6 +15,18 @@ verify_jwt = true
 [functions.generate-task-questions]
 verify_jwt = true
 
+[functions.send-task-reminders]
+verify_jwt = false
+
+[functions.send-leader-validation-email]
+verify_jwt = false
+
+[functions.send-task-change-email]
+verify_jwt = false
+
+[functions.send-urgent-email]
+verify_jwt = false
+
 [functions.send-welcome-email]
 verify_jwt = false
 
