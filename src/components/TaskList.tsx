@@ -502,16 +502,22 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     const canSwap = canSwapOverride !== undefined ? canSwapOverride : (() => {
       if (!userId) return false;
       
-      // Si es individual, solo el asignado puede cambiarla
-      if (!task.leader_id) return task.user_id === userId;
+      // REGLA 1: Si soy el ejecutor de la tarea (task.user_id === userId)
+      if (task.user_id === userId) {
+        // Si es individual (sin líder), puedo cambiarla
+        if (!task.leader_id) return true;
+        
+        // Si tiene líder, también puedo cambiarla (son mis tareas asignadas)
+        return true;
+      }
       
-      // Si tiene líder, necesitamos verificar si el usuario es líder del área
-      // Esto se hace de forma sincrónica usando leadersById que ya tenemos
-      const currentUser = Object.entries(leadersById).find(([id]) => id === userId);
-      if (!currentUser) return false;
+      // REGLA 2: Si soy el líder de la tarea (task.leader_id === userId)
+      if (task.leader_id === userId) {
+        // Puedo cambiar las tareas donde soy líder validador
+        return true;
+      }
       
-      // Buscar el username del usuario actual
-      return isUserLeaderOfArea(userId, task.area);
+      return false;
     })();
 
     return (
