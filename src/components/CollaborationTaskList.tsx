@@ -125,7 +125,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
         .from('task_completions')
         .update({ 
           validated_by_leader: true,
-          leader_feedback: feedback
+          leader_feedback: feedback as any
         })
         .eq('id', selectedTask.completion.id);
 
