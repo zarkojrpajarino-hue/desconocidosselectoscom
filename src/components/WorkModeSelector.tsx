@@ -29,11 +29,30 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       if (!mode) return;
 
       // RESTRICCIÓN: Verificar tareas completadas antes de cambiar a modo menor
+      // Primero obtener la fase actual
+      const { data: config } = await supabase
+        .from('system_config')
+        .select('current_phase')
+        .single();
+
+      const currentPhase = config?.current_phase || 1;
+
+      // Obtener IDs de tareas de la fase actual
+      const { data: phaseTasks } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('phase', currentPhase);
+
+      const phaseTaskIds = phaseTasks?.map(t => t.id) || [];
+
+      // Contar solo completaciones de esta fase
       const { data: completedTasks } = await supabase
         .from('task_completions')
         .select('id')
         .eq('user_id', userId)
-        .eq('validated_by_leader', true);
+        .eq('validated_by_leader', true)
+        .in('task_id', phaseTaskIds);
 
       const completedCount = completedTasks?.length || 0;
 
