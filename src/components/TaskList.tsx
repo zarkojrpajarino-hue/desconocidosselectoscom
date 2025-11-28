@@ -196,6 +196,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             collaborator_feedback: feedback,
           })
           .eq("id", completion.id);
+
+        // NOTIFICACIÓN 3: Líder valida primero (ejecutor → 80%)
+        if (!completion.leader_evaluation) {
+          await supabase.from('notifications').insert({
+            user_id: selectedTask.user_id,
+            type: 'leader_validated_first',
+            message: `${leadersById[userId] || "Tu líder"} validó la tarea "${selectedTask.title}". Completa feedback + medición para 100%`
+          });
+        }
       } else {
         // Crear nuevo completion
         await supabase.from("task_completions").insert({
@@ -251,11 +260,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             });
           }
 
-          // Notificar al colaborador
+          // NOTIFICACIÓN 2: Líder valida → Notificar ejecutor
           await supabase.from("notifications").insert({
             user_id: selectedTask.user_id,
-            type: "task_validated",
-            message: `El líder ha completado la tarea "${selectedTask.title}" al 100%`,
+            type: "leader_validated",
+            message: `${leadersById[userId] || "Tu líder"} validó tu tarea "${selectedTask.title}". ¡100% completado! 🎉`,
+          });
+          
+          // EMAIL de validación
+          await supabase.functions.invoke('send-leader-validation-email', {
+            body: {
+              to_user_id: selectedTask.user_id,
+              task_title: selectedTask.title,
+              leader_name: leadersById[userId] || "Tu líder",
+              feedback: completion?.collaborator_feedback || {}
+            }
           });
 
           toast.success("¡Tarea completada al 100%!");
@@ -268,6 +287,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
                 user_insights: insights,
               })
               .eq("id", completion.id);
+          }
+
+          // NOTIFICACIÓN 1: Ejecutor completa (50%) → Notificar líder
+          if (completion?.leader_evaluation && completion?.impact_measurement) {
+            await supabase.from('notifications').insert({
+              user_id: selectedTask.leader_id,
+              type: 'validation_request',
+              message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y necesita tu validación`
+            });
           }
 
           toast.success("¡Insights completados! Tarea al 50%, esperando validación del líder");
