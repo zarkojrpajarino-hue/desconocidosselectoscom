@@ -107,6 +107,8 @@ const NotificationBell = ({ userId }: NotificationBellProps) => {
         return '📢';
       case 'task_changed_by_leader':
         return '🔄';
+      case 'agenda_ready':
+        return '📅';
       default:
         return '📬';
     }
