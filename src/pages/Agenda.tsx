@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Calendar, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import WeeklyAgenda from '@/components/WeeklyAgenda';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
@@ -16,6 +16,8 @@ const Agenda = () => {
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const [hasAvailability, setHasAvailability] = useState<boolean | null>(null);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [scheduleKey, setScheduleKey] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -45,6 +47,29 @@ const Agenda = () => {
     } catch (error) {
       console.error('Error checking availability:', error);
       setHasAvailability(false);
+    }
+  };
+
+  const handleGenerateSchedules = async () => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-weekly-schedules');
+      
+      if (error) throw error;
+      
+      toast.success('✅ Agenda generada exitosamente', {
+        description: 'Tu agenda semanal ha sido creada'
+      });
+      
+      // Forzar recarga del componente WeeklyAgenda
+      setScheduleKey(prev => prev + 1);
+    } catch (error: any) {
+      console.error('Error generating schedules:', error);
+      toast.error('Error al generar agenda', {
+        description: error.message || 'Intenta nuevamente'
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -98,13 +123,27 @@ const Agenda = () => {
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         <Card className="shadow-card bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/10 dark:to-blue-950/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-6 h-6" />
-              📅 Agenda Semanal
-            </CardTitle>
-            <CardDescription>
-              Agenda generada automáticamente según tu disponibilidad y coordinada con tu equipo
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-6 h-6" />
+                  📅 Agenda Semanal
+                </CardTitle>
+                <CardDescription>
+                  Agenda generada automáticamente según tu disponibilidad y coordinada con tu equipo
+                </CardDescription>
+              </div>
+              {hasAvailability && (
+                <Button
+                  onClick={handleGenerateSchedules}
+                  disabled={isGenerating}
+                  className="bg-gradient-primary gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                  {isGenerating ? 'Generando...' : 'Generar Agenda'}
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {hasAvailability === null ? (
@@ -146,6 +185,7 @@ const Agenda = () => {
               />
             ) : nextWeekStart ? (
               <WeeklyAgenda
+                key={scheduleKey}
                 userId={user!.id}
                 weekStart={nextWeekStart}
                 isLocked={isWeekLocked}
