@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock, RefreshCw, ArrowLeft, Trophy, Calendar } from 'lucide-react';
+import { LogOut, Users, Clock, RefreshCw, ArrowLeft, Trophy, Calendar, User } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -227,6 +227,15 @@ const Dashboard = () => {
               <Trophy className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Gamificación</span>
               <span className="sm:hidden">🎮</span>
+            </Button>
+            <Button
+              onClick={() => navigate('/profile')}
+              variant="outline"
+              size="sm"
+              className="gap-1 md:gap-2 text-xs md:text-sm"
+            >
+              <User className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Mi Perfil</span>
             </Button>
             {userProfile.role === 'admin' && (
               <Button
