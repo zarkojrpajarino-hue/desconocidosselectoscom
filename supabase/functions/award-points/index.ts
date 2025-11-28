@@ -1,9 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
 const POINTS = {
   TASK_COMPLETED_INDIVIDUAL: 50,
   TASK_COMPLETED_COLLABORATIVE: 75,
@@ -23,12 +20,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   try {
     const { user_id, action, task_id, metadata } = await req.json();
     
     console.log('Award points:', { user_id, action, task_id });
+
+    if (!user_id || !action) {
+      throw new Error('user_id and action are required');
+    }
     
     let points = 0;
     let reason = '';
@@ -59,25 +62,23 @@ serve(async (req) => {
         reason = 'Racha semanal';
         break;
       default:
-        throw new Error('Invalid action');
+        throw new Error(`Unknown action: ${action}`);
     }
     
     // Registrar puntos en historial
-    const { error: historyError } = await supabase.from('points_history').insert({
+    await supabase.from('points_history').insert({
       user_id,
       points,
       reason,
-      task_id
+      task_id,
     });
     
-    if (historyError) throw historyError;
-    
-    // Actualizar total de puntos
+    // Actualizar o crear achievements del usuario
     const { data: achievement } = await supabase
       .from('user_achievements')
       .select('*')
       .eq('user_id', user_id)
-      .maybeSingle();
+      .single();
     
     if (achievement) {
       const updates: any = {
@@ -86,7 +87,7 @@ serve(async (req) => {
       };
       
       // Actualizar contadores según acción
-      if (action.includes('task_completed')) {
+      if (action === 'task_completed_individual' || action === 'task_completed_collaborative') {
         updates.tasks_completed_total = achievement.tasks_completed_total + 1;
       }
       if (action === 'task_validated') {
@@ -107,18 +108,19 @@ serve(async (req) => {
       });
     }
     
-    // Verificar badges nuevos
+    // Verificar y otorgar badges
     await checkAndAwardBadges(supabase, user_id);
     
-    return new Response(JSON.stringify({ success: true, points }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({ success: true, points, reason }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error: any) {
-    console.error('Error awarding points:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    console.error('Error in award-points:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });
 
@@ -127,7 +129,7 @@ async function checkAndAwardBadges(supabase: any, userId: string) {
     .from('user_achievements')
     .select('*')
     .eq('user_id', userId)
-    .maybeSingle();
+    .single();
   
   if (!achievement) return;
   
@@ -178,21 +180,24 @@ async function checkAndAwardBadges(supabase: any, userId: string) {
       case 'validator_50':
         shouldAward = achievement.tasks_validated_total >= 50;
         break;
+      case 'validator_100':
+        shouldAward = achievement.tasks_validated_total >= 100;
+        break;
     }
     
     if (shouldAward) {
-      console.log('Awarding badge:', badge.code, 'to user:', userId);
-      
       await supabase.from('user_badges').insert({
         user_id: userId,
-        badge_id: badge.id
+        badge_id: badge.id,
       });
       
-      // Notificación
+      // Notificación de badge ganado
       await supabase.from('notifications').insert({
         user_id: userId,
         type: 'badge_earned',
-        message: `¡Nuevo badge desbloqueado! ${badge.icon_emoji} ${badge.name}: ${badge.description}`
+        title: `¡Nuevo badge desbloqueado! ${badge.icon_emoji}`,
+        message: `Has ganado el badge "${badge.name}": ${badge.description}`,
+        metadata: { badge_code: badge.code },
       });
     }
   }

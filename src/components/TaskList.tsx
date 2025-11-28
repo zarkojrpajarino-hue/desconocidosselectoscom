@@ -169,7 +169,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           });
         }
 
-        toast.success("Feedback guardado. Ahora completa tu medición de impacto");
+        // 🎮 OTORGAR PUNTOS POR DAR FEEDBACK
+        await supabase.functions.invoke('award-points', {
+          body: {
+            user_id: userId,
+            action: 'feedback_given',
+            task_id: selectedTask.id,
+          },
+        });
+
+        toast.success("Feedback guardado +15 puntos 🎮. Ahora completa tu medición");
         
         // Cerrar modal de feedback y abrir medición
         setFeedbackModalOpen(false);
@@ -184,7 +193,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           leader_feedback: feedback,
         });
 
-        toast.success("Feedback enviado (40%). Ahora completa la medición de impacto");
+        // 🎮 OTORGAR PUNTOS POR DAR FEEDBACK
+        await supabase.functions.invoke('award-points', {
+          body: {
+            user_id: userId,
+            action: 'feedback_given',
+            task_id: selectedTask.id,
+          },
+        });
+
+        toast.success("Feedback enviado (40%) +15 puntos 🎮. Ahora completa la medición");
 
         // Cerrar modal de feedback y abrir medición
         setFeedbackModalOpen(false);
@@ -234,22 +252,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             });
           }
 
-          // Award points to collaborator for completing task
-          await supabase.functions.invoke('award-points', {
-            body: {
-              user_id: selectedTask.user_id,
-              action: 'task_completed_collaborative',
-              task_id: selectedTask.id
-            }
-          });
-
-          // Award points to leader for validating
+          // 🎮 OTORGAR PUNTOS AL LÍDER POR VALIDAR
           await supabase.functions.invoke('award-points', {
             body: {
               user_id: userId,
               action: 'task_validated',
-              task_id: selectedTask.id
-            }
+              task_id: selectedTask.id,
+            },
           });
 
           // NOTIFICACIÓN: Líder validó
@@ -259,7 +268,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             message: `${leadersById[userId] || "Tu líder"} validó tu tarea "${selectedTask.title}". ¡100% completado! 🎉`,
           });
 
-          toast.success("¡Tarea completada al 100%!");
+          toast.success("¡Tarea completada al 100%! +30 puntos 🎮");
         } else {
           // Colaborador completa medición → 50%
           if (completion) {
@@ -269,13 +278,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
               .eq("id", completion.id);
           }
 
-          // Award points for completing individual task
+          // 🎮 OTORGAR PUNTOS AL COLABORADOR POR COMPLETAR TAREA COLABORATIVA
           await supabase.functions.invoke('award-points', {
             body: {
               user_id: userId,
-              action: 'task_completed_individual',
-              task_id: selectedTask.id
-            }
+              action: 'task_completed_collaborative',
+              task_id: selectedTask.id,
+            },
           });
 
           // NOTIFICACIÓN: Ejecutor completó
@@ -285,7 +294,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y necesita tu validación`,
           });
 
-          toast.success("¡Medición completada! Tarea al 50%, esperando validación del líder");
+          toast.success("¡Medición completada! Tarea al 50% +75 puntos 🎮");
         }
       } else {
         // Tarea individual → 100%
@@ -298,16 +307,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           ai_questions: data.ai_questions,
         });
 
-        // Award points for completing individual task
+        // 🎮 OTORGAR PUNTOS POR TAREA INDIVIDUAL
         await supabase.functions.invoke('award-points', {
           body: {
             user_id: userId,
             action: 'task_completed_individual',
-            task_id: selectedTask.id
-          }
+            task_id: selectedTask.id,
+          },
         });
 
-        toast.success("¡Tarea completada al 100%!");
+        toast.success("¡Tarea completada al 100%! +50 puntos 🎮");
       }
 
       await fetchTasks();
