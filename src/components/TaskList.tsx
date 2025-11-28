@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { RefreshCw, Users, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import TaskEvaluationModal from "./TaskEvaluationModal";
-import TaskInsightsModal from "./TaskInsightsModal";
-import TaskCollaboratorFeedbackModal from "./TaskCollaboratorFeedbackModal";
+import TaskFeedbackModal from "./TaskFeedbackModal";
+import TaskImpactMeasurementModal from "./TaskImpactMeasurementModal";
 import { TaskSwapModal } from "./TaskSwapModal";
 import { useTaskSwaps } from "@/hooks/useTaskSwaps";
 import { isUserLeaderOfArea } from "@/lib/areaLeaders";
@@ -25,9 +24,6 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [tasks, setTasks] = useState<any[]>([]);
   const [sharedTasks, setSharedTasks] = useState<any[]>([]);
   const [completions, setCompletions] = useState<Map<string, any>>(new Map());
-  const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
-  const [collaboratorFeedbackModalOpen, setCollaboratorFeedbackModalOpen] = useState(false);
-  const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [taskToSwap, setTaskToSwap] = useState<any>(null);
@@ -123,131 +119,94 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         });
         toast.success("Tarea marcada como pendiente");
       } else {
-        // Verificar si es tarea compartida
-        const isSharedTask = task.leader_id !== null;
-        const isLeader = task.area && isUserLeaderOfArea(userId, task.area);
-
-        if (isSharedTask) {
-          // Tarea compartida
-          if (isLeader) {
-            // Líder completa la tarea - primero feedback a colaboradores
-            setSelectedTask(task);
-            setCollaboratorFeedbackModalOpen(true);
-          } else {
-            // Colaborador - primero feedback al líder
-            setSelectedTask(task);
-            setEvaluationModalOpen(true);
-          }
-        } else {
-          // Tarea individual - abrir modal de insights
-          setSelectedTask(task);
-          setInsightsModalOpen(true);
-        }
+        // Abrir modal de medición de impacto directamente
+        setSelectedTask(task);
+        setImpactMeasurementModalOpen(true);
       }
     } catch (error) {
       toast.error("Error al actualizar tarea");
     }
   };
 
-  const handleSubmitEvaluation = async (evaluation: { q1: string; q2: string; q3: string; stars: number }) => {
+  const handleSubmitFeedback = async (feedback: {
+    whatWentWell: string;
+    metDeadlines: 'always' | 'almost_always' | 'sometimes' | 'rarely' | 'never';
+    whatToImprove: string;
+    wouldRecommend: 'definitely_yes' | 'probably_yes' | 'not_sure' | 'probably_no' | 'definitely_no';
+    rating: number;
+  }) => {
     if (!userId || !selectedTask) return;
 
     try {
-      // Colaborador da feedback al líder (40%)
-      await supabase.from("task_completions").insert({
-        task_id: selectedTask.id,
-        user_id: userId,
-        completed_by_user: true,
-        validated_by_leader: false,
-        leader_evaluation: evaluation,
-      });
+      const isSharedTask = selectedTask.leader_id !== null;
+      const isLeader = selectedTask.user_id !== userId;
 
-      await fetchTasks();
+      if (isSharedTask) {
+        if (isLeader) {
+          // Líder da feedback a colaborador
+          const completion = completions.get(selectedTask.id);
+          
+          if (completion) {
+            await supabase
+              .from("task_completions")
+              .update({ collaborator_feedback: feedback })
+              .eq("id", completion.id);
+          } else {
+            await supabase.from("task_completions").insert({
+              task_id: selectedTask.id,
+              user_id: selectedTask.user_id,
+              completed_by_user: false,
+              validated_by_leader: false,
+              collaborator_feedback: feedback,
+            });
+          }
 
-      // Notificar al líder
-      if (selectedTask.leader_id) {
-        await supabase.from("notifications").insert({
-          user_id: selectedTask.leader_id,
-          type: "evaluation_pending",
-          message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y envió feedback`,
-        });
-      }
-
-      // Abrir modal de insights después del feedback
-      setInsightsModalOpen(true);
-    } catch (error) {
-      toast.error("Error al completar tarea");
-      throw error;
-    }
-  };
-
-  const handleSubmitCollaboratorFeedback = async (feedback: { q1: string; q2: string; q3: string; stars: number }) => {
-    if (!userId || !selectedTask) return;
-
-    try {
-      // Líder da feedback a colaboradores (90%)
-      const completion = completions.get(selectedTask.id);
-
-      if (completion) {
-        // Actualizar completion existente
-        await supabase
-          .from("task_completions")
-          .update({
-            collaborator_feedback: feedback,
-          })
-          .eq("id", completion.id);
-
-        // NOTIFICACIÓN 3: Líder valida primero (ejecutor → 80%)
-        if (!completion.leader_evaluation) {
-          await supabase.from('notifications').insert({
-            user_id: selectedTask.user_id,
-            type: 'leader_validated_first',
-            message: `${leadersById[userId] || "Tu líder"} validó la tarea "${selectedTask.title}". Completa feedback + medición para 100%`
+          toast.success("Feedback guardado");
+        } else {
+          // Colaborador da feedback a líder
+          await supabase.from("task_completions").insert({
+            task_id: selectedTask.id,
+            user_id: userId,
+            completed_by_user: true,
+            validated_by_leader: false,
+            leader_feedback: feedback,
           });
+
+          toast.success("Feedback enviado al líder");
         }
-      } else {
-        // Crear nuevo completion
-        await supabase.from("task_completions").insert({
-          task_id: selectedTask.id,
-          user_id: selectedTask.user_id,
-          completed_by_user: true,
-          validated_by_leader: false,
-          collaborator_feedback: feedback,
-        });
       }
 
       await fetchTasks();
-
-      // Abrir modal de insights después del feedback
-      setInsightsModalOpen(true);
     } catch (error) {
       toast.error("Error al guardar feedback");
       throw error;
     }
   };
 
-  const handleSubmitInsights = async (insights: {
-    learnings: string;
-    contribution: string;
-    futureDecisions: string;
-    suggestions: string;
+  const handleSubmitImpactMeasurement = async (data: {
+    ai_questions: Record<string, any>;
+    key_metrics: Array<{ metric: string; value: string; unit: string }>;
+    impact_rating: 'exceeded' | 'met' | 'close' | 'below';
+    impact_explanation: string;
+    future_decisions: string;
+    investments_needed: any;
   }) => {
     if (!userId || !selectedTask) return;
 
     try {
       const isSharedTask = selectedTask.leader_id !== null;
-      const isLeader = selectedTask.area && isUserLeaderOfArea(userId, selectedTask.area);
+      const isLeader = selectedTask.user_id !== userId;
       const completion = completions.get(selectedTask.id);
 
       if (isSharedTask) {
         if (isLeader) {
-          // Líder completa insights - marcar al 100%
+          // Líder completa medición → 100%
           if (completion) {
             await supabase
               .from("task_completions")
               .update({
                 validated_by_leader: true,
-                user_insights: insights,
+                impact_measurement: data,
               })
               .eq("id", completion.id);
           } else {
@@ -256,7 +215,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
               user_id: selectedTask.user_id,
               completed_by_user: true,
               validated_by_leader: true,
-              user_insights: insights,
+              impact_measurement: data,
             });
           }
 
@@ -278,54 +237,50 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             }
           });
 
-          // NOTIFICACIÓN 2: Líder valida → Notificar ejecutor
+          // NOTIFICACIÓN: Líder validó
           await supabase.from("notifications").insert({
             user_id: selectedTask.user_id,
             type: "leader_validated",
             message: `${leadersById[userId] || "Tu líder"} validó tu tarea "${selectedTask.title}". ¡100% completado! 🎉`,
           });
-          
-          // EMAIL de validación
-          await supabase.functions.invoke('send-leader-validation-email', {
-            body: {
-              to_user_id: selectedTask.user_id,
-              task_title: selectedTask.title,
-              leader_name: leadersById[userId] || "Tu líder",
-              feedback: completion?.collaborator_feedback || {}
-            }
-          });
 
           toast.success("¡Tarea completada al 100%!");
         } else {
-          // Colaborador completa insights - queda al 50% esperando validación del líder
+          // Colaborador completa medición → 50%
           if (completion) {
             await supabase
               .from("task_completions")
-              .update({
-                user_insights: insights,
-              })
+              .update({ impact_measurement: data })
               .eq("id", completion.id);
           }
 
-          // NOTIFICACIÓN 1: Ejecutor completa (50%) → Notificar líder
-          if (completion?.leader_evaluation && completion?.impact_measurement) {
-            await supabase.from('notifications').insert({
-              user_id: selectedTask.leader_id,
-              type: 'validation_request',
-              message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y necesita tu validación`
-            });
-          }
+          // Award points for completing individual task
+          await supabase.functions.invoke('award-points', {
+            body: {
+              user_id: userId,
+              action: 'task_completed_individual',
+              task_id: selectedTask.id
+            }
+          });
 
-          toast.success("¡Insights completados! Tarea al 50%, esperando validación del líder");
+          // NOTIFICACIÓN: Ejecutor completó
+          await supabase.from("notifications").insert({
+            user_id: selectedTask.leader_id,
+            type: "validation_request",
+            message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y necesita tu validación`,
+          });
+
+          toast.success("¡Medición completada! Tarea al 50%, esperando validación del líder");
         }
       } else {
-        // Tarea individual completada al 100%
+        // Tarea individual → 100%
         await supabase.from("task_completions").insert({
           task_id: selectedTask.id,
           user_id: userId,
           completed_by_user: true,
           validated_by_leader: true,
-          user_insights: insights,
+          impact_measurement: data,
+          ai_questions: data.ai_questions,
         });
 
         // Award points for completing individual task
@@ -661,26 +616,23 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
 
       {selectedTask && (
         <>
-          <TaskEvaluationModal
-            open={evaluationModalOpen}
-            onOpenChange={setEvaluationModalOpen}
+          <TaskFeedbackModal
+            open={feedbackModalOpen}
+            onOpenChange={setFeedbackModalOpen}
             taskTitle={selectedTask.title}
-            onSubmit={handleSubmitEvaluation}
+            feedbackType={feedbackType}
+            leaderName={leadersById[selectedTask.leader_id]}
+            collaboratorName={leadersById[selectedTask.user_id]}
+            onSubmit={handleSubmitFeedback}
           />
 
-          <TaskCollaboratorFeedbackModal
-            open={collaboratorFeedbackModalOpen}
-            onOpenChange={setCollaboratorFeedbackModalOpen}
+          <TaskImpactMeasurementModal
+            open={impactMeasurementModalOpen}
+            onOpenChange={setImpactMeasurementModalOpen}
             taskTitle={selectedTask.title}
-            onSubmit={handleSubmitCollaboratorFeedback}
-          />
-
-          <TaskInsightsModal
-            open={insightsModalOpen}
-            onOpenChange={setInsightsModalOpen}
-            taskTitle={selectedTask.title}
-            isLeader={selectedTask.area && isUserLeaderOfArea(userId || "", selectedTask.area)}
-            onSubmit={handleSubmitInsights}
+            taskDescription={selectedTask.description || ""}
+            taskArea={selectedTask.area || ""}
+            onSubmit={handleSubmitImpactMeasurement}
           />
         </>
       )}
