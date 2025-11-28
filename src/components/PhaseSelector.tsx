@@ -28,15 +28,7 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
       setLoading(true);
       setGeneratingPhase(newPhase);
 
-      // 1. Generar tareas de la nueva fase
-      const { data: tasksData, error: tasksError } = await supabase.functions.invoke(
-        'generate-phase-tasks',
-        { body: { phase: newPhase } }
-      );
-
-      if (tasksError) throw tasksError;
-
-      // 2. Actualizar fase en system_config
+      // Actualizar fase en system_config
       const { data: configData } = await supabase
         .from('system_config')
         .select('id')
@@ -51,16 +43,14 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
 
       if (configError) throw configError;
 
-      // 3. Éxito
       toast.success(`✅ Fase ${newPhase} activada`, {
-        description: `${tasksData.tasksGenerated} tareas generadas para el equipo`
+        description: 'Las tareas de esta fase ya están disponibles'
       });
 
-      // 4. Refrescar
       onPhaseChange();
 
-      // Reload para que todos vean las nuevas tareas
-      setTimeout(() => window.location.reload(), 1000);
+      // Reload para actualizar vista
+      setTimeout(() => window.location.reload(), 500);
 
     } catch (error: any) {
       console.error('Error changing phase:', error);
@@ -117,7 +107,7 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
         </div>
         {loading && (
           <p className="text-sm text-muted-foreground text-center mt-4">
-            ⏳ Generando tareas de Fase {generatingPhase}... Esto puede tomar unos segundos.
+            ⏳ Cambiando a Fase {generatingPhase}...
           </p>
         )}
       </CardContent>
