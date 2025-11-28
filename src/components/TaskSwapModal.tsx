@@ -111,38 +111,22 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
     }
 
     try {
-      // VALIDACIÓN DE SEGURIDAD: Verificar permisos
-      const { data: userData } = await supabase
-        .from('users')
-        .select('username')
-        .eq('id', userId)
-        .single();
-
-      if (!userData) {
-        toast({
-          title: "⛔ Error",
-          description: "No se pudo verificar el usuario",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // REGLA 1: Tarea individual - solo el asignado puede cambiarla
+      // VALIDACIÓN DE SEGURIDAD: Verificar permisos según tipo de tarea
       const isIndividual = !task.leader_id;
       const isAssignedUser = task.user_id === userId;
+      const isCollaborative = !isIndividual;
+      const isTaskLeader = task.leader_id === userId;
 
-      // REGLA 2: Tarea con líder - solo el líder del área puede cambiarla
-      const { isUserLeaderOfArea } = await import('@/lib/areaLeaders');
-      const isAreaLeader = isUserLeaderOfArea(userData.username, task.area);
-
-      const hasPermission = (isIndividual && isAssignedUser) || (!isIndividual && isAreaLeader);
+      // REGLA 1: Tarea individual → solo la persona asignada (user_id) puede cambiarla
+      // REGLA 2: Tarea colaborativa (con líder) → SOLO el líder de la tarea (leader_id) puede cambiarla
+      const hasPermission = isIndividual ? isAssignedUser : isTaskLeader;
 
       if (!hasPermission) {
         toast({
           title: "⛔ Acción no permitida",
-          description: isIndividual 
+          description: isIndividual
             ? "Solo puedes cambiar tus propias tareas individuales"
-            : "Solo el líder del área puede cambiar esta tarea",
+            : "Solo el líder de esta tarea colaborativa puede cambiarla",
           variant: "destructive"
         });
         return;
