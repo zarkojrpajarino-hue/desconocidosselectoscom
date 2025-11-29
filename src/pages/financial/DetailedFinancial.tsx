@@ -155,9 +155,18 @@ const DetailedFinancial = () => {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Contabilidad Detallada
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-2">
                 Registra transacciones y analiza métricas financieras detalladas
               </p>
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 max-w-2xl">
+                <p className="text-sm text-foreground font-medium mb-1">
+                  📊 Datos manuales vs automáticos
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Esta sección obtiene datos de <strong>transacciones registradas manualmente</strong> por ti mediante formularios (ingresos específicos, gastos detallados, campañas de marketing).
+                  A diferencia del Panel Financiero que se sincroniza automáticamente desde tus KPIs, Tareas y OKRs, aquí tienes control total sobre cada entrada contable.
+                </p>
+              </div>
             </div>
           </div>
           <Button

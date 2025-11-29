@@ -52,13 +52,7 @@ const FinancialPage = () => {
           <div className="flex items-center justify-end">
             <Button
               variant="default"
-              onClick={() => {
-                toast.info(
-                  'Contabilidad Detallada te permite registrar manualmente transacciones específicas (ingresos, gastos, campañas) con todos los detalles. Ideal para llevar la contabilidad exacta de tu negocio.',
-                  { duration: 6000 }
-                );
-                setTimeout(() => navigate('/financial/detailed'), 500);
-              }}
+              onClick={() => navigate('/financial/detailed')}
               className="gap-2 bg-black hover:bg-black/90 text-white"
             >
               <FileText className="h-4 w-4" />
