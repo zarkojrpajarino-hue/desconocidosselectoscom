@@ -20,10 +20,10 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 -- Eliminar cron job existente si existe (para re-configurar)
 SELECT cron.unschedule('weekly-schedules-generation');
 
--- Crear nuevo cron job que se ejecuta cada miércoles a las 13:30
+-- Crear nuevo cron job que se ejecuta cada lunes a las 13:01
 SELECT cron.schedule(
   'weekly-schedules-generation',
-  '30 13 * * 3', -- Cada miércoles a las 13:30
+  '01 13 * * 1', -- Cada lunes a las 13:01
   $$
   SELECT net.http_post(
     url := 'https://[YOUR-PROJECT-ID].supabase.co/functions/v1/generate-weekly-schedules',
