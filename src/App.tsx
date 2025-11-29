@@ -21,6 +21,7 @@ import AIAnalysis from "./pages/AIAnalysis";
 import BusinessMetrics from "./pages/BusinessMetrics";
 import UserMetricsHistoryPage from "./pages/UserMetricsHistoryPage";
 import HerramientasHub from "./pages/HerramientasHub";
+import MetricsHub from "./pages/MetricsHub";
 import OKRsPage from "./pages/OKRsPage";
 import OKRsHistory from "./pages/okrs/OKRsHistory";
 import UserOKRHistory from "./pages/okrs/UserOKRHistory";
@@ -155,6 +156,11 @@ const AppContent = () => {
       <Route path="/herramientas-hub" element={
         <ProtectedRoute>
           <HerramientasHub />
+        </ProtectedRoute>
+      } />
+      <Route path="/metrics-hub" element={
+        <ProtectedRoute>
+          <MetricsHub />
         </ProtectedRoute>
       } />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
