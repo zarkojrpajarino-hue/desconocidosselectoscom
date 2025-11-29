@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp, DollarSign } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -28,6 +28,13 @@ const Home = () => {
       icon: Target,
       path: '/okrs',
       gradient: 'from-emerald-500 to-teal-600'
+    },
+    {
+      title: 'Panel Financiero',
+      description: 'Métricas financieras, ingresos, gastos, margen, burn rate y ROI de marketing',
+      icon: DollarSign,
+      path: '/financial',
+      gradient: 'from-green-500 to-emerald-600'
     },
     {
       title: 'Análisis con IA',
