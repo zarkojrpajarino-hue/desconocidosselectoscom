@@ -162,8 +162,11 @@ const LinkTasksToOKRModal = ({
             <LinkIcon className="w-5 h-5" />
             Vincular Tareas al Key Result
           </DialogTitle>
-          <DialogDescription>
-            {keyResultTitle}
+          <DialogDescription className="space-y-2">
+            <p className="font-medium">{keyResultTitle}</p>
+            <p className="text-xs bg-primary/10 text-primary p-2 rounded-md">
+              💡 El progreso se actualizará automáticamente cuando las tareas vinculadas sean completadas y validadas por el líder
+            </p>
           </DialogDescription>
         </DialogHeader>
 
