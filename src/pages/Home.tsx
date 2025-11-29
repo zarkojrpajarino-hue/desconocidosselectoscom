@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator, Trophy, Calendar } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -10,24 +10,10 @@ const Home = () => {
   const sections = [
     {
       title: 'Dashboard de Trabajo',
-      description: 'Gestiona tus tareas semanales',
+      description: 'Gestiona tus tareas semanales, agenda y gamificación',
       icon: BarChart3,
       path: '/dashboard',
       gradient: 'from-blue-500 to-cyan-500'
-    },
-    {
-      title: 'Mi Agenda Coordinada',
-      description: 'Visualiza tu agenda semanal sincronizada con el equipo',
-      icon: Calendar,
-      path: '/dashboard/agenda',
-      gradient: 'from-indigo-500 to-purple-500'
-    },
-    {
-      title: 'Gamificación',
-      description: 'Badges, leaderboard y progreso del equipo',
-      icon: Trophy,
-      path: '/gamification',
-      gradient: 'from-yellow-500 to-amber-500'
     },
     {
       title: 'Herramientas Visuales',

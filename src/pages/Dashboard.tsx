@@ -1,5 +1,5 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar } from 'lucide-react';
+import { LayoutDashboard, Calendar, Trophy } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useEffect } from 'react';
 
@@ -16,7 +16,8 @@ const Dashboard = () => {
 
   const tabs = [
     { path: '/dashboard/home', label: 'Panel Principal', icon: LayoutDashboard },
-    { path: '/dashboard/agenda', label: 'Agenda Semanal', icon: Calendar }
+    { path: '/dashboard/agenda', label: 'Agenda Semanal', icon: Calendar },
+    { path: '/dashboard/gamification', label: 'Gamificación', icon: Trophy }
   ];
 
   return (

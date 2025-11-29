@@ -49,6 +49,12 @@ interface WeekComparison {
   activeUsers: number;
 }
 
+interface HeatmapData {
+  day: string;
+  hour: string;
+  tasks: number;
+}
+
 const Admin = () => {
   const { userProfile, loading } = useAuth();
   const navigate = useNavigate();
@@ -68,6 +74,7 @@ const Admin = () => {
   // Datos para gráficos
   const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgress[]>([]);
   const [weekComparison, setWeekComparison] = useState<WeekComparison[]>([]);
+  const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
 
   useEffect(() => {
     if (!loading && userProfile?.role !== 'admin') {
@@ -96,6 +103,7 @@ const Admin = () => {
       await fetchTeamStats();
       await fetchWeeklyProgress();
       await fetchWeekComparison();
+      await fetchHeatmapData();
     } finally {
       setIsRefreshing(false);
     }
@@ -271,6 +279,60 @@ const Admin = () => {
       setWeekComparison(comparisons);
     } catch (error) {
       console.error('Error fetching week comparison:', error);
+    }
+  };
+
+  const fetchHeatmapData = async () => {
+    try {
+      const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+      
+      // Obtener todas las tareas completadas en las últimas 4 semanas
+      const fourWeeksAgo = subWeeks(new Date(), 4);
+      
+      const { data: completions } = await supabase
+        .from('task_completions')
+        .select('completed_at')
+        .gte('completed_at', fourWeeksAgo.toISOString())
+        .not('completed_at', 'is', null);
+
+      // Inicializar matriz de datos
+      const heatmap: { [key: string]: number } = {};
+      
+      daysOfWeek.forEach(day => {
+        hours.forEach(hour => {
+          heatmap[`${day}-${hour}`] = 0;
+        });
+      });
+
+      // Contar tareas por día y hora
+      completions?.forEach(completion => {
+        const date = new Date(completion.completed_at);
+        const dayIndex = (date.getDay() + 6) % 7; // Convertir domingo=0 a lunes=0
+        const day = daysOfWeek[dayIndex];
+        const hour = `${date.getHours()}:00`;
+        const key = `${day}-${hour}`;
+        
+        if (heatmap[key] !== undefined) {
+          heatmap[key]++;
+        }
+      });
+
+      // Convertir a array para el heatmap
+      const heatmapArray: HeatmapData[] = [];
+      daysOfWeek.forEach(day => {
+        hours.forEach(hour => {
+          heatmapArray.push({
+            day,
+            hour,
+            tasks: heatmap[`${day}-${hour}`] || 0,
+          });
+        });
+      });
+
+      setHeatmapData(heatmapArray);
+    } catch (error) {
+      console.error('Error fetching heatmap data:', error);
     }
   };
 
@@ -590,11 +652,12 @@ const Admin = () => {
 
         {/* Tabs Principal */}
         <Tabs defaultValue="resumen" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="resumen">📊 Resumen</TabsTrigger>
-            <TabsTrigger value="evolucion">📈 Evolución</TabsTrigger>
-            <TabsTrigger value="comparacion">📅 Comparación</TabsTrigger>
-            <TabsTrigger value="gamificacion">🏆 Gamificación</TabsTrigger>
+          <TabsList className="flex flex-wrap gap-2 h-auto bg-muted/50 p-2 rounded-lg">
+            <TabsTrigger value="resumen" className="flex-1 min-w-[140px]">📊 Resumen</TabsTrigger>
+            <TabsTrigger value="evolucion" className="flex-1 min-w-[140px]">📈 Evolución</TabsTrigger>
+            <TabsTrigger value="comparacion" className="flex-1 min-w-[140px]">📅 Comparación</TabsTrigger>
+            <TabsTrigger value="productividad" className="flex-1 min-w-[140px]">🔥 Productividad</TabsTrigger>
+            <TabsTrigger value="gamificacion" className="flex-1 min-w-[140px]">🏆 Gamificación</TabsTrigger>
           </TabsList>
 
           {/* Tab: Resumen */}
@@ -878,6 +941,141 @@ const Admin = () => {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Productividad */}
+          <TabsContent value="productividad" className="space-y-4">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>🔥 Heatmap de Productividad</CardTitle>
+                <CardDescription>
+                  Análisis de actividad del equipo por día y hora (últimas 4 semanas)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Leyenda del heatmap */}
+                  <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+                    <div className="text-sm text-muted-foreground">
+                      <strong>Baja actividad</strong>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="w-8 h-8 rounded bg-muted border"></div>
+                      <div className="w-8 h-8 rounded bg-blue-100 border"></div>
+                      <div className="w-8 h-8 rounded bg-blue-300 border"></div>
+                      <div className="w-8 h-8 rounded bg-blue-500 border"></div>
+                      <div className="w-8 h-8 rounded bg-blue-700 border"></div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      <strong>Alta actividad</strong>
+                    </div>
+                  </div>
+
+                  {/* Heatmap Grid */}
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[800px]">
+                      {/* Horas del día (header) */}
+                      <div className="flex mb-2">
+                        <div className="w-24 flex-shrink-0"></div>
+                        <div className="flex flex-1 gap-1">
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <div key={i} className="flex-1 text-center text-xs text-muted-foreground">
+                              {i % 3 === 0 ? `${i}h` : ''}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Días de la semana con celdas */}
+                      {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => {
+                        const dayData = heatmapData.filter(d => d.day === day);
+                        const maxTasks = Math.max(...heatmapData.map(d => d.tasks), 1);
+                        
+                        return (
+                          <div key={day} className="flex items-center mb-1">
+                            <div className="w-24 flex-shrink-0 text-sm font-medium pr-2 text-right">
+                              {day}
+                            </div>
+                            <div className="flex flex-1 gap-1">
+                              {Array.from({ length: 24 }, (_, hour) => {
+                                const hourData = dayData.find(d => d.hour === `${hour}:00`);
+                                const tasks = hourData?.tasks || 0;
+                                const intensity = tasks / maxTasks;
+                                
+                                let bgColor = 'bg-muted';
+                                if (intensity > 0.8) bgColor = 'bg-blue-700';
+                                else if (intensity > 0.6) bgColor = 'bg-blue-500';
+                                else if (intensity > 0.4) bgColor = 'bg-blue-300';
+                                else if (intensity > 0.2) bgColor = 'bg-blue-100';
+                                else if (intensity > 0) bgColor = 'bg-blue-50';
+                                
+                                return (
+                                  <div
+                                    key={hour}
+                                    className={`flex-1 aspect-square rounded border border-border/50 ${bgColor} hover:ring-2 hover:ring-primary cursor-pointer transition-all`}
+                                    title={`${day} ${hour}:00 - ${tasks} tareas`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Estadísticas adicionales */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <Card className="border-2">
+                      <CardContent className="pt-6">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-primary">
+                            {heatmapData.reduce((sum, d) => sum + d.tasks, 0)}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">Tareas Totales</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border-2">
+                      <CardContent className="pt-6">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-primary">
+                            {(() => {
+                              const hourCounts: { [key: string]: number } = {};
+                              heatmapData.forEach(d => {
+                                hourCounts[d.hour] = (hourCounts[d.hour] || 0) + d.tasks;
+                              });
+                              const peakHour = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
+                              return peakHour ? peakHour[0] : 'N/A';
+                            })()}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">Hora Pico</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border-2">
+                      <CardContent className="pt-6">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-primary">
+                            {(() => {
+                              const dayCounts: { [key: string]: number } = {};
+                              heatmapData.forEach(d => {
+                                dayCounts[d.day] = (dayCounts[d.day] || 0) + d.tasks;
+                              });
+                              const peakDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
+                              return peakDay ? peakDay[0] : 'N/A';
+                            })()}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">Día Más Activo</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </CardContent>
             </Card>
