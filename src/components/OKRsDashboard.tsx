@@ -303,7 +303,7 @@ const OKRsDashboard = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">OKRs - Objetivos y Resultados Clave</h2>
           <p className="text-muted-foreground">
-            Fase {currentPhase} - Progreso automático desde tareas completadas y validadas
+            Fase {currentPhase} - El progreso se actualiza automáticamente al validar tareas vinculadas
           </p>
         </div>
 
@@ -391,7 +391,7 @@ const OKRsDashboard = () => {
             <Target className="w-16 h-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No hay objetivos para Fase {currentPhase}</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md">
-              Crea objetivos para esta fase. El progreso se actualizará automáticamente al completar y validar tareas vinculadas.
+              Crea objetivos para esta fase y vincula tareas existentes. El progreso se actualizará automáticamente al completar y validar las tareas.
             </p>
             {(userProfile?.role === 'admin' || userProfile?.role === 'leader') && (
               <Button onClick={() => setShowCreateModal(true)} className="gap-2">
@@ -530,68 +530,32 @@ const OKRsDashboard = () => {
                           />
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2 flex-wrap">
-                          {(kr as any).linked_tasks_count > 0 ? (
-                            <>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <LinkIcon className="w-4 h-4" />
-                                <span>{(kr as any).linked_tasks_count} tareas vinculadas - Progreso automático</span>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs gap-1"
-                                onClick={() => {
-                                  setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
-                                  setShowLinkModal(true);
-                                }}
-                              >
-                                <LinkIcon className="w-3 h-3" />
-                                Gestionar vínculos
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <input
-                                type="number"
-                                min={kr.start_value}
-                                max={kr.target_value}
-                                defaultValue={kr.current_value}
-                                className="px-3 py-1 border rounded text-sm w-24"
-                                onBlur={(e) => {
-                                  const newValue = parseFloat(e.target.value);
-                                  if (newValue !== kr.current_value && !isNaN(newValue)) {
-                                    updateKRValue(kr.id, newValue);
-                                  }
-                                }}
-                              />
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs"
-                                onClick={() => {
-                                  const input = document.querySelector(`input[value="${kr.current_value}"]`) as HTMLInputElement;
-                                  if (input) {
-                                    updateKRValue(kr.id, parseFloat(input.value));
-                                  }
-                                }}
-                              >
-                                Actualizar progreso
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="default"
-                                className="text-xs gap-1"
-                                onClick={() => {
-                                  setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
-                                  setShowLinkModal(true);
-                                }}
-                              >
-                                <LinkIcon className="w-3 h-3" />
-                                Vincular tareas
-                              </Button>
-                            </>
-                          )}
+                        <div className="flex items-center justify-between pt-2 border-t mt-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <LinkIcon className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              {(kr as any).linked_tasks_count > 0 ? (
+                                <>
+                                  <span className="font-medium text-foreground">{(kr as any).linked_tasks_count}</span> tareas vinculadas
+                                  <span className="text-xs ml-2 text-success">✓ Actualización automática</span>
+                                </>
+                              ) : (
+                                'Sin tareas vinculadas'
+                              )}
+                            </span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={(kr as any).linked_tasks_count > 0 ? "outline" : "default"}
+                            className="gap-2"
+                            onClick={() => {
+                              setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
+                              setShowLinkModal(true);
+                            }}
+                          >
+                            <LinkIcon className="w-3 h-3" />
+                            {(kr as any).linked_tasks_count > 0 ? 'Gestionar tareas' : 'Vincular tareas'}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
