@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import AIAnalysis from "./pages/AIAnalysis";
+import BusinessMetrics from "./pages/BusinessMetrics";
 
 // Dashboard sub-pages
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -107,6 +108,11 @@ const AppContent = () => {
       <Route path="/ai-analysis" element={
         <ProtectedRoute>
           <AIAnalysis />
+        </ProtectedRoute>
+      } />
+      <Route path="/business-metrics" element={
+        <ProtectedRoute>
+          <BusinessMetrics />
         </ProtectedRoute>
       } />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />

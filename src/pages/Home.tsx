@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator, Brain } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -14,6 +14,20 @@ const Home = () => {
       icon: BarChart3,
       path: '/dashboard',
       gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Métricas del Negocio',
+      description: 'Actualiza KPIs reales: ventas, marketing, operaciones y cliente',
+      icon: TrendingUp,
+      path: '/business-metrics',
+      gradient: 'from-emerald-500 to-teal-500'
+    },
+    {
+      title: 'Análisis con IA',
+      description: 'Dashboard inteligente con insights profundos, proyecciones y recomendaciones accionables',
+      icon: Brain,
+      path: '/ai-analysis',
+      gradient: 'from-violet-500 to-purple-600'
     },
     {
       title: 'Herramientas Visuales',
@@ -35,13 +49,6 @@ const Home = () => {
       icon: Calculator,
       path: '/calculadora',
       gradient: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'Análisis con IA',
-      description: 'Dashboard inteligente con insights profundos, proyecciones y recomendaciones accionables',
-      icon: Brain,
-      path: '/ai-analysis',
-      gradient: 'from-violet-500 to-purple-600'
     }
   ];
 

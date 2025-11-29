@@ -24,6 +24,8 @@ interface ProjectMetrics {
     completed: number;
     points: number;
   }>;
+  business_metrics?: any; // Métricas del negocio actualizadas por usuarios
+  task_metrics?: any[]; // Métricas capturadas al completar tareas
 }
 
 serve(async (req) => {
@@ -69,6 +71,7 @@ serve(async (req) => {
 });
 
 async function gatherProjectMetrics(supabase: any): Promise<ProjectMetrics> {
+  // 1. Obtener usuarios y sus logros
   const { data: users } = await supabase
     .from('users')
     .select(`
@@ -78,17 +81,19 @@ async function gatherProjectMetrics(supabase: any): Promise<ProjectMetrics> {
     `)
     .neq('role', 'admin');
 
+  // 2. Obtener tareas y completaciones
   const { data: tasks } = await supabase
     .from('tasks')
     .select(`
       id,
       area,
       user_id,
-      task_completions(id)
+      task_completions(id, task_metrics)
     `);
 
   const totalCompleted = tasks?.reduce((sum: number, t: any) => sum + (t.task_completions?.length || 0), 0) || 0;
 
+  // 3. Agregar métricas por área
   const areasMap = new Map();
   tasks?.forEach((task: any) => {
     if (!task.area) return;
@@ -106,6 +111,7 @@ async function gatherProjectMetrics(supabase: any): Promise<ProjectMetrics> {
     completed: stats.completed
   }));
 
+  // 4. Rendimiento de usuarios
   const userPerformance = users?.map((user: any) => {
     const userTasks = tasks?.filter((t: any) => t.user_id === user.id) || [];
     const userCompleted = userTasks.reduce((sum: number, t: any) => sum + (t.task_completions?.length || 0), 0);
@@ -118,11 +124,36 @@ async function gatherProjectMetrics(supabase: any): Promise<ProjectMetrics> {
     };
   }) || [];
 
+  // 5. Obtener métricas del negocio (últimas 30 días)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const { data: businessMetrics } = await supabase
+    .from('business_metrics')
+    .select('*')
+    .gte('metric_date', thirtyDaysAgo.toISOString().split('T')[0])
+    .order('metric_date', { ascending: false });
+
+  // 6. Extraer task_metrics de todas las completaciones
+  const taskMetrics: any[] = [];
+  tasks?.forEach((task: any) => {
+    task.task_completions?.forEach((completion: any) => {
+      if (completion.task_metrics && Object.keys(completion.task_metrics).length > 0) {
+        taskMetrics.push({
+          area: task.area,
+          ...completion.task_metrics
+        });
+      }
+    });
+  });
+
   return {
     tasks_completed: totalCompleted,
     team_size: users?.length || 0,
     areas_performance: areasPerformance,
-    user_performance: userPerformance
+    user_performance: userPerformance,
+    business_metrics: businessMetrics || [],
+    task_metrics: taskMetrics
   };
 }
 
@@ -177,7 +208,15 @@ async function generateAIAnalysis(metrics: ProjectMetrics) {
 }
 
 function buildAnalysisPrompt(metrics: ProjectMetrics): string {
-  return `Eres un consultor de negocios experto analizando un proyecto de comercio electrónico (cestas gourmet).
+  // Calcular métricas agregadas de business_metrics
+  const latestBusinessMetrics = metrics.business_metrics && metrics.business_metrics.length > 0 
+    ? metrics.business_metrics[0] 
+    : null;
+  
+  // Agregar task_metrics por tipo
+  const taskMetricsAgg = aggregateTaskMetrics(metrics.task_metrics || []);
+
+  let prompt = `Eres un consultor de negocios experto analizando un proyecto de comercio electrónico (cestas gourmet).
 
 **DATOS DEL PROYECTO:**
 
@@ -194,42 +233,110 @@ RENDIMIENTO DEL EQUIPO:
 ${metrics.user_performance.map(u => 
   `- ${u.name}: ${u.completed}/${u.tasks} tareas, ${u.points} puntos`
 ).join('\n')}
+`;
+
+  // Añadir métricas del negocio si existen
+  if (latestBusinessMetrics) {
+    prompt += `
+
+**MÉTRICAS DEL NEGOCIO (Últimas actualizaciones reales):**
+
+VENTAS E INGRESOS:
+${latestBusinessMetrics.revenue ? `- Ingresos: €${latestBusinessMetrics.revenue}` : ''}
+${latestBusinessMetrics.orders_count ? `- Pedidos: ${latestBusinessMetrics.orders_count}` : ''}
+${latestBusinessMetrics.avg_ticket ? `- Ticket medio: €${latestBusinessMetrics.avg_ticket}` : ''}
+
+MARKETING:
+${latestBusinessMetrics.leads_generated ? `- Leads generados: ${latestBusinessMetrics.leads_generated}` : ''}
+${latestBusinessMetrics.conversion_rate ? `- Tasa de conversión: ${latestBusinessMetrics.conversion_rate}%` : ''}
+${latestBusinessMetrics.cac ? `- CAC: €${latestBusinessMetrics.cac}` : ''}
+
+OPERACIONES:
+${latestBusinessMetrics.production_time ? `- Tiempo de producción: ${latestBusinessMetrics.production_time}h` : ''}
+${latestBusinessMetrics.capacity_used ? `- Capacidad utilizada: ${latestBusinessMetrics.capacity_used}%` : ''}
+${latestBusinessMetrics.error_rate ? `- Tasa de errores: ${latestBusinessMetrics.error_rate}%` : ''}
+
+CLIENTE:
+${latestBusinessMetrics.nps_score ? `- NPS Score: ${latestBusinessMetrics.nps_score}` : ''}
+${latestBusinessMetrics.repeat_rate ? `- Tasa de repetición: ${latestBusinessMetrics.repeat_rate}%` : ''}
+${latestBusinessMetrics.satisfaction_score ? `- Satisfacción: ${latestBusinessMetrics.satisfaction_score}/5` : ''}
+
+${latestBusinessMetrics.notes ? `Notas: ${latestBusinessMetrics.notes}` : ''}
+`;
+  }
+
+  // Añadir métricas de tareas si existen
+  if (taskMetricsAgg.count > 0) {
+    prompt += `
+
+**RESULTADOS DE TAREAS ESPECÍFICAS:**
+${taskMetricsAgg.revenue ? `- Ingresos generados en tareas: €${taskMetricsAgg.revenue}` : ''}
+${taskMetricsAgg.leads ? `- Leads capturados: ${taskMetricsAgg.leads}` : ''}
+${taskMetricsAgg.conversions ? `- Conversiones logradas: ${taskMetricsAgg.conversions}` : ''}
+${taskMetricsAgg.time_saved ? `- Tiempo ahorrado: ${taskMetricsAgg.time_saved}h` : ''}
+Número de tareas con métricas: ${taskMetricsAgg.count}
+`;
+  }
+
+  prompt += `
 
 **TU MISIÓN:**
 
-Analiza estos datos con total sinceridad y genera un informe estratégico con:
+Analiza estos datos REALES con total sinceridad y genera un informe estratégico con:
 
 1. **DÓNDE ESTÁ EL DINERO:**
-   - Qué productos/servicios parecen más rentables según las áreas
-   - Recomendaciones para aumentar margen
+   - Qué productos/servicios son más rentables basado en los datos reales
+   - Canales que mejor ROI tienen
+   - Recomendaciones concretas para aumentar ingresos y margen
 
 2. **DÓNDE SE PIERDE TIEMPO:**
-   - Qué áreas tienen menor eficiencia
+   - Áreas con menor eficiencia según las tareas
    - Cuellos de botella detectados
-   - Qué automatizar o mejorar
+   - Procesos a automatizar o eliminar
 
 3. **EN QUÉ ENFOCARSE:**
-   - Top 3 prioridades basadas en los datos
-   - Alertas sobre áreas con baja performance
+   - Top 3 prioridades basadas en datos reales
+   - Alertas sobre áreas críticas
+   - Matriz impacto vs esfuerzo
 
 4. **PROYECCIONES:**
-   - Riesgos de burnout (usuarios con mucha carga)
-   - Decisiones estratégicas recomendadas
+   - Escenarios futuros basados en tendencias actuales
+   - Riesgos de burnout en el equipo
+   - Decisiones estratégicas necesarias
 
-5. **PREGUNTAS CLAVE:**
-   - 3 preguntas estratégicas basadas en los datos
+5. **PREGUNTAS DETONANTES:**
+   - 3 preguntas sobre estrategia y foco
+   - 3 preguntas sobre rentabilidad
+   - 3 preguntas sobre el equipo
 
 6. **DECISIONES DIFÍCILES:**
-   - Feedback directo sobre qué mejorar
-   - Recomendaciones concretas
+   - Feedback sin filtros sobre qué está mal
+   - Recomendaciones valientes basadas en los datos
+   - Decisiones impopulares pero necesarias
 
-**TONO:**
-- Directo y sincero
-- Basado en datos reales
-- Orientado a acción
+**IMPORTANTE:**
+- Usa SOLO los datos reales proporcionados
+- Si faltan datos, menciona qué métricas serían útiles recopilar
+- Sé específico con números y porcentajes
 - HTML simple (h3, p, ul, li, strong)
 
-Genera el análisis:`;
+Genera el análisis completo ahora:`;
+
+  return prompt;
+}
+
+function aggregateTaskMetrics(taskMetrics: any[]): any {
+  const agg: any = { count: taskMetrics.length };
+  
+  taskMetrics.forEach(tm => {
+    if (tm.revenue) agg.revenue = (agg.revenue || 0) + tm.revenue;
+    if (tm.leads) agg.leads = (agg.leads || 0) + tm.leads;
+    if (tm.conversions) agg.conversions = (agg.conversions || 0) + tm.conversions;
+    if (tm.time_saved) agg.time_saved = (agg.time_saved || 0) + tm.time_saved;
+    if (tm.time_hours) agg.time_saved = (agg.time_saved || 0) + tm.time_hours;
+  });
+  
+  return agg;
 }
 
 function structureAnalysis(metrics: ProjectMetrics, aiAnalysis: string) {
@@ -237,24 +344,24 @@ function structureAnalysis(metrics: ProjectMetrics, aiAnalysis: string) {
     ? metrics.areas_performance.reduce((sum, a) => sum + (a.completed / (a.tasks || 1)), 0) / metrics.areas_performance.length * 100
     : 0;
 
+  const latestBusinessMetrics = metrics.business_metrics && metrics.business_metrics.length > 0 
+    ? metrics.business_metrics[0] 
+    : null;
+
   return {
     money_section: {
-      revenue: 12450,
-      growth: 23,
+      revenue: latestBusinessMetrics?.revenue || 0,
+      growth: latestBusinessMetrics ? 0 : 0, // Calcular growth con histórico
       efficiency: Math.round(avgCompletionRate),
-      margin: 42,
-      products: [
-        { name: 'Cestas Personalizadas', margin: 42, volume: 15 },
-        { name: 'Premium', margin: 35, volume: 25 },
-        { name: 'Estándar', margin: 28, volume: 40 },
-        { name: 'Básicas', margin: 18, volume: 20 }
-      ],
-      channels: [
-        { name: 'Instagram', leads: 45, conversion: 67, cac: 8, roi: 8.2 },
-        { name: 'Facebook', leads: 120, conversion: 23, cac: 15, roi: 2.1 },
-        { name: 'Orgánico', leads: 78, conversion: 34, cac: 0, roi: 99 },
-        { name: 'Email', leads: 34, conversion: 51, cac: 2, roi: 12.3 }
-      ],
+      margin: 0, // Calcular de product_margins si existe
+      products: latestBusinessMetrics?.product_margins || [],
+      channels: latestBusinessMetrics?.channel_roi || [],
+      real_data: {
+        has_revenue: !!latestBusinessMetrics?.revenue,
+        has_leads: !!latestBusinessMetrics?.leads_generated,
+        has_cac: !!latestBusinessMetrics?.cac,
+        last_update: latestBusinessMetrics?.metric_date || null
+      },
       ai_analysis: extractSection(aiAnalysis, 'DÓNDE ESTÁ EL DINERO', 'DÓNDE SE PIERDE TIEMPO')
     },
     efficiency_section: {
@@ -274,6 +381,11 @@ function structureAnalysis(metrics: ProjectMetrics, aiAnalysis: string) {
       bottlenecks: metrics.areas_performance
         .filter(a => a.tasks > 0 && (a.completed / a.tasks) < 0.5)
         .map(a => `${a.area} tiene baja eficiencia: ${a.completed}/${a.tasks} completadas`),
+      real_data: {
+        production_time: latestBusinessMetrics?.production_time || null,
+        capacity_used: latestBusinessMetrics?.capacity_used || null,
+        error_rate: latestBusinessMetrics?.error_rate || null
+      },
       ai_analysis: extractSection(aiAnalysis, 'DÓNDE SE PIERDE TIEMPO', 'EN QUÉ ENFOCARSE')
     },
     focus_section: {
@@ -290,16 +402,16 @@ function structureAnalysis(metrics: ProjectMetrics, aiAnalysis: string) {
     },
     future_section: {
       projections: [
-        { week: 'S1', real: 45, projected: 45 },
-        { week: 'S2', real: 52, projected: 55 },
-        { week: 'S3', real: 58, projected: 65 },
-        { week: 'S4', real: 67, projected: 75 },
-        { week: 'S5', real: 0, projected: 85 },
-        { week: 'S6', real: 0, projected: 95 }
+        { week: 'S1', real: metrics.tasks_completed, projected: metrics.tasks_completed },
+        { week: 'S2', real: 0, projected: Math.round(metrics.tasks_completed * 1.2) },
+        { week: 'S3', real: 0, projected: Math.round(metrics.tasks_completed * 1.4) },
+        { week: 'S4', real: 0, projected: Math.round(metrics.tasks_completed * 1.6) },
+        { week: 'S5', real: 0, projected: Math.round(metrics.tasks_completed * 1.8) },
+        { week: 'S6', real: 0, projected: Math.round(metrics.tasks_completed * 2.0) }
       ],
       phase_prediction: {
         phase: 3,
-        probability: 87,
+        probability: Math.round(avgCompletionRate),
         weeks: 6
       },
       burnout_risks: metrics.user_performance
@@ -308,62 +420,47 @@ function structureAnalysis(metrics: ProjectMetrics, aiAnalysis: string) {
           user: u.name,
           risk: u.tasks > 20 ? 'Alto' : 'Medio',
           reason: `${u.tasks} tareas asignadas`,
-          action: 'Reducir carga o redistribuir'
+          action: u.tasks > 20 ? 'Reducir carga inmediatamente' : 'Monitorear'
         })),
-      scenarios: [
-        { title: 'Optimizar áreas lentas', impact: 'Eficiencia +20%', roi: 'ROI 4.5x' },
-        { title: 'Automatización de procesos', impact: 'Tiempo libre +30%', roi: 'ROI 6.2x' }
-      ],
+      scenarios: [],
       ai_analysis: extractSection(aiAnalysis, 'PROYECCIONES', 'PREGUNTAS')
     },
     questions_section: {
-      focus_questions: [
-        {
-          question: '¿Qué áreas necesitan más apoyo o recursos?',
-          context: 'Algunas áreas tienen baja eficiencia',
-          action: 'Revisar carga de trabajo'
-        },
-        {
-          question: '¿Qué tareas consumen más tiempo sin generar valor?',
-          context: 'Optimización de procesos',
-          action: 'Identificar y automatizar'
-        }
-      ],
-      money_questions: [
-        {
-          question: '¿Dónde podemos aumentar margen sin perder calidad?',
-          context: 'Análisis de rentabilidad',
-          action: 'Revisar pricing'
-        }
-      ],
-      team_questions: [
-        {
-          question: '¿Alguien del equipo está sobrecargado?',
-          context: 'Balance de carga',
-          action: 'Redistribuir tareas'
-        }
-      ]
+      focus_questions: [],
+      money_questions: [],
+      team_questions: []
     },
     tough_decisions: {
-      decisions: [
-        {
-          title: 'OPTIMIZAR ÁREAS CON BAJA EFICIENCIA',
-          description: 'Algunas áreas tienen tasa de completación menor al 50%',
-          impact: 'Eficiencia general +15%',
-          risk: 'Requiere cambios en procesos',
-          recommendation: 'Revisar y simplificar workflows'
-        }
-      ],
-      decision_history: [
-        {
-          date: '15 Nov 2025',
-          decision: 'Redistribuir tareas entre equipo',
-          projected: 'Eficiencia +10%',
-          real: 'Eficiencia +12%',
-          accuracy: 95
-        }
-      ],
+      decisions: [],
+      decision_history: [],
       ai_raw_feedback: extractSection(aiAnalysis, 'DECISIONES DIFÍCILES', '---END---')
+    },
+    benchmarks: {
+      conversion_rate: { 
+        value: latestBusinessMetrics?.conversion_rate || 0, 
+        benchmark: 24, 
+        position: latestBusinessMetrics?.conversion_rate ? `${latestBusinessMetrics.conversion_rate > 24 ? '+' : ''}${Math.round(((latestBusinessMetrics.conversion_rate / 24) - 1) * 100)}% vs promedio` : 'Sin datos'
+      },
+      cac: { 
+        value: latestBusinessMetrics?.cac || 0, 
+        benchmark: 15, 
+        position: latestBusinessMetrics?.cac ? `${latestBusinessMetrics.cac < 15 ? '-' : '+'}${Math.round(Math.abs(((latestBusinessMetrics.cac / 15) - 1) * 100))}% vs sector` : 'Sin datos'
+      },
+      margin: { 
+        value: 0, 
+        benchmark: 27, 
+        position: 'Sin datos' 
+      },
+      repeat_rate: { 
+        value: latestBusinessMetrics?.repeat_rate || 0, 
+        benchmark: 40, 
+        position: latestBusinessMetrics?.repeat_rate ? `${latestBusinessMetrics.repeat_rate > 40 ? '+' : ''}${Math.round(latestBusinessMetrics.repeat_rate - 40)}pp vs sector` : 'Sin datos'
+      }
+    },
+    raw_metrics: {
+      business_metrics: latestBusinessMetrics,
+      task_metrics_count: metrics.task_metrics?.length || 0,
+      has_real_data: !!latestBusinessMetrics
     },
     generated_at: new Date().toISOString()
   };
