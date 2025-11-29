@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, DollarSign, TrendingUp, Package, Users, ChevronRight, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, Calendar, DollarSign, TrendingUp, Package, Users, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -31,25 +32,48 @@ interface MetricEntry {
   notes?: string;
 }
 
-interface UserMetricsHistoryProps {
-  userId: string;
-  userName: string;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHistoryProps) => {
+const UserMetricsHistoryPage = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>('');
   const [metrics, setMetrics] = useState<MetricEntry[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState<MetricEntry | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (userId) {
+      loadUserData();
       loadUserMetrics();
     }
-  }, [isOpen, userId]);
+  }, [userId]);
+
+  const loadUserData = async () => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setUserName(data.full_name);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
 
   const loadUserMetrics = async () => {
+    if (!userId) return;
+    
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -106,7 +130,7 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
               <DollarSign className="w-5 h-5 text-emerald-500" />
               <h3 className="font-semibold">Ventas</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {metric.revenue && (
                 <div className="bg-muted/30 p-3 rounded-lg">
                   <p className="text-xs text-muted-foreground">Ingresos</p>
@@ -136,7 +160,7 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
               <TrendingUp className="w-5 h-5 text-blue-500" />
               <h3 className="font-semibold">Marketing</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {metric.leads_generated && (
                 <div className="bg-muted/30 p-3 rounded-lg">
                   <p className="text-xs text-muted-foreground">Leads generados</p>
@@ -166,7 +190,7 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
               <Package className="w-5 h-5 text-orange-500" />
               <h3 className="font-semibold">Operaciones</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {metric.production_time && (
                 <div className="bg-muted/30 p-3 rounded-lg">
                   <p className="text-xs text-muted-foreground">Tiempo producción</p>
@@ -196,14 +220,14 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
         )}
 
         {/* Cliente */}
-        {(metric.nps_score || metric.repeat_rate || metric.lifetime_value || metric.satisfaction_score) && (
+        {(metric.nps_score || metric.repeat_rate || metric.lifetime_value || metric.satisfaction_score || metric.reviews_count || metric.reviews_avg) && (
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-5 h-5 text-purple-500" />
               <h3 className="font-semibold">Cliente</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {metric.nps_score && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {metric.nps_score !== null && metric.nps_score !== undefined && (
                 <div className="bg-muted/30 p-3 rounded-lg">
                   <p className="text-xs text-muted-foreground">NPS Score</p>
                   <p className="text-lg font-bold">{metric.nps_score}</p>
@@ -227,6 +251,18 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
                   <p className="text-lg font-bold">{metric.satisfaction_score.toFixed(1)}/5</p>
                 </div>
               )}
+              {metric.reviews_count && (
+                <div className="bg-muted/30 p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Nº Reviews</p>
+                  <p className="text-lg font-bold">{metric.reviews_count}</p>
+                </div>
+              )}
+              {metric.reviews_avg && (
+                <div className="bg-muted/30 p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Rating promedio</p>
+                  <p className="text-lg font-bold">{metric.reviews_avg.toFixed(1)}/5</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -236,7 +272,7 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
           <div>
             <h3 className="font-semibold mb-2">Notas</h3>
             <div className="bg-muted/30 p-3 rounded-lg">
-              <p className="text-sm">{metric.notes}</p>
+              <p className="text-sm whitespace-pre-wrap">{metric.notes}</p>
             </div>
           </div>
         )}
@@ -244,85 +280,115 @@ const UserMetricsHistory = ({ userId, userName, isOpen, onClose }: UserMetricsHi
     );
   };
 
-  return (
-    <>
-      {/* Lista de métricas */}
-      <Dialog open={isOpen && !selectedMetric} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Historial de Métricas - {userName}</DialogTitle>
-          </DialogHeader>
-          
-          {loading ? (
-            <div className="py-8 text-center text-muted-foreground">Cargando...</div>
-          ) : metrics.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              Este usuario aún no ha registrado métricas
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {metrics.map((metric) => {
-                const categories = getMetricCategories(metric);
-                return (
-                  <Card
-                    key={metric.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedMetric(metric)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-semibold">
-                              {format(new Date(metric.metric_date), "d 'de' MMMM, yyyy", { locale: es })}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {categories.map((cat) => (
-                              <Badge key={cat} variant="secondary" className="gap-1">
-                                {getCategoryIcon(cat)}
-                                {cat}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                    </CardHeader>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Cargando...</p>
+      </div>
+    );
+  }
 
-      {/* Detalles de métrica */}
-      <Dialog open={!!selectedMetric} onOpenChange={(open) => !open && setSelectedMetric(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>Detalle de Métricas</DialogTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {userName} - {selectedMetric && format(new Date(selectedMetric.metric_date), "d 'de' MMMM, yyyy", { locale: es })}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedMetric(null)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-8 h-8 text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold">Historial de Métricas</h1>
+              <p className="text-sm text-muted-foreground">{userName}</p>
             </div>
-          </DialogHeader>
-          {selectedMetric && renderMetricDetails(selectedMetric)}
-        </DialogContent>
-      </Dialog>
-    </>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/business-metrics')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al Ranking
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {selectedMetric ? (
+          <div className="space-y-6">
+            <Button
+              variant="ghost"
+              onClick={() => setSelectedMetric(null)}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al historial
+            </Button>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  Detalle de Métricas - {format(new Date(selectedMetric.metric_date), "d 'de' MMMM, yyyy", { locale: es })}
+                </CardTitle>
+                <CardDescription>
+                  Actualizado el {format(new Date(selectedMetric.updated_at), "d/MM/yyyy 'a las' HH:mm", { locale: es })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {renderMetricDetails(selectedMetric)}
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">
+              {metrics.length} actualizaciones de métricas
+            </h2>
+            
+            {metrics.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  Este usuario aún no ha registrado métricas
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {metrics.map((metric) => {
+                  const categories = getMetricCategories(metric);
+                  return (
+                    <Card
+                      key={metric.id}
+                      className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
+                      onClick={() => setSelectedMetric(metric)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Calendar className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-semibold">
+                                {format(new Date(metric.metric_date), "d MMM yyyy", { locale: es })}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {categories.map((cat) => (
+                                <Badge key={cat} variant="secondary" className="gap-1 text-xs">
+                                  {getCategoryIcon(cat)}
+                                  {cat}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
 
-export default UserMetricsHistory;
+export default UserMetricsHistoryPage;

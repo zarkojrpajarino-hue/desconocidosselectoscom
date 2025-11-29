@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, TrendingUp, Flame, Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import UserMetricsHistory from './UserMetricsHistory';
 
 interface UserMetricsStats {
   user_id: string;
@@ -18,11 +18,10 @@ interface UserMetricsStats {
 
 const MetricsLeaderboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<UserMetricsStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserMetricsStats | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUserName, setSelectedUserName] = useState<string>('');
 
   useEffect(() => {
     loadLeaderboard();
@@ -136,18 +135,7 @@ const MetricsLeaderboard = () => {
   if (loading) return null;
 
   return (
-    <>
-      <UserMetricsHistory
-        userId={selectedUserId || ''}
-        userName={selectedUserName}
-        isOpen={!!selectedUserId}
-        onClose={() => {
-          setSelectedUserId(null);
-          setSelectedUserName('');
-        }}
-      />
-      
-      <Card className="border-2 bg-gradient-to-br from-primary/5 via-background to-background">
+    <Card className="border-2 bg-gradient-to-br from-primary/5 via-background to-background">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -231,10 +219,7 @@ const MetricsLeaderboard = () => {
                     ? 'bg-primary/10 border-primary/50 hover:bg-primary/15' 
                     : 'bg-muted/30 border-muted hover:bg-muted/50'
                 }`}
-                onClick={() => {
-                  setSelectedUserId(stats.user_id);
-                  setSelectedUserName(stats.full_name);
-                }}
+                onClick={() => navigate(`/user-metrics/${stats.user_id}`)}
               >
                 <div className="flex items-center gap-3 flex-1">
                   {getRankIcon(index)}
@@ -304,7 +289,6 @@ const MetricsLeaderboard = () => {
         </div>
       </CardContent>
     </Card>
-    </>
   );
 };
 
