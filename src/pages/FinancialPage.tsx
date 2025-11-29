@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, DollarSign, FileText } from 'lucide-react';
 import FinancialDashboard from '@/components/FinancialDashboard';
+import { toast } from 'sonner';
 
 const FinancialPage = () => {
   const { user, loading } = useAuth();
@@ -26,23 +27,44 @@ const FinancialPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button
-            variant="default"
-            onClick={() => navigate('/financial/detailed')}
-            className="gap-2 bg-black hover:bg-black/90 text-white"
-          >
-            <FileText className="h-4 w-4" />
-            Contabilidad Detallada
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
-          </Button>
+        <div className="container mx-auto px-4 py-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <DollarSign className="w-8 h-8 text-success" />
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
+                  Panel Financiero
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Métricas automáticas desde KPIs, Tareas y OKRs
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Menú
+            </Button>
+          </div>
+          <div className="flex items-center justify-end">
+            <Button
+              variant="default"
+              onClick={() => {
+                toast.info(
+                  'Contabilidad Detallada te permite registrar manualmente transacciones específicas (ingresos, gastos, campañas) con todos los detalles. Ideal para llevar la contabilidad exacta de tu negocio.',
+                  { duration: 6000 }
+                );
+                setTimeout(() => navigate('/financial/detailed'), 500);
+              }}
+              className="gap-2 bg-black hover:bg-black/90 text-white"
+            >
+              <FileText className="h-4 w-4" />
+              Contabilidad Detallada
+            </Button>
+          </div>
         </div>
       </header>
 

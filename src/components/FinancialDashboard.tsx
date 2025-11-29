@@ -202,7 +202,7 @@ const FinancialDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Controles */}
       <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           {/* Selector de mes */}
