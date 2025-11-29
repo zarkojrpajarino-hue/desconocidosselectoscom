@@ -104,14 +104,19 @@ serve(async (req) => {
         const pendingNames = weekConfig?.users_pending?.join(', ') || 'algunos usuarios';
         
         for (const record of completedUsers) {
-          await supabase.from('notifications').insert({
-            user_id: record.user_id,
-            type: 'availability_pending',
-            message: `⏳ Hasta que ${pendingNames} no rellene su disponibilidad no podréis ver vuestra agenda de la semana que viene. ¡Recuérdale que la rellene!`
+          await supabase.from('smart_alerts').insert({
+            alert_type: 'availability_pending',
+            severity: 'important',
+            title: '⏳ Disponibilidad Pendiente',
+            message: `Hasta que ${pendingNames} no rellene su disponibilidad no podréis ver vuestra agenda de la semana que viene. ¡Recuérdale que la rellene!`,
+            source: 'scheduling',
+            category: 'availability',
+            target_user_id: record.user_id,
+            actionable: false
           });
         }
 
-        console.log(`📧 Notificaciones enviadas a ${completedUsers.length} usuarios`);
+        console.log(`📧 Alertas enviadas a ${completedUsers.length} usuarios`);
       }
 
       return new Response(
@@ -360,15 +365,21 @@ serve(async (req) => {
       console.log(`💾 Guardadas ${scheduledTasks.length} tareas en la base de datos`);
     }
 
-    // 9. Enviar notificaciones a usuarios
+    // 9. Enviar alertas a usuarios
     for (const user of userAvailabilities) {
       const userTasks = scheduledTasks.filter((st) => st.user_id === user.user_id);
       
-      await supabase.from('notifications').insert({
-        user_id: user.user_id,
-        type: 'agenda_generated',
+      await supabase.from('smart_alerts').insert({
+        alert_type: 'agenda_generated',
+        severity: 'info',
+        title: '📅 Agenda Semanal Lista',
         message: `Tu agenda para esta semana está lista con ${userTasks.length} tareas. ¡Revísala ahora!`,
-        read: false,
+        source: 'scheduling',
+        category: 'agenda',
+        target_user_id: user.user_id,
+        actionable: true,
+        action_label: 'Ver Agenda',
+        action_url: '/dashboard'
       });
     }
 

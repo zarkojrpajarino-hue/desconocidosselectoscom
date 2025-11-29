@@ -191,13 +191,17 @@ async function checkAndAwardBadges(supabase: any, userId: string) {
         badge_id: badge.id,
       });
       
-      // Notificación de badge ganado con datos completos para animación
-      await supabase.from('notifications').insert({
-        user_id: userId,
-        type: 'badge_earned',
+      // Alerta de badge ganado con datos completos para animación
+      await supabase.from('smart_alerts').insert({
+        alert_type: 'badge_earned',
+        severity: 'celebration',
         title: `¡Nuevo badge desbloqueado! ${badge.icon_emoji}`,
         message: `Has ganado el badge "${badge.name}": ${badge.description}`,
-        metadata: { 
+        source: 'gamification',
+        category: 'achievement',
+        target_user_id: userId,
+        actionable: false,
+        context: { 
           badge_code: badge.code,
           badge_data: {
             name: badge.name,
