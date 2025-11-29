@@ -82,9 +82,9 @@ const ExpenseFormModal = ({ open, onOpenChange, onSuccess }: ExpenseFormModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Gasto</DialogTitle>
+          <DialogTitle>Registrar Gasto de la Empresa</DialogTitle>
           <DialogDescription>
-            Registra una nueva transacción de gasto en el sistema
+            Registra una nueva transacción de gasto corporativo. Estos son datos financieros de la empresa que quedarán en el historial con tu nombre y fecha.
           </DialogDescription>
         </DialogHeader>
 

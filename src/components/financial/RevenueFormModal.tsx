@@ -81,9 +81,9 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Ingreso</DialogTitle>
+          <DialogTitle>Registrar Ingreso de la Empresa</DialogTitle>
           <DialogDescription>
-            Registra una nueva transacción de ingreso en el sistema
+            Registra una nueva transacción de ingreso corporativo. Estos son datos financieros de la empresa que quedarán en el historial con tu nombre y fecha.
           </DialogDescription>
         </DialogHeader>
 
