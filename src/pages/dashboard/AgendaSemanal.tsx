@@ -7,6 +7,8 @@ import { Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import WeeklyAgenda from '@/components/WeeklyAgenda';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
+import WeeklySchedulePreview from '@/components/WeeklySchedulePreview';
+import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import { toast } from 'sonner';
 
 const AgendaSemanal = () => {
@@ -18,6 +20,8 @@ const AgendaSemanal = () => {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [scheduleKey, setScheduleKey] = useState(0);
+  const [allUsersReady, setAllUsersReady] = useState<boolean | null>(null);
+  const [isAfterDeadline, setIsAfterDeadline] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -29,8 +33,39 @@ const AgendaSemanal = () => {
     if (user) {
       calculateNextWeekStart();
       checkAvailability();
+      checkWeekStatus();
+      checkDeadline();
     }
   }, [user]);
+
+  const checkWeekStatus = async () => {
+    if (!nextWeekStart) return;
+
+    try {
+      const { data: weekConfig } = await supabase
+        .from('week_config')
+        .select('all_users_ready')
+        .eq('week_start', nextWeekStart)
+        .maybeSingle();
+
+      setAllUsersReady(weekConfig?.all_users_ready || false);
+    } catch (error) {
+      console.error('Error checking week status:', error);
+    }
+  };
+
+  const checkDeadline = () => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const currentTime = now.getHours() * 100 + now.getMinutes();
+    
+    // Verificar si es después del deadline (lunes 13:00)
+    if (dayOfWeek === 1 && currentTime >= 1300) {
+      setIsAfterDeadline(true);
+    } else if (dayOfWeek > 1) {
+      setIsAfterDeadline(true);
+    }
+  };
 
   const checkAvailability = async () => {
     if (!user) return;
@@ -131,25 +166,32 @@ const AgendaSemanal = () => {
             <p className="text-muted-foreground">Cargando agenda...</p>
           </div>
         ) : !hasAvailability && !showQuestionnaire ? (
-          <div className="text-center py-12 space-y-4">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-warning" />
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-foreground">
-                Configura tu disponibilidad
-              </h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Para generar tu agenda semanal, primero necesitas configurar tus horarios disponibles.
-                Esto permitirá al sistema coordinar tus tareas con el resto del equipo.
-              </p>
+          isAfterDeadline ? (
+            <AvailabilityBlockScreen
+              deadlineDate={new Date(nextWeekStart + 'T13:00:00')}
+              onConfigure={() => setShowQuestionnaire(true)}
+            />
+          ) : (
+            <div className="text-center py-12 space-y-4">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-warning" />
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Configura tu disponibilidad
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Para generar tu agenda semanal, primero necesitas configurar tus horarios disponibles.
+                  Esto permitirá al sistema coordinar tus tareas con el resto del equipo.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowQuestionnaire(true)}
+                className="bg-gradient-primary"
+                size="lg"
+              >
+                📅 Configurar Disponibilidad
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowQuestionnaire(true)}
-              className="bg-gradient-primary"
-              size="lg"
-            >
-              📅 Configurar Disponibilidad
-            </Button>
-          </div>
+          )
         ) : showQuestionnaire ? (
           <AvailabilityQuestionnaire
             userId={user!.id}
@@ -158,8 +200,17 @@ const AgendaSemanal = () => {
               setShowQuestionnaire(false);
               setHasAvailability(true);
               toast.success('✅ Disponibilidad guardada', {
-                description: 'Tu agenda se generará automáticamente el próximo lunes'
+                description: 'Tu preview se generará automáticamente'
               });
+              checkWeekStatus();
+            }}
+          />
+        ) : allUsersReady === false && nextWeekStart ? (
+          <WeeklySchedulePreview
+            userId={user!.id}
+            weekStart={nextWeekStart}
+            onSuggestChange={() => {
+              toast.info('Funcionalidad de sugerencias en desarrollo');
             }}
           />
         ) : nextWeekStart ? (

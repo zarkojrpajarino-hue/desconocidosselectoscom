@@ -98,3 +98,9 @@ verify_jwt = true
 
 [functions.generate-weekly-schedules]
 verify_jwt = false
+
+[functions.generate-preview-schedule]
+verify_jwt = true
+
+[functions.find-alternative-slots]
+verify_jwt = true

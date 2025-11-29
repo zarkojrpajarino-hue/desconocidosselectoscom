@@ -58,7 +58,7 @@ serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    console.log('🚀 Iniciando generación de agendas coordinadas con Lovable AI...');
+    console.log('🚀 Verificando disponibilidad para generación de agendas...');
 
     // 1. Calcular próximo miércoles (week_start)
     const today = new Date();
@@ -74,7 +74,59 @@ serve(async (req) => {
     nextWednesday.setHours(0, 0, 0, 0);
     
     const weekStart = nextWednesday.toISOString().split('T')[0];
-    console.log(`📅 Generando agendas para la semana del ${weekStart}`);
+    console.log(`📅 Verificando disponibilidad para la semana del ${weekStart}`);
+
+    // 🔒 VERIFICACIÓN CRÍTICA: Comprobar si TODOS completaron disponibilidad
+    const { data: weekConfig, error: weekError } = await supabase
+      .from('week_config')
+      .select('*')
+      .eq('week_start', weekStart)
+      .maybeSingle();
+
+    if (weekError) {
+      console.error('❌ Error al verificar week_config:', weekError);
+      throw weekError;
+    }
+
+    // Si no todos han completado, NO GENERAR y notificar
+    if (!weekConfig || !weekConfig.all_users_ready) {
+      console.log('⏸️ NO todos los usuarios completaron disponibilidad');
+      console.log(`📊 Estado: ${weekConfig?.ready_count || 0}/${weekConfig?.total_users || 0} usuarios listos`);
+      console.log(`👥 Pendientes: ${weekConfig?.users_pending?.join(', ') || 'Desconocido'}`);
+
+      // Enviar notificaciones a usuarios que SÍ completaron
+      const { data: completedUsers } = await supabase
+        .from('user_weekly_availability')
+        .select('user_id')
+        .eq('week_start', weekStart);
+
+      if (completedUsers && completedUsers.length > 0) {
+        const pendingNames = weekConfig?.users_pending?.join(', ') || 'algunos usuarios';
+        
+        for (const record of completedUsers) {
+          await supabase.from('notifications').insert({
+            user_id: record.user_id,
+            type: 'availability_pending',
+            message: `⏳ Hasta que ${pendingNames} no rellene su disponibilidad no podréis ver vuestra agenda de la semana que viene. ¡Recuérdale que la rellene!`
+          });
+        }
+
+        console.log(`📧 Notificaciones enviadas a ${completedUsers.length} usuarios`);
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'Esperando a que todos los usuarios completen disponibilidad',
+          pending: weekConfig?.users_pending || [],
+          ready: weekConfig?.ready_count || 0,
+          total: weekConfig?.total_users || 0
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('✅ TODOS los usuarios completaron disponibilidad, procediendo con generación...');
 
     // 2. Obtener todos los usuarios con su disponibilidad
     const { data: users, error: usersError } = await supabase
