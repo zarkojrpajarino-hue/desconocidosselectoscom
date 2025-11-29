@@ -301,7 +301,7 @@ const UserMetricsHistoryPage = () => {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/business-metrics')}
+            onClick={() => navigate('/business-metrics?tab=ranking')}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

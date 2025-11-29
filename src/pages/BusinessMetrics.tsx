@@ -22,6 +22,14 @@ const BusinessMetrics = () => {
     }
   }, [user, loading, navigate]);
 
+  // Detect if coming from user metrics page
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('tab') === 'ranking') {
+      setActiveTab('ranking');
+    }
+  }, [location.search]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
