@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Target } from 'lucide-react';
+import { Plus, Trash2, Target, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface KeyResultInput {
@@ -48,6 +48,7 @@ const CreateOKRModal = ({ isOpen, onClose, onSuccess, currentPhase }: CreateOKRM
   ]);
 
   const [creating, setCreating] = useState(false);
+  const [generatingWithAI, setGeneratingWithAI] = useState(false);
 
   const addKeyResult = () => {
     setKeyResults([
@@ -139,6 +140,65 @@ const CreateOKRModal = ({ isOpen, onClose, onSuccess, currentPhase }: CreateOKRM
       toast.error('Error al crear objetivo');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!objective.title.trim()) {
+      toast.error('Primero ingresa un título para el objetivo');
+      return;
+    }
+
+    setGeneratingWithAI(true);
+    try {
+      // Primero crear el objetivo
+      const { data: newObjective, error: objError } = await supabase
+        .from('objectives')
+        .insert({
+          title: objective.title,
+          description: objective.description || 'Objetivo generado con KRs personalizados por IA',
+          quarter: `Q${Math.ceil((new Date().getMonth() + 1) / 3)}`,
+          year: new Date().getFullYear(),
+          phase: currentPhase,
+          target_date: objective.target_date || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          owner_user_id: user?.id,
+          created_by: user?.id,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (objError) throw objError;
+
+      // Generar KRs personalizados con IA
+      const { data: aiResult, error: aiError } = await supabase.functions.invoke('generate-personalized-krs', {
+        body: { 
+          objectiveId: newObjective.id,
+          userId: user?.id
+        }
+      });
+
+      if (aiError) throw aiError;
+      
+      if (aiResult.error) {
+        // Si falla la IA, eliminar el objetivo creado
+        await supabase.from('objectives').delete().eq('id', newObjective.id);
+        throw new Error(aiResult.error);
+      }
+
+      toast.success(`✨ ${aiResult.count} Key Results generados con IA`);
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error generating with AI:', error);
+      if (error.message?.includes('429')) {
+        toast.error('Límite de IA alcanzado. Intenta en unos minutos.');
+      } else if (error.message?.includes('402')) {
+        toast.error('Créditos de IA agotados. Contacta al administrador.');
+      } else {
+        toast.error(error.message || 'Error al generar con IA');
+      }
+    } finally {
+      setGeneratingWithAI(false);
     }
   };
 
@@ -303,21 +363,44 @@ const CreateOKRModal = ({ isOpen, onClose, onSuccess, currentPhase }: CreateOKRM
             ))}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={creating}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={creating}
-            >
-              {creating ? 'Creando...' : 'Crear Objetivo'}
-            </Button>
+          <div className="space-y-4 pt-4 border-t">
+            <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-medium mb-1">✨ Generar Key Results con IA</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    La IA analizará tu rol, tareas actuales y trabajo para generar 3-5 Key Results personalizados y relevantes para ti.
+                  </p>
+                  <Button
+                    variant="default"
+                    onClick={handleGenerateWithAI}
+                    disabled={generatingWithAI || creating || !objective.title.trim()}
+                    className="gap-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {generatingWithAI ? 'Generando con IA...' : 'Generar KRs Personalizados con IA'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={creating || generatingWithAI}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={creating || generatingWithAI}
+              >
+                {creating ? 'Creando...' : 'Crear Manualmente'}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
