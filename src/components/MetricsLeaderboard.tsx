@@ -44,33 +44,38 @@ const MetricsLeaderboard = () => {
 
       if (error) throw error;
 
-      // Get all users info
+      // Get all users info (including current user, excluding only admins)
       const { data: usersData } = await supabase
         .from('users')
         .select('id, full_name, role')
         .neq('role', 'admin');
 
-      if (!usersData || !metricsData) return;
+      if (!usersData) return;
+
+      console.log('Current user ID:', user.id);
+      console.log('All users:', usersData.map(u => ({ id: u.id, name: u.full_name })));
 
       // Count updates per user and calculate stats
       const userStatsMap = new Map<string, UserMetricsStats>();
       
       usersData.forEach(userData => {
-        const userMetrics = metricsData.filter(m => m.user_id === userData.id);
+        const userMetrics = metricsData?.filter(m => m.user_id === userData.id) || [];
         const totalUpdates = userMetrics.length;
         const lastUpdate = userMetrics[0]?.updated_at || '';
         
         // Calculate streak (simplified: consecutive updates)
         let streak = 0;
-        const sortedMetrics = userMetrics
-          .map(m => new Date(m.metric_date))
-          .sort((a, b) => b.getTime() - a.getTime());
-        
-        for (let i = 0; i < sortedMetrics.length - 1; i++) {
-          const diff = Math.abs(sortedMetrics[i].getTime() - sortedMetrics[i + 1].getTime());
-          const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
-          if (daysDiff <= 7) streak++;
-          else break;
+        if (userMetrics.length > 0) {
+          const sortedMetrics = userMetrics
+            .map(m => new Date(m.metric_date))
+            .sort((a, b) => b.getTime() - a.getTime());
+          
+          for (let i = 0; i < sortedMetrics.length - 1; i++) {
+            const diff = Math.abs(sortedMetrics[i].getTime() - sortedMetrics[i + 1].getTime());
+            const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            if (daysDiff <= 7) streak++;
+            else break;
+          }
         }
 
         // Determine badge level
@@ -92,10 +97,14 @@ const MetricsLeaderboard = () => {
       const sortedStats = Array.from(userStatsMap.values())
         .sort((a, b) => b.total_updates - a.total_updates);
 
+      console.log('Leaderboard entries:', sortedStats.length);
+      console.log('Current user in leaderboard?', sortedStats.some(s => s.user_id === user.id));
+
       setLeaderboard(sortedStats);
       
       // Find current user stats
       const currentUserStats = sortedStats.find(s => s.user_id === user.id);
+      console.log('Current user stats:', currentUserStats);
       setUserStats(currentUserStats || null);
 
     } catch (error) {
