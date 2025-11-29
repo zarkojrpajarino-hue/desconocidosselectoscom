@@ -228,6 +228,69 @@ export type Database = {
           },
         ]
       }
+      key_results: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          description: string | null
+          id: string
+          metric_type: string
+          objective_id: string
+          start_value: number | null
+          status: string
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          metric_type: string
+          objective_id: string
+          start_value?: number | null
+          status?: string
+          target_value: number
+          title: string
+          unit?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          metric_type?: string
+          objective_id?: string
+          start_value?: number | null
+          status?: string
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_results_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "key_results_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "okrs_with_progress"
+            referencedColumns: ["objective_id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -257,6 +320,147 @@ export type Database = {
           {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objectives: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          owner_user_id: string | null
+          quarter: string
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          owner_user_id?: string | null
+          quarter: string
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          owner_user_id?: string | null
+          quarter?: string
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okr_task_links: {
+        Row: {
+          contribution_weight: number | null
+          created_at: string | null
+          id: string
+          key_result_id: string
+          task_id: string
+        }
+        Insert: {
+          contribution_weight?: number | null
+          created_at?: string | null
+          id?: string
+          key_result_id: string
+          task_id: string
+        }
+        Update: {
+          contribution_weight?: number | null
+          created_at?: string | null
+          id?: string
+          key_result_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_task_links_key_result_id_fkey"
+            columns: ["key_result_id"]
+            isOneToOne: false
+            referencedRelation: "key_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_task_links_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okr_updates: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          key_result_id: string
+          new_value: number
+          previous_value: number | null
+          updated_by: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          key_result_id: string
+          new_value: number
+          previous_value?: number | null
+          updated_by?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          key_result_id?: string
+          new_value?: number
+          previous_value?: number | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_updates_key_result_id_fkey"
+            columns: ["key_result_id"]
+            isOneToOne: false
+            referencedRelation: "key_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_updates_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -967,9 +1171,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      okrs_with_progress: {
+        Row: {
+          achieved_krs: number | null
+          at_risk_krs: number | null
+          behind_krs: number | null
+          created_at: string | null
+          linked_tasks: number | null
+          objective_description: string | null
+          objective_id: string | null
+          objective_progress: number | null
+          objective_status: string | null
+          objective_title: string | null
+          on_track_krs: number | null
+          owner_name: string | null
+          owner_user_id: string | null
+          quarter: string | null
+          target_date: string | null
+          total_key_results: number | null
+          updated_at: string | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectives_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      calculate_kr_progress: { Args: { kr_id: string }; Returns: number }
+      calculate_objective_progress: {
+        Args: { obj_id: string }
+        Returns: number
+      }
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number

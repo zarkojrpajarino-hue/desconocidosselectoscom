@@ -21,6 +21,7 @@ import AIAnalysis from "./pages/AIAnalysis";
 import BusinessMetrics from "./pages/BusinessMetrics";
 import UserMetricsHistoryPage from "./pages/UserMetricsHistoryPage";
 import HerramientasHub from "./pages/HerramientasHub";
+import OKRsPage from "./pages/OKRsPage";
 
 // Dashboard sub-pages
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -115,6 +116,11 @@ const AppContent = () => {
       <Route path="/business-metrics" element={
         <ProtectedRoute>
           <BusinessMetrics />
+        </ProtectedRoute>
+      } />
+      <Route path="/okrs" element={
+        <ProtectedRoute>
+          <OKRsPage />
         </ProtectedRoute>
       } />
       <Route path="/user-metrics/:userId" element={
