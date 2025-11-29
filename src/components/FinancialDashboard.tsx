@@ -203,14 +203,7 @@ const FinancialDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Panel Financiero</h2>
-          <p className="text-muted-foreground">
-            Métricas financieras, rentabilidad y análisis de gastos
-          </p>
-        </div>
-
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           {/* Selector de mes */}
           <input
