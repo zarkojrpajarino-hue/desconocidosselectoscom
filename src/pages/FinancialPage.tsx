@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, DollarSign } from 'lucide-react';
+import { ArrowLeft, DollarSign, FileText } from 'lucide-react';
 import FinancialDashboard from '@/components/FinancialDashboard';
 
 const FinancialPage = () => {
@@ -38,14 +38,24 @@ const FinancialPage = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="default"
+              onClick={() => navigate('/financial/detailed')}
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Contabilidad Detallada
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Menú
+            </Button>
+          </div>
         </div>
       </header>
 
