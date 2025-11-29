@@ -30,25 +30,11 @@ const Home = () => {
       gradient: 'from-violet-500 to-purple-600'
     },
     {
-      title: 'Herramientas Visuales',
-      description: 'Lead Scoring, Growth Model, Buyer Persona, Customer Journey',
+      title: 'Herramientas',
+      description: 'Herramientas Visuales, Practicar y Calculadora',
       icon: Palette,
-      path: '/herramientas',
+      path: '/herramientas-hub',
       gradient: 'from-purple-500 to-pink-500'
-    },
-    {
-      title: 'Practicar',
-      description: 'Simulador, Sales Playbook, Guía de Comunicación',
-      icon: Target,
-      path: '/practicar',
-      gradient: 'from-orange-500 to-red-500'
-    },
-    {
-      title: 'Calculadora',
-      description: 'Oportunidad de Negocio',
-      icon: Calculator,
-      path: '/calculadora',
-      gradient: 'from-green-500 to-emerald-500'
     }
   ];
 
