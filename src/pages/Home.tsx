@@ -19,7 +19,7 @@ const Home = () => {
       title: 'Mi Agenda Coordinada',
       description: 'Visualiza tu agenda semanal sincronizada con el equipo',
       icon: Calendar,
-      path: '/agenda',
+      path: '/dashboard/agenda',
       gradient: 'from-indigo-500 to-purple-500'
     },
     {

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -39,19 +40,35 @@ const AppContent = () => {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/home" element={<Home />} />
+      <Route path="/home" element={
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      } />
       
       {/* Dashboard con sub-rutas */}
-      <Route path="/dashboard" element={<Dashboard />}>
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      }>
         <Route path="home" element={<DashboardHome />} />
         <Route path="agenda" element={<AgendaSemanal />} />
       </Route>
       
-      <Route path="/admin" element={<Admin />} />
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <Admin />
+        </ProtectedRoute>
+      } />
       <Route path="/setup" element={<Setup />} />
       
       {/* Herramientas con sub-rutas */}
-      <Route path="/herramientas" element={<Herramientas />}>
+      <Route path="/herramientas" element={
+        <ProtectedRoute>
+          <Herramientas />
+        </ProtectedRoute>
+      }>
         <Route path="lead-scoring" element={<LeadScoring />} />
         <Route path="growth-model" element={<GrowthModel />} />
         <Route path="buyer-persona" element={<BuyerPersona />} />
@@ -59,15 +76,31 @@ const AppContent = () => {
       </Route>
       
       {/* Practicar con sub-rutas */}
-      <Route path="/practicar" element={<Practicar />}>
+      <Route path="/practicar" element={
+        <ProtectedRoute>
+          <Practicar />
+        </ProtectedRoute>
+      }>
         <Route path="simulador" element={<Simulador />} />
         <Route path="playbook" element={<Playbook />} />
         <Route path="guia" element={<Guia />} />
       </Route>
       
-      <Route path="/calculadora" element={<Calculadora />} />
-      <Route path="/gamification" element={<Gamification />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/calculadora" element={
+        <ProtectedRoute>
+          <Calculadora />
+        </ProtectedRoute>
+      } />
+      <Route path="/gamification" element={
+        <ProtectedRoute>
+          <Gamification />
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      } />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
