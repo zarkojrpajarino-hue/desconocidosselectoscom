@@ -11,21 +11,24 @@ const MetricsHub = () => {
   const metricsOptions = [
     {
       title: "KPI's",
-      description: 'Actualiza KPIs reales: ventas, marketing, operaciones y cliente',
+      description: 'Indicadores Clave de Rendimiento operativo',
+      explanation: 'Los KPIs son métricas operativas del día a día de tu negocio: ventas, leads, conversiones, engagement, NPS, etc. Te permiten medir el rendimiento actual de cada área y tomar decisiones rápidas basadas en datos reales.',
       icon: TrendingUp,
       path: '/business-metrics',
       gradient: 'from-emerald-500 to-teal-500'
     },
     {
       title: 'OKR',
-      description: 'Sistema de objetivos con tracking de progreso y resultados clave',
+      description: 'Objetivos estratégicos y Resultados Clave medibles',
+      explanation: 'Los OKRs definen hacia dónde vas estratégicamente. A diferencia de los KPIs que miden lo que ya haces, los OKRs establecen metas ambiciosas y medibles que impulsan cambio e innovación alineados con tu rol.',
       icon: Target,
       path: '/okrs',
       gradient: 'from-blue-500 to-indigo-600'
     },
     {
       title: 'Panel Financiero',
-      description: 'Métricas financieras, ingresos, gastos, margen y burn rate',
+      description: 'Métricas financieras consolidadas del negocio',
+      explanation: 'El Panel Financiero te da la visión económica completa: ingresos, gastos, margen, burn rate, ROI de marketing y proyecciones. Es tu tablero de control para la salud financiera y sostenibilidad del negocio.',
       icon: DollarSign,
       path: '/financial',
       gradient: 'from-green-500 to-emerald-600'
@@ -74,17 +77,24 @@ const MetricsHub = () => {
             return (
               <Card
                 key={option.path}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 hover:border-primary/50"
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 hover:border-primary/50 group"
                 onClick={() => navigate(option.path)}
               >
-                <CardHeader>
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${option.gradient} flex items-center justify-center mb-4`}>
+                <CardHeader className="space-y-4">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${option.gradient} flex items-center justify-center transition-transform group-hover:scale-110`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{option.title}</CardTitle>
-                  <CardDescription className="text-base">
-                    {option.description}
-                  </CardDescription>
+                  <div className="space-y-2">
+                    <CardTitle className="text-xl">{option.title}</CardTitle>
+                    <CardDescription className="text-base font-medium">
+                      {option.description}
+                    </CardDescription>
+                  </div>
+                  <div className="pt-3 border-t border-border/50">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {option.explanation}
+                    </p>
+                  </div>
                 </CardHeader>
               </Card>
             );
