@@ -16,7 +16,7 @@ const Home = () => {
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
-      title: 'Métricas del Negocio',
+      title: 'Métricas del Negocio (KPI\'s)',
       description: 'Actualiza KPIs reales: ventas, marketing, operaciones y cliente',
       icon: TrendingUp,
       path: '/business-metrics',
