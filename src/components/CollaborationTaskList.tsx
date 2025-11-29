@@ -131,11 +131,16 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
 
       if (error) throw error;
 
-      // Notificar al ejecutor
-      await supabase.from('notifications').insert({
-        user_id: selectedTask.user_id,
-        type: 'task_validated',
-        message: `El líder ha validado tu tarea "${selectedTask.title}"`
+      // Crear alerta de celebración
+      await supabase.from('smart_alerts').insert({
+        alert_type: 'task_validated',
+        severity: 'celebration',
+        title: '🎉 Tarea Validada',
+        message: `El líder ha validado tu tarea "${selectedTask.title}"`,
+        source: 'tasks',
+        category: 'completion',
+        target_user_id: selectedTask.user_id,
+        actionable: false
       });
 
       toast.success('Tarea validada exitosamente');

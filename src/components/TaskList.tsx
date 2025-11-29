@@ -293,11 +293,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             },
           });
 
-          // NOTIFICACIÓN: Líder validó
-          await supabase.from("notifications").insert({
-            user_id: selectedTask.user_id,
-            type: "leader_validated",
-            message: `${leadersById[userId] || "Tu líder"} validó tu tarea "${selectedTask.title}". ¡100% completado! 🎉`,
+          // ALERTA: Líder validó
+          await supabase.from("smart_alerts").insert({
+            alert_type: 'task_validated',
+            severity: 'celebration',
+            title: '🎉 ¡Tarea 100% Completada!',
+            message: `${leadersById[userId] || "Tu líder"} validó tu tarea "${selectedTask.title}". ¡100% completado!`,
+            source: 'tasks',
+            category: 'completion',
+            target_user_id: selectedTask.user_id,
+            actionable: false
           });
 
           toast.success("¡Tarea completada al 100%! +30 puntos 🎮");
@@ -321,11 +326,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             },
           });
 
-          // NOTIFICACIÓN: Ejecutor completó
-          await supabase.from("notifications").insert({
-            user_id: selectedTask.leader_id,
-            type: "validation_request",
+          // ALERTA: Ejecutor completó
+          await supabase.from("smart_alerts").insert({
+            alert_type: 'validation_request',
+            severity: 'important',
+            title: '✅ Tarea Lista para Validación',
             message: `${leadersById[userId] || "Un colaborador"} completó la tarea "${selectedTask.title}" y necesita tu validación`,
+            source: 'tasks',
+            category: 'validation',
+            target_user_id: selectedTask.leader_id,
+            actionable: true,
+            action_label: 'Validar Tarea',
+            action_url: '/dashboard'
           });
 
           toast.success("¡Medición completada! Tarea al 50% +75 puntos 🎮");

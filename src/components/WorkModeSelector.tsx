@@ -130,15 +130,20 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
 
       // Crear notificaciones para cada líder
       if (leaderIds.length > 0 && taskDifference !== 0) {
-        const notifications = leaderIds.map(leaderId => ({
-          user_id: leaderId,
-          type: 'mode_change_alert',
-          message: `${userName} cambió de ${oldMode?.label || 'modo anterior'} (${oldMode?.tasks || 0} tareas) a ${mode.label} (${mode.tasks} tareas). Esto significa que tendrás ${Math.abs(taskDifference)} ${taskDifference > 0 ? 'nuevas' : 'menos'} tareas para validar.`
+        const alerts = leaderIds.map(leaderId => ({
+          alert_type: 'mode_change',
+          severity: 'important',
+          title: '⚙️ Cambio de Modo de Trabajo',
+          message: `${userName} cambió de ${oldMode?.label || 'modo anterior'} (${oldMode?.tasks || 0} tareas) a ${mode.label} (${mode.tasks} tareas). Esto significa que tendrás ${Math.abs(taskDifference)} ${taskDifference > 0 ? 'nuevas' : 'menos'} tareas para validar.`,
+          source: 'tasks',
+          category: 'workload',
+          target_user_id: leaderId,
+          actionable: false
         }));
 
         await supabase
-          .from('notifications')
-          .insert(notifications);
+          .from('smart_alerts')
+          .insert(alerts);
       }
 
       toast.success('Modo de trabajo actualizado', {
