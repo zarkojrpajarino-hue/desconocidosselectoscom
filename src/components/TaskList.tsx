@@ -375,27 +375,6 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     toast.success("Tarea actualizada correctamente");
   };
 
-  const canUserSwapTask = async (task: any) => {
-    if (!userId) return false;
-    
-    // Obtener username del usuario actual
-    const { data: userData } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', userId)
-      .single();
-    
-    if (!userData) return false;
-    
-    // REGLA 1: Si la tarea es individual (sin líder), solo el asignado puede cambiarla
-    if (!task.leader_id) {
-      return task.user_id === userId;
-    }
-    
-    // REGLA 2: Si la tarea tiene líder, solo el líder del área puede cambiarla
-    return isUserLeaderOfArea(userData.username, task.area);
-  };
-
   const getTaskCompletionStatus = (task: any, completion: any) => {
     if (!completion) {
       return {
@@ -538,19 +517,15 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     const canSwap = canSwapOverride !== undefined ? canSwapOverride : (() => {
       if (!userId) return false;
       
-      // REGLA 1: Si soy el ejecutor de la tarea (task.user_id === userId)
-      if (task.user_id === userId) {
-        // Si es individual (sin líder), puedo cambiarla
-        if (!task.leader_id) return true;
-        
-        // Si tiene líder, también puedo cambiarla (son mis tareas asignadas)
-        return true;
+      // REGLA 1: Tarea individual (sin líder) → Solo el asignado (user_id) puede cambiarla
+      if (!task.leader_id) {
+        return task.user_id === userId;
       }
       
-      // REGLA 2: Si soy el líder de la tarea (task.leader_id === userId)
-      if (task.leader_id === userId) {
-        // Puedo cambiar las tareas donde soy líder validador
-        return true;
+      // REGLA 2: Tarea colaborativa (con líder) → SOLO el líder puede cambiarla
+      // El colaborador (user_id) NO puede cambiar tareas donde hay líder
+      if (task.leader_id) {
+        return task.leader_id === userId;
       }
       
       return false;
