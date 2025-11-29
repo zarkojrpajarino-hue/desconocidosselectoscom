@@ -603,6 +603,51 @@ export type Database = {
           },
         ]
       }
+      okr_evidences: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_type: string | null
+          file_url: string
+          id: string
+          okr_update_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_type?: string | null
+          file_url: string
+          id?: string
+          okr_update_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          okr_update_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_evidences_okr_update_id_fkey"
+            columns: ["okr_update_id"]
+            isOneToOne: false
+            referencedRelation: "okr_updates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_evidences_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       okr_task_links: {
         Row: {
           contribution_weight: number | null
@@ -1399,6 +1444,7 @@ export type Database = {
           full_name: string
           id: string
           role: string
+          strategic_objectives: string | null
           username: string
         }
         Insert: {
@@ -1407,6 +1453,7 @@ export type Database = {
           full_name: string
           id?: string
           role: string
+          strategic_objectives?: string | null
           username: string
         }
         Update: {
@@ -1415,6 +1462,7 @@ export type Database = {
           full_name?: string
           id?: string
           role?: string
+          strategic_objectives?: string | null
           username?: string
         }
         Relationships: []
