@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, TrendingUp, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import BusinessMetricsDashboard from '@/components/BusinessMetricsDashboard';
+import MetricsLeaderboard from '@/components/MetricsLeaderboard';
 import { useMetricsReminder } from '@/hooks/useMetricsReminder';
 
 const BusinessMetrics = () => {
@@ -47,9 +48,9 @@ const BusinessMetrics = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {showReminder && (
-          <Alert className="mb-6 border-amber-500 bg-amber-500/10">
+          <Alert className="border-amber-500 bg-amber-500/10">
             <AlertCircle className="h-5 w-5 text-amber-500" />
             <AlertDescription className="text-amber-900 dark:text-amber-100">
               {daysSinceLastUpdate === 0 
@@ -59,6 +60,9 @@ const BusinessMetrics = () => {
             </AlertDescription>
           </Alert>
         )}
+        
+        <MetricsLeaderboard />
+        
         <BusinessMetricsDashboard />
       </main>
     </div>
