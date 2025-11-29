@@ -23,6 +23,7 @@ import UserMetricsHistoryPage from "./pages/UserMetricsHistoryPage";
 import HerramientasHub from "./pages/HerramientasHub";
 import OKRsPage from "./pages/OKRsPage";
 import FinancialPage from "./pages/FinancialPage";
+import DetailedFinancial from "./pages/financial/DetailedFinancial";
 
 // Dashboard sub-pages
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -127,6 +128,11 @@ const AppContent = () => {
       <Route path="/financial" element={
         <ProtectedRoute>
           <FinancialPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/financial/detailed" element={
+        <ProtectedRoute>
+          <DetailedFinancial />
         </ProtectedRoute>
       } />
       <Route path="/user-metrics/:userId" element={
