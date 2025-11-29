@@ -70,6 +70,9 @@ const Admin = () => {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Filtro de usuario para heatmap
+  const [selectedUserId, setSelectedUserId] = useState<string>('all');
 
   // Datos para gráficos
   const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgress[]>([]);
@@ -87,6 +90,13 @@ const Admin = () => {
       fetchData();
     }
   }, [userProfile]);
+
+  // Recargar heatmap cuando cambia el usuario seleccionado
+  useEffect(() => {
+    if (userProfile?.role === 'admin') {
+      fetchHeatmapData();
+    }
+  }, [selectedUserId, userProfile]);
 
   const fetchSystemConfig = async () => {
     const { data } = await supabase
@@ -290,11 +300,18 @@ const Admin = () => {
       // Obtener todas las tareas completadas en las últimas 4 semanas
       const fourWeeksAgo = subWeeks(new Date(), 4);
       
-      const { data: completions } = await supabase
+      let query = supabase
         .from('task_completions')
-        .select('completed_at')
+        .select('completed_at, user_id')
         .gte('completed_at', fourWeeksAgo.toISOString())
         .not('completed_at', 'is', null);
+      
+      // Filtrar por usuario si no es "all"
+      if (selectedUserId !== 'all') {
+        query = query.eq('user_id', selectedUserId);
+      }
+      
+      const { data: completions } = await query;
 
       // Inicializar matriz de datos
       const heatmap: { [key: string]: number } = {};
@@ -957,6 +974,36 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {/* Selector de Usuario */}
+                  <div className="flex items-center gap-3 p-4 bg-muted/20 rounded-lg border">
+                    <label className="text-sm font-medium whitespace-nowrap">
+                      Filtrar por usuario:
+                    </label>
+                    <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                      <SelectTrigger className="w-full md:w-[300px]">
+                        <SelectValue placeholder="Seleccionar usuario" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            <span>Todos los usuarios</span>
+                          </div>
+                        </SelectItem>
+                        {teamStats.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="h-6 w-6 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-xs">
+                                {user.full_name[0]}
+                              </div>
+                              <span>{user.full_name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Leyenda del heatmap */}
                   <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
                     <div className="text-sm text-muted-foreground">
