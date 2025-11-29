@@ -171,13 +171,20 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
 
       if (swapError) throw swapError;
 
-      // 3. Si un líder cambia la tarea de otra persona, enviar notificación
+      // 3. Si un líder cambia la tarea de otra persona, enviar alerta
       if (isLeaderSwapping && task.user_id !== userId) {
-        // Insertar notificación en la base de datos
-        await supabase.from('notifications').insert({
-          user_id: task.user_id,
-          type: 'task_changed_by_leader',
-          message: `🔄 Tu líder cambió tu tarea: "${task.title}" → "${selected.title}". Razón: ${leaderComment.trim()}`
+        // Crear alerta de cambio de tarea
+        await supabase.from('smart_alerts').insert({
+          alert_type: 'task_changed',
+          severity: 'important',
+          title: '🔄 Tarea Modificada por Líder',
+          message: `Tu líder cambió tu tarea: "${task.title}" → "${selected.title}". Razón: ${leaderComment.trim()}`,
+          source: 'tasks',
+          category: 'change',
+          target_user_id: task.user_id,
+          actionable: true,
+          action_label: 'Ver Nueva Tarea',
+          action_url: '/dashboard'
         });
 
         // Obtener datos del líder para el email

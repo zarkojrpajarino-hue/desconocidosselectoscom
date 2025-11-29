@@ -180,11 +180,16 @@ const RescheduleModal = ({
           .eq('task_id', task.task_id)
           .eq('user_id', task.collaborator_user_id);
 
-        // Notificar al colaborador
-        await supabase.from('notifications').insert({
-          user_id: task.collaborator_user_id,
-          type: 'schedule_change',
+        // Crear alerta de cambio de horario
+        await supabase.from('smart_alerts').insert({
+          alert_type: 'schedule_change',
+          severity: 'important',
+          title: '📅 Cambio de Horario',
           message: `Se sugirió mover "${task.task.title}" a ${new Date(selectedDate).toLocaleDateString('es-ES')} ${selectedStart}`,
+          source: 'tasks',
+          category: 'schedule',
+          target_user_id: task.collaborator_user_id,
+          actionable: false
         });
       }
 
