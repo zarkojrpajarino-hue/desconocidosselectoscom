@@ -1,16 +1,25 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 interface UserAvailability {
   user_id: string;
-  username: string;
   full_name: string;
-  availability: Record<string, { available: boolean; start: string; end: string }>;
+  username: string;
+  mode: string;
+  task_limit: number;
+  availability: {
+    monday: { available: boolean; start: string; end: string };
+    tuesday: { available: boolean; start: string; end: string };
+    wednesday: { available: boolean; start: string; end: string };
+    thursday: { available: boolean; start: string; end: string };
+    friday: { available: boolean; start: string; end: string };
+    saturday: { available: boolean; start: string; end: string };
+    sunday: { available: boolean; start: string; end: string };
+  };
   preferred_hours_per_day: number;
   preferred_time_of_day: string;
 }
@@ -18,29 +27,38 @@ interface UserAvailability {
 interface Task {
   id: string;
   title: string;
+  description: string;
+  area: string;
   user_id: string;
   leader_id: string | null;
-  estimated_hours: number;
+  phase: number;
 }
 
-interface TimeSlot {
-  date: string;
-  start: string;
-  end: string;
-  duration_hours: number;
+interface ScheduledTask {
+  task_id: string;
+  user_id: string;
+  scheduled_date: string;
+  scheduled_start: string;
+  scheduled_end: string;
+  is_collaborative: boolean;
+  collaborator_user_id?: string;
 }
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
   try {
-    console.log('🚀 Starting weekly schedule generation...');
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    console.log('🚀 Iniciando generación de agendas coordinadas con Lovable AI...');
 
     // 1. Calcular próximo miércoles (week_start)
     const today = new Date();
@@ -56,28 +74,96 @@ serve(async (req) => {
     nextWednesday.setHours(0, 0, 0, 0);
     
     const weekStart = nextWednesday.toISOString().split('T')[0];
-    console.log(`📅 Generating schedules for week starting: ${weekStart}`);
+    console.log(`📅 Generando agendas para la semana del ${weekStart}`);
 
-    // 2. Obtener todas las disponibilidades de usuarios
-    const { data: availabilities, error: availError } = await supabase
-      .from('user_weekly_availability')
-      .select('*, users(id, username, full_name)')
-      .eq('week_start', weekStart)
-      .not('submitted_at', 'is', null);
+    // 2. Obtener todos los usuarios con su disponibilidad
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, full_name, username');
 
-    if (availError) throw availError;
+    if (usersError) throw usersError;
 
-    if (!availabilities || availabilities.length === 0) {
-      console.log('⚠️ No users have submitted availability yet');
+    const userAvailabilities: UserAvailability[] = [];
+
+    for (const user of users) {
+      // Obtener disponibilidad horaria
+      const { data: availability } = await supabase
+        .from('user_weekly_availability')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('week_start', weekStart)
+        .not('submitted_at', 'is', null)
+        .single();
+
+      // Obtener modo de trabajo y límite de tareas
+      const { data: weeklyData } = await supabase
+        .from('user_weekly_data')
+        .select('mode, task_limit')
+        .eq('user_id', user.id)
+        .eq('week_start', weekStart)
+        .single();
+
+      if (availability && weeklyData) {
+        userAvailabilities.push({
+          user_id: user.id,
+          full_name: user.full_name,
+          username: user.username,
+          mode: weeklyData.mode,
+          task_limit: weeklyData.task_limit,
+          availability: {
+            monday: {
+              available: availability.monday_available || false,
+              start: availability.monday_start || '',
+              end: availability.monday_end || '',
+            },
+            tuesday: {
+              available: availability.tuesday_available || false,
+              start: availability.tuesday_start || '',
+              end: availability.tuesday_end || '',
+            },
+            wednesday: {
+              available: availability.wednesday_available || false,
+              start: availability.wednesday_start || '',
+              end: availability.wednesday_end || '',
+            },
+            thursday: {
+              available: availability.thursday_available || false,
+              start: availability.thursday_start || '',
+              end: availability.thursday_end || '',
+            },
+            friday: {
+              available: availability.friday_available || false,
+              start: availability.friday_start || '',
+              end: availability.friday_end || '',
+            },
+            saturday: {
+              available: availability.saturday_available || false,
+              start: availability.saturday_start || '',
+              end: availability.saturday_end || '',
+            },
+            sunday: {
+              available: availability.sunday_available || false,
+              start: availability.sunday_start || '',
+              end: availability.sunday_end || '',
+            },
+          },
+          preferred_hours_per_day: availability.preferred_hours_per_day || 4,
+          preferred_time_of_day: availability.preferred_time_of_day || 'mañana',
+        });
+      }
+    }
+
+    if (userAvailabilities.length === 0) {
+      console.log('⚠️ No hay usuarios con disponibilidad completa');
       return new Response(
         JSON.stringify({ message: 'No users have submitted availability yet' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`👥 Found ${availabilities.length} users with availability`);
+    console.log(`👥 ${userAvailabilities.length} usuarios con disponibilidad completa`);
 
-    // 3. Obtener phase actual para saber qué tareas generar
+    // 3. Obtener fase actual del sistema
     const { data: systemConfig } = await supabase
       .from('system_config')
       .select('current_phase')
@@ -85,316 +171,252 @@ serve(async (req) => {
 
     const currentPhase = systemConfig?.current_phase || 1;
 
-    // 4. Obtener tareas de cada usuario para esta fase
-    const userIds = availabilities.map((a: any) => a.user_id);
-    
+    // 4. Obtener todas las tareas pendientes para la fase actual
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select('*')
-      .in('user_id', userIds)
-      .eq('phase', currentPhase);
+      .eq('phase', currentPhase)
+      .order('order_index');
 
     if (tasksError) throw tasksError;
 
-    console.log(`📋 Found ${tasks?.length || 0} tasks to schedule`);
+    console.log(`📋 ${tasks.length} tareas disponibles en Fase ${currentPhase}`);
 
-    // 5. Agrupar tareas por usuario
-    const tasksByUser: Record<string, Task[]> = {};
-    tasks?.forEach((task: any) => {
-      if (!tasksByUser[task.user_id]) {
-        tasksByUser[task.user_id] = [];
-      }
-      tasksByUser[task.user_id].push({
-        ...task,
-        estimated_hours: 2, // Por defecto 2 horas por tarea
-      });
+    // 5. Construir prompt para Lovable AI
+    const prompt = buildAIPrompt(userAvailabilities, tasks, weekStart, currentPhase);
+
+    // 6. Llamar a Lovable AI Gateway con tool calling
+    console.log('🤖 Llamando a Lovable AI Gateway...');
+    
+    const aiPayload = {
+      model: 'google/gemini-2.5-pro',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'generate_weekly_schedules',
+            description: 'Genera las agendas coordinadas semanales para el equipo',
+            parameters: {
+              type: 'object',
+              properties: {
+                scheduled_tasks: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      task_id: { type: 'string', description: 'UUID de la tarea' },
+                      user_id: { type: 'string', description: 'UUID del usuario' },
+                      scheduled_date: { type: 'string', description: 'Fecha en formato YYYY-MM-DD' },
+                      scheduled_start: { type: 'string', description: 'Hora de inicio HH:MM' },
+                      scheduled_end: { type: 'string', description: 'Hora de fin HH:MM' },
+                      is_collaborative: { type: 'boolean', description: 'Si es tarea colaborativa' },
+                      collaborator_user_id: { type: 'string', description: 'UUID del colaborador (opcional)' },
+                    },
+                    required: ['task_id', 'user_id', 'scheduled_date', 'scheduled_start', 'scheduled_end', 'is_collaborative'],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ['scheduled_tasks'],
+              additionalProperties: false,
+            },
+          },
+        },
+      ],
+      tool_choice: { type: 'function', function: { name: 'generate_weekly_schedules' } },
+    };
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(aiPayload),
     });
 
-    // 6. Procesar disponibilidad de cada usuario
-    const userAvailabilityMap: Record<string, UserAvailability> = {};
-    
-    availabilities.forEach((avail: any) => {
-      const days: Record<string, { available: boolean; start: string; end: string }> = {};
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Lovable AI Gateway error:', response.status, errorText);
       
-      ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
-        days[day] = {
-          available: avail[`${day}_available`] || false,
-          start: avail[`${day}_start`] || '09:00',
-          end: avail[`${day}_end`] || '18:00',
-        };
-      });
-
-      userAvailabilityMap[avail.user_id] = {
-        user_id: avail.user_id,
-        username: avail.users.username,
-        full_name: avail.users.full_name,
-        availability: days,
-        preferred_hours_per_day: avail.preferred_hours_per_day || 4,
-        preferred_time_of_day: avail.preferred_time_of_day || 'flexible',
-      };
-    });
-
-    // 7. Generar schedules
-    const schedules: any[] = [];
-
-    // Primero: Procesar tareas colaborativas
-    const collaborativeTasks = tasks?.filter((t: any) => t.leader_id !== null) || [];
-    
-    for (const task of collaborativeTasks) {
-      const executorAvail = userAvailabilityMap[task.user_id];
-      const leaderAvail = userAvailabilityMap[task.leader_id];
-
-      if (!executorAvail || !leaderAvail) continue;
-
-      // Buscar slot compatible para ambos
-      const compatibleSlot = findCompatibleSlot(
-        executorAvail,
-        leaderAvail,
-        task.estimated_hours,
-        weekStart,
-        schedules
-      );
-
-      if (compatibleSlot) {
-        // Guardar para ambos usuarios
-        schedules.push({
-          task_id: task.id,
-          user_id: task.user_id,
-          week_start: weekStart,
-          scheduled_date: compatibleSlot.date,
-          scheduled_start: compatibleSlot.start,
-          scheduled_end: compatibleSlot.end,
-          status: 'pending',
-          is_collaborative: true,
-          collaborator_user_id: task.leader_id,
-        });
-
-        schedules.push({
-          task_id: task.id,
-          user_id: task.leader_id,
-          week_start: weekStart,
-          scheduled_date: compatibleSlot.date,
-          scheduled_start: compatibleSlot.start,
-          scheduled_end: compatibleSlot.end,
-          status: 'pending',
-          is_collaborative: true,
-          collaborator_user_id: task.user_id,
-        });
-
-        console.log(`✅ Scheduled collaborative task: ${task.title} for ${compatibleSlot.date} ${compatibleSlot.start}`);
+      if (response.status === 429) {
+        throw new Error('Rate limit excedido. Intenta nuevamente en unos minutos.');
       }
+      if (response.status === 402) {
+        throw new Error('Créditos insuficientes en Lovable AI. Agrega más créditos en Settings → Workspace → Usage.');
+      }
+      
+      throw new Error(`Lovable AI Gateway error: ${response.status}`);
     }
 
-    // Segundo: Procesar tareas individuales
-    const individualTasks = tasks?.filter((t: any) => t.leader_id === null) || [];
-    
-    for (const task of individualTasks) {
-      const userAvail = userAvailabilityMap[task.user_id];
-      if (!userAvail) continue;
+    const aiResponse = await response.json();
+    console.log('✅ Respuesta recibida de Lovable AI');
 
-      const slot = findBestSlot(userAvail, task.estimated_hours, weekStart, schedules);
-
-      if (slot) {
-        schedules.push({
-          task_id: task.id,
-          user_id: task.user_id,
-          week_start: weekStart,
-          scheduled_date: slot.date,
-          scheduled_start: slot.start,
-          scheduled_end: slot.end,
-          status: 'pending',
-          is_collaborative: false,
-          collaborator_user_id: null,
-        });
-
-        console.log(`✅ Scheduled individual task: ${task.title} for ${slot.date} ${slot.start}`);
+    // 7. Parsear respuesta con tool calling
+    let scheduledTasks: ScheduledTask[];
+    try {
+      const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall || toolCall.function.name !== 'generate_weekly_schedules') {
+        throw new Error('No se recibió tool call válido de la IA');
       }
+
+      const parsedArgs = JSON.parse(toolCall.function.arguments);
+      scheduledTasks = parsedArgs.scheduled_tasks || [];
+    } catch (parseError) {
+      console.error('Error parseando respuesta de Lovable AI:', parseError);
+      console.error('Respuesta completa:', JSON.stringify(aiResponse, null, 2));
+      throw new Error('No se pudo parsear la respuesta de Lovable AI');
     }
 
-    // 8. Guardar todos los schedules en BD
-    if (schedules.length > 0) {
+    console.log(`✅ Lovable AI generó ${scheduledTasks.length} tareas programadas`);
+
+    // 8. Insertar tareas programadas en task_schedule
+    if (scheduledTasks.length > 0) {
       // Primero borrar schedules existentes para esta semana
       await supabase
         .from('task_schedule')
         .delete()
         .eq('week_start', weekStart);
 
-      // Insertar nuevos schedules
+      const taskScheduleInserts = scheduledTasks.map((st) => ({
+        task_id: st.task_id,
+        user_id: st.user_id,
+        scheduled_date: st.scheduled_date,
+        scheduled_start: st.scheduled_start,
+        scheduled_end: st.scheduled_end,
+        status: 'pending',
+        week_start: weekStart,
+        is_collaborative: st.is_collaborative || false,
+        collaborator_user_id: st.collaborator_user_id || null,
+      }));
+
       const { error: insertError } = await supabase
         .from('task_schedule')
-        .insert(schedules);
+        .insert(taskScheduleInserts);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error insertando tareas:', insertError);
+        throw insertError;
+      }
 
-      console.log(`💾 Saved ${schedules.length} schedules to database`);
+      console.log(`💾 Guardadas ${scheduledTasks.length} tareas en la base de datos`);
     }
 
     // 9. Enviar notificaciones a usuarios
-    for (const userId of userIds) {
+    for (const user of userAvailabilities) {
+      const userTasks = scheduledTasks.filter((st) => st.user_id === user.user_id);
+      
       await supabase.from('notifications').insert({
-        user_id: userId,
-        type: 'agenda_ready',
-        message: `Tu agenda para la semana del ${new Date(weekStart).toLocaleDateString('es-ES')} ha sido generada. Revísala y acepta las tareas programadas.`,
+        user_id: user.user_id,
+        type: 'agenda_generated',
+        message: `Tu agenda para esta semana está lista con ${userTasks.length} tareas. ¡Revísala ahora!`,
+        read: false,
       });
     }
 
-    console.log('✅ Schedule generation completed successfully!');
+    console.log('🎉 Agendas generadas y guardadas correctamente');
 
     return new Response(
       JSON.stringify({
         success: true,
+        message: 'Agendas coordinadas generadas exitosamente',
         week_start: weekStart,
-        users_processed: availabilities.length,
-        schedules_created: schedules.length,
+        users_processed: userAvailabilities.length,
+        tasks_scheduled: scheduledTasks.length,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
     );
-  } catch (error: any) {
-    console.error('❌ Error generating schedules:', error);
+  } catch (error) {
+    console.error('Error en generate-weekly-schedules:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Error desconocido',
+        details: error instanceof Error ? error.stack : undefined
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
     );
   }
 });
 
-// =====================================================
-// FUNCIONES AUXILIARES
-// =====================================================
-
-function findCompatibleSlot(
-  user1: UserAvailability,
-  user2: UserAvailability,
-  hours: number,
+function buildAIPrompt(
+  userAvailabilities: UserAvailability[],
+  tasks: Task[],
   weekStart: string,
-  existingSchedules: any[]
-): TimeSlot | null {
-  const days = ['wednesday', 'thursday', 'friday', 'monday', 'tuesday', 'saturday', 'sunday'];
-  const weekStartDate = new Date(weekStart);
+  currentPhase: number
+): string {
+  return `Eres un asistente de IA especializado en la generación de agendas coordinadas para un equipo de trabajo.
 
-  for (let i = 0; i < 7; i++) {
-    const currentDate = new Date(weekStartDate);
-    currentDate.setDate(weekStartDate.getDate() + i);
-    const dayName = days[i];
+**CONTEXTO:**
+- Fase actual del negocio: ${currentPhase}
+- Semana que comienza: ${weekStart}
+- Total de usuarios: ${userAvailabilities.length}
+- Total de tareas disponibles: ${tasks.length}
 
-    const user1Day = user1.availability[dayName];
-    const user2Day = user2.availability[dayName];
+**DISPONIBILIDAD DE USUARIOS:**
+${JSON.stringify(userAvailabilities, null, 2)}
 
-    // Ambos deben estar disponibles ese día
-    if (!user1Day?.available || !user2Day?.available) continue;
+**TAREAS DISPONIBLES:**
+${JSON.stringify(tasks, null, 2)}
 
-    // Encontrar overlap de horarios
-    const start1 = parseTime(user1Day.start);
-    const end1 = parseTime(user1Day.end);
-    const start2 = parseTime(user2Day.start);
-    const end2 = parseTime(user2Day.end);
+**REGLAS CRÍTICAS:**
 
-    const overlapStart = Math.max(start1, start2);
-    const overlapEnd = Math.min(end1, end2);
+1. **Límite de tareas por usuario:**
+   - Respetar el task_limit de cada usuario según su modo
+   - Conservador: máximo 5 tareas
+   - Moderado: máximo 8 tareas
+   - Agresivo: máximo 12 tareas
 
-    if (overlapEnd - overlapStart >= hours * 60) {
-      // Hay suficiente overlap
-      const slotStart = minutesToTime(overlapStart);
-      const slotEnd = minutesToTime(overlapStart + hours * 60);
-      const dateStr = currentDate.toISOString().split('T')[0];
+2. **Respetar disponibilidad horaria:**
+   - Solo programar en días/horarios marcados como disponibles
+   - Considerar preferencias de horario (mañana/tarde/noche)
+   - Respetar horas preferidas por día (preferred_hours_per_day)
 
-      // Verificar que no haya conflicto con schedules existentes
-      const hasConflict = existingSchedules.some(s => 
-        s.scheduled_date === dateStr &&
-        (s.user_id === user1.user_id || s.user_id === user2.user_id) &&
-        timesOverlap(slotStart, slotEnd, s.scheduled_start, s.scheduled_end)
-      );
+3. **Distribución inteligente:**
+   - Distribuir tareas equitativamente entre usuarios
+   - Considerar el área de cada tarea y expertise del usuario
+   - Evitar sobrecargar a un usuario mientras otro tiene pocas tareas
 
-      if (!hasConflict) {
-        return {
-          date: dateStr,
-          start: slotStart,
-          end: slotEnd,
-          duration_hours: hours,
-        };
-      }
-    }
-  }
+4. **Tareas colaborativas:**
+   - Si una tarea tiene leader_id, es colaborativa
+   - Coordinar horarios entre ejecutor (user_id) y líder (leader_id)
+   - Asegurar que ambos estén disponibles al mismo tiempo
+   - Crear DOS entradas en scheduled_tasks: una para cada participante
 
-  return null;
-}
+5. **Espaciado de tareas:**
+   - Dejar al menos 1 hora entre tareas del mismo usuario
+   - No programar más de 2-3 tareas en el mismo día por usuario
+   - Distribuir uniformemente a lo largo de la semana
 
-function findBestSlot(
-  user: UserAvailability,
-  hours: number,
-  weekStart: string,
-  existingSchedules: any[]
-): TimeSlot | null {
-  const days = ['wednesday', 'thursday', 'friday', 'monday', 'tuesday', 'saturday', 'sunday'];
-  const weekStartDate = new Date(weekStart);
+6. **Duración estimada:**
+   - Tareas simples: 1-2 horas
+   - Tareas normales: 2-3 horas
+   - Tareas complejas: 3-4 horas
+   - Ajustar según descripción y área de la tarea
 
-  for (let i = 0; i < 7; i++) {
-    const currentDate = new Date(weekStartDate);
-    currentDate.setDate(weekStartDate.getDate() + i);
-    const dayName = days[i];
+7. **Priorización:**
+   - Primero programar tareas colaborativas (requieren coordinación)
+   - Luego tareas individuales
+   - Considerar order_index si está disponible
 
-    const dayAvail = user.availability[dayName];
-    if (!dayAvail?.available) continue;
+**IMPORTANTE:**
+- Todos los UUIDs (task_id, user_id, collaborator_user_id) deben ser válidos
+- Todas las fechas deben estar dentro de la semana especificada (${weekStart})
+- Todos los horarios deben respetar exactamente la disponibilidad del usuario
+- Para tareas colaborativas, crear entrada para AMBOS usuarios con el mismo horario
+- La fecha debe estar en formato YYYY-MM-DD
+- Las horas en formato HH:MM (ej: "09:00", "14:30")
 
-    const start = parseTime(dayAvail.start);
-    const end = parseTime(dayAvail.end);
-
-    if (end - start >= hours * 60) {
-      // Aplicar preferencia de horario
-      let slotStart = start;
-
-      if (user.preferred_time_of_day === 'morning') {
-        slotStart = start; // Temprano
-      } else if (user.preferred_time_of_day === 'afternoon') {
-        slotStart = Math.max(start, parseTime('14:00'));
-      } else if (user.preferred_time_of_day === 'evening') {
-        slotStart = Math.max(start, parseTime('18:00'));
-      }
-
-      const slotEnd = slotStart + hours * 60;
-
-      if (slotEnd <= end) {
-        const slotStartStr = minutesToTime(slotStart);
-        const slotEndStr = minutesToTime(slotEnd);
-        const dateStr = currentDate.toISOString().split('T')[0];
-
-        // Verificar que no haya conflicto
-        const hasConflict = existingSchedules.some(s =>
-          s.scheduled_date === dateStr &&
-          s.user_id === user.user_id &&
-          timesOverlap(slotStartStr, slotEndStr, s.scheduled_start, s.scheduled_end)
-        );
-
-        if (!hasConflict) {
-          return {
-            date: dateStr,
-            start: slotStartStr,
-            end: slotEndStr,
-            duration_hours: hours,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-function parseTime(timeStr: string): number {
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  return hours * 60 + minutes;
-}
-
-function minutesToTime(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-}
-
-function timesOverlap(start1: string, end1: string, start2: string, end2: string): boolean {
-  const s1 = parseTime(start1);
-  const e1 = parseTime(end1);
-  const s2 = parseTime(start2);
-  const e2 = parseTime(end2);
-  return s1 < e2 && e1 > s2;
+Genera las agendas coordinadas ahora usando la función generate_weekly_schedules.`;
 }
