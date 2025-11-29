@@ -14,7 +14,8 @@ import {
   PieChart,
   BarChart3,
   Target,
-  Clock
+  Clock,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -203,7 +204,16 @@ const FinancialDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Controles */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <Button
+          variant="default"
+          onClick={() => window.location.href = '/financial/detailed'}
+          className="gap-2 bg-black hover:bg-black/90 text-white"
+        >
+          <FileText className="h-4 w-4" />
+          Contabilidad Detallada
+        </Button>
+        
         <div className="flex items-center gap-3">
           {/* Selector de mes */}
           <input
