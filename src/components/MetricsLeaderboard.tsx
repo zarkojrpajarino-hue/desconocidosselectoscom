@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, TrendingUp, Flame, Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import UserMetricsHistory from './UserMetricsHistory';
 
 interface UserMetricsStats {
   user_id: string;
@@ -20,6 +21,8 @@ const MetricsLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<UserMetricsStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserMetricsStats | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserName, setSelectedUserName] = useState<string>('');
 
   useEffect(() => {
     loadLeaderboard();
@@ -133,7 +136,18 @@ const MetricsLeaderboard = () => {
   if (loading) return null;
 
   return (
-    <Card className="border-2 bg-gradient-to-br from-primary/5 via-background to-background">
+    <>
+      <UserMetricsHistory
+        userId={selectedUserId || ''}
+        userName={selectedUserName}
+        isOpen={!!selectedUserId}
+        onClose={() => {
+          setSelectedUserId(null);
+          setSelectedUserName('');
+        }}
+      />
+      
+      <Card className="border-2 bg-gradient-to-br from-primary/5 via-background to-background">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -209,14 +223,18 @@ const MetricsLeaderboard = () => {
             Ranking del Equipo
           </h3>
           <div className="space-y-2">
-            {leaderboard.slice(0, 10).map((stats, index) => (
+            {leaderboard.map((stats, index) => (
               <div 
                 key={stats.user_id}
-                className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
                   stats.user_id === user?.id 
-                    ? 'bg-primary/10 border-primary/50' 
+                    ? 'bg-primary/10 border-primary/50 hover:bg-primary/15' 
                     : 'bg-muted/30 border-muted hover:bg-muted/50'
                 }`}
+                onClick={() => {
+                  setSelectedUserId(stats.user_id);
+                  setSelectedUserName(stats.full_name);
+                }}
               >
                 <div className="flex items-center gap-3 flex-1">
                   {getRankIcon(index)}
@@ -286,6 +304,7 @@ const MetricsLeaderboard = () => {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };
 

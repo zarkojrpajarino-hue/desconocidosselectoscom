@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp, Trophy } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -21,13 +21,6 @@ const Home = () => {
       icon: TrendingUp,
       path: '/business-metrics',
       gradient: 'from-emerald-500 to-teal-500'
-    },
-    {
-      title: 'Ranking de Métricas',
-      description: 'Compara tu progreso con el equipo y sube en el ranking',
-      icon: Trophy,
-      path: '/metrics-ranking',
-      gradient: 'from-amber-500 to-orange-500'
     },
     {
       title: 'Análisis con IA',

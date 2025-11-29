@@ -19,7 +19,6 @@ import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import AIAnalysis from "./pages/AIAnalysis";
 import BusinessMetrics from "./pages/BusinessMetrics";
-import MetricsRanking from "./pages/MetricsRanking";
 import HerramientasHub from "./pages/HerramientasHub";
 
 // Dashboard sub-pages
@@ -115,11 +114,6 @@ const AppContent = () => {
       <Route path="/business-metrics" element={
         <ProtectedRoute>
           <BusinessMetrics />
-        </ProtectedRoute>
-      } />
-      <Route path="/metrics-ranking" element={
-        <ProtectedRoute>
-          <MetricsRanking />
         </ProtectedRoute>
       } />
       <Route path="/herramientas-hub" element={
