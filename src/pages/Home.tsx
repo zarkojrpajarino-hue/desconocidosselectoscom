@@ -23,6 +23,13 @@ const Home = () => {
       gradient: 'from-emerald-500 to-teal-500'
     },
     {
+      title: 'OKRs - Objetivos',
+      description: 'Sistema de objetivos trimestrales con tracking de progreso y resultados clave',
+      icon: Target,
+      path: '/okrs',
+      gradient: 'from-emerald-500 to-teal-600'
+    },
+    {
       title: 'Análisis con IA',
       description: 'Dashboard inteligente con insights profundos, proyecciones y recomendaciones accionables',
       icon: Brain,
