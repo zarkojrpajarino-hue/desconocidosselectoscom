@@ -46,21 +46,21 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   useEffect(() => {
     if (!userId) return;
 
-    // Suscribirse a notificaciones de badges
+    // Suscribirse a alertas de badges desde smart_alerts
     const channel = supabase
-      .channel('badge-notifications')
+      .channel('badge-alerts')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
+          table: 'smart_alerts',
+          filter: `target_user_id=eq.${userId}`,
         },
         (payload) => {
-          const notification = payload.new as any;
-          if (notification.type === 'badge_earned' && notification.metadata?.badge_data) {
-            setUnlockedBadge(notification.metadata.badge_data);
+          const alert = payload.new as any;
+          if (alert.alert_type === 'badge_earned' && alert.context?.badge_data) {
+            setUnlockedBadge(alert.context.badge_data);
           }
         }
       )
