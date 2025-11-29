@@ -26,6 +26,7 @@ import OKRsPage from "./pages/OKRsPage";
 import OKRsHistory from "./pages/okrs/OKRsHistory";
 import UserOKRHistory from "./pages/okrs/UserOKRHistory";
 import FinancialPage from "./pages/FinancialPage";
+import AlertsPage from "./pages/AlertsPage";
 import DetailedFinancial from "./pages/financial/DetailedFinancial";
 
 // Dashboard sub-pages
@@ -146,6 +147,11 @@ const AppContent = () => {
       <Route path="/financial/detailed" element={
         <ProtectedRoute>
           <DetailedFinancial />
+        </ProtectedRoute>
+      } />
+      <Route path="/alerts" element={
+        <ProtectedRoute>
+          <AlertsPage />
         </ProtectedRoute>
       } />
       <Route path="/user-metrics/:userId" element={

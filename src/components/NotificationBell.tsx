@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,176 +10,153 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-interface NotificationBellProps {
-  userId: string;
-}
-
-const NotificationBell = ({ userId }: NotificationBellProps) => {
-  const [notifications, setNotifications] = useState<any[]>([]);
+const NotificationBell = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [urgentAlerts, setUrgentAlerts] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    fetchNotifications();
-    subscribeToNotifications();
-  }, [userId]);
+    if (!user) return;
 
-  const fetchNotifications = async () => {
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    fetchUrgentAlerts();
 
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read).length);
-    }
-  };
-
-  const subscribeToNotifications = () => {
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
+    const subscription = supabase
+      .channel('urgent_alerts')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'smart_alerts',
+          filter: `severity=eq.urgent`
         },
-        (payload) => {
-          const newNotification = payload.new as any;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Show toast for new notification
-          toast.info(newNotification.message, {
-            duration: 5000,
-          });
+        () => {
+          fetchUrgentAlerts();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      subscription.unsubscribe();
     };
-  };
+  }, [user]);
 
-  const markAsRead = async (notificationId: string) => {
-    await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', notificationId);
+  const fetchUrgentAlerts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('smart_alerts')
+        .select('*')
+        .eq('severity', 'urgent')
+        .eq('dismissed', false)
+        .or(`target_user_id.eq.${user?.id},target_user_id.is.null`)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-    setNotifications(prev =>
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
+      if (error) throw error;
 
-  const markAllAsRead = async () => {
-    await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', userId)
-      .eq('read', false);
-
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'evaluation_pending':
-        return '📝';
-      case 'task_validated':
-        return '✅';
-      case 'urgent_deadline':
-        return '🚨';
-      case 'mode_change_alert':
-        return '📢';
-      case 'task_changed_by_leader':
-        return '🔄';
-      case 'agenda_ready':
-        return '📅';
-      case 'schedule_change':
-        return '🔄';
-      default:
-        return '📬';
+      setUrgentAlerts(data || []);
+      setUnreadCount((data || []).filter(a => !a.viewed).length);
+    } catch (error) {
+      console.error('Error fetching urgent alerts:', error);
     }
+  };
+
+  const handleDismiss = async (alertId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    try {
+      await supabase
+        .from('smart_alerts')
+        .update({ dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq('id', alertId);
+
+      toast.success('Alerta descartada');
+      fetchUrgentAlerts();
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+    }
+  };
+
+  const handleViewAll = () => {
+    navigate('/alerts');
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="relative gap-2 h-8 md:h-9 px-2 md:px-3">
-          <Bell className="h-3 w-3 md:h-4 md:w-4" />
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-1 -right-1 md:-top-2 md:-right-2 h-4 w-4 md:h-5 md:w-5 p-0 flex items-center justify-center text-[10px] md:text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-w-md z-50 bg-card">
+
+      <DropdownMenuContent align="end" className="w-80 z-50 bg-card">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span className="text-sm md:text-base">Notificaciones</span>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs h-auto p-1"
-              onClick={markAllAsRead}
-            >
-              Marcar todas como leídas
-            </Button>
+          <span>🚨 Alertas Urgentes</span>
+          {urgentAlerts.length > 0 && (
+            <Badge variant="destructive">{urgentAlerts.length}</Badge>
           )}
         </DropdownMenuLabel>
+
         <DropdownMenuSeparator />
-        <ScrollArea className="h-[50vh] sm:h-[400px]">
-          {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              No tienes notificaciones
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
-                  !notification.read ? 'bg-accent/5' : ''
-                }`}
-                onClick={() => !notification.read && markAsRead(notification.id)}
+
+        {urgentAlerts.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            Sin alertas urgentes
+          </div>
+        ) : (
+          <>
+            {urgentAlerts.map((alert: any) => (
+              <DropdownMenuItem 
+                key={alert.id}
+                className="flex-col items-start py-3 cursor-pointer"
+                onClick={() => {
+                  if (alert.action_url) {
+                    navigate(alert.action_url);
+                  }
+                }}
               >
-                <div className="flex items-center gap-2 w-full">
-                  <span className="text-base md:text-lg">{getNotificationIcon(notification.type)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs md:text-sm whitespace-pre-wrap ${!notification.read ? 'font-semibold' : ''}`}>
-                      {notification.message}
-                    </p>
-                    <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(notification.created_at), {
-                        addSuffix: true,
-                        locale: es
-                      })}
+                <div className="flex items-start justify-between w-full gap-2">
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {alert.message}
                     </p>
                   </div>
-                  {!notification.read && (
-                    <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => handleDismiss(alert.id, e)}
+                  >
+                    ✕
+                  </Button>
                 </div>
               </DropdownMenuItem>
-            ))
-          )}
-        </ScrollArea>
+            ))}
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem 
+              className="justify-center font-semibold cursor-pointer"
+              onClick={handleViewAll}
+            >
+              Ver Todas las Alertas →
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
