@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Clock, RefreshCw, Trophy, User } from 'lucide-react';
+import { ArrowLeft, Users, Clock, RefreshCw, Trophy, User } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -168,10 +168,6 @@ const DashboardHome = () => {
   // Calcular tareas completadas al 100% (validated_by_leader = true)
   const fullyCompletedCount = completions.length; // Ya están filtradas por validated_by_leader en el fetch
 
-  const handleLogout = async () => {
-    await signOut();
-    toast.success('Sesión cerrada');
-  };
 
   // Send urgent notification when conditions are met
   useUrgentNotification({
@@ -241,13 +237,13 @@ const DashboardHome = () => {
             )}
             {user && <NotificationBell userId={user.id} />}
             <Button
-              onClick={handleLogout}
+              onClick={() => navigate('/home')}
               variant="outline"
               size="sm"
               className="gap-1 md:gap-2 text-xs md:text-sm"
             >
-              <LogOut className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Salir</span>
+              <ArrowLeft className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">Volver al Menú</span>
             </Button>
           </div>
         </div>
