@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator, Brain, TrendingUp, DollarSign } from 'lucide-react';
+import { BarChart3, Palette, Brain, TrendingUp } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -16,25 +16,11 @@ const Home = () => {
       gradient: 'from-blue-500 to-cyan-500'
     },
     {
-      title: 'Métricas del Negocio (KPI\'s)',
-      description: 'Actualiza KPIs reales: ventas, marketing, operaciones y cliente',
+      title: 'Métricas',
+      description: 'KPI\'s, OKR y Panel Financiero del negocio',
       icon: TrendingUp,
-      path: '/business-metrics',
+      path: '/metrics-hub',
       gradient: 'from-emerald-500 to-teal-500'
-    },
-    {
-      title: 'OKRs - Objetivos',
-      description: 'Sistema de objetivos trimestrales con tracking de progreso y resultados clave',
-      icon: Target,
-      path: '/okrs',
-      gradient: 'from-emerald-500 to-teal-600'
-    },
-    {
-      title: 'Panel Financiero',
-      description: 'Métricas financieras, ingresos, gastos, margen, burn rate y ROI de marketing',
-      icon: DollarSign,
-      path: '/financial',
-      gradient: 'from-green-500 to-emerald-600'
     },
     {
       title: 'Análisis con IA',
