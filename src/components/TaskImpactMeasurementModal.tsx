@@ -43,6 +43,7 @@ interface ImpactMeasurementData {
     none?: boolean;
     details?: string;
   };
+  task_metrics?: any; // Métricas estructuradas para IA
 }
 
 const TaskImpactMeasurementModal = ({
@@ -224,6 +225,9 @@ const TaskImpactMeasurementModal = ({
 
     setIsSubmitting(true);
     try {
+      // Estructurar task_metrics para análisis de IA
+      const taskMetrics = extractMetricsFromData(keyMetrics, aiAnswers, taskArea);
+      
       await onSubmit({
         ai_questions: aiAnswers,
         key_metrics: keyMetrics.filter(m => m.metric && m.value),
@@ -231,6 +235,7 @@ const TaskImpactMeasurementModal = ({
         impact_explanation: impactExplanation,
         future_decisions: futureDecisions,
         investments_needed: investmentsNeeded,
+        task_metrics: taskMetrics, // Nuevo campo estructurado
       });
       
       onOpenChange(false);
@@ -239,6 +244,83 @@ const TaskImpactMeasurementModal = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Extrae métricas estructuradas según área de la tarea
+  const extractMetricsFromData = (metrics: any[], answers: Record<string, any>, area: string) => {
+    const structured: any = {
+      area,
+      captured_at: new Date().toISOString(),
+    };
+
+    // Extraer números de métricas
+    metrics.forEach(m => {
+      const value = parseFloat(m.value);
+      if (!isNaN(value)) {
+        const metricName = m.metric.toLowerCase();
+        
+        // Ventas e ingresos
+        if (metricName.includes('ingreso') || metricName.includes('factura') || metricName.includes('€')) {
+          structured.revenue = value;
+        }
+        if (metricName.includes('pedido') || metricName.includes('venta')) {
+          structured.orders = value;
+        }
+        if (metricName.includes('ticket') || metricName.includes('medio')) {
+          structured.avg_ticket = value;
+        }
+        if (metricName.includes('margen')) {
+          structured.margin = value;
+        }
+        
+        // Marketing
+        if (metricName.includes('lead') || metricName.includes('contacto')) {
+          structured.leads = value;
+        }
+        if (metricName.includes('conversión') || metricName.includes('conversion')) {
+          structured.conversion_rate = value;
+        }
+        if (metricName.includes('cac') || metricName.includes('adquisición')) {
+          structured.cac = value;
+        }
+        if (metricName.includes('roi')) {
+          structured.roi = value;
+        }
+        
+        // Operaciones
+        if (metricName.includes('tiempo') || metricName.includes('hora')) {
+          structured.time_hours = value;
+        }
+        if (metricName.includes('capacidad')) {
+          structured.capacity = value;
+        }
+        if (metricName.includes('error') || metricName.includes('devolución')) {
+          structured.error_rate = value;
+        }
+        if (metricName.includes('costo')) {
+          structured.cost = value;
+        }
+        
+        // Cliente
+        if (metricName.includes('nps')) {
+          structured.nps = value;
+        }
+        if (metricName.includes('repetición') || metricName.includes('recurrencia')) {
+          structured.repeat_rate = value;
+        }
+        if (metricName.includes('lifetime') || metricName.includes('ltv')) {
+          structured.ltv = value;
+        }
+        if (metricName.includes('satisfacción') || metricName.includes('rating')) {
+          structured.satisfaction = value;
+        }
+      }
+    });
+
+    // Incluir respuestas de IA para contexto
+    structured.ai_context = answers;
+
+    return structured;
   };
 
   const suggestedMetrics = [

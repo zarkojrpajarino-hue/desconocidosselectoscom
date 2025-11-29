@@ -50,6 +50,98 @@ export type Database = {
         }
         Relationships: []
       }
+      business_metrics: {
+        Row: {
+          avg_ticket: number | null
+          cac: number | null
+          capacity_used: number | null
+          channel_roi: Json | null
+          conversion_rate: number | null
+          created_at: string | null
+          engagement_rate: number | null
+          error_rate: number | null
+          id: string
+          leads_generated: number | null
+          lifetime_value: number | null
+          metric_date: string
+          notes: string | null
+          nps_score: number | null
+          operational_costs: number | null
+          orders_count: number | null
+          product_margins: Json | null
+          production_time: number | null
+          repeat_rate: number | null
+          revenue: number | null
+          reviews_avg: number | null
+          reviews_count: number | null
+          satisfaction_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_ticket?: number | null
+          cac?: number | null
+          capacity_used?: number | null
+          channel_roi?: Json | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          error_rate?: number | null
+          id?: string
+          leads_generated?: number | null
+          lifetime_value?: number | null
+          metric_date?: string
+          notes?: string | null
+          nps_score?: number | null
+          operational_costs?: number | null
+          orders_count?: number | null
+          product_margins?: Json | null
+          production_time?: number | null
+          repeat_rate?: number | null
+          revenue?: number | null
+          reviews_avg?: number | null
+          reviews_count?: number | null
+          satisfaction_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_ticket?: number | null
+          cac?: number | null
+          capacity_used?: number | null
+          channel_roi?: Json | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          error_rate?: number | null
+          id?: string
+          leads_generated?: number | null
+          lifetime_value?: number | null
+          metric_date?: string
+          notes?: string | null
+          nps_score?: number | null
+          operational_costs?: number | null
+          orders_count?: number | null
+          product_margins?: Json | null
+          production_time?: number | null
+          repeat_rate?: number | null
+          revenue?: number | null
+          reviews_avg?: number | null
+          reviews_count?: number | null
+          satisfaction_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_event_mappings: {
         Row: {
           calendar_id: string
@@ -311,6 +403,7 @@ export type Database = {
           leader_evaluation: Json | null
           leader_feedback: Json | null
           task_id: string
+          task_metrics: Json | null
           user_id: string
           user_insights: Json | null
           validated_by_leader: boolean | null
@@ -325,6 +418,7 @@ export type Database = {
           leader_evaluation?: Json | null
           leader_feedback?: Json | null
           task_id: string
+          task_metrics?: Json | null
           user_id: string
           user_insights?: Json | null
           validated_by_leader?: boolean | null
@@ -339,6 +433,7 @@ export type Database = {
           leader_evaluation?: Json | null
           leader_feedback?: Json | null
           task_id?: string
+          task_metrics?: Json | null
           user_id?: string
           user_insights?: Json | null
           validated_by_leader?: boolean | null
