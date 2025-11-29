@@ -17,6 +17,7 @@ import Gamification from "./pages/Gamification";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
+import AIAnalysis from "./pages/AIAnalysis";
 
 // Dashboard sub-pages
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -101,6 +102,11 @@ const AppContent = () => {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/ai-analysis" element={
+        <ProtectedRoute>
+          <AIAnalysis />
         </ProtectedRoute>
       } />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />

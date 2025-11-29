@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Target, Calculator } from 'lucide-react';
+import { BarChart3, Palette, Target, Calculator, Brain } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -35,6 +35,13 @@ const Home = () => {
       icon: Calculator,
       path: '/calculadora',
       gradient: 'from-green-500 to-emerald-500'
+    },
+    {
+      title: 'Análisis con IA',
+      description: 'Dashboard inteligente con insights profundos, proyecciones y recomendaciones accionables',
+      icon: Brain,
+      path: '/ai-analysis',
+      gradient: 'from-violet-500 to-purple-600'
     }
   ];
 
