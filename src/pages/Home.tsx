@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Brain, TrendingUp, Bell } from 'lucide-react';
+import { BarChart3, Palette, Brain, TrendingUp, Bell, Users } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -21,6 +21,13 @@ const Home = () => {
       icon: Bell,
       path: '/alerts',
       gradient: 'from-purple-500 to-pink-600'
+    },
+    {
+      title: 'CRM - Pipeline de Ventas',
+      description: 'Gestión de leads, oportunidades, seguimiento y conversión a clientes',
+      icon: Users,
+      path: '/crm',
+      gradient: 'from-cyan-500 to-blue-600'
     },
     {
       title: 'Métricas',

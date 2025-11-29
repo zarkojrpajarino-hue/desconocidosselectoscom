@@ -536,6 +536,153 @@ export type Database = {
           },
         ]
       }
+      lead_interactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          interaction_type: string
+          lead_id: string
+          outcome: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          interaction_type: string
+          lead_id: string
+          outcome?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          interaction_type?: string
+          lead_id?: string
+          outcome?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          company: string | null
+          converted_to_customer: boolean | null
+          created_at: string | null
+          created_by: string | null
+          email: string | null
+          estimated_value: number | null
+          expected_revenue: number | null
+          id: string
+          interested_products: string[] | null
+          last_contact_date: string | null
+          lost_date: string | null
+          lost_reason: string | null
+          name: string
+          next_action: string | null
+          next_action_date: string | null
+          notes: string | null
+          phone: string | null
+          priority: string
+          probability: number | null
+          revenue_entry_id: string | null
+          source: string | null
+          stage: string
+          updated_at: string | null
+          won_date: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company?: string | null
+          converted_to_customer?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          expected_revenue?: number | null
+          id?: string
+          interested_products?: string[] | null
+          last_contact_date?: string | null
+          lost_date?: string | null
+          lost_reason?: string | null
+          name: string
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          priority?: string
+          probability?: number | null
+          revenue_entry_id?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string | null
+          won_date?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company?: string | null
+          converted_to_customer?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          expected_revenue?: number | null
+          id?: string
+          interested_products?: string[] | null
+          last_contact_date?: string | null
+          lost_date?: string | null
+          lost_reason?: string | null
+          name?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          priority?: string
+          probability?: number | null
+          revenue_entry_id?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string | null
+          won_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_spend: {
         Row: {
           amount: number
@@ -878,6 +1025,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sales_targets: {
+        Row: {
+          created_at: string | null
+          id: string
+          month: string
+          target_deals: number | null
+          target_new_customers: number | null
+          target_revenue: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          month: string
+          target_deals?: number | null
+          target_new_customers?: number | null
+          target_revenue?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          month?: string
+          target_deals?: number | null
+          target_new_customers?: number | null
+          target_revenue?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       schedule_change_suggestions: {
         Row: {
@@ -1766,6 +1943,17 @@ export type Database = {
           },
         ]
       }
+      pipeline_overview: {
+        Row: {
+          avg_probability: number | null
+          avg_value: number | null
+          count: number | null
+          stage: string | null
+          total_expected: number | null
+          total_value: number | null
+        }
+        Relationships: []
+      }
       revenue_by_product_current_month: {
         Row: {
           avg_price: number | null
@@ -1806,6 +1994,7 @@ export type Database = {
       }
       check_financial_risks: { Args: never; Returns: undefined }
       check_okr_risks: { Args: never; Returns: undefined }
+      check_stale_leads: { Args: never; Returns: undefined }
       check_urgent_tasks: { Args: never; Returns: undefined }
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
