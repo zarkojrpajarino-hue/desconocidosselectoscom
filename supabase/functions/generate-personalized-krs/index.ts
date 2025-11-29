@@ -20,10 +20,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Obtener datos del usuario
+    // Obtener datos del usuario incluyendo objetivos estratégicos
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('full_name, role, email')
+      .select('full_name, role, email, strategic_objectives')
       .eq('id', userId)
       .single();
 
@@ -87,6 +87,7 @@ serve(async (req) => {
       usuario: {
         nombre: user.full_name,
         rol: user.role,
+        objetivos_estrategicos: user.strategic_objectives || 'No definidos'
       },
       semana_actual: currentWeekStart,
       tareas_de_la_semana: userTasks,
@@ -107,14 +108,20 @@ serve(async (req) => {
 Contexto del usuario y sus tareas de esta semana:
 ${JSON.stringify(context, null, 2)}
 
+PRIORIDAD MÁXIMA: Los OKRs deben estar alineados con los objetivos estratégicos del rol del usuario.
+Objetivos estratégicos: ${user.strategic_objectives || 'No definidos - usa tareas como referencia'}
+
 Tu tarea es:
-1. Generar 1 Objetivo (Objective) principal para esta semana que englobe el trabajo del usuario
+1. Generar 1 Objetivo (Objective) principal para esta semana que:
+   - ESTÉ DIRECTAMENTE ALINEADO con los objetivos estratégicos del rol
+   - Englobe el trabajo del usuario de esta semana
+   - Contribuya al avance de los objetivos estratégicos
 2. Generar entre 3 y 5 Key Results (KRs) PERSONALIZADOS que:
-   - Estén directamente relacionados con las TAREAS ESPECÍFICAS de esta semana
+   - Estén relacionados tanto con las TAREAS ESPECÍFICAS de esta semana como con los objetivos estratégicos
    - Consideren su rol (${user.role}) y tipo de tareas (propias, colaborativas, líder)
    - Sean medibles y específicos
    - Sean alcanzables en UNA SEMANA
-   - Reflejen el impacto real de completar esas tareas
+   - Reflejen cómo las tareas contribuyen a los objetivos estratégicos del rol
 
 El Objetivo debe tener:
 - title: Objetivo principal de la semana (máx 100 caracteres)
@@ -132,7 +139,9 @@ IMPORTANTE:
 - Los KRs deben ser REALISTAS para UNA SEMANA
 - Deben reflejar las ${userTasks.length} tareas específicas que tiene esta semana
 - Deben ser MEDIBLES objetivamente
-- Evita metas genéricas, hazlas específicas a las tareas actuales`;
+- Deben mostrar cómo las tareas contribuyen a los objetivos estratégicos del rol
+- Si no hay objetivos estratégicos definidos, genera OKRs generales basados solo en las tareas
+- Evita metas genéricas, hazlas específicas a las tareas actuales y objetivos estratégicos`;
 
     console.log('Generating weekly OKRs with AI for user:', userId);
 

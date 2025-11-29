@@ -13,9 +13,11 @@ import {
   RefreshCw,
   Calendar,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { OKRProgressModal } from './OKRProgressModal';
 
 interface KeyResult {
   id: string;
@@ -55,6 +57,13 @@ const OKRsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
   const [generatingWithAI, setGeneratingWithAI] = useState(false);
+  const [selectedKR, setSelectedKR] = useState<{
+    id: string;
+    title: string;
+    currentValue: number;
+    targetValue: number;
+    unit: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchWeekStart();
@@ -433,14 +442,31 @@ const OKRsDashboard = () => {
                             )}
                           </div>
 
-                          <div className="text-right">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedKR({
+                                id: kr.id,
+                                title: kr.title,
+                                currentValue: kr.current_value,
+                                targetValue: kr.target_value,
+                                unit: kr.unit
+                              })}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Actualizar
+                            </Button>
+
+                            <div className="text-right">
                             <div className="text-2xl font-bold">
                               {kr.current_value}
                               {kr.unit && <span className="text-sm font-normal text-muted-foreground"> {kr.unit}</span>}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               de {kr.target_value} {kr.unit}
-                            </div>
+                             </div>
+                           </div>
                           </div>
                         </div>
 
@@ -469,6 +495,23 @@ const OKRsDashboard = () => {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Modal de actualización de progreso */}
+      {selectedKR && (
+        <OKRProgressModal
+          isOpen={!!selectedKR}
+          onClose={() => setSelectedKR(null)}
+          keyResultId={selectedKR.id}
+          keyResultTitle={selectedKR.title}
+          currentValue={selectedKR.currentValue}
+          targetValue={selectedKR.targetValue}
+          unit={selectedKR.unit}
+          onProgressUpdated={() => {
+            fetchOKRs();
+            setSelectedKR(null);
+          }}
+        />
       )}
     </div>
   );
