@@ -14,9 +14,12 @@ import Practicar from "./pages/Practicar";
 import Calculadora from "./pages/Calculadora";
 import Gamification from "./pages/Gamification";
 import Profile from "./pages/Profile";
-import Agenda from "./pages/Agenda";
 import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
+
+// Dashboard sub-pages
+import DashboardHome from "./pages/dashboard/DashboardHome";
+import AgendaSemanal from "./pages/dashboard/AgendaSemanal";
 
 // Herramientas sub-pages
 import LeadScoring from "./pages/herramientas/LeadScoring";
@@ -37,7 +40,13 @@ const AppContent = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/home" element={<Home />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      
+      {/* Dashboard con sub-rutas */}
+      <Route path="/dashboard" element={<Dashboard />}>
+        <Route path="home" element={<DashboardHome />} />
+        <Route path="agenda" element={<AgendaSemanal />} />
+      </Route>
+      
       <Route path="/admin" element={<Admin />} />
       <Route path="/setup" element={<Setup />} />
       
@@ -59,7 +68,6 @@ const AppContent = () => {
       <Route path="/calculadora" element={<Calculadora />} />
       <Route path="/gamification" element={<Gamification />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/agenda" element={<Agenda />} />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
