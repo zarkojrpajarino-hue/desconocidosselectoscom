@@ -440,6 +440,13 @@ export type Database = {
             foreignKeyName: "key_results_objective_id_fkey"
             columns: ["objective_id"]
             isOneToOne: false
+            referencedRelation: "okr_financial_summary"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "key_results_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
             referencedRelation: "okrs_with_progress"
             referencedColumns: ["objective_id"]
           },
@@ -529,12 +536,15 @@ export type Database = {
       }
       objectives: {
         Row: {
+          budget_allocated: number | null
+          cost_savings: number | null
           created_at: string | null
           created_by: string | null
           description: string | null
           id: string
           owner_user_id: string | null
           quarter: string
+          revenue_impact: number | null
           status: string
           target_date: string | null
           title: string
@@ -542,12 +552,15 @@ export type Database = {
           year: number
         }
         Insert: {
+          budget_allocated?: number | null
+          cost_savings?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
           owner_user_id?: string | null
           quarter: string
+          revenue_impact?: number | null
           status?: string
           target_date?: string | null
           title: string
@@ -555,12 +568,15 @@ export type Database = {
           year: number
         }
         Update: {
+          budget_allocated?: number | null
+          cost_savings?: number | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
           owner_user_id?: string | null
           quarter?: string
+          revenue_impact?: number | null
           status?: string
           target_date?: string | null
           title?: string
@@ -916,6 +932,57 @@ export type Database = {
           },
         ]
       }
+      task_financial_impact: {
+        Row: {
+          completion_id: string | null
+          cost_incurred: number | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          revenue_generated: number | null
+          roi_percentage: number | null
+          task_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          completion_id?: string | null
+          cost_incurred?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          task_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          completion_id?: string | null
+          cost_incurred?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          task_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_financial_impact_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: false
+            referencedRelation: "task_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_financial_impact_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_schedule: {
         Row: {
           accepted_at: string | null
@@ -1042,9 +1109,11 @@ export type Database = {
       }
       tasks: {
         Row: {
+          actual_cost: number | null
           area: string | null
           created_at: string | null
           description: string | null
+          estimated_cost: number | null
           id: string
           leader_id: string | null
           order_index: number
@@ -1053,9 +1122,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actual_cost?: number | null
           area?: string | null
           created_at?: string | null
           description?: string | null
+          estimated_cost?: number | null
           id?: string
           leader_id?: string | null
           order_index?: number
@@ -1064,9 +1135,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actual_cost?: number | null
           area?: string | null
           created_at?: string | null
           description?: string | null
+          estimated_cost?: number | null
           id?: string
           leader_id?: string | null
           order_index?: number
@@ -1448,6 +1521,21 @@ export type Database = {
           total_leads: number | null
           total_revenue: number | null
           total_spend: number | null
+        }
+        Relationships: []
+      }
+      okr_financial_summary: {
+        Row: {
+          budget_allocated: number | null
+          cost_savings: number | null
+          key_results_count: number | null
+          linked_tasks_count: number | null
+          objective_id: string | null
+          objective_title: string | null
+          revenue_impact: number | null
+          roi_percentage: number | null
+          total_cost_from_tasks: number | null
+          total_revenue_from_tasks: number | null
         }
         Relationships: []
       }
