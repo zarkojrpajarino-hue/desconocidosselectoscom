@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Target } from 'lucide-react';
+import { ArrowLeft, Target, History } from 'lucide-react';
 import OKRsDashboard from '@/components/OKRsDashboard';
 
 const OKRsPage = () => {
@@ -38,14 +38,24 @@ const OKRsPage = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/okrs/history')}
+              className="gap-2"
+            >
+              <History className="h-4 w-4" />
+              Historial de OKRs
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Menú
+            </Button>
+          </div>
         </div>
       </header>
 
