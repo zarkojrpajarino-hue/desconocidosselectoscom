@@ -31,10 +31,10 @@ const OKRsPage = () => {
             <Target className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                OKRs - Objetivos y Resultados Clave
+                OKRs Semanales Personalizados
               </h1>
               <p className="text-sm text-muted-foreground">
-                Sistema de objetivos trimestrales con tracking de progreso
+                Objetivos generados con IA basados en tus tareas de la semana
               </p>
             </div>
           </div>
