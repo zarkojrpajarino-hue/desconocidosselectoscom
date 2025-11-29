@@ -245,7 +245,7 @@ export const OKRProgressModal = ({
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Actualizando...' : 'Actualizar Progreso'}
+            {isSubmitting ? 'Guardando...' : 'Dejar Resultados'}
           </Button>
         </DialogFooter>
       </DialogContent>

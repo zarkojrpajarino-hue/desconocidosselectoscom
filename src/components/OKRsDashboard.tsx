@@ -430,12 +430,6 @@ const OKRsDashboard = () => {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h5 className="font-medium">{kr.title}</h5>
-                              <Badge className={getStatusColor(kr.status)} variant="secondary">
-                                <span className="flex items-center gap-1">
-                                  {getStatusIcon(kr.status)}
-                                  {getStatusText(kr.status)}
-                                </span>
-                              </Badge>
                             </div>
                             {kr.description && (
                               <p className="text-sm text-muted-foreground">{kr.description}</p>
@@ -455,7 +449,7 @@ const OKRsDashboard = () => {
                               })}
                             >
                               <Edit className="h-4 w-4 mr-2" />
-                              Actualizar
+                              Dejar Resultados
                             </Button>
 
                             <div className="text-right">
