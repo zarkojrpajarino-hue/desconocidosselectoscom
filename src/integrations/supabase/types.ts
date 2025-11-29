@@ -213,6 +213,66 @@ export type Database = {
           },
         ]
       }
+      schedule_change_suggestions: {
+        Row: {
+          created_at: string | null
+          id: string
+          priority_score: number | null
+          processed_at: string | null
+          reason: string | null
+          status: string | null
+          suggested_date: string
+          suggested_end: string
+          suggested_start: string
+          task_id: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          priority_score?: number | null
+          processed_at?: string | null
+          reason?: string | null
+          status?: string | null
+          suggested_date: string
+          suggested_end: string
+          suggested_start: string
+          task_id: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          priority_score?: number | null
+          processed_at?: string | null
+          reason?: string | null
+          status?: string | null
+          suggested_date?: string
+          suggested_end?: string
+          suggested_start?: string
+          task_id?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_change_suggestions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_change_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_config: {
         Row: {
           current_phase: number
@@ -730,32 +790,85 @@ export type Database = {
       week_config: {
         Row: {
           agendas_generated: boolean | null
+          all_users_ready: boolean | null
           availability_deadline: string
           created_at: string | null
           generated_at: string | null
           id: string
+          ready_count: number | null
+          total_users: number | null
+          users_pending: string[] | null
           week_start: string
           week_start_time: string
         }
         Insert: {
           agendas_generated?: boolean | null
+          all_users_ready?: boolean | null
           availability_deadline: string
           created_at?: string | null
           generated_at?: string | null
           id?: string
+          ready_count?: number | null
+          total_users?: number | null
+          users_pending?: string[] | null
           week_start: string
           week_start_time: string
         }
         Update: {
           agendas_generated?: boolean | null
+          all_users_ready?: boolean | null
           availability_deadline?: string
           created_at?: string | null
           generated_at?: string | null
           id?: string
+          ready_count?: number | null
+          total_users?: number | null
+          users_pending?: string[] | null
           week_start?: string
           week_start_time?: string
         }
         Relationships: []
+      }
+      weekly_schedule_preview: {
+        Row: {
+          can_suggest_changes: boolean | null
+          created_at: string | null
+          id: string
+          preview_data: Json
+          priority_order: number | null
+          submitted_at: string | null
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          can_suggest_changes?: boolean | null
+          created_at?: string | null
+          id?: string
+          preview_data: Json
+          priority_order?: number | null
+          submitted_at?: string | null
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          can_suggest_changes?: boolean | null
+          created_at?: string | null
+          id?: string
+          preview_data?: Json
+          priority_order?: number | null
+          submitted_at?: string | null
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_schedule_preview_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
