@@ -23,12 +23,11 @@ interface CreateOKRModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  selectedQuarter: string;
+  currentPhase: number;
 }
 
-const CreateOKRModal = ({ isOpen, onClose, onSuccess, selectedQuarter }: CreateOKRModalProps) => {
+const CreateOKRModal = ({ isOpen, onClose, onSuccess, currentPhase }: CreateOKRModalProps) => {
   const { user } = useAuth();
-  const [quarter, year] = selectedQuarter.split(' ');
   
   const [objective, setObjective] = useState({
     title: '',
@@ -101,8 +100,9 @@ const CreateOKRModal = ({ isOpen, onClose, onSuccess, selectedQuarter }: CreateO
         .insert({
           title: objective.title,
           description: objective.description,
-          quarter,
-          year: parseInt(year),
+          quarter: `Q${Math.ceil((new Date().getMonth() + 1) / 3)}`,
+          year: new Date().getFullYear(),
+          phase: currentPhase,
           target_date: objective.target_date,
           owner_user_id: user?.id,
           created_by: user?.id,
@@ -148,10 +148,10 @@ const CreateOKRModal = ({ isOpen, onClose, onSuccess, selectedQuarter }: CreateO
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Target className="w-5 h-5" />
-            Crear Nuevo Objetivo - {selectedQuarter}
+            Crear Nuevo Objetivo - Fase {currentPhase}
           </DialogTitle>
           <DialogDescription>
-            Define un objetivo trimestral con sus resultados clave medibles
+            Define un objetivo para esta fase con resultados clave medibles. El progreso se actualizará automáticamente con las tareas completadas.
           </DialogDescription>
         </DialogHeader>
 
