@@ -184,6 +184,160 @@ export type Database = {
           },
         ]
       }
+      cash_balance: {
+        Row: {
+          balance: number
+          created_at: string | null
+          created_by: string | null
+          date: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          balance: number
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          balance?: number
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_balance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_entries: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          created_by: string | null
+          date: string
+          description: string
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          payment_method: string | null
+          recurring_frequency: string | null
+          subcategory: string | null
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          description: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          recurring_frequency?: string | null
+          subcategory?: string | null
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          description?: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          recurring_frequency?: string | null
+          subcategory?: string | null
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_metrics: {
+        Row: {
+          arr: number | null
+          avg_order_value: number | null
+          burn_rate: number | null
+          cac: number | null
+          calculated_at: string | null
+          customer_count: number | null
+          gross_margin: number | null
+          id: string
+          ltv: number | null
+          ltv_cac_ratio: number | null
+          margin_percentage: number | null
+          month: string
+          mrr: number | null
+          net_margin: number | null
+          new_customers: number | null
+          runway_months: number | null
+          total_expenses: number | null
+          total_revenue: number | null
+        }
+        Insert: {
+          arr?: number | null
+          avg_order_value?: number | null
+          burn_rate?: number | null
+          cac?: number | null
+          calculated_at?: string | null
+          customer_count?: number | null
+          gross_margin?: number | null
+          id?: string
+          ltv?: number | null
+          ltv_cac_ratio?: number | null
+          margin_percentage?: number | null
+          month: string
+          mrr?: number | null
+          net_margin?: number | null
+          new_customers?: number | null
+          runway_months?: number | null
+          total_expenses?: number | null
+          total_revenue?: number | null
+        }
+        Update: {
+          arr?: number | null
+          avg_order_value?: number | null
+          burn_rate?: number | null
+          cac?: number | null
+          calculated_at?: string | null
+          customer_count?: number | null
+          gross_margin?: number | null
+          id?: string
+          ltv?: number | null
+          ltv_cac_ratio?: number | null
+          margin_percentage?: number | null
+          month?: string
+          mrr?: number | null
+          net_margin?: number | null
+          new_customers?: number | null
+          runway_months?: number | null
+          total_expenses?: number | null
+          total_revenue?: number | null
+        }
+        Relationships: []
+      }
       google_calendar_tokens: {
         Row: {
           access_token: string
@@ -288,6 +442,53 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "okrs_with_progress"
             referencedColumns: ["objective_id"]
+          },
+        ]
+      }
+      marketing_spend: {
+        Row: {
+          amount: number
+          channel: string
+          conversions: number | null
+          created_at: string | null
+          created_by: string | null
+          date: string
+          id: string
+          leads_generated: number | null
+          notes: string | null
+          revenue_generated: number | null
+        }
+        Insert: {
+          amount: number
+          channel: string
+          conversions?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          id?: string
+          leads_generated?: number | null
+          notes?: string | null
+          revenue_generated?: number | null
+        }
+        Update: {
+          amount?: number
+          channel?: string
+          conversions?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          id?: string
+          leads_generated?: number | null
+          notes?: string | null
+          revenue_generated?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_spend_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -503,6 +704,62 @@ export type Database = {
           {
             foreignKeyName: "points_history_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_entries: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string | null
+          customer_name: string | null
+          customer_type: string | null
+          date: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          product_category: string
+          product_name: string | null
+          quantity: number | null
+          unit_price: number | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by?: string | null
+          customer_name?: string | null
+          customer_type?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          product_category: string
+          product_name?: string | null
+          quantity?: number | null
+          unit_price?: number | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          customer_name?: string | null
+          customer_type?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          product_category?: string
+          product_name?: string | null
+          quantity?: number | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_entries_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -1171,6 +1428,29 @@ export type Database = {
       }
     }
     Views: {
+      expenses_by_category_current_month: {
+        Row: {
+          avg_amount: number | null
+          category: string | null
+          percentage_of_total: number | null
+          total_amount: number | null
+          transaction_count: number | null
+        }
+        Relationships: []
+      }
+      marketing_roi_by_channel: {
+        Row: {
+          cac: number | null
+          channel: string | null
+          conversion_rate: number | null
+          roi_ratio: number | null
+          total_conversions: number | null
+          total_leads: number | null
+          total_revenue: number | null
+          total_spend: number | null
+        }
+        Relationships: []
+      }
       okrs_with_progress: {
         Row: {
           achieved_krs: number | null
@@ -1202,9 +1482,32 @@ export type Database = {
           },
         ]
       }
+      revenue_by_product_current_month: {
+        Row: {
+          avg_price: number | null
+          order_count: number | null
+          percentage_of_total: number | null
+          product_category: string | null
+          total_quantity: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_kr_progress: { Args: { kr_id: string }; Returns: number }
+      calculate_monthly_metrics: {
+        Args: { target_month: string }
+        Returns: {
+          avg_order_value: number
+          customer_count: number
+          gross_margin: number
+          margin_percentage: number
+          new_customers: number
+          total_expenses: number
+          total_revenue: number
+        }[]
+      }
       calculate_objective_progress: {
         Args: { obj_id: string }
         Returns: number
@@ -1214,6 +1517,10 @@ export type Database = {
         Returns: number
       }
       get_next_week_start: { Args: never; Returns: string }
+      update_financial_metrics: {
+        Args: { target_month: string }
+        Returns: undefined
+      }
       user_completed_availability: {
         Args: { p_user_id: string }
         Returns: boolean
