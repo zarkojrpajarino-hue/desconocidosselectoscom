@@ -107,8 +107,18 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
 
       if (error) throw error;
 
+      // Generar preview automáticamente después de guardar
+      try {
+        await supabase.functions.invoke('generate-preview-schedule', {
+          body: { userId, weekStart }
+        });
+      } catch (previewError) {
+        console.error('Error generando preview:', previewError);
+        // No bloqueamos el flujo si falla el preview
+      }
+
       toast.success('✅ Disponibilidad guardada correctamente', {
-        description: 'Tu agenda se generará automáticamente el Lunes a las 13:01'
+        description: 'Tu preview se está generando...'
       });
 
       onComplete();
