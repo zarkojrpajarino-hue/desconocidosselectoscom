@@ -72,9 +72,9 @@ const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Campaña de Marketing</DialogTitle>
+          <DialogTitle>Registrar Campaña de Marketing de la Empresa</DialogTitle>
           <DialogDescription>
-            Registra el gasto y resultados de una campaña de marketing
+            Registra el gasto y resultados de una campaña de marketing corporativa. Estos datos financieros quedarán en el historial con tu nombre y fecha.
           </DialogDescription>
         </DialogHeader>
 
