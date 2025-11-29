@@ -18,7 +18,6 @@ import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
-import { useUrgentNotification } from '@/hooks/useUrgentNotification';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
@@ -167,15 +166,6 @@ const DashboardHome = () => {
 
   // Calcular tareas completadas al 100% (validated_by_leader = true)
   const fullyCompletedCount = completions.length; // Ya están filtradas por validated_by_leader en el fetch
-
-
-  // Send urgent notification when conditions are met
-  useUrgentNotification({
-    userId: user?.id,
-    deadline: getCurrentWeekDeadline().toISOString(),
-    totalTasks: tasks.length,
-    completedTasks: completions.length
-  });
 
   if (loading || !userProfile) {
     return (
