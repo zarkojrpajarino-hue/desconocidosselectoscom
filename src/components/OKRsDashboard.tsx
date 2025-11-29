@@ -10,16 +10,12 @@ import {
   TrendingUp, 
   AlertTriangle, 
   CheckCircle2,
-  Plus,
   RefreshCw,
   Calendar,
-  Users,
-  Link as LinkIcon,
-  BarChart3
+  BarChart3,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
-import CreateOKRModal from './CreateOKRModal';
-import LinkTasksToOKRModal from './LinkTasksToOKRModal';
 
 interface KeyResult {
   id: string;
@@ -33,7 +29,6 @@ interface KeyResult {
   status: 'on_track' | 'at_risk' | 'behind' | 'achieved';
   weight: number;
   progress: number;
-  linked_tasks_count?: number;
 }
 
 interface Objective {
@@ -52,53 +47,50 @@ interface Objective {
   on_track_krs: number;
   at_risk_krs: number;
   behind_krs: number;
-  linked_tasks: number;
 }
 
 const OKRsDashboard = () => {
   const { user, userProfile } = useAuth();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [selectedKR, setSelectedKR] = useState<{ id: string; title: string; phase: number } | null>(null);
-  const [currentPhase, setCurrentPhase] = useState<number>(1);
+  const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
+  const [generatingWithAI, setGeneratingWithAI] = useState(false);
 
   useEffect(() => {
-    fetchSystemPhase();
+    fetchWeekStart();
   }, []);
 
   useEffect(() => {
-    if (currentPhase) {
+    if (currentWeekStart) {
       fetchOKRs();
     }
-  }, [currentPhase]);
+  }, [currentWeekStart]);
 
-  const fetchSystemPhase = async () => {
+  const fetchWeekStart = async () => {
     try {
       const { data, error } = await supabase
         .from('system_config')
-        .select('current_phase')
+        .select('week_start')
         .single();
 
       if (error) throw error;
       if (data) {
-        setCurrentPhase(data.current_phase);
+        setCurrentWeekStart(new Date(data.week_start).toISOString().split('T')[0]);
       }
     } catch (error) {
-      console.error('Error fetching system phase:', error);
+      console.error('Error fetching week start:', error);
     }
   };
 
   const fetchOKRs = async () => {
     setLoading(true);
     try {
-      // Obtener objetivos de la fase actual
-      const { data: objectivesData, error: objError } = await supabase
+      const { data: objectivesData, error: objError} = await supabase
         .from('objectives')
         .select('*')
-        .eq('phase', currentPhase)
-        .order('phase', { ascending: true });
+        .eq('owner_user_id', user?.id)
+        .ilike('quarter', `%${currentWeekStart}%`)
+        .order('created_at', { ascending: false });
 
       if (objError) throw objError;
 
@@ -109,61 +101,32 @@ const OKRsDashboard = () => {
             .select('*')
             .eq('objective_id', obj.id);
 
-          // Calcular progreso automático desde tareas para cada KR
-          const krsWithProgress = await Promise.all((krs || []).map(async (kr) => {
-            const { data: linkedTasks } = await supabase
-              .from('okr_task_links')
-              .select('task_id')
-              .eq('key_result_id', kr.id);
-
-            const taskIds = (linkedTasks || []).map(lt => lt.task_id);
-            let autoProgress = 0;
-
-            if (taskIds.length > 0) {
-              const { data: completedTasks } = await supabase
-                .from('task_completions')
-                .select('task_id')
-                .in('task_id', taskIds)
-                .eq('completed_by_user', true)
-                .eq('validated_by_leader', true);
-
-              const completedCount = completedTasks?.length || 0;
-              autoProgress = (completedCount / taskIds.length) * 100;
-            } else {
-              autoProgress = calculateKRProgress(kr);
-            }
-
+          const krsWithProgress = (krs || []).map(kr => {
+            const progress = calculateKRProgress(kr);
             return {
               ...kr,
               status: kr.status as 'on_track' | 'at_risk' | 'behind' | 'achieved',
-              progress: autoProgress,
-              linked_tasks_count: taskIds.length
+              progress
             };
-          }));
+          });
 
-          // Obtener usuario propietario
           const { data: ownerData } = await supabase
             .from('users')
             .select('full_name')
             .eq('id', obj.owner_user_id)
             .single();
 
-          // Contar tareas vinculadas al objetivo
-          const { data: objLinkedTasks } = await supabase
-            .from('okr_task_links')
-            .select('task_id', { count: 'exact' })
-            .in('key_result_id', krsWithProgress.map(kr => kr.id));
+          const totalWeight = krsWithProgress.reduce((sum, kr) => sum + (kr.weight || 1), 0);
+          const weightedProgress = krsWithProgress.reduce(
+            (sum, kr) => sum + (kr.progress * (kr.weight || 1)),
+            0
+          );
+          const objectiveProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
 
-          // Calcular estadísticas de KRs
-          const achieved = krsWithProgress.filter(kr => kr.status === 'achieved').length;
-          const onTrack = krsWithProgress.filter(kr => kr.status === 'on_track').length;
-          const atRisk = krsWithProgress.filter(kr => kr.status === 'at_risk').length;
-          const behind = krsWithProgress.filter(kr => kr.status === 'behind').length;
-
-          // Calcular progreso promedio ponderado
-          const totalWeight = krsWithProgress.reduce((sum, kr) => sum + kr.weight, 0);
-          const weightedProgress = krsWithProgress.reduce((sum, kr) => sum + (kr.progress * kr.weight), 0);
-          const avgProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
+          const achieved_krs = krsWithProgress.filter(kr => kr.status === 'achieved').length;
+          const on_track_krs = krsWithProgress.filter(kr => kr.status === 'on_track').length;
+          const at_risk_krs = krsWithProgress.filter(kr => kr.status === 'at_risk').length;
+          const behind_krs = krsWithProgress.filter(kr => kr.status === 'behind').length;
 
           return {
             id: obj.id,
@@ -173,15 +136,14 @@ const OKRsDashboard = () => {
             year: obj.year,
             status: obj.status as 'active' | 'completed' | 'cancelled' | 'at_risk',
             target_date: obj.target_date,
-            owner_name: ownerData?.full_name || 'Sin asignar',
-            progress: avgProgress,
+            owner_name: ownerData?.full_name || 'Usuario',
+            progress: objectiveProgress,
             key_results: krsWithProgress,
             total_key_results: krsWithProgress.length,
-            achieved_krs: achieved,
-            on_track_krs: onTrack,
-            at_risk_krs: atRisk,
-            behind_krs: behind,
-            linked_tasks: objLinkedTasks?.length || 0
+            achieved_krs,
+            on_track_krs,
+            at_risk_krs,
+            behind_krs
           };
         })
       );
@@ -195,42 +157,10 @@ const OKRsDashboard = () => {
     }
   };
 
-  const calculateKRProgress = (kr: any): number => {
+  const calculateKRProgress = (kr: any) => {
     if (kr.target_value === kr.start_value) return 0;
     const progress = ((kr.current_value - kr.start_value) / (kr.target_value - kr.start_value)) * 100;
     return Math.max(0, Math.min(100, progress));
-  };
-
-  const updateKRValue = async (krId: string, newValue: number) => {
-    try {
-      const { data: kr } = await supabase
-        .from('key_results')
-        .select('current_value')
-        .eq('id', krId)
-        .single();
-
-      const { error: updateError } = await supabase
-        .from('key_results')
-        .update({ current_value: newValue })
-        .eq('id', krId);
-
-      if (updateError) throw updateError;
-
-      await supabase
-        .from('okr_updates')
-        .insert({
-          key_result_id: krId,
-          previous_value: kr?.current_value || 0,
-          new_value: newValue,
-          updated_by: user?.id
-        });
-
-      toast.success('Progreso actualizado');
-      fetchOKRs();
-    } catch (error) {
-      console.error('Error updating KR:', error);
-      toast.error('Error al actualizar progreso');
-    }
   };
 
   const getStatusColor = (status: string) => {
@@ -255,7 +185,6 @@ const OKRsDashboard = () => {
       case 'on_track':
         return <TrendingUp className="w-4 h-4" />;
       case 'at_risk':
-        return <AlertTriangle className="w-4 h-4" />;
       case 'behind':
         return <AlertTriangle className="w-4 h-4" />;
       default:
@@ -286,6 +215,35 @@ const OKRsDashboard = () => {
     return diffDays;
   };
 
+  const handleGenerateWeeklyOKR = async () => {
+    setGeneratingWithAI(true);
+    try {
+      const { data: aiResult, error: aiError } = await supabase.functions.invoke('generate-personalized-krs', {
+        body: { userId: user?.id }
+      });
+
+      if (aiError) throw aiError;
+      
+      if (aiResult.error) {
+        throw new Error(aiResult.error);
+      }
+
+      toast.success(`✨ OKR semanal generado con ${aiResult.count} Key Results`);
+      fetchOKRs();
+    } catch (error: any) {
+      console.error('Error generating weekly OKR:', error);
+      if (error.message?.includes('429')) {
+        toast.error('Límite de IA alcanzado. Intenta en unos minutos.');
+      } else if (error.message?.includes('402')) {
+        toast.error('Créditos de IA agotados. Contacta al administrador.');
+      } else {
+        toast.error(error.message || 'Error al generar OKR semanal');
+      }
+    } finally {
+      setGeneratingWithAI(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -301,9 +259,9 @@ const OKRsDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">OKRs - Objetivos y Resultados Clave</h2>
+          <h2 className="text-3xl font-bold tracking-tight">OKRs Semanales Personalizados</h2>
           <p className="text-muted-foreground">
-            Fase {currentPhase} - El progreso se actualiza automáticamente al validar tareas vinculadas
+            Semana actual: {currentWeekStart} - Basados en tus tareas de esta semana
           </p>
         </div>
 
@@ -318,21 +276,20 @@ const OKRsDashboard = () => {
             Actualizar
           </Button>
 
-          {(userProfile?.role === 'admin' || userProfile?.role === 'leader') && (
-            <Button
-              size="sm"
-              onClick={() => setShowCreateModal(true)}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nuevo Objetivo
-            </Button>
-          )}
+          <Button
+            size="sm"
+            onClick={handleGenerateWeeklyOKR}
+            disabled={generatingWithAI}
+            className="gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            {generatingWithAI ? 'Generando...' : 'Generar OKR Semanal con IA'}
+          </Button>
         </div>
       </div>
 
       {objectives.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
@@ -370,35 +327,21 @@ const OKRsDashboard = () => {
               </CardTitle>
             </CardHeader>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription className="flex items-center gap-2">
-                <LinkIcon className="h-4 w-4" />
-                Tareas Vinculadas
-              </CardDescription>
-              <CardTitle className="text-3xl">
-                {objectives.reduce((sum, obj) => sum + obj.linked_tasks, 0)}
-              </CardTitle>
-            </CardHeader>
-          </Card>
         </div>
       )}
 
       {objectives.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Target className="w-16 h-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No hay objetivos para Fase {currentPhase}</h3>
+            <Sparkles className="w-16 h-16 text-primary mb-4" />
+            <h3 className="text-xl font-semibold mb-2">¡Genera tu OKR semanal con IA!</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md">
-              Crea objetivos para esta fase y vincula tareas existentes. El progreso se actualizará automáticamente al completar y validar las tareas.
+              La IA analizará tus tareas de esta semana y creará un objetivo con Key Results personalizados para ti.
             </p>
-            {(userProfile?.role === 'admin' || userProfile?.role === 'leader') && (
-              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Crear Primer Objetivo
-              </Button>
-            )}
+            <Button onClick={handleGenerateWeeklyOKR} disabled={generatingWithAI} className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              {generatingWithAI ? 'Generando con IA...' : 'Generar Mi OKR Semanal'}
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -410,12 +353,9 @@ const OKRsDashboard = () => {
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-3">
                       <CardTitle className="text-2xl">{objective.title}</CardTitle>
-                      <Badge variant="outline">
-                        Fase {currentPhase}
-                      </Badge>
-                      <Badge variant="secondary" className="gap-1">
-                        <RefreshCw className="w-3 h-3" />
-                        Auto-actualizado
+                      <Badge variant="outline" className="gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Generado por IA
                       </Badge>
                     </div>
                     {objective.description && (
@@ -440,16 +380,8 @@ const OKRsDashboard = () => {
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <div className="flex items-center gap-4">
                       <span className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {objective.owner_name || 'Sin asignar'}
-                      </span>
-                      <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {calculateDaysRemaining(objective.target_date)} días restantes
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <LinkIcon className="w-4 h-4" />
-                        {objective.linked_tasks} tareas vinculadas
                       </span>
                     </div>
 
@@ -529,34 +461,6 @@ const OKRsDashboard = () => {
                             }`}
                           />
                         </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t mt-3">
-                          <div className="flex items-center gap-2 text-sm">
-                            <LinkIcon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {(kr as any).linked_tasks_count > 0 ? (
-                                <>
-                                  <span className="font-medium text-foreground">{(kr as any).linked_tasks_count}</span> tareas vinculadas
-                                  <span className="text-xs ml-2 text-success">✓ Actualización automática</span>
-                                </>
-                              ) : (
-                                'Sin tareas vinculadas'
-                              )}
-                            </span>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant={(kr as any).linked_tasks_count > 0 ? "outline" : "default"}
-                            className="gap-2"
-                            onClick={() => {
-                              setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
-                              setShowLinkModal(true);
-                            }}
-                          >
-                            <LinkIcon className="w-3 h-3" />
-                            {(kr as any).linked_tasks_count > 0 ? 'Gestionar tareas' : 'Vincular tareas'}
-                          </Button>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -565,36 +469,6 @@ const OKRsDashboard = () => {
             </Card>
           ))}
         </div>
-      )}
-
-      {showCreateModal && (
-        <CreateOKRModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            fetchOKRs();
-          }}
-          currentPhase={currentPhase}
-        />
-      )}
-
-      {showLinkModal && selectedKR && (
-        <LinkTasksToOKRModal
-          isOpen={showLinkModal}
-          onClose={() => {
-            setShowLinkModal(false);
-            setSelectedKR(null);
-          }}
-          onSuccess={() => {
-            setShowLinkModal(false);
-            setSelectedKR(null);
-            fetchOKRs();
-          }}
-          keyResultId={selectedKR.id}
-          keyResultTitle={selectedKR.title}
-          objectivePhase={selectedKR.phase}
-        />
       )}
     </div>
   );

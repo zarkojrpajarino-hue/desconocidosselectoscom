@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { objectiveId, userId } = await req.json();
+    const { userId } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -31,29 +31,55 @@ serve(async (req) => {
       throw new Error('Usuario no encontrado');
     }
 
-    // Obtener el objetivo
-    const { data: objective, error: objError } = await supabase
-      .from('objectives')
-      .select('*')
-      .eq('id', objectiveId)
+    // Obtener la semana actual del sistema
+    const { data: systemConfig } = await supabase
+      .from('system_config')
+      .select('week_start')
       .single();
 
-    if (objError || !objective) {
-      throw new Error('Objetivo no encontrado');
+    if (!systemConfig) {
+      throw new Error('Configuración del sistema no encontrada');
     }
 
-    // Obtener tareas del usuario en la fase del objetivo
-    const { data: tasks } = await supabase
-      .from('tasks')
-      .select('title, description, area')
-      .eq('user_id', userId)
-      .eq('phase', objective.phase);
+    const currentWeekStart = new Date(systemConfig.week_start).toISOString().split('T')[0];
 
-    // Obtener completions para entender el desempeño
+    // Obtener TODAS las tareas programadas para esta semana del usuario
+    const { data: scheduledTasks } = await supabase
+      .from('task_schedule')
+      .select(`
+        task_id,
+        is_collaborative,
+        tasks!inner (
+          id,
+          title,
+          description,
+          area,
+          leader_id
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('week_start', currentWeekStart);
+
+    // Procesar tareas
+    const userTasks = (scheduledTasks || [])
+      .filter(st => st.tasks && typeof st.tasks === 'object' && !Array.isArray(st.tasks))
+      .map(st => {
+        const task = st.tasks as any;
+        return {
+          id: task.id,
+          titulo: task.title,
+          descripcion: task.description,
+          area: task.area,
+          tipo: st.is_collaborative ? 'colaborativa' : (task.leader_id === userId ? 'líder' : 'propia')
+        };
+      });
+
+    // Obtener completions recientes
     const { data: completions } = await supabase
       .from('task_completions')
       .select('task_id, validated_by_leader, leader_evaluation')
       .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
       .limit(10);
 
     // Preparar contexto para la IA
@@ -62,51 +88,53 @@ serve(async (req) => {
         nombre: user.full_name,
         rol: user.role,
       },
-      objetivo: {
-        titulo: objective.title,
-        descripcion: objective.description,
-        fase: objective.phase,
-        quarter: objective.quarter,
-        year: objective.year,
+      semana_actual: currentWeekStart,
+      tareas_de_la_semana: userTasks,
+      total_tareas: userTasks.length,
+      tareas_por_tipo: {
+        propias: userTasks.filter(t => t.tipo === 'propia').length,
+        colaborativas: userTasks.filter(t => t.tipo === 'colaborativa').length,
+        como_lider: userTasks.filter(t => t.tipo === 'líder').length,
       },
-      tareas_actuales: tasks?.map(t => ({
-        titulo: t.title,
-        area: t.area,
-        descripcion: t.description
-      })) || [],
       desempeno_reciente: {
         tareas_validadas: completions?.filter(c => c.validated_by_leader).length || 0,
         total_completadas: completions?.length || 0,
       }
     };
 
-    const prompt = `Eres un experto en OKRs (Objectives and Key Results) y gestión por objetivos.
+    const prompt = `Eres un experto en OKRs (Objectives and Key Results) y gestión por objetivos semanales.
 
-Contexto del usuario y su trabajo:
+Contexto del usuario y sus tareas de esta semana:
 ${JSON.stringify(context, null, 2)}
 
-Tu tarea es generar entre 3 y 5 Key Results (KRs) PERSONALIZADOS para este usuario que:
-1. Estén directamente relacionados con su rol (${user.role})
-2. Se alineen con el objetivo principal: "${objective.title}"
-3. Sean medibles y específicos
-4. Consideren las tareas actuales que está realizando
-5. Sean desafiantes pero alcanzables en el trimestre ${objective.quarter} ${objective.year}
+Tu tarea es:
+1. Generar 1 Objetivo (Objective) principal para esta semana que englobe el trabajo del usuario
+2. Generar entre 3 y 5 Key Results (KRs) PERSONALIZADOS que:
+   - Estén directamente relacionados con las TAREAS ESPECÍFICAS de esta semana
+   - Consideren su rol (${user.role}) y tipo de tareas (propias, colaborativas, líder)
+   - Sean medibles y específicos
+   - Sean alcanzables en UNA SEMANA
+   - Reflejen el impacto real de completar esas tareas
+
+El Objetivo debe tener:
+- title: Objetivo principal de la semana (máx 100 caracteres)
+- description: Por qué este objetivo es importante esta semana (máx 300 caracteres)
 
 Cada Key Result debe tener:
-- title: Título claro y accionable (máx 100 caracteres)
-- description: Descripción detallada de qué se medirá y por qué es importante (máx 300 caracteres)
+- title: Título claro y accionable relacionado con las tareas (máx 100 caracteres)
+- description: Qué se medirá específicamente (máx 300 caracteres)
 - metric_type: tipo de métrica ("número", "porcentaje", "cantidad", etc.)
-- start_value: valor inicial (número)
-- target_value: valor objetivo realista para este trimestre (número)
-- unit: unidad de medida ("tareas", "%", "clientes", "proyectos", etc.)
+- start_value: valor inicial (generalmente 0)
+- target_value: valor objetivo realista para ESTA SEMANA (número)
+- unit: unidad de medida ("tareas completadas", "%", "validaciones", "colaboraciones", etc.)
 
 IMPORTANTE: 
-- Los KRs deben ser REALISTAS para un trimestre
-- Deben reflejar el trabajo ACTUAL del usuario
+- Los KRs deben ser REALISTAS para UNA SEMANA
+- Deben reflejar las ${userTasks.length} tareas específicas que tiene esta semana
 - Deben ser MEDIBLES objetivamente
-- Evita metas genéricas, hazlas específicas al contexto`;
+- Evita metas genéricas, hazlas específicas a las tareas actuales`;
 
-    console.log('Generating KRs with AI for user:', userId);
+    console.log('Generating weekly OKRs with AI for user:', userId);
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -117,17 +145,25 @@ IMPORTANTE:
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: 'Eres un experto en OKRs. Devuelve SOLO un JSON válido sin markdown ni explicaciones.' },
+          { role: 'system', content: 'Eres un experto en OKRs semanales. Devuelve SOLO un JSON válido sin markdown ni explicaciones.' },
           { role: 'user', content: prompt }
         ],
         tools: [{
           type: "function",
           function: {
-            name: "generate_key_results",
-            description: "Genera Key Results personalizados para el usuario",
+            name: "generate_weekly_okr",
+            description: "Genera un Objetivo semanal con Key Results personalizados",
             parameters: {
               type: "object",
               properties: {
+                objective: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    description: { type: "string" }
+                  },
+                  required: ["title", "description"]
+                },
                 key_results: {
                   type: "array",
                   items: {
@@ -144,11 +180,11 @@ IMPORTANTE:
                   }
                 }
               },
-              required: ["key_results"]
+              required: ["objective", "key_results"]
             }
           }
         }],
-        tool_choice: { type: "function", function: { name: "generate_key_results" } }
+        tool_choice: { type: "function", function: { name: "generate_weekly_okr" } }
       }),
     });
 
@@ -177,14 +213,36 @@ IMPORTANTE:
 
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
-      throw new Error('No se generaron Key Results');
+      throw new Error('No se generaron OKRs');
     }
 
-    const generatedKRs = JSON.parse(toolCall.function.arguments);
+    const generated = JSON.parse(toolCall.function.arguments);
     
-    // Insertar los KRs en la base de datos
-    const krsToInsert = generatedKRs.key_results.map((kr: any) => ({
-      objective_id: objectiveId,
+    // Insertar el Objetivo semanal
+    const { data: newObjective, error: objInsertError } = await supabase
+      .from('objectives')
+      .insert({
+        title: generated.objective.title,
+        description: generated.objective.description,
+        quarter: `Semana ${currentWeekStart}`,
+        year: new Date().getFullYear(),
+        phase: null,
+        target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        owner_user_id: userId,
+        created_by: userId,
+        status: 'active'
+      })
+      .select()
+      .single();
+
+    if (objInsertError) {
+      console.error('Error inserting objective:', objInsertError);
+      throw objInsertError;
+    }
+    
+    // Insertar los KRs
+    const krsToInsert = generated.key_results.map((kr: any) => ({
+      objective_id: newObjective.id,
       title: kr.title,
       description: kr.description,
       metric_type: kr.metric_type,
@@ -206,11 +264,12 @@ IMPORTANTE:
       throw insertError;
     }
 
-    console.log(`Successfully generated ${insertedKRs.length} Key Results`);
+    console.log(`Successfully generated weekly OKR with ${insertedKRs.length} Key Results`);
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
+        success: true,
+        objective: newObjective,
         key_results: insertedKRs,
         count: insertedKRs.length 
       }),
