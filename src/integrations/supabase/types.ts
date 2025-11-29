@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_actions: {
+        Row: {
+          action_type: string
+          alert_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          alert_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          alert_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_actions_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "smart_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_rules: {
+        Row: {
+          alert_template: Json
+          check_frequency: string | null
+          condition: Json
+          created_at: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string
+          name: string
+          rule_type: string
+          source_table: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_template: Json
+          check_frequency?: string | null
+          condition: Json
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          name: string
+          rule_type: string
+          source_table: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_template?: Json
+          check_frequency?: string | null
+          condition?: Json
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          name?: string
+          rule_type?: string
+          source_table?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string | null
@@ -890,6 +974,102 @@ export type Database = {
           },
         ]
       }
+      smart_alerts: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          actionable: boolean | null
+          alert_type: string
+          category: string | null
+          context: Json | null
+          created_at: string | null
+          dismissed: boolean | null
+          dismissed_at: string | null
+          dismissed_by: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          expires_at: string | null
+          id: string
+          included_in_summary: boolean | null
+          message: string
+          severity: string
+          source: string
+          target_role: string | null
+          target_user_id: string | null
+          title: string
+          viewed: boolean | null
+          viewed_at: string | null
+          week_group: string | null
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          actionable?: boolean | null
+          alert_type: string
+          category?: string | null
+          context?: Json | null
+          created_at?: string | null
+          dismissed?: boolean | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          expires_at?: string | null
+          id?: string
+          included_in_summary?: boolean | null
+          message: string
+          severity: string
+          source: string
+          target_role?: string | null
+          target_user_id?: string | null
+          title: string
+          viewed?: boolean | null
+          viewed_at?: string | null
+          week_group?: string | null
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          actionable?: boolean | null
+          alert_type?: string
+          category?: string | null
+          context?: Json | null
+          created_at?: string | null
+          dismissed?: boolean | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          expires_at?: string | null
+          id?: string
+          included_in_summary?: boolean | null
+          message?: string
+          severity?: string
+          source?: string
+          target_role?: string | null
+          target_user_id?: string | null
+          title?: string
+          viewed?: boolean | null
+          viewed_at?: string | null
+          week_group?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_alerts_dismissed_by_fkey"
+            columns: ["dismissed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_alerts_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_config: {
         Row: {
           current_phase: number
@@ -1659,10 +1839,14 @@ export type Database = {
         Args: { obj_id: string }
         Returns: number
       }
+      check_financial_risks: { Args: never; Returns: undefined }
+      check_okr_risks: { Args: never; Returns: undefined }
+      check_urgent_tasks: { Args: never; Returns: undefined }
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
       }
+      generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
       update_financial_metrics: {
         Args: { target_month: string }

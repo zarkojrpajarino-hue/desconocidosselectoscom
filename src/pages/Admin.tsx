@@ -501,7 +501,7 @@ const Admin = () => {
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Actualizar</span>
             </Button>
-            {userProfile && <NotificationBell userId={userProfile.id} />}
+            {userProfile && <NotificationBell />}
           </div>
         </div>
 

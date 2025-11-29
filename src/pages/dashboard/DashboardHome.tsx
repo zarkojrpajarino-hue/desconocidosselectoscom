@@ -225,7 +225,7 @@ const DashboardHome = () => {
                 <span className="sm:hidden">Admin</span>
               </Button>
             )}
-            {user && <NotificationBell userId={user.id} />}
+            {user && <NotificationBell />}
             <Button
               onClick={() => navigate('/home')}
               variant="outline"

@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Brain, TrendingUp } from 'lucide-react';
+import { BarChart3, Palette, Brain, TrendingUp, Bell } from 'lucide-react';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -14,6 +14,13 @@ const Home = () => {
       icon: BarChart3,
       path: '/dashboard',
       gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Alertas Inteligentes',
+      description: 'Notificaciones proactivas, riesgos, oportunidades y celebraciones en un solo lugar',
+      icon: Bell,
+      path: '/alerts',
+      gradient: 'from-purple-500 to-pink-600'
     },
     {
       title: 'Métricas',
