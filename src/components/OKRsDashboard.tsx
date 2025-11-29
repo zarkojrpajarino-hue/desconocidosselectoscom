@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CreateOKRModal from './CreateOKRModal';
+import LinkTasksToOKRModal from './LinkTasksToOKRModal';
 
 interface KeyResult {
   id: string;
@@ -32,6 +33,7 @@ interface KeyResult {
   status: 'on_track' | 'at_risk' | 'behind' | 'achieved';
   weight: number;
   progress: number;
+  linked_tasks_count?: number;
 }
 
 interface Objective {
@@ -58,23 +60,45 @@ const OKRsDashboard = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedQuarter, setSelectedQuarter] = useState('Q4 2025');
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [selectedKR, setSelectedKR] = useState<{ id: string; title: string; phase: number } | null>(null);
+  const [currentPhase, setCurrentPhase] = useState<number>(1);
 
   useEffect(() => {
-    fetchOKRs();
-  }, [selectedQuarter]);
+    fetchSystemPhase();
+  }, []);
+
+  useEffect(() => {
+    if (currentPhase) {
+      fetchOKRs();
+    }
+  }, [currentPhase]);
+
+  const fetchSystemPhase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_config')
+        .select('current_phase')
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setCurrentPhase(data.current_phase);
+      }
+    } catch (error) {
+      console.error('Error fetching system phase:', error);
+    }
+  };
 
   const fetchOKRs = async () => {
     setLoading(true);
     try {
-      const [quarter, year] = selectedQuarter.split(' ');
-      
+      // Obtener objetivos de la fase actual
       const { data: objectivesData, error: objError } = await supabase
-        .from('okrs_with_progress')
+        .from('objectives')
         .select('*')
-        .eq('quarter', quarter)
-        .eq('year', parseInt(year))
-        .order('created_at', { ascending: false });
+        .eq('phase', currentPhase)
+        .order('phase', { ascending: true });
 
       if (objError) throw objError;
 
@@ -83,31 +107,81 @@ const OKRsDashboard = () => {
           const { data: krs } = await supabase
             .from('key_results')
             .select('*')
-            .eq('objective_id', obj.objective_id);
+            .eq('objective_id', obj.id);
 
-          const krsWithProgress = (krs || []).map(kr => ({
-            ...kr,
-            status: kr.status as 'on_track' | 'at_risk' | 'behind' | 'achieved',
-            progress: calculateKRProgress(kr)
+          // Calcular progreso automático desde tareas para cada KR
+          const krsWithProgress = await Promise.all((krs || []).map(async (kr) => {
+            const { data: linkedTasks } = await supabase
+              .from('okr_task_links')
+              .select('task_id')
+              .eq('key_result_id', kr.id);
+
+            const taskIds = (linkedTasks || []).map(lt => lt.task_id);
+            let autoProgress = 0;
+
+            if (taskIds.length > 0) {
+              const { data: completedTasks } = await supabase
+                .from('task_completions')
+                .select('task_id')
+                .in('task_id', taskIds)
+                .eq('completed_by_user', true)
+                .eq('validated_by_leader', true);
+
+              const completedCount = completedTasks?.length || 0;
+              autoProgress = (completedCount / taskIds.length) * 100;
+            } else {
+              autoProgress = calculateKRProgress(kr);
+            }
+
+            return {
+              ...kr,
+              status: kr.status as 'on_track' | 'at_risk' | 'behind' | 'achieved',
+              progress: autoProgress,
+              linked_tasks_count: taskIds.length
+            };
           }));
 
+          // Obtener usuario propietario
+          const { data: ownerData } = await supabase
+            .from('users')
+            .select('full_name')
+            .eq('id', obj.owner_user_id)
+            .single();
+
+          // Contar tareas vinculadas al objetivo
+          const { data: objLinkedTasks } = await supabase
+            .from('okr_task_links')
+            .select('task_id', { count: 'exact' })
+            .in('key_result_id', krsWithProgress.map(kr => kr.id));
+
+          // Calcular estadísticas de KRs
+          const achieved = krsWithProgress.filter(kr => kr.status === 'achieved').length;
+          const onTrack = krsWithProgress.filter(kr => kr.status === 'on_track').length;
+          const atRisk = krsWithProgress.filter(kr => kr.status === 'at_risk').length;
+          const behind = krsWithProgress.filter(kr => kr.status === 'behind').length;
+
+          // Calcular progreso promedio ponderado
+          const totalWeight = krsWithProgress.reduce((sum, kr) => sum + kr.weight, 0);
+          const weightedProgress = krsWithProgress.reduce((sum, kr) => sum + (kr.progress * kr.weight), 0);
+          const avgProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
+
           return {
-            id: obj.objective_id,
-            title: obj.objective_title,
-            description: obj.objective_description,
+            id: obj.id,
+            title: obj.title,
+            description: obj.description,
             quarter: obj.quarter,
             year: obj.year,
-            status: obj.objective_status as 'active' | 'completed' | 'cancelled' | 'at_risk',
+            status: obj.status as 'active' | 'completed' | 'cancelled' | 'at_risk',
             target_date: obj.target_date,
-            owner_name: obj.owner_name,
-            progress: obj.objective_progress || 0,
+            owner_name: ownerData?.full_name || 'Sin asignar',
+            progress: avgProgress,
             key_results: krsWithProgress,
-            total_key_results: obj.total_key_results || 0,
-            achieved_krs: obj.achieved_krs || 0,
-            on_track_krs: obj.on_track_krs || 0,
-            at_risk_krs: obj.at_risk_krs || 0,
-            behind_krs: obj.behind_krs || 0,
-            linked_tasks: obj.linked_tasks || 0
+            total_key_results: krsWithProgress.length,
+            achieved_krs: achieved,
+            on_track_krs: onTrack,
+            at_risk_krs: atRisk,
+            behind_krs: behind,
+            linked_tasks: objLinkedTasks?.length || 0
           };
         })
       );
@@ -229,22 +303,11 @@ const OKRsDashboard = () => {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">OKRs - Objetivos y Resultados Clave</h2>
           <p className="text-muted-foreground">
-            Sistema de objetivos trimestrales con seguimiento de progreso
+            Fase {currentPhase} - Progreso automático desde tareas completadas y validadas
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <select
-            value={selectedQuarter}
-            onChange={(e) => setSelectedQuarter(e.target.value)}
-            className="px-4 py-2 border rounded-lg bg-background"
-          >
-            <option>Q4 2025</option>
-            <option>Q1 2026</option>
-            <option>Q2 2026</option>
-            <option>Q3 2026</option>
-          </select>
-
           <Button
             variant="outline"
             size="sm"
@@ -326,9 +389,9 @@ const OKRsDashboard = () => {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Target className="w-16 h-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No hay objetivos para {selectedQuarter}</h3>
+            <h3 className="text-xl font-semibold mb-2">No hay objetivos para Fase {currentPhase}</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-md">
-              Crea tu primer objetivo trimestral con resultados clave medibles
+              Crea objetivos para esta fase. El progreso se actualizará automáticamente al completar y validar tareas vinculadas.
             </p>
             {(userProfile?.role === 'admin' || userProfile?.role === 'leader') && (
               <Button onClick={() => setShowCreateModal(true)} className="gap-2">
@@ -348,7 +411,11 @@ const OKRsDashboard = () => {
                     <div className="flex items-center gap-3">
                       <CardTitle className="text-2xl">{objective.title}</CardTitle>
                       <Badge variant="outline">
-                        {objective.quarter} {objective.year}
+                        Fase {currentPhase}
+                      </Badge>
+                      <Badge variant="secondary" className="gap-1">
+                        <RefreshCw className="w-3 h-3" />
+                        Auto-actualizado
                       </Badge>
                     </div>
                     {objective.description && (
@@ -463,23 +530,68 @@ const OKRsDashboard = () => {
                           />
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2">
-                          <input
-                            type="number"
-                            min={kr.start_value}
-                            max={kr.target_value}
-                            defaultValue={kr.current_value}
-                            className="px-3 py-1 border rounded text-sm w-24"
-                            onBlur={(e) => {
-                              const newValue = parseFloat(e.target.value);
-                              if (newValue !== kr.current_value && !isNaN(newValue)) {
-                                updateKRValue(kr.id, newValue);
-                              }
-                            }}
-                          />
-                          <span className="text-sm text-muted-foreground">
-                            Actualizar progreso
-                          </span>
+                        <div className="flex items-center gap-2 pt-2 flex-wrap">
+                          {(kr as any).linked_tasks_count > 0 ? (
+                            <>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <LinkIcon className="w-4 h-4" />
+                                <span>{(kr as any).linked_tasks_count} tareas vinculadas - Progreso automático</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs gap-1"
+                                onClick={() => {
+                                  setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
+                                  setShowLinkModal(true);
+                                }}
+                              >
+                                <LinkIcon className="w-3 h-3" />
+                                Gestionar vínculos
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <input
+                                type="number"
+                                min={kr.start_value}
+                                max={kr.target_value}
+                                defaultValue={kr.current_value}
+                                className="px-3 py-1 border rounded text-sm w-24"
+                                onBlur={(e) => {
+                                  const newValue = parseFloat(e.target.value);
+                                  if (newValue !== kr.current_value && !isNaN(newValue)) {
+                                    updateKRValue(kr.id, newValue);
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => {
+                                  const input = document.querySelector(`input[value="${kr.current_value}"]`) as HTMLInputElement;
+                                  if (input) {
+                                    updateKRValue(kr.id, parseFloat(input.value));
+                                  }
+                                }}
+                              >
+                                Actualizar progreso
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="text-xs gap-1"
+                                onClick={() => {
+                                  setSelectedKR({ id: kr.id, title: kr.title, phase: currentPhase });
+                                  setShowLinkModal(true);
+                                }}
+                              >
+                                <LinkIcon className="w-3 h-3" />
+                                Vincular tareas
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -499,7 +611,25 @@ const OKRsDashboard = () => {
             setShowCreateModal(false);
             fetchOKRs();
           }}
-          selectedQuarter={selectedQuarter}
+          currentPhase={currentPhase}
+        />
+      )}
+
+      {showLinkModal && selectedKR && (
+        <LinkTasksToOKRModal
+          isOpen={showLinkModal}
+          onClose={() => {
+            setShowLinkModal(false);
+            setSelectedKR(null);
+          }}
+          onSuccess={() => {
+            setShowLinkModal(false);
+            setSelectedKR(null);
+            fetchOKRs();
+          }}
+          keyResultId={selectedKR.id}
+          keyResultTitle={selectedKR.title}
+          objectivePhase={selectedKR.phase}
         />
       )}
     </div>

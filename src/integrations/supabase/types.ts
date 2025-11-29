@@ -543,6 +543,7 @@ export type Database = {
           description: string | null
           id: string
           owner_user_id: string | null
+          phase: number | null
           quarter: string
           revenue_impact: number | null
           status: string
@@ -559,6 +560,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_user_id?: string | null
+          phase?: number | null
           quarter: string
           revenue_impact?: number | null
           status?: string
@@ -575,6 +577,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_user_id?: string | null
+          phase?: number | null
           quarter?: string
           revenue_impact?: number | null
           status?: string
@@ -1584,6 +1587,10 @@ export type Database = {
     }
     Functions: {
       calculate_kr_progress: { Args: { kr_id: string }; Returns: number }
+      calculate_kr_progress_from_tasks: {
+        Args: { kr_id: string }
+        Returns: number
+      }
       calculate_monthly_metrics: {
         Args: { target_month: string }
         Returns: {
@@ -1597,6 +1604,10 @@ export type Database = {
         }[]
       }
       calculate_objective_progress: {
+        Args: { obj_id: string }
+        Returns: number
+      }
+      calculate_objective_progress_from_tasks: {
         Args: { obj_id: string }
         Returns: number
       }
