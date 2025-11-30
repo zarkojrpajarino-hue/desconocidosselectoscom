@@ -297,41 +297,6 @@ const OKRsDashboard = () => {
         </div>
       </div>
 
-      {/* Mensaje introductorio explicando qué son los OKRs */}
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Target className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">¿Qué son los OKRs y por qué son diferentes a las tareas?</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Los <strong>OKRs (Objectives and Key Results)</strong> son objetivos estratégicos que definen <em>hacia dónde vas</em> y 
-                  <em> cómo medirás tu éxito</em>. A diferencia de las tareas que son actividades específicas del día a día, 
-                  los OKRs representan metas ambiciosas y medibles alineadas con tu rol estratégico.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                  <div className="p-3 bg-background rounded-lg border">
-                    <p className="text-xs font-semibold mb-1 text-primary">📋 Tareas</p>
-                    <p className="text-xs text-muted-foreground">Actividades operativas y ejecutables</p>
-                    <p className="text-xs text-muted-foreground italic mt-1">Ej: "Publicar 3 posts en Instagram"</p>
-                  </div>
-                  <div className="p-3 bg-background rounded-lg border">
-                    <p className="text-xs font-semibold mb-1 text-primary">🎯 OKRs</p>
-                    <p className="text-xs text-muted-foreground">Resultados estratégicos medibles</p>
-                    <p className="text-xs text-muted-foreground italic mt-1">Ej: "Aumentar engagement 25%"</p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  💡 <strong>La IA analiza tus tareas semanales</strong> y tu rol estratégico para generar OKRs que 
-                  te ayuden a medir el impacto real de tu trabajo más allá de completar tareas.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {objectives.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
