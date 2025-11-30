@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Target, User, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Target, User, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Lead, UserLeadStats, CRMGlobalStats } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
@@ -37,6 +38,10 @@ const CRMPage = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterCreatedBy, setFilterCreatedBy] = useState<string>('all');
+
+  // Collapsibles
+  const [leadsTableOpen, setLeadsTableOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -425,194 +430,240 @@ const CRMPage = () => {
         {/* Tabla de Leads */}
         <Card>
           <CardHeader>
-            <CardTitle>📋 Leads del Equipo ({filteredLeads.length})</CardTitle>
-            <CardDescription>
-              Todos los leads registrados por el equipo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left text-sm text-muted-foreground">
-                    <th className="pb-3 font-medium">Nombre</th>
-                    <th className="pb-3 font-medium">Empresa</th>
-                    <th className="pb-3 font-medium">Tipo</th>
-                    <th className="pb-3 font-medium">Estado</th>
-                    <th className="pb-3 font-medium">Valor</th>
-                    <th className="pb-3 font-medium">Prob.</th>
-                    <th className="pb-3 font-medium">Creado por</th>
-                    <th className="pb-3 font-medium">Fecha</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredLeads.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-8 text-center text-muted-foreground">
-                        No se encontraron leads
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredLeads.map((lead) => (
-                      <tr
-                        key={lead.id}
-                        className="border-b hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => handleLeadClick(lead)}
-                      >
-                        <td className="py-3">
-                          <div>
-                            <p className="font-medium">{lead.name}</p>
-                            {lead.email && <p className="text-xs text-muted-foreground">{lead.email}</p>}
-                          </div>
-                        </td>
-                        <td className="py-3">{lead.company || '-'}</td>
-                        <td className="py-3">
-                          <span className="text-xl" title={lead.lead_type}>
-                            {getLeadTypeIcon(lead.lead_type)}
-                          </span>
-                        </td>
-                        <td className="py-3">
-                          <Badge className={getStatusColor(lead.stage)} variant="secondary">
-                            {lead.stage}
-                          </Badge>
-                        </td>
-                        <td className="py-3 font-medium">
-                          {lead.estimated_value ? `€${lead.estimated_value.toFixed(0)}` : '-'}
-                        </td>
-                        <td className="py-3">
-                          <span className="text-sm">{lead.probability}%</span>
-                        </td>
-                        <td className="py-3">
-                          <span className="text-sm">{lead.creator?.full_name || 'N/A'}</span>
-                        </td>
-                        <td className="py-3 text-sm text-muted-foreground">
-                          {formatDate(lead.created_at)}
-                        </td>
+            <Collapsible open={leadsTableOpen} onOpenChange={setLeadsTableOpen}>
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      📋 Leads del Equipo ({filteredLeads.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Todos los leads registrados por el equipo
+                    </CardDescription>
+                  </div>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {leadsTableOpen ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Ocultar tabla
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Ver tabla completa
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="overflow-x-auto mt-4">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b text-left text-sm text-muted-foreground">
+                        <th className="pb-3 font-medium">Nombre</th>
+                        <th className="pb-3 font-medium">Empresa</th>
+                        <th className="pb-3 font-medium">Tipo</th>
+                        <th className="pb-3 font-medium">Estado</th>
+                        <th className="pb-3 font-medium">Valor</th>
+                        <th className="pb-3 font-medium">Prob.</th>
+                        <th className="pb-3 font-medium">Creado por</th>
+                        <th className="pb-3 font-medium">Fecha</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+                    </thead>
+                    <tbody>
+                      {filteredLeads.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="py-8 text-center text-muted-foreground">
+                            No se encontraron leads
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredLeads.map((lead) => (
+                          <tr
+                            key={lead.id}
+                            className="border-b hover:bg-muted/50 cursor-pointer transition-colors"
+                            onClick={() => handleLeadClick(lead)}
+                          >
+                            <td className="py-3">
+                              <div>
+                                <p className="font-medium">{lead.name}</p>
+                                {lead.email && <p className="text-xs text-muted-foreground">{lead.email}</p>}
+                              </div>
+                            </td>
+                            <td className="py-3">{lead.company || '-'}</td>
+                            <td className="py-3">
+                              <span className="text-xl" title={lead.lead_type}>
+                                {getLeadTypeIcon(lead.lead_type)}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <Badge className={getStatusColor(lead.stage)} variant="secondary">
+                                {lead.stage}
+                              </Badge>
+                            </td>
+                            <td className="py-3 font-medium">
+                              {lead.estimated_value ? `€${lead.estimated_value.toFixed(0)}` : '-'}
+                            </td>
+                            <td className="py-3">
+                              <span className="text-sm">{lead.probability}%</span>
+                            </td>
+                            <td className="py-3">
+                              <span className="text-sm">{lead.creator?.full_name || 'N/A'}</span>
+                            </td>
+                            <td className="py-3 text-sm text-muted-foreground">
+                              {formatDate(lead.created_at)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardHeader>
         </Card>
 
         {/* SECCIÓN INDIVIDUAL - Estadísticas por Usuario */}
         <Card className="bg-gradient-to-br from-card via-card/95 to-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              👥 ESTADÍSTICAS INDIVIDUALES
-            </CardTitle>
-            <CardDescription>
-              Rendimiento de cada miembro del equipo
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* TU TARJETA (Destacada) */}
-            {currentUserStats && (
-              <Card className="border-2 border-primary shadow-lg bg-gradient-to-br from-primary/10 via-card to-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center">
-                        <User className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xl font-bold">🌟 TÚ - {currentUserStats.full_name}</p>
-                        <p className="text-sm text-muted-foreground capitalize">{currentUserStats.role}</p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => navigate(`/crm/user/${currentUserStats.user_id}`)}
-                      className="gap-2"
-                    >
-                      Ver tus leads
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-primary">{currentUserStats.total_leads}</p>
-                      <p className="text-sm text-muted-foreground">Leads Totales</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-success">{currentUserStats.won_leads}</p>
-                      <p className="text-sm text-muted-foreground">Ganados</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-warning">{currentUserStats.hot_leads}</p>
-                      <p className="text-sm text-muted-foreground">Calientes 🔥</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-emerald-600">€{currentUserStats.total_won_value.toFixed(0)}</p>
-                      <p className="text-sm text-muted-foreground">Valor Ganado</p>
-                    </div>
+            <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      👥 ESTADÍSTICAS INDIVIDUALES
+                    </CardTitle>
+                    <CardDescription>
+                      Rendimiento de cada miembro del equipo
+                    </CardDescription>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Otros Miembros del Equipo */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Otros miembros del equipo</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {otherUsersStats.map((stat) => (
-                  <Card
-                    key={stat.user_id}
-                    className="hover:shadow-lg hover:border-primary/50 transition-all"
-                  >
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center justify-between">
-                        <span>{stat.full_name}</span>
-                      </CardTitle>
-                      <CardDescription className="capitalize">{stat.role}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">📊 Total leads:</span>
-                            <span className="font-bold">{stat.total_leads}</span>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {statsOpen ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Ocultar estadísticas
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Ver estadísticas
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="space-y-6 mt-4">
+                  {/* TU TARJETA (Destacada) */}
+                  {currentUserStats && (
+                    <Card className="border-2 border-primary shadow-lg bg-gradient-to-br from-primary/10 via-card to-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center">
+                              <User className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-xl font-bold">🌟 TÚ - {currentUserStats.full_name}</p>
+                              <p className="text-sm text-muted-foreground capitalize">{currentUserStats.role}</p>
+                            </div>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">✅ Ganados:</span>
-                            <span className="font-bold text-success">{stat.won_leads}</span>
+                          <Button
+                            onClick={() => navigate(`/crm/user/${currentUserStats.user_id}`)}
+                            className="gap-2"
+                          >
+                            Ver tus leads
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="text-center">
+                            <p className="text-3xl font-bold text-primary">{currentUserStats.total_leads}</p>
+                            <p className="text-sm text-muted-foreground">Leads Totales</p>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">🔥 Calientes:</span>
-                            <span className="font-bold text-warning">{stat.hot_leads}</span>
+                          <div className="text-center">
+                            <p className="text-3xl font-bold text-success">{currentUserStats.won_leads}</p>
+                            <p className="text-sm text-muted-foreground">Ganados</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-3xl font-bold text-warning">{currentUserStats.hot_leads}</p>
+                            <p className="text-sm text-muted-foreground">Calientes 🔥</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-3xl font-bold text-emerald-600">€{currentUserStats.total_won_value.toFixed(0)}</p>
+                            <p className="text-sm text-muted-foreground">Valor Ganado</p>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/crm/user/${stat.user_id}`)}
-                          className="w-full gap-2"
-                        >
-                          Ver leads añadidos por {stat.full_name.split(' ')[0]}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-            {/* Botón exportar estadísticas */}
-            <div className="flex justify-end pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={handleExportStats}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exportar Estadísticas
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                  {/* Otros Miembros del Equipo */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Otros miembros del equipo</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {otherUsersStats.map((stat) => (
+                        <Card
+                          key={stat.user_id}
+                          className="hover:shadow-lg hover:border-primary/50 transition-all"
+                        >
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base flex items-center justify-between">
+                              <span>{stat.full_name}</span>
+                            </CardTitle>
+                            <CardDescription className="capitalize">{stat.role}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">📊 Total leads:</span>
+                                  <span className="font-bold">{stat.total_leads}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">✅ Ganados:</span>
+                                  <span className="font-bold text-success">{stat.won_leads}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">🔥 Calientes:</span>
+                                  <span className="font-bold text-warning">{stat.hot_leads}</span>
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigate(`/crm/user/${stat.user_id}`)}
+                                className="w-full gap-2"
+                              >
+                                Ver leads añadidos por {stat.full_name.split(' ')[0]}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botón exportar estadísticas */}
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={handleExportStats}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Exportar Estadísticas
+                    </Button>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardHeader>
+         </Card>
       </main>
 
       {/* Modales */}

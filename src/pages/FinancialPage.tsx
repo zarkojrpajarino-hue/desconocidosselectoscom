@@ -299,64 +299,6 @@ const FinancialPage = () => {
           <FinancialDashboard key={refreshKey} />
         </div>
 
-        {/* Tabla de últimas transacciones */}
-        <Card id="transactions-history">
-          <CardHeader>
-            <CardTitle>📜 Historial de Transacciones</CardTitle>
-            <CardDescription>
-              Historial completo de transacciones registradas manualmente con auditoría
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Fecha</th>
-                    <th className="text-left py-3 px-4">Tipo</th>
-                    <th className="text-left py-3 px-4">Descripción</th>
-                    <th className="text-left py-3 px-4">Categoría</th>
-                    <th className="text-right py-3 px-4">Monto</th>
-                    <th className="text-left py-3 px-4">Registrado por</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No hay transacciones registradas. Usa los botones de arriba para registrar la primera.
-                      </td>
-                    </tr>
-                  ) : (
-                    transactions.map((transaction) => (
-                      <tr key={transaction.id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4 text-sm">{formatDate(transaction.date)}</td>
-                        <td className="py-3 px-4">
-                          <Badge variant={getTypeColor(transaction.type)}>
-                            {getTypeLabel(transaction.type)}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 font-medium">{transaction.description}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground capitalize">
-                          {transaction.category}
-                        </td>
-                        <td className={`text-right py-3 px-4 font-semibold ${
-                          transaction.type === 'revenue' ? 'text-success' : 'text-destructive'
-                        }`}>
-                          {transaction.type === 'revenue' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">
-                          {transaction.created_by_name}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Modals */}
         <RevenueFormModal
           open={revenueModalOpen}
