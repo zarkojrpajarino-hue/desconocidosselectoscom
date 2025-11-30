@@ -116,11 +116,11 @@ const CRMLeads = () => {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate('/crm')}
+              onClick={() => navigate('/metrics')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver
+              Volver a Métricas
             </Button>
             <Button
               onClick={() => navigate('/crm/pipeline')}
