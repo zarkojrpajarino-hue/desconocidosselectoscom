@@ -32,7 +32,7 @@ const Pipeline = () => {
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Pipeline de Ventas
               </h1>
               <p className="text-sm text-muted-foreground">
