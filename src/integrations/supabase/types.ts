@@ -1221,6 +1221,7 @@ export type Database = {
           contact_name: string
           contact_phone: string | null
           created_at: string
+          current_period_end: string | null
           current_problems: string
           id: string
           industry: string
@@ -1233,6 +1234,10 @@ export type Database = {
           products_services: Json
           sales_cycle_days: number | null
           sales_process: string
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
           target_customers: string
           team_structure: Json
           trial_ends_at: string | null
@@ -1251,6 +1256,7 @@ export type Database = {
           contact_name: string
           contact_phone?: string | null
           created_at?: string
+          current_period_end?: string | null
           current_problems: string
           id?: string
           industry: string
@@ -1263,6 +1269,10 @@ export type Database = {
           products_services?: Json
           sales_cycle_days?: number | null
           sales_process: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
           target_customers: string
           team_structure?: Json
           trial_ends_at?: string | null
@@ -1281,6 +1291,7 @@ export type Database = {
           contact_name?: string
           contact_phone?: string | null
           created_at?: string
+          current_period_end?: string | null
           current_problems?: string
           id?: string
           industry?: string
@@ -1293,6 +1304,10 @@ export type Database = {
           products_services?: Json
           sales_cycle_days?: number | null
           sales_process?: string
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
           target_customers?: string
           team_structure?: Json
           trial_ends_at?: string | null
@@ -1651,6 +1666,53 @@ export type Database = {
             columns: ["target_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_plan: string | null
+          new_status: string | null
+          organization_id: string | null
+          previous_plan: string | null
+          previous_status: string | null
+          stripe_event_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: string | null
+          new_status?: string | null
+          organization_id?: string | null
+          previous_plan?: string | null
+          previous_status?: string | null
+          stripe_event_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: string | null
+          new_status?: string | null
+          organization_id?: string | null
+          previous_plan?: string | null
+          previous_status?: string | null
+          stripe_event_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
