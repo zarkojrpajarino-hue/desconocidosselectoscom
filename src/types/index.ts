@@ -121,7 +121,6 @@ export interface Alert {
 export type LeadType = 'cold' | 'warm' | 'hot' | 'mql' | 'sql';
 export type LeadScore = 'A' | 'B' | 'C' | 'D';
 export type LeadStatus = 'new' | 'lead' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost' | 'on_hold';
-export type PipelineStage = 'discovery' | 'demo' | 'proposal' | 'negotiation' | 'closed_won' | 'closed_lost';
 export type LeadSource = 'website' | 'referral' | 'cold_call' | 'linkedin' | 'email' | 'event' | 'instagram' | 'facebook' | 'google_ads' | 'google' | 'content' | 'partner' | 'phone' | 'other';
 export type Priority = 'urgent' | 'high' | 'medium' | 'low';
 export type NextActionType = 'call' | 'email' | 'meeting' | 'whatsapp' | 'follow_up' | 'demo' | 'proposal' | 'other';
@@ -138,7 +137,7 @@ export interface Lead {
   lead_type: LeadType;
   lead_score: LeadScore;
   stage: LeadStatus;
-  pipeline_stage: PipelineStage;
+  pipeline_stage: string | null; // Ahora acepta cualquier nombre de etapa personalizada
   source: LeadSource;
   estimated_value: number;
   probability: number;

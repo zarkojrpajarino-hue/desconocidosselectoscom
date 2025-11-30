@@ -8,30 +8,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Lead, PipelineStage } from '@/types';
+import { Lead } from '@/types';
 import { Plus, Filter } from 'lucide-react';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import CreateLeadModal from '@/components/CreateLeadModal';
 import PipelineLeadCard from '@/components/PipelineLeadCard';
 
-const PIPELINE_STAGES: { value: PipelineStage; label: string; color: string }[] = [
-  { value: 'discovery', label: 'Descubrimiento', color: 'bg-blue-500' },
-  { value: 'demo', label: 'Demo', color: 'bg-purple-500' },
-  { value: 'proposal', label: 'Propuesta', color: 'bg-yellow-500' },
-  { value: 'negotiation', label: 'Negociación', color: 'bg-orange-500' },
-  { value: 'closed_won', label: 'Ganado', color: 'bg-green-500' },
-  { value: 'closed_lost', label: 'Perdido', color: 'bg-red-500' },
+// Colores para las etapas basados en orden
+const STAGE_COLORS = [
+  'bg-blue-500',
+  'bg-purple-500', 
+  'bg-yellow-500',
+  'bg-orange-500',
+  'bg-green-500',
+  'bg-red-500'
 ];
+
+interface CustomPipelineStage {
+  id: string;
+  name: string;
+  order_index: number;
+  description: string | null;
+  color: string;
+}
 
 const PipelineBoard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   // State
+  const [pipelineStages, setPipelineStages] = useState<CustomPipelineStage[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
-  const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
 
   // Filters
@@ -53,12 +63,45 @@ const PipelineBoard = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      await Promise.all([loadLeads(), loadUsers()]);
+      await Promise.all([loadPipelineStages(), loadLeads(), loadUsers()]);
     } catch (error) {
       console.error('Error loading pipeline data:', error);
       toast.error('Error al cargar el pipeline');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPipelineStages = async () => {
+    try {
+      // Obtener la organización del usuario
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Obtener las etapas personalizadas de la organización
+      const { data, error } = await supabase
+        .from('pipeline_stages')
+        .select('*')
+        .eq('organization_id', userData.organization_id)
+        .order('order_index');
+
+      if (error) throw error;
+
+      // Mapear etapas con colores
+      const stagesWithColors = (data || []).map((stage, index) => ({
+        ...stage,
+        color: STAGE_COLORS[index % STAGE_COLORS.length]
+      }));
+
+      setPipelineStages(stagesWithColors);
+    } catch (error) {
+      console.error('Error loading pipeline stages:', error);
+      toast.error('Error al cargar las etapas del pipeline');
     }
   };
 
@@ -118,12 +161,12 @@ const PipelineBoard = () => {
     }
   };
 
-  const getLeadsByStage = (stage: PipelineStage) => {
-    return leads.filter(lead => lead.pipeline_stage === stage);
+  const getLeadsByStage = (stageName: string) => {
+    return leads.filter(lead => lead.pipeline_stage === stageName);
   };
 
-  const getStageStats = (stage: PipelineStage) => {
-    const stageLeads = getLeadsByStage(stage);
+  const getStageStats = (stageName: string) => {
+    const stageLeads = getLeadsByStage(stageName);
     const count = stageLeads.length;
     const totalValue = stageLeads.reduce((sum, lead) => sum + (lead.estimated_value || 0), 0);
     const avgValue = count > 0 ? totalValue / count : 0;
@@ -136,24 +179,24 @@ const PipelineBoard = () => {
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e: React.DragEvent, stage: PipelineStage) => {
+  const handleDragOver = (e: React.DragEvent, stageName: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverStage(stage);
+    setDragOverStage(stageName);
   };
 
   const handleDragLeave = () => {
     setDragOverStage(null);
   };
 
-  const handleDrop = async (e: React.DragEvent, targetStage: PipelineStage) => {
+  const handleDrop = async (e: React.DragEvent, targetStageName: string) => {
     e.preventDefault();
     setDragOverStage(null);
 
     if (!draggedLead) return;
 
     // Don't update if dropping in same stage
-    if (draggedLead.pipeline_stage === targetStage) {
+    if (draggedLead.pipeline_stage === targetStageName) {
       setDraggedLead(null);
       return;
     }
@@ -162,30 +205,35 @@ const PipelineBoard = () => {
     const previousLeads = [...leads];
     setLeads(prev => prev.map(lead => 
       lead.id === draggedLead.id 
-        ? { ...lead, pipeline_stage: targetStage }
+        ? { ...lead, pipeline_stage: targetStageName }
         : lead
     ));
 
     try {
       // Update lead in database
       const updateData: any = {
-        pipeline_stage: targetStage,
+        pipeline_stage: targetStageName,
         updated_at: new Date().toISOString()
       };
 
-      // Auto-update stage based on pipeline_stage
-      if (targetStage === 'closed_won') {
-        updateData.stage = 'won';
-        updateData.won_date = new Date().toISOString().split('T')[0];
-      } else if (targetStage === 'closed_lost') {
-        updateData.stage = 'lost';
-        updateData.lost_date = new Date().toISOString().split('T')[0];
-      } else if (targetStage === 'proposal') {
-        updateData.stage = 'proposal';
-      } else if (targetStage === 'negotiation') {
-        updateData.stage = 'negotiation';
-      } else if (targetStage === 'demo') {
-        updateData.stage = 'qualified';
+      // Determinar stage automáticamente según la etapa del pipeline
+      const targetStage = pipelineStages.find(s => s.name === targetStageName);
+      if (targetStage) {
+        const isLastStage = targetStage.order_index === pipelineStages.length - 1;
+        const isSecondToLast = targetStage.order_index === pipelineStages.length - 2;
+
+        if (isLastStage) {
+          // Última etapa = Perdido
+          updateData.stage = 'lost';
+          updateData.lost_date = new Date().toISOString().split('T')[0];
+        } else if (isSecondToLast) {
+          // Penúltima etapa = Ganado
+          updateData.stage = 'won';
+          updateData.won_date = new Date().toISOString().split('T')[0];
+        } else {
+          // Otras etapas = en proceso
+          updateData.stage = 'qualified';
+        }
       }
 
       const { error } = await supabase
@@ -195,7 +243,7 @@ const PipelineBoard = () => {
 
       if (error) throw error;
 
-      toast.success(`Lead movido a ${PIPELINE_STAGES.find(s => s.value === targetStage)?.label}`);
+      toast.success(`Lead movido a ${targetStageName}`);
     } catch (error) {
       console.error('Error updating lead stage:', error);
       toast.error('Error al mover el lead');
@@ -328,21 +376,21 @@ const PipelineBoard = () => {
 
       {/* Pipeline Board */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {PIPELINE_STAGES.map(stage => {
-          const stageLeads = getLeadsByStage(stage.value);
-          const stats = getStageStats(stage.value);
-          const isDropTarget = dragOverStage === stage.value;
+        {pipelineStages.map(stage => {
+          const stageLeads = getLeadsByStage(stage.name);
+          const stats = getStageStats(stage.name);
+          const isDropTarget = dragOverStage === stage.name;
 
           return (
             <div
-              key={stage.value}
+              key={stage.id}
               className={`
                 flex flex-col transition-all duration-200
                 ${isDropTarget ? 'scale-105' : ''}
               `}
-              onDragOver={(e) => handleDragOver(e, stage.value)}
+              onDragOver={(e) => handleDragOver(e, stage.name)}
               onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, stage.value)}
+              onDrop={(e) => handleDrop(e, stage.name)}
             >
               {/* Column Header */}
               <Card className={`mb-4 ${isDropTarget ? 'ring-2 ring-primary shadow-lg' : ''}`}>
@@ -352,8 +400,13 @@ const PipelineBoard = () => {
                     <Badge variant="secondary">{stats.count}</Badge>
                   </div>
                   <CardTitle className="text-sm font-semibold">
-                    {stage.label}
+                    {stage.name}
                   </CardTitle>
+                  {stage.description && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {stage.description}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-1 text-xs">
                   <div className="flex items-center justify-between">
