@@ -160,19 +160,19 @@ const AppContent = () => {
       } />
       <Route path="/crm-old" element={
         <ProtectedRoute>
+          <CRMLeads />
+        </ProtectedRoute>
+      } />
+      <Route path="/crm" element={
+        <ProtectedRoute>
           <CRMPage />
         </ProtectedRoute>
       } />
-<Route path="/crm" element={
-  <ProtectedRoute>
-    <CRMLeads />
-  </ProtectedRoute>
-} />
-<Route path="/crm/leads" element={
-  <ProtectedRoute>
-    <CRMLeads />
-  </ProtectedRoute>
-} />
+      <Route path="/crm/leads" element={
+        <ProtectedRoute>
+          <CRMPage />
+        </ProtectedRoute>
+      } />
 <Route path="/crm/pipeline" element={
   <ProtectedRoute>
     <Pipeline />
