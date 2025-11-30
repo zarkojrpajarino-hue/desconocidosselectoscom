@@ -159,6 +159,7 @@ export type Database = {
           nps_score: number | null
           operational_costs: number | null
           orders_count: number | null
+          organization_id: string | null
           product_margins: Json | null
           production_time: number | null
           repeat_rate: number | null
@@ -186,6 +187,7 @@ export type Database = {
           nps_score?: number | null
           operational_costs?: number | null
           orders_count?: number | null
+          organization_id?: string | null
           product_margins?: Json | null
           production_time?: number | null
           repeat_rate?: number | null
@@ -213,6 +215,7 @@ export type Database = {
           nps_score?: number | null
           operational_costs?: number | null
           orders_count?: number | null
+          organization_id?: string | null
           product_margins?: Json | null
           production_time?: number | null
           repeat_rate?: number | null
@@ -224,6 +227,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "business_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "business_metrics_user_id_fkey"
             columns: ["user_id"]
@@ -665,6 +675,7 @@ export type Database = {
           next_action_date: string | null
           next_action_type: string | null
           notes: string | null
+          organization_id: string | null
           phone: string | null
           pipeline_stage: string | null
           position: string | null
@@ -699,6 +710,7 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          organization_id?: string | null
           phone?: string | null
           pipeline_stage?: string | null
           position?: string | null
@@ -733,6 +745,7 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          organization_id?: string | null
           phone?: string | null
           pipeline_stage?: string | null
           position?: string | null
@@ -772,6 +785,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -838,6 +858,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          organization_id: string | null
           owner_user_id: string | null
           phase: number | null
           quarter: string
@@ -855,6 +876,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          organization_id?: string | null
           owner_user_id?: string | null
           phase?: number | null
           quarter: string
@@ -872,6 +894,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          organization_id?: string | null
           owner_user_id?: string | null
           phase?: number | null
           quarter?: string
@@ -895,6 +918,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1139,6 +1169,93 @@ export type Database = {
           team_structure?: Json
           updated_at?: string | null
           user_id?: string | null
+          value_proposition?: string
+        }
+        Relationships: []
+      }
+      organizations: {
+        Row: {
+          ai_generation_completed_at: string | null
+          ai_generation_error: string | null
+          ai_generation_status: string
+          annual_revenue_range: string | null
+          business_description: string
+          company_size: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          current_problems: string
+          id: string
+          industry: string
+          kpis_to_measure: Json
+          lead_sources: Json
+          main_objectives: string
+          name: string
+          plan: string
+          products_services: Json
+          sales_cycle_days: number | null
+          sales_process: string
+          target_customers: string
+          team_structure: Json
+          trial_ends_at: string | null
+          updated_at: string
+          value_proposition: string
+        }
+        Insert: {
+          ai_generation_completed_at?: string | null
+          ai_generation_error?: string | null
+          ai_generation_status?: string
+          annual_revenue_range?: string | null
+          business_description: string
+          company_size: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          current_problems: string
+          id?: string
+          industry: string
+          kpis_to_measure?: Json
+          lead_sources?: Json
+          main_objectives: string
+          name: string
+          plan?: string
+          products_services?: Json
+          sales_cycle_days?: number | null
+          sales_process: string
+          target_customers: string
+          team_structure?: Json
+          trial_ends_at?: string | null
+          updated_at?: string
+          value_proposition: string
+        }
+        Update: {
+          ai_generation_completed_at?: string | null
+          ai_generation_error?: string | null
+          ai_generation_status?: string
+          annual_revenue_range?: string | null
+          business_description?: string
+          company_size?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          current_problems?: string
+          id?: string
+          industry?: string
+          kpis_to_measure?: Json
+          lead_sources?: Json
+          main_objectives?: string
+          name?: string
+          plan?: string
+          products_services?: Json
+          sales_cycle_days?: number | null
+          sales_process?: string
+          target_customers?: string
+          team_structure?: Json
+          trial_ends_at?: string | null
+          updated_at?: string
           value_proposition?: string
         }
         Relationships: []
@@ -1765,6 +1882,7 @@ export type Database = {
           id: string
           leader_id: string | null
           order_index: number
+          organization_id: string | null
           phase: number
           title: string
           user_id: string
@@ -1778,6 +1896,7 @@ export type Database = {
           id?: string
           leader_id?: string | null
           order_index?: number
+          organization_id?: string | null
           phase: number
           title: string
           user_id: string
@@ -1791,6 +1910,7 @@ export type Database = {
           id?: string
           leader_id?: string | null
           order_index?: number
+          organization_id?: string | null
           phase?: number
           title?: string
           user_id?: string
@@ -1808,6 +1928,13 @@ export type Database = {
             columns: ["leader_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2085,6 +2212,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          organization_id: string | null
           role: string
           strategic_objectives: string | null
           username: string
@@ -2094,6 +2222,7 @@ export type Database = {
           email: string
           full_name: string
           id?: string
+          organization_id?: string | null
           role: string
           strategic_objectives?: string | null
           username: string
@@ -2103,11 +2232,20 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          organization_id?: string | null
           role?: string
           strategic_objectives?: string | null
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       week_config: {
         Row: {
