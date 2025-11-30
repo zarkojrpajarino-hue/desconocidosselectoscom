@@ -1173,8 +1173,44 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_invitations: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
+          ai_analysis_count: number | null
           ai_generation_completed_at: string | null
           ai_generation_error: string | null
           ai_generation_status: string
@@ -1189,6 +1225,7 @@ export type Database = {
           id: string
           industry: string
           kpis_to_measure: Json
+          last_ai_analysis_at: string | null
           lead_sources: Json
           main_objectives: string
           name: string
@@ -1203,6 +1240,7 @@ export type Database = {
           value_proposition: string
         }
         Insert: {
+          ai_analysis_count?: number | null
           ai_generation_completed_at?: string | null
           ai_generation_error?: string | null
           ai_generation_status?: string
@@ -1217,6 +1255,7 @@ export type Database = {
           id?: string
           industry: string
           kpis_to_measure?: Json
+          last_ai_analysis_at?: string | null
           lead_sources?: Json
           main_objectives: string
           name: string
@@ -1231,6 +1270,7 @@ export type Database = {
           value_proposition: string
         }
         Update: {
+          ai_analysis_count?: number | null
           ai_generation_completed_at?: string | null
           ai_generation_error?: string | null
           ai_generation_status?: string
@@ -1245,6 +1285,7 @@ export type Database = {
           id?: string
           industry?: string
           kpis_to_measure?: Json
+          last_ai_analysis_at?: string | null
           lead_sources?: Json
           main_objectives?: string
           name?: string
@@ -2088,6 +2129,47 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          role_description: string | null
+          role_name: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          role_description?: string | null
+          role_name?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          role_description?: string | null
+          role_name?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_weekly_availability: {
         Row: {
           created_at: string | null
@@ -2526,6 +2608,7 @@ export type Database = {
         Args: { obj_id: string }
         Returns: number
       }
+      can_use_ai_analysis: { Args: { _user_id: string }; Returns: Json }
       can_user_swap: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: boolean
@@ -2544,13 +2627,26 @@ export type Database = {
       check_stale_metrics: { Args: never; Returns: undefined }
       check_streak_at_risk: { Args: never; Returns: undefined }
       check_urgent_tasks: { Args: never; Returns: undefined }
+      count_organization_users: { Args: { _org_id: string }; Returns: number }
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
       }
       generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
+      get_user_organization: { Args: { _user_id: string }; Returns: string }
       get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      register_ai_analysis_usage: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       update_financial_metrics: {
         Args: { target_month: string }
         Returns: undefined
@@ -2561,7 +2657,17 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "marketing"
+        | "ventas"
+        | "finanzas"
+        | "operaciones"
+        | "producto"
+        | "rrhh"
+        | "legal"
+        | "soporte"
+        | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2688,6 +2794,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "admin",
+        "marketing",
+        "ventas",
+        "finanzas",
+        "operaciones",
+        "producto",
+        "rrhh",
+        "legal",
+        "soporte",
+        "custom",
+      ],
+    },
   },
 } as const

@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, Palette, Brain, TrendingUp, Bell, Users } from 'lucide-react';
+import { RoleInvitationCard } from '@/components/RoleInvitationCard';
 
 const Home = () => {
   const { userProfile } = useAuth();
@@ -49,6 +50,9 @@ const Home = () => {
             Selecciona una sección para comenzar
           </p>
         </div>
+
+        {/* Tarjeta de invitación (solo para admins) */}
+        <RoleInvitationCard />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sections.map((section) => {
