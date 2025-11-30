@@ -113,3 +113,93 @@ export interface Alert {
   week_group: string | null;
   included_in_summary: boolean | null;
 }
+
+// =====================================================
+// CRM TYPES - Professional Lead Management System
+// =====================================================
+
+export type LeadType = 'cold' | 'warm' | 'hot' | 'mql' | 'sql';
+export type LeadScore = 'A' | 'B' | 'C' | 'D';
+export type LeadStatus = 'new' | 'lead' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost' | 'on_hold';
+export type PipelineStage = 'discovery' | 'demo' | 'proposal' | 'negotiation' | 'closed_won' | 'closed_lost';
+export type LeadSource = 'website' | 'referral' | 'cold_call' | 'linkedin' | 'email' | 'event' | 'instagram' | 'facebook' | 'google_ads' | 'google' | 'content' | 'partner' | 'phone' | 'other';
+export type Priority = 'urgent' | 'high' | 'medium' | 'low';
+export type NextActionType = 'call' | 'email' | 'meeting' | 'whatsapp' | 'follow_up' | 'demo' | 'proposal' | 'other';
+export type InteractionType = 'call' | 'email' | 'meeting' | 'whatsapp' | 'instagram_dm' | 'proposal_sent' | 'follow_up' | 'note' | 'stage_change';
+export type Sentiment = 'positive' | 'neutral' | 'negative';
+
+export interface Lead {
+  id: string;
+  name: string;
+  company: string | null;
+  email: string | null;
+  phone: string | null;
+  position: string | null;
+  lead_type: LeadType;
+  lead_score: LeadScore;
+  stage: LeadStatus;
+  pipeline_stage: PipelineStage;
+  source: LeadSource;
+  estimated_value: number;
+  probability: number;
+  interested_products: string[] | null;
+  next_action_date: string | null;
+  next_action_type: NextActionType | null;
+  priority: Priority;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  assigned_to: string | null;
+  notes: string | null;
+  tags: string[] | null;
+  last_contact_date: string | null;
+  conversion_date: string | null;
+  lost_reason: string | null;
+  next_action: string | null;
+  expected_revenue: number | null;
+  converted_to_customer: boolean | null;
+  revenue_entry_id: string | null;
+  won_date: string | null;
+  lost_date: string | null;
+  creator?: User;
+  assignee?: User;
+  assigned_user_name?: string;
+  assigned_to_name?: string;
+}
+
+export interface LeadInteraction {
+  id: string;
+  lead_id: string;
+  user_id: string;
+  interaction_type: InteractionType;
+  subject: string;
+  description: string | null;
+  outcome: string | null;
+  next_steps: string | null;
+  created_at: string;
+  created_by: string | null;
+  duration_minutes: number | null;
+  sentiment: Sentiment | null;
+}
+
+export interface UserLeadStats {
+  user_id: string;
+  full_name: string;
+  role: string;
+  total_leads: number;
+  won_leads: number;
+  hot_leads: number;
+  total_won_value: number;
+  total_pipeline_value: number;
+}
+
+export interface CRMGlobalStats {
+  total_leads: number;
+  new_leads: number;
+  hot_leads: number;
+  won_leads: number;
+  lost_leads: number;
+  total_pipeline_value: number;
+  total_won_value: number;
+  avg_deal_size: number;
+}
