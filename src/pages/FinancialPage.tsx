@@ -42,11 +42,11 @@ const FinancialPage = () => {
             </div>
             <Button
               variant="outline"
-              onClick={() => navigate('/herramientas')}
+              onClick={() => navigate('/metrics-hub')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver a Herramientas
+              Volver a Métricas
             </Button>
           </div>
         </div>
