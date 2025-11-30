@@ -246,10 +246,7 @@ const FinancialPage = () => {
                 </div>
                 <Button 
                   variant="outline"
-                  onClick={() => {
-                    const transactionsSection = document.getElementById('transactions-history');
-                    transactionsSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={() => navigate('/financial/transactions')}
                   className="gap-2"
                 >
                   📜 Historial de Transacciones
