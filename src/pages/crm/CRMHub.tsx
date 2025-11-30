@@ -1,45 +1,29 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, Target, DollarSign, Users, ArrowLeft } from 'lucide-react';
+import { Users, TrendingUp, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const MetricsHub = () => {
+const CRMHub = () => {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
 
-  const metricsOptions = [
+  const crmOptions = [
     {
-      title: "KPI's",
-      description: 'Indicadores Clave de Rendimiento operativo',
-      explanation: 'Los KPIs son métricas operativas del día a día de tu negocio: ventas, leads, conversiones, engagement, NPS, etc. Te permiten medir el rendimiento actual de cada área y tomar decisiones rápidas basadas en datos reales.',
-      icon: TrendingUp,
-      path: '/business-metrics',
-      gradient: 'from-emerald-500 to-teal-500'
-    },
-    {
-      title: 'OKR',
-      description: 'Objetivos estratégicos y Resultados Clave medibles',
-      explanation: 'Los OKRs definen hacia dónde vas estratégicamente. A diferencia de los KPIs que miden lo que ya haces, los OKRs establecen metas ambiciosas y medibles que impulsan cambio e innovación alineados con tu rol.',
-      icon: Target,
-      path: '/okrs',
-      gradient: 'from-blue-500 to-indigo-600'
-    },
-    {
-      title: 'Panel Financiero',
-      description: 'Métricas financieras consolidadas del negocio',
-      explanation: 'El Panel Financiero te da la visión económica completa: ingresos, gastos, margen, burn rate, ROI de marketing y proyecciones. Es tu tablero de control para la salud financiera y sostenibilidad del negocio.',
-      icon: DollarSign,
-      path: '/financial',
-      gradient: 'from-green-500 to-emerald-600'
-    },
-    {
-      title: 'CRM & Pipeline',
-      description: 'Gestión de leads y embudo de ventas',
-      explanation: 'El CRM gestiona tus contactos y oportunidades comerciales. El Pipeline visualiza tu embudo de conversión por etapas (Lead → Qualified → Proposal → Won/Lost), permitiéndote prever ingresos y optimizar tu proceso de ventas.',
+      title: 'CRM & Leads',
+      description: 'Gestión de contactos y oportunidades de venta',
+      explanation: 'El CRM es tu base de datos de clientes potenciales y actuales. Aquí gestionas toda la información de contactos, empresas, intereses y comunicaciones. Es el corazón de tu proceso comercial donde capturas y organizas cada lead.',
       icon: Users,
-      path: '/crm',
+      path: '/crm/leads',
       gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Pipeline de Ventas',
+      description: 'Visualiza y gestiona el embudo completo de conversión',
+      explanation: 'El Pipeline es tu visión estratégica del proceso de ventas. Visualiza cada lead en su etapa del embudo (Lead → Calificado → Propuesta → Negociación → Ganado/Perdido), con valores estimados y probabilidades. Te permite prever ingresos y detectar cuellos de botella.',
+      icon: TrendingUp,
+      path: '/crm/pipeline',
+      gradient: 'from-emerald-500 to-green-600'
     }
   ];
 
@@ -48,23 +32,23 @@ const MetricsHub = () => {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-primary" />
+            <Users className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Métricas del Negocio
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                CRM & Pipeline de Ventas
               </h1>
               <p className="text-sm text-muted-foreground">
-                Gestiona KPIs, OKRs y finanzas de tu negocio
+                Gestiona leads, oportunidades y tu proceso comercial
               </p>
             </div>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/home')}
+            onClick={() => navigate('/metrics')}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
+            Volver a Métricas
           </Button>
         </div>
       </header>
@@ -75,12 +59,12 @@ const MetricsHub = () => {
             Hola {userProfile?.full_name || 'Usuario'}
           </h2>
           <p className="text-muted-foreground">
-            Selecciona el sistema de métricas con el que quieres trabajar
+            Selecciona la vista con la que quieres trabajar
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {metricsOptions.map((option) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {crmOptions.map((option) => {
             const Icon = option.icon;
             return (
               <Card
@@ -113,4 +97,4 @@ const MetricsHub = () => {
   );
 };
 
-export default MetricsHub;
+export default CRMHub;
