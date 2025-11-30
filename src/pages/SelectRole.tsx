@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -149,6 +149,83 @@ const SelectRole = () => {
           </p>
         </div>
 
+        {/* Tarjeta Rol Personalizado - DESTACADA ARRIBA */}
+        <Card
+          className={`mb-8 cursor-pointer transition-all duration-300 relative overflow-hidden ${
+            selectedRole === 'custom'
+              ? 'border-2 border-primary shadow-2xl scale-[1.02]'
+              : 'border-2 border-primary/50 hover:border-primary hover:shadow-xl hover:scale-[1.01]'
+          }`}
+          onClick={() => setSelectedRole('custom')}
+        >
+          {/* Gradiente de fondo animado */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 animate-gradient-xy opacity-50" />
+          
+          {/* Badge "Recomendado" */}
+          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg rotate-12 flex items-center gap-1">
+            ✨ Recomendado
+          </div>
+
+          <CardHeader className="relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="text-5xl">🎯</div>
+              <div className="flex-1">
+                <CardTitle className="text-2xl mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Rol Personalizado
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Define un rol único adaptado a tus necesidades específicas. 
+                  La IA generará tareas personalizadas según tu descripción.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          {selectedRole === 'custom' && (
+            <CardContent className="relative z-10 space-y-4 animate-in slide-in-from-top-4 duration-300">
+              <div className="space-y-2">
+                <Label htmlFor="role-name" className="text-base font-semibold">
+                  Nombre del Rol *
+                </Label>
+                <Input
+                  id="role-name"
+                  placeholder="Ej: Growth Hacker, Content Manager, Product Designer..."
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  maxLength={50}
+                  className="border-2 focus:border-primary"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role-description" className="text-base font-semibold">
+                  Descripción del Rol *
+                </Label>
+                <Textarea
+                  id="role-description"
+                  placeholder="Describe las responsabilidades y actividades principales de este rol. Cuanto más detallado, mejores serán las tareas generadas..."
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  rows={4}
+                  maxLength={300}
+                  className="border-2 focus:border-primary"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {customDescription.length}/300 caracteres
+                </p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Separador */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-sm text-muted-foreground font-medium">O elige un rol predefinido</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {PREDEFINED_ROLES.filter(r => r.value !== 'admin').map((role) => (
             <Card
@@ -170,43 +247,6 @@ const SelectRole = () => {
             </Card>
           ))}
         </div>
-
-        {selectedRole === 'custom' && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Define tu Rol Personalizado</CardTitle>
-              <CardDescription>
-                Describe tu rol específico para que la IA genere tareas adaptadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="role-name">Nombre del Rol *</Label>
-                <Input
-                  id="role-name"
-                  placeholder="Ej: Growth Hacker, Content Manager, etc."
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  maxLength={50}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role-description">Descripción del Rol *</Label>
-                <Textarea
-                  id="role-description"
-                  placeholder="Describe las responsabilidades y actividades principales de este rol..."
-                  value={customDescription}
-                  onChange={(e) => setCustomDescription(e.target.value)}
-                  rows={4}
-                  maxLength={300}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {customDescription.length}/300 caracteres
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="flex justify-center gap-4">
           <Button
