@@ -271,11 +271,11 @@ const CRMPage = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/metrics-hub')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline">Menú</span>
+              <span className="hidden md:inline">Volver a Métricas</span>
             </Button>
           </div>
         </div>

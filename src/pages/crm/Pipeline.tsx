@@ -42,11 +42,11 @@ const Pipeline = () => {
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate('/crm')}
+            onClick={() => navigate('/metrics-hub')}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver al CRM
+            Volver a Métricas
           </Button>
         </div>
       </header>
