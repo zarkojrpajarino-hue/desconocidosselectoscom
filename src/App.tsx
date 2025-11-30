@@ -62,6 +62,7 @@ import Landing from "./pages/Landing";
 import GeneratingWorkspace from "./pages/GeneratingWorkspace";
 
 import SelectRole from "./pages/SelectRole";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const AppContent = () => {
       {/* Landing y Onboarding (público) */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
       <Route path="/onboarding/success" element={<OnboardingSuccess />} />
