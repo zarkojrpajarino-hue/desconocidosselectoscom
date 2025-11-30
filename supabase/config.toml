@@ -110,3 +110,6 @@ verify_jwt = true
 
 [functions.generate-personalized-krs]
 verify_jwt = true
+
+[functions.generate-workspace]
+verify_jwt = true
