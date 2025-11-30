@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Download, TrendingUp, User } from 'lucide-react';
+import { ArrowLeft, Download, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Lead } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
@@ -26,8 +26,8 @@ const UserLeadsPage = () => {
   // Modals
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<any | null>(null);
-  const [editLead, setEditLead] = useState<any | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [editLead, setEditLead] = useState<Lead | null>(null);
 
   // Stats
   const [stats, setStats] = useState({
@@ -80,15 +80,20 @@ const UserLeadsPage = () => {
         .from('leads')
         .select(`
           *,
-          creator:users!leads_created_by_fkey(id, full_name, role),
-          assignee:users!leads_assigned_to_fkey(id, full_name, role)
+          creator:created_by(id, full_name, role),
+          assignee:assigned_to(id, full_name, role)
         `)
         .eq('created_by', userId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const leadsData = (data || []) as Lead[];
+      const leadsData = (data || []).map((lead: any) => ({
+        ...lead,
+        assigned_user_name: lead.assignee?.full_name || null
+      })) as Lead[];
+
       setLeads(leadsData);
 
       // Calcular estadísticas
@@ -110,9 +115,34 @@ const UserLeadsPage = () => {
     }
   };
 
-  const handleLeadClick = (lead: any) => {
+  const handleLeadClick = (lead: Lead) => {
     setSelectedLead(lead);
     setDetailModalOpen(true);
+  };
+
+  const handleEditLead = (lead: Lead) => {
+    setEditLead(lead);
+    setCreateModalOpen(true);
+  };
+
+  const handleMoveStage = async (leadId: string, newStage: string) => {
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .update({ 
+          stage: newStage,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      toast.success('Etapa actualizada');
+      await loadUserLeads();
+    } catch (error) {
+      console.error('Error updating stage:', error);
+      toast.error('Error al actualizar etapa');
+    }
   };
 
   const handleExport = () => {
@@ -139,6 +169,8 @@ const UserLeadsPage = () => {
       case 'proposal': return 'bg-blue-500 text-white';
       case 'qualified': return 'bg-purple-500 text-white';
       case 'contacted': return 'bg-cyan-500 text-white';
+      case 'new': return 'bg-muted text-muted-foreground';
+      case 'lead': return 'bg-muted text-muted-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -180,11 +212,11 @@ const UserLeadsPage = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/crm/leads')}
+              onClick={() => navigate('/crm')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline">Volver</span>
+              <span className="hidden md:inline">Volver al CRM</span>
             </Button>
           </div>
         </div>
@@ -263,8 +295,8 @@ const UserLeadsPage = () => {
             {leads.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
                 {isOwnLeads 
-                  ? 'Aún no has creado ningún lead'
-                  : `${userName} aún no ha creado ningún lead`
+                  ? 'Aún no has creado ningún lead. ¡Empieza a añadir leads desde el CRM principal!'
+                  : `${userName} aún no ha creado ningún lead.`
                 }
               </div>
             ) : (
@@ -278,7 +310,7 @@ const UserLeadsPage = () => {
                       <th className="pb-3 font-medium">Estado</th>
                       <th className="pb-3 font-medium">Valor</th>
                       <th className="pb-3 font-medium">Prob.</th>
-                      <th className="pb-3 font-medium">Fecha</th>
+                      <th className="pb-3 font-medium">Fecha Creación</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -334,16 +366,7 @@ const UserLeadsPage = () => {
             setSelectedLead(null);
           }}
           onUpdate={loadUserLeads}
-          onMoveStage={(leadId, stage) => {
-            supabase
-              .from('leads')
-              .update({ stage })
-              .eq('id', leadId)
-              .then(() => {
-                toast.success('Etapa actualizada');
-                loadUserLeads();
-              });
-          }}
+          onMoveStage={handleMoveStage}
         />
       )}
 
@@ -353,7 +376,11 @@ const UserLeadsPage = () => {
           setCreateModalOpen(false);
           setEditLead(null);
         }}
-        onSuccess={loadUserLeads}
+        onSuccess={() => {
+          loadUserLeads();
+          setCreateModalOpen(false);
+          setEditLead(null);
+        }}
         editLead={editLead}
       />
     </div>
