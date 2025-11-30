@@ -7,12 +7,12 @@ import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 const GENERATION_TIPS = [
-  "💡 Tip: Personaliza tus tareas semanales según tu disponibilidad",
-  "🎯 Consejo: Los OKRs se miden trimestralmente para mejor seguimiento",
+  "💡 Tip: Cada usuario recibirá 12 tareas personalizadas al unirse según su rol",
+  "🎯 Consejo: Genera tu OKR semanal con IA basado en tus tareas (máx 2 en plan gratuito)",
   "📊 Recuerda: Actualiza tus KPIs semanalmente para insights precisos",
   "🤝 Pro-tip: Las tareas colaborativas aumentan la productividad del equipo",
-  "🔥 Dato: La gamificación mantiene alta la motivación del equipo",
-  "⚡ Tip: Las alertas inteligentes te avisan de oportunidades clave",
+  "🔥 Dato: Las herramientas de marketing se personalizan con IA para tu empresa",
+  "⚡ Tip: El pipeline se adapta automáticamente a tu proceso de ventas",
 ];
 
 interface GenerationStep {
@@ -29,9 +29,9 @@ const GeneratingWorkspace = () => {
   const [currentTip, setCurrentTip] = useState(0);
   const [steps, setSteps] = useState<GenerationStep[]>([
     { label: "Creando estructura de base de datos", completed: false },
-    { label: "Generando tareas personalizadas (50+)", completed: false },
-    { label: "Configurando OKRs y Key Results", completed: false },
-    { label: "Adaptando pipeline de CRM", completed: false },
+    { label: "Configurando OKRs estratégicos", completed: false },
+    { label: "Adaptando pipeline de CRM a tu proceso", completed: false },
+    { label: "Generando herramientas de marketing con IA", completed: false },
     { label: "Preparando métricas y KPIs", completed: false },
     { label: "Finalizando configuración", completed: false },
   ]);

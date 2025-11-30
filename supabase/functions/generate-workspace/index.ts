@@ -78,18 +78,16 @@ ${JSON.stringify(org.kpis_to_measure, null, 2)}
 
 **GENERA:**
 
-1. **50 TAREAS** distribuidas en 4 fases (Captar, Proponer, Cerrar, Entregar). Cada tarea debe ser específica al negocio.
-   Formato: { title: string, description: string, phase: 1-4, area: string }
-
-2. **10 OBJETIVOS (OKRs)** con 4 Key Results cada uno, alineados a sus objetivos principales.
+1. **10 OBJETIVOS (OKRs)** con 4 Key Results cada uno, alineados a sus objetivos principales.
    Formato: { objective: string, description: string, key_results: [{ title: string, target_value: number, metric_type: string, unit: string }] }
 
-3. **6 ETAPAS DE PIPELINE CRM** basadas en su proceso comercial.
+2. **6 ETAPAS DE PIPELINE CRM** basadas en su proceso comercial.
    Formato: { name: string, description: string, order_index: number }
+
+NOTA: NO generes tareas aquí. Las tareas se generarán automáticamente cuando cada usuario se una y seleccione su rol (12 tareas personalizadas por rol).
 
 Responde SOLO con JSON válido, sin texto adicional:
 {
-  "tasks": [...],
   "okrs": [...],
   "pipeline_stages": [...]
 }
@@ -133,29 +131,8 @@ Responde SOLO con JSON válido, sin texto adicional:
 
     const generated = JSON.parse(jsonMatch[0]);
 
-    // 6. Insert Tasks
-    console.log(`[generate-workspace] Inserting ${generated.tasks?.length || 0} tasks...`);
-    
-    if (generated.tasks && generated.tasks.length > 0) {
-      const tasksToInsert = generated.tasks.map((task: any) => ({
-        organization_id: organizationId,
-        user_id: null, // Will be assigned later
-        title: task.title,
-        description: task.description,
-        phase: task.phase,
-        area: task.area || 'general',
-        order_index: 0,
-      }));
-
-      const { error: tasksError } = await supabase
-        .from('tasks')
-        .insert(tasksToInsert);
-
-      if (tasksError) {
-        console.error('[generate-workspace] Tasks error:', tasksError);
-        throw new Error(`Failed to insert tasks: ${tasksError.message}`);
-      }
-    }
+    // 6. NO insertamos tareas aquí - se generarán cuando cada usuario seleccione su rol
+    console.log('[generate-workspace] Skipping task generation - tasks will be created per user role');
 
     // 7. Insert OKRs
     console.log(`[generate-workspace] Inserting ${generated.okrs?.length || 0} OKRs...`);
@@ -442,7 +419,6 @@ Genera SOLO el JSON con este formato exacto:
         success: true, 
         message: 'Workspace generated successfully',
         stats: {
-          tasks: generated.tasks?.length || 0,
           okrs: generated.okrs?.length || 0,
           pipeline_stages: generated.pipeline_stages?.length || 0,
           tools: toolsGenerated.length

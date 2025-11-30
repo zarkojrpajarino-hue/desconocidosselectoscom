@@ -20,6 +20,38 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Verificar límite de generaciones en plan gratuito
+    const { data: userRole } = await supabase
+      .from('user_roles')
+      .select('organization_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (userRole) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('plan')
+        .eq('id', userRole.organization_id)
+        .single();
+
+      // En plan gratuito o trial: máximo 2 OKRs por usuario (2 semanas)
+      if (org && (org.plan === 'free' || org.plan === 'trial')) {
+        const { count: existingOKRs } = await supabase
+          .from('objectives')
+          .select('*', { count: 'exact', head: true })
+          .eq('owner_user_id', userId);
+
+        if (existingOKRs && existingOKRs >= 2) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'Has alcanzado el límite de 2 OKRs semanales del plan gratuito. Actualiza a plan premium para generación ilimitada.'
+            }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    }
+
     // Obtener datos del usuario incluyendo objetivos estratégicos
     const { data: user, error: userError } = await supabase
       .from('users')
