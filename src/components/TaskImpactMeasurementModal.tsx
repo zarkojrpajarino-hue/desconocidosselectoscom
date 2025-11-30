@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -336,19 +336,21 @@ const TaskImpactMeasurementModal = ({
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl">
-            Medición de Impacto y Resultados
-          </DialogTitle>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Medición de Impacto y Resultados"
+      className="max-w-3xl"
+    >
+      <div>
+        <div>
           <p className="text-sm text-muted-foreground mt-2">
             Tarea: <strong>{taskTitle}</strong>
           </p>
           <p className="text-sm text-amber-600 dark:text-amber-500 mt-2 font-medium">
             ⚠️ Completa mínimo: 2 preguntas IA + 2 campos de Medición de Impacto
           </p>
-        </DialogHeader>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 mt-4">
           {/* SECCIÓN A: PREGUNTAS IA */}
@@ -596,8 +598,8 @@ const TaskImpactMeasurementModal = ({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ResponsiveModal>
   );
 };
 

@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -209,22 +203,13 @@ const RescheduleModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Sugerir Nuevo Horario
-          </DialogTitle>
-          <DialogDescription>
-            Tarea: <strong>{task.task.title}</strong>
-            {task.is_collaborative && task.collaborator && (
-              <span className="ml-2 text-sm">
-                (con {task.collaborator.full_name})
-              </span>
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Sugerir Nuevo Horario"
+      description={`Tarea: ${task.task.title}${task.is_collaborative && task.collaborator ? ` (con ${task.collaborator.full_name})` : ''}`}
+      className="max-w-2xl"
+    >
 
         <div className="space-y-6 py-4">
           {/* Horario actual */}
@@ -390,8 +375,7 @@ const RescheduleModal = ({
             {isSubmitting ? 'Guardando...' : '✅ Confirmar Cambio'}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 

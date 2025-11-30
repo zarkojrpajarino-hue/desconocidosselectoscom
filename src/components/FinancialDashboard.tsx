@@ -91,55 +91,69 @@ const FinancialDashboard = () => {
       const monthStart = `${selectedMonth}-01`;
 
       // 1. Métricas mensuales
-      const { data: metricsData } = await supabase
+      const { data: metricsData, error: metricsError } = await supabase
         .from('financial_metrics')
         .select('*')
         .eq('month', monthStart)
         .single();
 
+      if (metricsError && metricsError.code !== 'PGRST116') throw metricsError;
+
       if (metricsData) {
         setMetrics(metricsData);
       } else {
         // Si no existen métricas, calcularlas
-        await supabase.rpc('update_financial_metrics', { target_month: monthStart });
-        const { data: newMetrics } = await supabase
+        const { error: rpcError } = await supabase.rpc('update_financial_metrics', { target_month: monthStart });
+        if (rpcError) throw rpcError;
+        
+        const { data: newMetrics, error: newError } = await supabase
           .from('financial_metrics')
           .select('*')
           .eq('month', monthStart)
           .single();
+        
+        if (newError) throw newError;
         setMetrics(newMetrics);
       }
 
       // 2. Ingresos por producto
-      const { data: revenueData } = await supabase
+      const { data: revenueData, error: revenueError } = await supabase
         .from('revenue_by_product_current_month')
         .select('*');
+      
+      if (revenueError) throw revenueError;
       setRevenueByProduct(revenueData || []);
 
       // 3. Gastos por categoría
-      const { data: expensesData } = await supabase
+      const { data: expensesData, error: expensesError } = await supabase
         .from('expenses_by_category_current_month')
         .select('*');
+      
+      if (expensesError) throw expensesError;
       setExpensesByCategory(expensesData || []);
 
       // 4. ROI de marketing
-      const { data: marketingData } = await supabase
+      const { data: marketingData, error: marketingError } = await supabase
         .from('marketing_roi_by_channel')
         .select('*');
+      
+      if (marketingError) throw marketingError;
       setMarketingROI(marketingData || []);
 
       // 5. Balance de caja actual
-      const { data: balanceData } = await supabase
+      const { data: balanceData, error: balanceError } = await supabase
         .from('cash_balance')
         .select('balance')
         .order('date', { ascending: false })
         .limit(1)
         .single();
+      
+      if (balanceError && balanceError.code !== 'PGRST116') throw balanceError;
       setCashBalance(balanceData?.balance || 0);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching financial data:', error);
-      toast.error('Error al cargar datos financieros');
+      toast.error(error.message || 'Error al cargar datos financieros');
     } finally {
       setLoading(false);
     }

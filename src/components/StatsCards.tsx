@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, Circle, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Circle, ListTodo, TrendingUp } from 'lucide-react';
+import { useTasks, useTaskCompletions } from '@/hooks/useTasks';
+import { calculatePercentage } from '@/lib/dateUtils';
 
 interface StatsCardsProps {
   userId: string | undefined;
@@ -10,66 +10,37 @@ interface StatsCardsProps {
 }
 
 const StatsCards = ({ userId, currentPhase, taskLimit }: StatsCardsProps) => {
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    progress: 0
-  });
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks(userId, currentPhase, taskLimit);
+  const { data: completions = new Map(), isLoading: completionsLoading } = useTaskCompletions(userId);
 
-  useEffect(() => {
-    if (userId && currentPhase && taskLimit) {
-      fetchStats();
-    }
-  }, [userId, currentPhase, taskLimit]);
+  const completed = tasks.filter(task => completions.has(task.id) && completions.get(task.id).validated_by_leader).length;
+  const total = tasks.length;
+  const pending = total - completed;
+  const progress = calculatePercentage(completed, total);
 
-  const fetchStats = async () => {
-    if (!userId || !currentPhase || !taskLimit) return;
-
-    try {
-      // Limit tasks and stats to the current phase and the selected weekly task limit
-      let tasksQuery = supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('phase', currentPhase)
-        .order('order_index');
-
-      tasksQuery = tasksQuery.limit(taskLimit);
-
-      const { data: tasks } = await tasksQuery;
-
-      if (!tasks || tasks.length === 0) {
-        setStats({ total: 0, completed: 0, pending: 0, progress: 0 });
-        return;
-      }
-
-      const taskIds = tasks.map((t) => t.id);
-
-      // IMPORTANTE: Solo contar tareas VALIDADAS por el líder
-      const { data: completions } = await supabase
-        .from('task_completions')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('validated_by_leader', true)
-        .in('task_id', taskIds);
-
-      const total = tasks.length;
-      const completed = completions?.length || 0;
-      const pending = total - completed;
-      const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-      setStats({ total, completed, pending, progress });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
+  if (tasksLoading || completionsLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="shadow-card">
+            <CardContent className="pt-4 md:pt-6">
+              <div className="animate-pulse space-y-3">
+                <div className="h-10 w-10 bg-muted rounded-full mx-auto"></div>
+                <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+                <div className="h-8 bg-muted rounded w-3/4 mx-auto"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   const statCards = [
-    { label: 'Total Tareas', value: stats.total, icon: Circle, color: 'text-primary' },
-    { label: 'Completadas', value: stats.completed, icon: CheckCircle2, color: 'text-success' },
-    { label: 'Pendientes', value: stats.pending, icon: Circle, color: 'text-warning' },
-    { label: 'Progreso', value: `${stats.progress}%`, icon: TrendingUp, color: 'text-accent' },
+    { label: 'Total Tareas', value: total, icon: ListTodo, color: 'text-primary' },
+    { label: 'Completadas', value: completed, icon: CheckCircle2, color: 'text-success' },
+    { label: 'Pendientes', value: pending, icon: Circle, color: 'text-warning' },
+    { label: 'Progreso', value: `${progress}%`, icon: TrendingUp, color: 'text-accent' },
   ];
 
   return (

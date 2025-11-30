@@ -94,7 +94,7 @@ const OKRsDashboard = () => {
   const fetchOKRs = async () => {
     setLoading(true);
     try {
-      const { data: objectivesData, error: objError} = await supabase
+      const { data: objectivesData, error: objError } = await supabase
         .from('objectives')
         .select('*')
         .eq('owner_user_id', user?.id)
@@ -158,9 +158,9 @@ const OKRsDashboard = () => {
       );
 
       setObjectives(objectivesWithKRs);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching OKRs:', error);
-      toast.error('Error al cargar OKRs');
+      toast.error(error.message || 'Error al cargar OKRs');
     } finally {
       setLoading(false);
     }

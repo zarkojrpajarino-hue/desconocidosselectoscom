@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ChevronDown, ChevronUp, Users, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface TeamMemberProgress {
   id: string;
@@ -26,22 +27,17 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
   const [totalTasks, setTotalTasks] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (currentPhase) {
-      fetchTeamProgress();
-    }
-  }, [currentPhase]);
-
   const fetchTeamProgress = async () => {
     setLoading(true);
     try {
       // Obtener todos los usuarios (incluido el actual si no está en la lista)
-      const { data: users } = await supabase
+      const { data: users, error: usersError } = await supabase
         .from('users')
         .select('id, username, full_name')
         .neq('role', 'admin')
         .order('username');
 
+      if (usersError) throw usersError;
       if (!users) return;
 
       // Asegurarse de que el usuario actual está en la lista
@@ -112,6 +108,7 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
       setTotalCompleted(totalCompletedCount);
     } catch (error) {
       console.error('Error fetching team progress:', error);
+      toast.error('Error al cargar progreso del equipo');
     } finally {
       setLoading(false);
     }
