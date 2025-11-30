@@ -218,35 +218,24 @@ const FinancialDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Controles */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="default"
-          onClick={() => window.location.href = '/financial/detailed'}
-          className="gap-2 bg-black hover:bg-black/90 text-white"
-        >
-          <FileText className="h-4 w-4" />
-          Contabilidad Detallada
-        </Button>
-        
-        <div className="flex items-center gap-3">
-          {/* Selector de mes */}
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-4 py-2 border border-input rounded-lg bg-background text-foreground"
-          />
+      <div className="flex items-center justify-end gap-3">
+        {/* Selector de mes */}
+        <input
+          type="month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="px-4 py-2 border border-input rounded-lg bg-background text-foreground"
+        />
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchFinancialData}
-            className="gap-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Actualizar
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchFinancialData}
+          className="gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Actualizar
+        </Button>
       </div>
 
       {/* KPIs Principales */}
