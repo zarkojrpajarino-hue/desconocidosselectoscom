@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Trophy, Flame, Star, Target, Crown, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const GamificationDashboard = () => {
   const { user } = useAuth();
@@ -13,48 +14,79 @@ const GamificationDashboard = () => {
   const [recentPoints, setRecentPoints] = useState<any[]>([]);
 
   useEffect(() => {
-    if (user) {
-      fetchGamificationData();
-    }
+    if (!user) return;
+    
+    fetchGamificationData();
+    
+    // FASE 1: Suscripción a cambios en tiempo real con cleanup
+    const channel = supabase
+      .channel('gamification-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_achievements',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchGamificationData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchGamificationData = async () => {
-    // Achievements
-    const { data: achievementData } = await supabase
-      .from('user_achievements')
-      .select('*')
-      .eq('user_id', user?.id)
-      .maybeSingle();
-    
-    setAchievement(achievementData);
+    try {
+      // Achievements
+      const { data: achievementData, error: achievementError } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+      
+      if (achievementError) throw achievementError;
+      setAchievement(achievementData);
 
-    // Badges del usuario
-    const { data: badgesData } = await supabase
-      .from('user_badges')
-      .select('*, badges(*)')
-      .eq('user_id', user?.id)
-      .order('earned_at', { ascending: false });
-    
-    setBadges(badgesData || []);
+      // Badges del usuario
+      const { data: badgesData, error: badgesError } = await supabase
+        .from('user_badges')
+        .select('*, badges(*)')
+        .eq('user_id', user?.id)
+        .order('earned_at', { ascending: false });
+      
+      if (badgesError) throw badgesError;
+      setBadges(badgesData || []);
 
-    // Leaderboard (top 10)
-    const { data: leaderboardData } = await supabase
-      .from('user_achievements')
-      .select('*, users(username, full_name)')
-      .order('total_points', { ascending: false })
-      .limit(10);
-    
-    setLeaderboard(leaderboardData || []);
+      // Leaderboard (top 10)
+      const { data: leaderboardData, error: leaderboardError } = await supabase
+        .from('user_achievements')
+        .select('*, users(username, full_name)')
+        .order('total_points', { ascending: false })
+        .limit(10);
+      
+      if (leaderboardError) throw leaderboardError;
+      setLeaderboard(leaderboardData || []);
 
-    // Historial reciente de puntos
-    const { data: pointsData } = await supabase
-      .from('points_history')
-      .select('*')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false })
-      .limit(5);
-    
-    setRecentPoints(pointsData || []);
+      // Historial reciente de puntos
+      const { data: pointsData, error: pointsError } = await supabase
+        .from('points_history')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (pointsError) throw pointsError;
+      setRecentPoints(pointsData || []);
+    } catch (error) {
+      // FASE 1: Error handling mejorado
+      console.error('Error fetching gamification data:', error);
+      toast.error('Error al cargar datos de gamificación');
+    }
   };
 
   const getRarityColor = (rarity: string) => {

@@ -6,6 +6,7 @@ import { Calendar, Clock, Users, CheckCircle2, AlertCircle, RefreshCw } from 'lu
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import RescheduleModal from './RescheduleModal';
+import { formatTime, formatShortDate } from '@/lib/dateUtils';
 
 interface WeeklyAgendaProps {
   userId: string;
@@ -50,7 +51,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
   useEffect(() => {
     fetchSchedule();
     
-    // Suscribirse a cambios en tiempo real
+    // FASE 1: Fix memory leak - suscripción con cleanup
     const channel = supabase
       .channel('schedule-changes')
       .on(
@@ -68,6 +69,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
       )
       .subscribe();
 
+    // Cleanup para evitar memory leak
     return () => {
       supabase.removeChannel(channel);
     };
@@ -148,10 +150,11 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
         // No mostrar error al usuario, es opcional
       }
 
-      fetchSchedule();
+      await fetchSchedule();
     } catch (error) {
+      // FASE 1: Error handling mejorado
       console.error('Error accepting task:', error);
-      toast.error('Error al aceptar tarea');
+      toast.error('Error al aceptar tarea. Por favor intenta nuevamente.');
     }
   };
 
@@ -173,14 +176,8 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
     }
   };
 
-  const formatTime = (time: string) => {
-    return time.substring(0, 5); // HH:MM
-  };
-
-  const formatDate = (dateStr: string, dayName: string) => {
-    const date = new Date(dateStr);
-    return `${dayName} ${date.getDate()} ${date.toLocaleDateString('es-ES', { month: 'short' })}`;
-  };
+  // FASE 2: Usar utilidades consolidadas de dateUtils
+  // (funciones eliminadas - ahora se importan)
 
   if (loading) {
     return (
@@ -246,7 +243,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
               <div className="flex items-center gap-2 pb-2 border-b">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">
-                    📍 {formatDate(day.date, day.dayName)}
+                    📍 {formatShortDate(day.date, day.dayName)}
                   </h3>
                   {day.tasks.length > 0 && (
                     <p className="text-sm text-muted-foreground">

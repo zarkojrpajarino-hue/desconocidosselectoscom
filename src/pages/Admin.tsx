@@ -55,11 +55,20 @@ interface HeatmapData {
   tasks: number;
 }
 
+interface SystemConfig {
+  id: string;
+  current_phase: number;
+  week_start: string;
+  week_deadline: string;
+  is_week_locked: boolean | null;
+  updated_at: string | null;
+}
+
 const Admin = () => {
   const { userProfile, loading } = useAuth();
   const navigate = useNavigate();
   const [teamStats, setTeamStats] = useState<UserStats[]>([]);
-  const [systemConfig, setSystemConfig] = useState<any>(null);
+  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sortBy, setSortBy] = useState<'progress' | 'points' | 'tasks'>('progress');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');

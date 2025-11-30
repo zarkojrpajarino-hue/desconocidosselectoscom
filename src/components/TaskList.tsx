@@ -46,7 +46,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   useEffect(() => {
     if (!userId) return;
 
-    // Suscribirse a alertas de badges desde smart_alerts
+    // FASE 1: Fix memory leak - Suscripción a badges con cleanup
     const channel = supabase
       .channel('badge-alerts')
       .on(
@@ -142,7 +142,13 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     try {
       if (isCompleted) {
         // Remove completion
-        await supabase.from("task_completions").delete().eq("task_id", task.id).eq("user_id", userId);
+        const { error } = await supabase
+          .from("task_completions")
+          .delete()
+          .eq("task_id", task.id)
+          .eq("user_id", userId);
+
+        if (error) throw error;
 
         setCompletions((prev) => {
           const newMap = new Map(prev);
@@ -166,7 +172,9 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         }
       }
     } catch (error) {
-      toast.error("Error al actualizar tarea");
+      // FASE 1: Error handling mejorado
+      console.error('Error al actualizar tarea:', error);
+      toast.error("Error al actualizar tarea. Por favor intenta nuevamente.");
     }
   };
 
@@ -267,21 +275,25 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         if (isLeader) {
           // Líder completa medición → 100%
           if (completion) {
-            await supabase
+            const { error } = await supabase
               .from("task_completions")
               .update({
                 validated_by_leader: true,
                 impact_measurement: data,
               })
               .eq("id", completion.id);
+
+            if (error) throw error;
           } else {
-            await supabase.from("task_completions").insert({
+            const { error } = await supabase.from("task_completions").insert({
               task_id: selectedTask.id,
               user_id: selectedTask.user_id,
               completed_by_user: true,
               validated_by_leader: true,
               impact_measurement: data,
             });
+
+            if (error) throw error;
           }
 
           // 🎮 OTORGAR PUNTOS AL LÍDER POR VALIDAR
@@ -311,10 +323,12 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         } else {
           // Colaborador completa medición → 50%
           if (completion) {
-            await supabase
+            const { error } = await supabase
               .from("task_completions")
               .update({ impact_measurement: data })
               .eq("id", completion.id);
+
+            if (error) throw error;
           }
 
           // 🎮 OTORGAR PUNTOS AL COLABORADOR POR COMPLETAR TAREA COLABORATIVA
@@ -344,7 +358,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         }
       } else {
         // Tarea individual → 100%
-        await supabase.from("task_completions").insert({
+        const { error } = await supabase.from("task_completions").insert({
           task_id: selectedTask.id,
           user_id: userId,
           completed_by_user: true,
@@ -352,6 +366,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           impact_measurement: data,
           ai_questions: data.ai_questions,
         });
+
+        if (error) throw error;
 
         // 🎮 OTORGAR PUNTOS POR TAREA INDIVIDUAL
         await supabase.functions.invoke('award-points', {
@@ -369,7 +385,9 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
 
       await fetchTasks();
     } catch (error) {
-      toast.error("Error al completar tarea");
+      // FASE 1: Error handling mejorado
+      console.error('Error al completar tarea:', error);
+      toast.error("Error al completar tarea. Por favor intenta nuevamente.");
       throw error;
     }
   };
