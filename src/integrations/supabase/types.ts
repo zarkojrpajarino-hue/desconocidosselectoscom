@@ -2029,6 +2029,44 @@ export type Database = {
           },
         ]
       }
+      tool_contents: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          tool_type: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          tool_type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          tool_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_contents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           best_streak: number | null
