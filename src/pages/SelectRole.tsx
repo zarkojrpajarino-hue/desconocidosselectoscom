@@ -161,9 +161,12 @@ const SelectRole = () => {
           {/* Gradiente de fondo animado */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 animate-gradient-xy opacity-50" />
           
-          {/* Badge "Recomendado" */}
-          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg rotate-12 flex items-center gap-1">
-            ✨ Recomendado
+          {/* Badge "Recomendado" - MEJORADO */}
+          <div className="absolute top-4 right-4 z-20">
+            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 animate-pulse">
+              <span className="text-sm">✨</span>
+              <span>Recomendado</span>
+            </div>
           </div>
 
           <CardHeader className="relative z-10">
@@ -226,6 +229,28 @@ const SelectRole = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
+        {/* Botón Confirmar - MOVIDO AQUÍ */}
+        <div className="flex justify-center mb-8">
+          <Button
+            onClick={handleRoleSelect}
+            disabled={!selectedRole || loading}
+            size="lg"
+            className="min-w-[280px] h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Generando tareas con IA...
+              </>
+            ) : (
+              <>
+                <span className="mr-2">🚀</span>
+                Confirmar y Generar Tareas
+              </>
+            )}
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {PREDEFINED_ROLES.filter(r => r.value !== 'admin').map((role) => (
             <Card
@@ -248,27 +273,14 @@ const SelectRole = () => {
           ))}
         </div>
 
-        <div className="flex justify-center gap-4">
+        {/* Botón Cancelar abajo */}
+        <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => navigate('/home')}
             disabled={loading}
           >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleRoleSelect}
-            disabled={!selectedRole || loading}
-            className="min-w-[200px]"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generando tareas...
-              </>
-            ) : (
-              'Confirmar y Generar Tareas'
-            )}
+            ← Volver
           </Button>
         </div>
       </div>
