@@ -26,7 +26,8 @@ const NotificationBell = () => {
 
     fetchUrgentAlerts();
 
-    const subscription = supabase
+    // FASE 1: Fix memory leak - cleanup subscription
+    const channel = supabase
       .channel('urgent_alerts')
       .on('postgres_changes', 
         { 
@@ -42,7 +43,7 @@ const NotificationBell = () => {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [user]);
 
@@ -62,7 +63,9 @@ const NotificationBell = () => {
       setUrgentAlerts(data || []);
       setUnreadCount((data || []).filter(a => !a.viewed).length);
     } catch (error) {
+      // FASE 1: Error handling mejorado
       console.error('Error fetching urgent alerts:', error);
+      toast.error('Error al cargar alertas');
     }
   };
 

@@ -1992,6 +1992,10 @@ export type Database = {
         Args: { obj_id: string }
         Returns: number
       }
+      can_user_swap: {
+        Args: { p_user_id: string; p_week_number: number }
+        Returns: boolean
+      }
       check_financial_risks: { Args: never; Returns: undefined }
       check_okr_risks: { Args: never; Returns: undefined }
       check_stale_leads: { Args: never; Returns: undefined }
@@ -2002,6 +2006,7 @@ export type Database = {
       }
       generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
+      get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
       update_financial_metrics: {
         Args: { target_month: string }
         Returns: undefined
