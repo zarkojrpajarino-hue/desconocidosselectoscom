@@ -29,7 +29,6 @@ import FinancialPage from "./pages/FinancialPage";
 import AlertsPage from "./pages/AlertsPage";
 import CRMPage from "./pages/CRMPage";
 import DetailedFinancial from "./pages/financial/DetailedFinancial";
-import CRMHub from "./pages/crm/CRMHub";
 import CRMLeads from "./pages/crm/CRMLeads";
 import Pipeline from "./pages/crm/Pipeline";
 import UserLeadsPage from "./pages/crm/UserLeadsPage";
@@ -166,7 +165,7 @@ const AppContent = () => {
       } />
 <Route path="/crm" element={
   <ProtectedRoute>
-    <CRMHub />
+    <CRMLeads />
   </ProtectedRoute>
 } />
 <Route path="/crm/leads" element={
