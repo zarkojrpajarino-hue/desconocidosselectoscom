@@ -1056,6 +1056,93 @@ export type Database = {
           },
         ]
       }
+      onboarding_submissions: {
+        Row: {
+          account_email: string
+          account_password_hash: string
+          ai_prompt_generated: string | null
+          annual_revenue_range: string | null
+          business_description: string
+          company_name: string
+          company_size: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string | null
+          current_problems: string
+          id: string
+          industry: string
+          kpis_to_measure: Json
+          lead_sources: Json
+          main_objectives: string
+          products_services: Json
+          sales_cycle_days: number | null
+          sales_process: string
+          status: string | null
+          target_customers: string
+          team_structure: Json
+          updated_at: string | null
+          user_id: string | null
+          value_proposition: string
+        }
+        Insert: {
+          account_email: string
+          account_password_hash: string
+          ai_prompt_generated?: string | null
+          annual_revenue_range?: string | null
+          business_description: string
+          company_name: string
+          company_size: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string | null
+          current_problems: string
+          id?: string
+          industry: string
+          kpis_to_measure: Json
+          lead_sources: Json
+          main_objectives: string
+          products_services: Json
+          sales_cycle_days?: number | null
+          sales_process: string
+          status?: string | null
+          target_customers: string
+          team_structure: Json
+          updated_at?: string | null
+          user_id?: string | null
+          value_proposition: string
+        }
+        Update: {
+          account_email?: string
+          account_password_hash?: string
+          ai_prompt_generated?: string | null
+          annual_revenue_range?: string | null
+          business_description?: string
+          company_name?: string
+          company_size?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string | null
+          current_problems?: string
+          id?: string
+          industry?: string
+          kpis_to_measure?: Json
+          lead_sources?: Json
+          main_objectives?: string
+          products_services?: Json
+          sales_cycle_days?: number | null
+          sales_process?: string
+          status?: string | null
+          target_customers?: string
+          team_structure?: Json
+          updated_at?: string | null
+          user_id?: string | null
+          value_proposition?: string
+        }
+        Relationships: []
+      }
       points_history: {
         Row: {
           created_at: string | null

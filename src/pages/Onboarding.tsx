@@ -1,0 +1,478 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { OnboardingStep1 } from "@/components/onboarding/OnboardingStep1";
+import { OnboardingStep2 } from "@/components/onboarding/OnboardingStep2";
+import { OnboardingStep3 } from "@/components/onboarding/OnboardingStep3";
+import { OnboardingStep4 } from "@/components/onboarding/OnboardingStep4";
+import { OnboardingStep5 } from "@/components/onboarding/OnboardingStep5";
+import { OnboardingStep6 } from "@/components/onboarding/OnboardingStep6";
+import { OnboardingStep7 } from "@/components/onboarding/OnboardingStep7";
+
+export interface OnboardingFormData {
+  // Paso 1: Cuenta
+  accountEmail: string;
+  accountPassword: string;
+  
+  // Paso 2: Info básica
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  industry: string;
+  companySize: string;
+  annualRevenueRange: string;
+  
+  // Paso 3: Negocio detallado
+  businessDescription: string;
+  targetCustomers: string;
+  valueProposition: string;
+  
+  // Paso 4: Productos/Servicios
+  productsServices: Array<{
+    name: string;
+    price: string;
+    category: string;
+    description: string;
+  }>;
+  
+  // Paso 5: Proceso comercial
+  salesProcess: string;
+  salesCycleDays: string;
+  leadSources: string[];
+  
+  // Paso 6: Equipo
+  teamStructure: Array<{
+    role: string;
+    count: string;
+    responsibilities: string;
+  }>;
+  
+  // Paso 7: Objetivos
+  mainObjectives: string;
+  kpisToMeasure: string[];
+  currentProblems: string;
+}
+
+const TOTAL_STEPS = 7;
+
+const Onboarding = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState<OnboardingFormData>({
+    accountEmail: "",
+    accountPassword: "",
+    companyName: "",
+    contactName: "",
+    contactEmail: "",
+    contactPhone: "",
+    industry: "",
+    companySize: "",
+    annualRevenueRange: "",
+    businessDescription: "",
+    targetCustomers: "",
+    valueProposition: "",
+    productsServices: [{ name: "", price: "", category: "", description: "" }],
+    salesProcess: "",
+    salesCycleDays: "",
+    leadSources: [],
+    teamStructure: [{ role: "", count: "", responsibilities: "" }],
+    mainObjectives: "",
+    kpisToMeasure: [],
+    currentProblems: "",
+  });
+
+  const updateFormData = (data: Partial<OnboardingFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        if (!formData.accountEmail || !formData.accountPassword) {
+          toast.error("Por favor completa todos los campos del paso 1");
+          return false;
+        }
+        if (formData.accountPassword.length < 8) {
+          toast.error("La contraseña debe tener al menos 8 caracteres");
+          return false;
+        }
+        return true;
+      
+      case 2:
+        if (!formData.companyName || !formData.contactName || !formData.contactEmail || 
+            !formData.industry || !formData.companySize) {
+          toast.error("Por favor completa todos los campos obligatorios del paso 2");
+          return false;
+        }
+        return true;
+      
+      case 3:
+        if (!formData.businessDescription || !formData.targetCustomers || !formData.valueProposition) {
+          toast.error("Por favor completa todos los campos del paso 3");
+          return false;
+        }
+        if (formData.businessDescription.length < 300) {
+          toast.error("La descripción del negocio debe tener al menos 300 palabras para generar una app de calidad");
+          return false;
+        }
+        return true;
+      
+      case 4:
+        if (formData.productsServices.length === 0 || !formData.productsServices[0].name) {
+          toast.error("Agrega al menos 1 producto/servicio");
+          return false;
+        }
+        return true;
+      
+      case 5:
+        if (!formData.salesProcess || formData.leadSources.length === 0) {
+          toast.error("Por favor completa todos los campos del paso 5");
+          return false;
+        }
+        return true;
+      
+      case 6:
+        if (formData.teamStructure.length === 0 || !formData.teamStructure[0].role) {
+          toast.error("Agrega al menos 1 rol en el equipo");
+          return false;
+        }
+        return true;
+      
+      case 7:
+        if (!formData.mainObjectives || formData.kpisToMeasure.length === 0 || !formData.currentProblems) {
+          toast.error("Por favor completa todos los campos del paso 7");
+          return false;
+        }
+        return true;
+      
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      if (currentStep < TOTAL_STEPS) {
+        setCurrentStep(prev => prev + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        handleSubmit();
+      }
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const generateMegaPrompt = (data: OnboardingFormData): string => {
+    return `
+# Generar App OPTIMUS-K para: ${data.companyName}
+
+## INSTRUCCIONES PARA LOVABLE AI:
+Genera una app IDÉNTICA al proyecto "Experiencia Selecta" (OPTIMUS-K base), pero 100% personalizada con la siguiente información del cliente:
+
+---
+
+## 📋 INFORMACIÓN DE LA EMPRESA
+
+**Nombre**: ${data.companyName}
+**Industria**: ${data.industry}
+**Tamaño**: ${data.companySize}
+**Revenue Anual**: ${data.annualRevenueRange || 'No especificado'}
+
+**Contacto**:
+- Nombre: ${data.contactName}
+- Email: ${data.contactEmail}
+- Teléfono: ${data.contactPhone || 'No especificado'}
+
+---
+
+## 🎯 DESCRIPCIÓN COMPLETA DEL NEGOCIO
+
+${data.businessDescription}
+
+**Clientes objetivo**:
+${data.targetCustomers}
+
+**Propuesta de valor**:
+${data.valueProposition}
+
+---
+
+## 💼 PRODUCTOS Y SERVICIOS
+
+${data.productsServices.map((p, i) => `
+### ${i + 1}. ${p.name}
+- **Precio**: ${p.price}
+- **Categoría**: ${p.category}
+- **Descripción**: ${p.description}
+`).join('\n')}
+
+---
+
+## 🚀 PROCESO COMERCIAL COMPLETO
+
+**Descripción paso a paso**:
+${data.salesProcess}
+
+**Ciclo de venta promedio**: ${data.salesCycleDays || 'No especificado'} días
+
+**Fuentes de leads**:
+${data.leadSources.map(s => `- ${s}`).join('\n')}
+
+---
+
+## 👥 ESTRUCTURA DEL EQUIPO
+
+${data.teamStructure.map((t, i) => `
+### ${i + 1}. ${t.role}
+- **Cantidad**: ${t.count} persona(s)
+- **Responsabilidades**: ${t.responsibilities}
+`).join('\n')}
+
+---
+
+## 🎯 OBJETIVOS Y MÉTRICAS
+
+**Objetivos principales**:
+${data.mainObjectives}
+
+**KPIs a medir**:
+${data.kpisToMeasure.map(k => `- ${k}`).join('\n')}
+
+**Problemas actuales a resolver**:
+${data.currentProblems}
+
+---
+
+## 📦 INSTRUCCIONES DE GENERACIÓN
+
+### ESTRUCTURA BASE (NO CAMBIAR):
+- Dashboard con tareas semanales
+- Sistema de OKRs con Key Results
+- CRM con pipeline personalizado
+- Módulo de métricas KPI
+- Sistema de gamificación
+- Alertas inteligentes
+- Calendario semanal
+
+### PERSONALIZACIONES REQUERIDAS:
+
+#### 1. TAREAS (Generar 50 tareas específicas)
+Basándote en el proceso comercial descrito, genera 50 tareas concretas distribuidas en 4 fases:
+- **Fase 1 - Captar**: Tareas para generar y cualificar leads
+- **Fase 2 - Proponer**: Tareas para presentar propuestas y negociar
+- **Fase 3 - Cerrar**: Tareas para firmar contratos
+- **Fase 4 - Entregar**: Tareas post-venta y retención
+
+Ejemplos adaptados a su industria (${data.industry}):
+[Genera tareas reales que esta empresa haría día a día]
+
+#### 2. PIPELINE CRM
+Adapta las etapas del pipeline basándote en su proceso comercial:
+${data.salesProcess.split('\n').slice(0, 7).map((step, i) => `- Etapa ${i + 1}: ${step}`).join('\n')}
+
+#### 3. MÉTRICAS KPI
+Crea un dashboard con estas métricas específicas:
+${data.kpisToMeasure.map(k => `- ${k}`).join('\n')}
+
+#### 4. OKRs
+Genera 3 objetivos principales alineados con:
+${data.mainObjectives}
+
+#### 5. PRODUCTOS EN CRM
+Lista de productos/servicios para el CRM:
+${data.productsServices.map(p => `- ${p.name} (${p.category}) - ${p.price}`).join('\n')}
+
+#### 6. ROLES Y PERMISOS
+Estructura de equipo para permisos:
+${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
+
+---
+
+## 🎨 PERSONALIZACIÓN UI (OPCIONAL)
+
+- Usar terminología específica de ${data.industry}
+- Adaptar ejemplos y placeholders a su negocio
+- Mantener estructura base de Experiencia Selecta
+
+---
+
+## ✅ CHECKLIST DE GENERACIÓN
+
+- [ ] 50 tareas específicas generadas
+- [ ] Pipeline CRM con etapas personalizadas
+- [ ] Dashboard KPI con métricas correctas
+- [ ] 3 OKRs alineados con objetivos
+- [ ] Productos/servicios en sistema
+- [ ] Roles de equipo configurados
+- [ ] Base de datos adaptada
+- [ ] RLS policies configuradas
+- [ ] Funcionalidades base mantenidas
+
+---
+
+**IMPORTANTE**: 
+1. NO cambies la arquitectura base
+2. NO agregues funcionalidades nuevas no solicitadas
+3. SÍ personaliza contenido, tareas, métricas y textos
+4. SÍ mantén toda la funcionalidad de gamificación, alertas, colaboración
+5. Genera una app lista para producción
+
+**Resultado esperado**: App funcionando 100%, personalizada, sin bugs, lista para desplegar.
+    `.trim();
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    
+    try {
+      // Generar mega-prompt
+      const megaPrompt = generateMegaPrompt(formData);
+      
+      // Guardar en Supabase
+      const { data, error } = await supabase
+        .from('onboarding_submissions')
+        .insert({
+          company_name: formData.companyName,
+          contact_name: formData.contactName,
+          contact_email: formData.contactEmail,
+          contact_phone: formData.contactPhone,
+          account_email: formData.accountEmail,
+          account_password_hash: 'ENCRYPTED', // En producción, hashear con bcrypt
+          industry: formData.industry,
+          company_size: formData.companySize,
+          annual_revenue_range: formData.annualRevenueRange,
+          business_description: formData.businessDescription,
+          target_customers: formData.targetCustomers,
+          value_proposition: formData.valueProposition,
+          products_services: formData.productsServices,
+          sales_process: formData.salesProcess,
+          sales_cycle_days: parseInt(formData.salesCycleDays) || null,
+          lead_sources: formData.leadSources,
+          team_structure: formData.teamStructure,
+          main_objectives: formData.mainObjectives,
+          kpis_to_measure: formData.kpisToMeasure,
+          current_problems: formData.currentProblems,
+          ai_prompt_generated: megaPrompt,
+          status: 'pending'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast.success("¡Onboarding completado! Te contactaremos pronto.");
+      
+      // Redirigir a página de confirmación
+      navigate('/onboarding/success', { state: { submissionId: data.id } });
+      
+    } catch (error: any) {
+      console.error('Error submitting onboarding:', error);
+      toast.error("Error al guardar. Por favor intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const progress = (currentStep / TOTAL_STEPS) * 100;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <div className="max-w-4xl mx-auto py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            Bienvenido a <span className="text-primary">OPTIMUS-K</span>
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Generador de Apps de Gestión Empresarial
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Completa este formulario y en 2-3 horas tendrás tu app personalizada lista
+          </p>
+        </div>
+
+        {/* Progress */}
+        <Card className="p-6 mb-6">
+          <div className="flex justify-between mb-2">
+            <span className="text-sm font-medium">Paso {currentStep} de {TOTAL_STEPS}</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+          <div className="flex justify-between mt-4 text-xs text-muted-foreground">
+            <span className={currentStep >= 1 ? "text-primary font-medium" : ""}>Cuenta</span>
+            <span className={currentStep >= 2 ? "text-primary font-medium" : ""}>Empresa</span>
+            <span className={currentStep >= 3 ? "text-primary font-medium" : ""}>Negocio</span>
+            <span className={currentStep >= 4 ? "text-primary font-medium" : ""}>Productos</span>
+            <span className={currentStep >= 5 ? "text-primary font-medium" : ""}>Comercial</span>
+            <span className={currentStep >= 6 ? "text-primary font-medium" : ""}>Equipo</span>
+            <span className={currentStep >= 7 ? "text-primary font-medium" : ""}>Objetivos</span>
+          </div>
+        </Card>
+
+        {/* Form Steps */}
+        <Card className="p-8">
+          {currentStep === 1 && <OnboardingStep1 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 2 && <OnboardingStep2 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 3 && <OnboardingStep3 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 4 && <OnboardingStep4 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 5 && <OnboardingStep5 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 6 && <OnboardingStep6 formData={formData} updateFormData={updateFormData} />}
+          {currentStep === 7 && <OnboardingStep7 formData={formData} updateFormData={updateFormData} />}
+
+          {/* Navigation */}
+          <div className="flex justify-between mt-8 pt-6 border-t">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 1 || loading}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Anterior
+            </Button>
+
+            <Button
+              onClick={handleNext}
+              disabled={loading}
+            >
+              {loading ? (
+                "Guardando..."
+              ) : currentStep === TOTAL_STEPS ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Finalizar
+                </>
+              ) : (
+                <>
+                  Siguiente
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </Card>
+
+        {/* Trial Info */}
+        <div className="text-center mt-6 text-sm text-muted-foreground">
+          <p>🎁 <strong>Primera semana GRATIS</strong></p>
+          <p>Luego desde €99/mes · Sin permanencia · Cancela cuando quieras</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Onboarding;

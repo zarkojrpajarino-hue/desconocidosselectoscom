@@ -52,13 +52,27 @@ import Simulador from "./pages/practicar/Simulador";
 import Playbook from "./pages/practicar/Playbook";
 import Guia from "./pages/practicar/Guia";
 
+// Onboarding pages
+import Onboarding from "./pages/Onboarding";
+import OnboardingSuccess from "./pages/OnboardingSuccess";
+import AdminOnboardings from "./pages/AdminOnboardings";
+import Landing from "./pages/Landing";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Landing y Onboarding (público) */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/onboarding/success" element={<OnboardingSuccess />} />
+      <Route path="/admin/onboardings" element={
+        <ProtectedRoute>
+          <AdminOnboardings />
+        </ProtectedRoute>
+      } />
       <Route path="/home" element={
         <ProtectedRoute>
           <Home />
