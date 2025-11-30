@@ -36,6 +36,7 @@ const TransactionsHistory = () => {
   const [userStats, setUserStats] = useState<UserTransactionStats[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [transactionsOpen, setTransactionsOpen] = useState(false);
+  const [userStatsOpen, setUserStatsOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -381,11 +382,38 @@ const TransactionsHistory = () => {
         </Card>
 
         {/* Estadísticas por Usuario */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">📊 Transacciones por Usuario</h2>
-
-          {/* Usuario actual */}
-          {currentUserStats && (
+        <Card>
+          <CardHeader>
+            <Collapsible open={userStatsOpen} onOpenChange={setUserStatsOpen}>
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      📊 Transacciones por Usuario
+                    </CardTitle>
+                    <CardDescription>
+                      Resumen de transacciones registradas por cada miembro del equipo
+                    </CardDescription>
+                  </div>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {userStatsOpen ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Ocultar
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Ver por usuario
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="space-y-6 mt-4">
+                  {/* Usuario actual */}
+                  {currentUserStats && (
             <Card className="border-primary bg-primary/5">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -430,59 +458,63 @@ const TransactionsHistory = () => {
             </Card>
           )}
 
-          {/* Otros usuarios */}
-          {otherUsersStats.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold mt-8">Otros Miembros del Equipo</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {otherUsersStats.map((stat) => (
-                  <Card key={stat.user_id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                            <User className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-base">{stat.user_name}</CardTitle>
-                            <CardDescription className="text-xs">
-                              {stat.total_transactions} transacciones registradas
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/financial/transactions/user/${stat.user_id}`)}
-                          className="gap-2"
-                        >
-                          <TrendingUp className="h-4 w-4" />
-                          Ver transacciones
-                        </Button>
+                  {/* Otros usuarios */}
+                  {otherUsersStats.length > 0 && (
+                    <>
+                      <h3 className="text-xl font-semibold mt-8">Otros Miembros del Equipo</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {otherUsersStats.map((stat) => (
+                          <Card key={stat.user_id}>
+                            <CardHeader>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="w-5 h-5 text-muted-foreground" />
+                                  </div>
+                                  <div>
+                                    <CardTitle className="text-base">{stat.user_name}</CardTitle>
+                                    <CardDescription className="text-xs">
+                                      {stat.total_transactions} transacciones registradas
+                                    </CardDescription>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/financial/transactions/user/${stat.user_id}`)}
+                                  className="gap-2"
+                                >
+                                  <TrendingUp className="h-4 w-4" />
+                                  Ver transacciones
+                                </Button>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="grid grid-cols-3 gap-3 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground mb-1">Ingresos</p>
+                                  <p className="font-semibold text-success">{formatCurrency(stat.total_revenue)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground mb-1">Gastos</p>
+                                  <p className="font-semibold text-destructive">{formatCurrency(stat.total_expenses)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground mb-1">Marketing</p>
+                                  <p className="font-semibold text-warning">{formatCurrency(stat.total_marketing)}</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <p className="text-muted-foreground mb-1">Ingresos</p>
-                          <p className="font-semibold text-success">{formatCurrency(stat.total_revenue)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">Gastos</p>
-                          <p className="font-semibold text-destructive">{formatCurrency(stat.total_expenses)}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground mb-1">Marketing</p>
-                          <p className="font-semibold text-warning">{formatCurrency(stat.total_marketing)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+                    </>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardHeader>
+        </Card>
       </main>
     </div>
   );
