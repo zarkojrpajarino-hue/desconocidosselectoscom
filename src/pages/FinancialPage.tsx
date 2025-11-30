@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, DollarSign, Plus, AlertCircle } from 'lucide-react';
+import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FinancialDashboard from '@/components/FinancialDashboard';
 import RevenueFormModal from '@/components/financial/RevenueFormModal';
 import ExpenseFormModal from '@/components/financial/ExpenseFormModal';
@@ -30,6 +31,7 @@ const FinancialPage = () => {
   const [marketingModalOpen, setMarketingModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isFinancialInfoOpen, setIsFinancialInfoOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -203,35 +205,51 @@ const FinancialPage = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {/* Explicación unificada del Panel Financiero */}
-        <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-              <DollarSign className="w-6 h-6 text-white" />
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-lg font-bold text-foreground">
-                ℹ️ ¿Qué es el Panel Financiero y cómo funciona?
-              </h3>
-              <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
-                <p>
-                  <strong className="text-foreground">📊 Vista Completa:</strong> Este panel integra tanto las <strong>métricas financieras automáticas</strong> calculadas a partir de tus datos registrados, como la opción de <strong>registrar transacciones manualmente</strong> con control total sobre cada entrada contable.
-                </p>
-                <p>
-                  <strong className="text-foreground">💰 Origen de los Datos:</strong> Los números provienen de tres fuentes principales que tú registras: <span className="text-primary font-medium">Ingresos</span> (ventas), <span className="text-destructive font-medium">Gastos</span> (costes operativos) y <span className="text-warning font-medium">Marketing</span> (inversión en canales). Solo admins y líderes pueden registrar transacciones.
-                </p>
-                <p>
-                  <strong className="text-foreground">📈 KPIs Calculados Automáticamente:</strong> El sistema calcula métricas avanzadas como Margen Bruto, Burn Rate, Runway (meses de supervivencia), ROI por canal de marketing y distribuciones de ingresos/gastos.
-                </p>
-                <p>
-                  <strong className="text-foreground">🏢 Datos Corporativos:</strong> Los datos aquí son <strong>financieros de la empresa</strong>, no personales. Todas las transacciones quedan registradas con fecha, hora y usuario para auditoría completa.
-                </p>
-                <p>
-                  <strong className="text-foreground">🎯 Para qué sirve:</strong> Te da visión estratégica de la salud financiera, identifica productos más rentables, canales con mejor ROI y proyecta la sostenibilidad económica del proyecto.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Collapsible
+          open={isFinancialInfoOpen}
+          onOpenChange={setIsFinancialInfoOpen}
+        >
+          <Card>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-success" />
+                    ℹ️ ¿Qué es el Panel Financiero y cómo funciona?
+                  </CardTitle>
+                  <ChevronDown 
+                    className={`h-5 w-5 text-muted-foreground transition-transform ${
+                      isFinancialInfoOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6">
+                  <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+                    <p>
+                      <strong className="text-foreground">📊 Vista Completa:</strong> Este panel integra tanto las <strong>métricas financieras automáticas</strong> calculadas a partir de tus datos registrados, como la opción de <strong>registrar transacciones manualmente</strong> con control total sobre cada entrada contable.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">💰 Origen de los Datos:</strong> Los números provienen de tres fuentes principales que tú registras: <span className="text-primary font-medium">Ingresos</span> (ventas), <span className="text-destructive font-medium">Gastos</span> (costes operativos) y <span className="text-warning font-medium">Marketing</span> (inversión en canales). Solo admins y líderes pueden registrar transacciones.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">📈 KPIs Calculados Automáticamente:</strong> El sistema calcula métricas avanzadas como Margen Bruto, Burn Rate, Runway (meses de supervivencia), ROI por canal de marketing y distribuciones de ingresos/gastos.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">🏢 Datos Corporativos:</strong> Los datos aquí son <strong>financieros de la empresa</strong>, no personales. Todas las transacciones quedan registradas con fecha, hora y usuario para auditoría completa.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">🎯 Para qué sirve:</strong> Te da visión estratégica de la salud financiera, identifica productos más rentables, canales con mejor ROI y proyecta la sostenibilidad económica del proyecto.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Sección de Registro Manual de Transacciones */}
         {(userProfile?.role === 'admin' || userProfile?.role === 'leader') ? (
