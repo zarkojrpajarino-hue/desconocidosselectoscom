@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, User, TrendingUp, FileText } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Transaction {
@@ -34,6 +35,7 @@ const TransactionsHistory = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [userStats, setUserStats] = useState<UserTransactionStats[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [transactionsOpen, setTransactionsOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -300,59 +302,82 @@ const TransactionsHistory = () => {
         {/* Historial completo de transacciones */}
         <Card>
           <CardHeader>
-            <CardTitle>📜 Todas las Transacciones ({transactions.length})</CardTitle>
-            <CardDescription>
-              Historial completo de transacciones registradas por el equipo
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Fecha</th>
-                    <th className="text-left py-3 px-4">Tipo</th>
-                    <th className="text-left py-3 px-4">Descripción</th>
-                    <th className="text-left py-3 px-4">Categoría</th>
-                    <th className="text-right py-3 px-4">Monto</th>
-                    <th className="text-left py-3 px-4">Registrado por</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No hay transacciones registradas
-                      </td>
-                    </tr>
-                  ) : (
-                    transactions.map((transaction) => (
-                      <tr key={transaction.id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4 text-sm">{formatDate(transaction.date)}</td>
-                        <td className="py-3 px-4">
-                          <Badge variant={getTypeColor(transaction.type)}>
-                            {getTypeLabel(transaction.type)}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 font-medium">{transaction.description}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground capitalize">
-                          {transaction.category}
-                        </td>
-                        <td className={`text-right py-3 px-4 font-semibold ${
-                          transaction.type === 'revenue' ? 'text-success' : 'text-destructive'
-                        }`}>
-                          {transaction.type === 'revenue' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">
-                          {transaction.created_by_name}
-                        </td>
+            <Collapsible open={transactionsOpen} onOpenChange={setTransactionsOpen}>
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between cursor-pointer hover:opacity-80 transition-opacity">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      📜 Todas las Transacciones ({transactions.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Historial completo de transacciones registradas por el equipo
+                    </CardDescription>
+                  </div>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {transactionsOpen ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Ocultar
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Ver todas
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="overflow-x-auto mt-4">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Fecha</th>
+                        <th className="text-left py-3 px-4">Tipo</th>
+                        <th className="text-left py-3 px-4">Descripción</th>
+                        <th className="text-left py-3 px-4">Categoría</th>
+                        <th className="text-right py-3 px-4">Monto</th>
+                        <th className="text-left py-3 px-4">Registrado por</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+                    </thead>
+                    <tbody>
+                      {transactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                            No hay transacciones registradas
+                          </td>
+                        </tr>
+                      ) : (
+                        transactions.map((transaction) => (
+                          <tr key={transaction.id} className="border-b hover:bg-muted/50">
+                            <td className="py-3 px-4 text-sm">{formatDate(transaction.date)}</td>
+                            <td className="py-3 px-4">
+                              <Badge variant={getTypeColor(transaction.type)}>
+                                {getTypeLabel(transaction.type)}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 font-medium">{transaction.description}</td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground capitalize">
+                              {transaction.category}
+                            </td>
+                            <td className={`text-right py-3 px-4 font-semibold ${
+                              transaction.type === 'revenue' ? 'text-success' : 'text-destructive'
+                            }`}>
+                              {transaction.type === 'revenue' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">
+                              {transaction.created_by_name}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardHeader>
         </Card>
 
         {/* Estadísticas por Usuario */}
