@@ -26,6 +26,8 @@ import MetricsHub from "./pages/MetricsHub";
 import OKRsPage from "./pages/OKRsPage";
 import OKRsHistory from "./pages/okrs/OKRsHistory";
 import UserOKRHistory from "./pages/okrs/UserOKRHistory";
+import OrganizationOKRs from "./pages/okrs/OrganizationOKRs";
+import OrganizationOKRHistory from "./pages/okrs/OrganizationOKRHistory";
 import FinancialPage from "./pages/FinancialPage";
 import TransactionsHistory from "./pages/financial/TransactionsHistory";
 import UserTransactionsHistory from "./pages/financial/UserTransactionsHistory";
@@ -173,6 +175,16 @@ const AppContent = () => {
       <Route path="/okrs/history/:userId" element={
         <ProtectedRoute>
           <UserOKRHistory />
+        </ProtectedRoute>
+      } />
+      <Route path="/okrs/organization" element={
+        <ProtectedRoute>
+          <OrganizationOKRs />
+        </ProtectedRoute>
+      } />
+      <Route path="/okrs/organization/history" element={
+        <ProtectedRoute>
+          <OrganizationOKRHistory />
         </ProtectedRoute>
       } />
       <Route path="/financial" element={
