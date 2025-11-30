@@ -79,7 +79,6 @@ const CRMPage = () => {
           creator:created_by(id, full_name, role),
           assignee:assigned_to(id, full_name, role)
         `)
-        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -281,6 +280,28 @@ const CRMPage = () => {
           </div>
         </div>
       </header>
+
+      {/* Botón prominente Pipeline */}
+      <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border-y border-emerald-500/20">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-6 w-6 text-emerald-600" />
+              <div>
+                <h3 className="font-semibold text-foreground">Pipeline de Ventas</h3>
+                <p className="text-sm text-muted-foreground">Visualiza el embudo de conversión completo con drag & drop</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate('/crm/pipeline')}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 gap-2"
+            >
+              <TrendingUp className="h-4 w-4" />
+              Ver Pipeline
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {/* KPIs Globales */}

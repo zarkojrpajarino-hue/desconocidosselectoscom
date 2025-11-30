@@ -23,15 +23,8 @@ const Home = () => {
       gradient: 'from-purple-500 to-pink-600'
     },
     {
-      title: 'CRM - Pipeline de Ventas',
-      description: 'Gestión de leads, oportunidades, seguimiento y conversión a clientes',
-      icon: Users,
-      path: '/crm',
-      gradient: 'from-cyan-500 to-blue-600'
-    },
-    {
       title: 'Métricas',
-      description: 'KPI\'s, OKR y Panel Financiero del negocio',
+      description: 'KPI\'s, OKR, CRM y Panel Financiero del negocio',
       icon: TrendingUp,
       path: '/metrics-hub',
       gradient: 'from-emerald-500 to-teal-500'
