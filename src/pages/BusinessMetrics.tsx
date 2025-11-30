@@ -51,11 +51,11 @@ const BusinessMetrics = () => {
             </div>
             <Button
               variant="outline"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/herramientas')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver al Menú
+              Volver a Herramientas
             </Button>
           </div>
           
@@ -82,6 +82,34 @@ const BusinessMetrics = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Explicación de KPIs */}
+        <div className="bg-gradient-to-br from-emerald-500/10 via-background to-background border border-emerald-500/20 rounded-xl p-6 mb-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-foreground">
+                📊 ¿Qué son los KPI's y para qué sirven?
+              </h3>
+              <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+                <p>
+                  <strong className="text-foreground">KPI = Key Performance Indicator</strong> (Indicador Clave de Rendimiento). Son métricas operativas del día a día que miden cómo está funcionando tu negocio <span className="text-primary font-medium">AHORA MISMO</span>.
+                </p>
+                <p>
+                  <strong className="text-foreground">🎯 Qué miden:</strong> Ventas, pedidos, leads generados, conversiones, NPS, costes operativos, tiempo de producción, satisfacción del cliente, etc. Son datos reales y actuales de tu operación.
+                </p>
+                <p>
+                  <strong className="text-foreground">🔍 Para qué sirven:</strong> Te permiten tomar decisiones rápidas basadas en datos. Si ves que la tasa de conversión cae, puedes actuar inmediatamente. Si el NPS baja, sabes que hay problemas de satisfacción. Son tu radar operativo.
+                </p>
+                <p>
+                  <strong className="text-foreground">💡 Diferencia con OKRs:</strong> Los KPIs miden lo que ya haces (operación actual). Los OKRs definen hacia dónde quieres ir (objetivos ambiciosos futuros). Ambos se complementan.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {showReminder && activeTab === 'my-metrics' && (
           <Alert className="mb-6 border-amber-500 bg-amber-500/10">
             <AlertCircle className="h-5 w-5 text-amber-500" />

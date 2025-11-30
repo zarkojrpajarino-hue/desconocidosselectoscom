@@ -20,6 +20,7 @@ import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import AIAnalysis from "./pages/AIAnalysis";
 import BusinessMetrics from "./pages/BusinessMetrics";
 import UserMetricsHistoryPage from "./pages/UserMetricsHistoryPage";
+import UserMetricsHistory from "./pages/businessMetrics/UserMetricsHistory";
 import HerramientasHub from "./pages/HerramientasHub";
 import MetricsHub from "./pages/MetricsHub";
 import OKRsPage from "./pages/OKRsPage";
@@ -128,6 +129,11 @@ const AppContent = () => {
       <Route path="/business-metrics" element={
         <ProtectedRoute>
           <BusinessMetrics />
+        </ProtectedRoute>
+      } />
+      <Route path="/business-metrics/user/:userId" element={
+        <ProtectedRoute>
+          <UserMetricsHistory />
         </ProtectedRoute>
       } />
       <Route path="/okrs" element={

@@ -561,30 +561,38 @@ const CRMPage = () => {
                 {otherUsersStats.map((stat) => (
                   <Card
                     key={stat.user_id}
-                    className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all"
-                    onClick={() => navigate(`/crm/user/${stat.user_id}`)}
+                    className="hover:shadow-lg hover:border-primary/50 transition-all"
                   >
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center justify-between">
                         <span>{stat.full_name}</span>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
                       </CardTitle>
                       <CardDescription className="capitalize">{stat.role}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">📊 Total leads:</span>
-                          <span className="font-bold">{stat.total_leads}</span>
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">📊 Total leads:</span>
+                            <span className="font-bold">{stat.total_leads}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">✅ Ganados:</span>
+                            <span className="font-bold text-success">{stat.won_leads}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">🔥 Calientes:</span>
+                            <span className="font-bold text-warning">{stat.hot_leads}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">✅ Ganados:</span>
-                          <span className="font-bold text-success">{stat.won_leads}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">🔥 Calientes:</span>
-                          <span className="font-bold text-warning">{stat.hot_leads}</span>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/crm/user/${stat.user_id}`)}
+                          className="w-full gap-2"
+                        >
+                          Ver leads añadidos por {stat.full_name.split(' ')[0]}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

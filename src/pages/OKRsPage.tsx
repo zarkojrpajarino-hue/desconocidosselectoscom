@@ -49,11 +49,11 @@ const OKRsPage = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/herramientas')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver al Menú
+              Volver a Herramientas
             </Button>
           </div>
         </div>
