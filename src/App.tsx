@@ -37,6 +37,7 @@ import UserLeadsPage from "./pages/crm/UserLeadsPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AgendaSemanal from "./pages/dashboard/AgendaSemanal";
 import DashboardGamification from "./pages/dashboard/Gamification";
+import DashboardNotifications from "./pages/dashboard/DashboardNotifications";
 
 // Herramientas sub-pages
 import LeadScoring from "./pages/herramientas/LeadScoring";
@@ -71,6 +72,7 @@ const AppContent = () => {
         <Route path="home" element={<DashboardHome />} />
         <Route path="agenda" element={<AgendaSemanal />} />
         <Route path="gamification" element={<DashboardGamification />} />
+        <Route path="notifications" element={<DashboardNotifications />} />
       </Route>
       
       <Route path="/admin" element={

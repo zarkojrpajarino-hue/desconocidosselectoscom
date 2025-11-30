@@ -10,17 +10,10 @@ const Home = () => {
   const sections = [
     {
       title: 'Dashboard de Trabajo',
-      description: 'Gestiona tus tareas semanales, agenda y gamificación',
+      description: 'Gestiona tus tareas semanales, agenda, gamificación y notificaciones',
       icon: BarChart3,
       path: '/dashboard',
       gradient: 'from-blue-500 to-cyan-500'
-    },
-    {
-      title: 'Alertas Inteligentes',
-      description: 'Notificaciones proactivas, riesgos, oportunidades y celebraciones en un solo lugar',
-      icon: Bell,
-      path: '/alerts',
-      gradient: 'from-purple-500 to-pink-600'
     },
     {
       title: 'Métricas',
