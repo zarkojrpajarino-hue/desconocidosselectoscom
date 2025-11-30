@@ -63,6 +63,7 @@ const BusinessMetricsDashboard = () => {
       }
     } catch (error) {
       console.error('Error loading metrics:', error);
+      toast.error('Error al cargar métricas de negocio');
     } finally {
       setLoading(false);
     }

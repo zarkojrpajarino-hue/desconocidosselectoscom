@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -61,15 +61,13 @@ const LeaderValidationModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Validar Tarea</DialogTitle>
-          <DialogDescription>
-            Proporciona feedback para <span className="font-semibold">{executorName}</span> sobre la tarea: 
-            <span className="font-semibold"> "{taskTitle}"</span>
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Validar Tarea"
+      description={`Proporciona feedback para ${executorName} sobre la tarea: "${taskTitle}"`}
+      className="max-w-2xl"
+    >
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ¿Qué hizo bien? */}
@@ -167,8 +165,7 @@ const LeaderValidationModal = ({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 
