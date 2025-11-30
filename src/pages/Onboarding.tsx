@@ -339,49 +339,82 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
     setLoading(true);
     
     try {
-      // Generar mega-prompt
-      const megaPrompt = generateMegaPrompt(formData);
-      
-      // Guardar en Supabase
-      const { data, error } = await supabase
-        .from('onboarding_submissions')
+      // 1. Create user account
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.accountEmail,
+        password: formData.accountPassword,
+        options: {
+          data: {
+            full_name: formData.contactName,
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error('No se pudo crear el usuario');
+
+      const userId = authData.user.id;
+
+      // 2. Create organization
+      const { data: org, error: orgError } = await supabase
+        .from('organizations')
         .insert({
-          company_name: formData.companyName,
-          contact_name: formData.contactName,
-          contact_email: formData.contactEmail,
-          contact_phone: formData.contactPhone,
-          account_email: formData.accountEmail,
-          account_password_hash: 'ENCRYPTED', // En producción, hashear con bcrypt
+          name: formData.companyName,
           industry: formData.industry,
           company_size: formData.companySize,
           annual_revenue_range: formData.annualRevenueRange,
           business_description: formData.businessDescription,
           target_customers: formData.targetCustomers,
           value_proposition: formData.valueProposition,
-          products_services: formData.productsServices,
           sales_process: formData.salesProcess,
           sales_cycle_days: parseInt(formData.salesCycleDays) || null,
           lead_sources: formData.leadSources,
+          products_services: formData.productsServices,
           team_structure: formData.teamStructure,
           main_objectives: formData.mainObjectives,
           kpis_to_measure: formData.kpisToMeasure,
           current_problems: formData.currentProblems,
-          ai_prompt_generated: megaPrompt,
-          status: 'pending'
+          contact_name: formData.contactName,
+          contact_email: formData.contactEmail,
+          contact_phone: formData.contactPhone,
+          ai_generation_status: 'pending',
         })
         .select()
         .single();
-      
-      if (error) throw error;
-      
-      toast.success("¡Onboarding completado! Te contactaremos pronto.");
-      
-      // Redirigir a página de confirmación
-      navigate('/onboarding/success', { state: { submissionId: data.id } });
+
+      if (orgError) throw orgError;
+
+      // 3. Link user to organization
+      const { error: userUpdateError } = await supabase
+        .from('users')
+        .update({ 
+          organization_id: org.id,
+          role: 'admin'
+        })
+        .eq('id', userId);
+
+      if (userUpdateError) throw userUpdateError;
+
+      // 4. Trigger AI generation (async)
+      toast.loading("Generando tu sistema personalizado con IA...", { id: 'generating' });
+
+      const { error: functionError } = await supabase.functions.invoke('generate-workspace', {
+        body: { organizationId: org.id }
+      });
+
+      if (functionError) {
+        console.error('AI generation error:', functionError);
+        toast.error("Generación completada con advertencias", { id: 'generating' });
+      } else {
+        toast.success("¡Sistema generado exitosamente!", { id: 'generating' });
+      }
+
+      // 5. Redirect to dashboard
+      navigate('/dashboard');
       
     } catch (error: any) {
       console.error('Error submitting onboarding:', error);
-      toast.error("Error al guardar. Por favor intenta de nuevo.");
+      toast.error(error.message || "Error al crear tu cuenta. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
