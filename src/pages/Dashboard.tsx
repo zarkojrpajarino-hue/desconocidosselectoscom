@@ -2,10 +2,14 @@ import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Trophy, Bell } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useEffect } from 'react';
+import { useTrialExpiration } from '@/hooks/useTrialExpiration';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Verificar expiración del trial
+  useTrialExpiration();
 
   // Redirigir a dashboard home si estamos en /dashboard exacto
   useEffect(() => {
