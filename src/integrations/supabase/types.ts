@@ -2270,9 +2270,19 @@ export type Database = {
         Args: { p_user_id: string; p_week_number: number }
         Returns: boolean
       }
+      check_availability_reminder: { Args: never; Returns: undefined }
+      check_badge_proximity: { Args: never; Returns: undefined }
+      check_collaborative_tasks: { Args: never; Returns: undefined }
+      check_crm_daily_actions: { Args: never; Returns: undefined }
       check_financial_risks: { Args: never; Returns: undefined }
       check_okr_risks: { Args: never; Returns: undefined }
+      check_pending_validations: { Args: never; Returns: undefined }
+      check_performance_drop: { Args: never; Returns: undefined }
+      check_rising_cac: { Args: never; Returns: undefined }
+      check_stagnant_opportunities: { Args: never; Returns: undefined }
       check_stale_leads: { Args: never; Returns: undefined }
+      check_stale_metrics: { Args: never; Returns: undefined }
+      check_streak_at_risk: { Args: never; Returns: undefined }
       check_urgent_tasks: { Args: never; Returns: undefined }
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
