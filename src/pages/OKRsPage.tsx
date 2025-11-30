@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Target, History, Building2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Target, History, Building2, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/OKRsDashboard';
 
 const OKRsPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,6 +71,54 @@ const OKRsPage = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Explicación de OKRs Semanales */}
+        <Collapsible
+          open={isOkrInfoOpen}
+          onOpenChange={setIsOkrInfoOpen}
+          className="mb-6"
+        >
+          <Card>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    🎯 ¿Qué son los OKRs Semanales Personalizados?
+                  </CardTitle>
+                  <ChevronDown 
+                    className={`h-5 w-5 text-muted-foreground transition-transform ${
+                      isOkrInfoOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6">
+                  <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
+                    <p>
+                      <strong className="text-foreground">OKR = Objectives and Key Results</strong> (Objetivos y Resultados Clave). Son marcos de trabajo para establecer metas ambiciosas y medir el progreso hacia ellas.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">🎯 OKRs Semanales vs Empresa:</strong> Los OKRs semanales son <strong>personalizados y tácticos</strong>, generados automáticamente por IA basándose en tus tareas de la semana. Los OKRs de empresa son <strong>estratégicos y de largo plazo</strong>, definidos al inicio del trimestre.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">🤖 Generación con IA:</strong> Puedes generar hasta <strong>1 OKR por semana</strong> (plan free, máx 2 semanas). La IA analiza tus tareas pendientes y crea objetivos alcanzables con resultados clave medibles.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">📊 Cómo funcionan:</strong> Cada OKR tiene 1 Objetivo (qué quieres lograr) y 3-5 Key Results (cómo medirás el éxito). Los KRs tienen valores inicial, actual y objetivo. Actualiza el progreso semanalmente.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">💡 Diferencia con KPIs:</strong> Los KPIs miden lo que ya haces (operación actual). Los OKRs definen hacia dónde quieres ir (objetivos ambiciosos futuros). Se complementan.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
         <OKRsDashboard />
       </main>
     </div>
