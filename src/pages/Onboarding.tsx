@@ -395,22 +395,15 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
 
       if (userUpdateError) throw userUpdateError;
 
-      // 4. Trigger AI generation (async)
-      toast.loading("Generando tu sistema personalizado con IA...", { id: 'generating' });
-
-      const { error: functionError } = await supabase.functions.invoke('generate-workspace', {
+      // 4. Trigger AI generation (async - NO esperar respuesta)
+      supabase.functions.invoke('generate-workspace', {
         body: { organizationId: org.id }
+      }).catch((error) => {
+        console.error('AI generation error:', error);
       });
 
-      if (functionError) {
-        console.error('AI generation error:', functionError);
-        toast.error("Generación completada con advertencias", { id: 'generating' });
-      } else {
-        toast.success("¡Sistema generado exitosamente!", { id: 'generating' });
-      }
-
-      // 5. Redirect to dashboard
-      navigate('/dashboard');
+      // 5. Redirect to generating workspace screen
+      navigate(`/generating-workspace?org=${org.id}`);
       
     } catch (error: any) {
       console.error('Error submitting onboarding:', error);

@@ -57,6 +57,7 @@ import Onboarding from "./pages/Onboarding";
 import OnboardingSuccess from "./pages/OnboardingSuccess";
 import AdminOnboardings from "./pages/AdminOnboardings";
 import Landing from "./pages/Landing";
+import GeneratingWorkspace from "./pages/GeneratingWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const AppContent = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
       <Route path="/onboarding/success" element={<OnboardingSuccess />} />
       <Route path="/admin/onboardings" element={
         <ProtectedRoute>

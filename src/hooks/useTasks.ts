@@ -21,9 +21,9 @@ interface Task {
   created_at: string | null;
 }
 
-export const useTasks = (userId: string | undefined, currentPhase: number | undefined, taskLimit?: number) => {
+export const useTasks = (userId: string | undefined, currentPhase: number | undefined, organizationId: string | undefined, taskLimit?: number) => {
   return useQuery({
-    queryKey: ['tasks', userId, currentPhase, taskLimit],
+    queryKey: ['tasks', userId, currentPhase, organizationId, taskLimit],
     queryFn: async () => {
       if (!userId || !currentPhase) return [];
 
@@ -33,6 +33,11 @@ export const useTasks = (userId: string | undefined, currentPhase: number | unde
         .eq("user_id", userId)
         .eq("phase", currentPhase)
         .order("order_index");
+
+      // CRITICAL: Filter by organization_id for multi-tenancy
+      if (organizationId) {
+        query = query.eq("organization_id", organizationId);
+      }
 
       if (taskLimit) {
         query = query.limit(taskLimit);
@@ -48,19 +53,26 @@ export const useTasks = (userId: string | undefined, currentPhase: number | unde
   });
 };
 
-export const useSharedTasks = (userId: string | undefined, currentPhase: number | undefined) => {
+export const useSharedTasks = (userId: string | undefined, currentPhase: number | undefined, organizationId: string | undefined) => {
   return useQuery({
-    queryKey: ['sharedTasks', userId, currentPhase],
+    queryKey: ['sharedTasks', userId, currentPhase, organizationId],
     queryFn: async () => {
       if (!userId || !currentPhase) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("tasks")
         .select("*")
         .eq("phase", currentPhase)
         .eq("leader_id", userId)
         .neq("user_id", userId)
         .order("order_index");
+
+      // CRITICAL: Filter by organization_id for multi-tenancy
+      if (organizationId) {
+        query = query.eq("organization_id", organizationId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Task[];
