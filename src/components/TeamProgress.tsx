@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { ChevronDown, ChevronUp, Users, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useUserRoles, formatUserWithRole } from '@/hooks/useUserRoles';
 
 interface TeamMemberProgress {
   id: string;
@@ -26,6 +27,7 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
   const [totalCompleted, setTotalCompleted] = useState(0);
   const [totalTasks, setTotalTasks] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { data: rolesMap } = useUserRoles();
 
   useEffect(() => {
     fetchTeamProgress();
@@ -207,7 +209,7 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
             {teamData
               .sort((a, b) => b.completed - a.completed) // Ordenar por completadas
               .map((member) => (
-                 <div 
+                <div 
                   key={member.id} 
                   className={`space-y-2 p-3 rounded-lg ${
                     member.id === currentUserId 
@@ -217,7 +219,12 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{member.full_name}</p>
+                      <p className="font-medium">
+                        {formatUserWithRole(
+                          member.full_name, 
+                          rolesMap?.get(member.id)?.role_name || null
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground">@{member.username}</p>
                     </div>
                     <div className="text-right">
