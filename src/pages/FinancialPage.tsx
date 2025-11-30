@@ -202,7 +202,7 @@ const FinancialPage = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-        {/* Explicación del Panel Financiero */}
+        {/* Explicación unificada del Panel Financiero */}
         <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
@@ -214,59 +214,47 @@ const FinancialPage = () => {
               </h3>
               <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
                 <p>
-                  <strong className="text-foreground">📊 Vista Automática:</strong> Este dashboard consolida automáticamente las métricas financieras del negocio calculadas a partir de los datos que el equipo ha registrado manualmente en la Contabilidad Detallada.
+                  <strong className="text-foreground">📊 Vista Completa:</strong> Este panel integra tanto las <strong>métricas financieras automáticas</strong> calculadas a partir de tus datos registrados, como la opción de <strong>registrar transacciones manualmente</strong> con control total sobre cada entrada contable.
                 </p>
                 <p>
-                  <strong className="text-foreground">💰 Origen de los Datos:</strong> Los números provienen de tres fuentes principales: <span className="text-primary font-medium">Ingresos</span> (ventas registradas), <span className="text-destructive font-medium">Gastos</span> (costes operativos) y <span className="text-warning font-medium">Marketing</span> (inversión en canales). Estos se registran en la Contabilidad Detallada por admins y líderes.
+                  <strong className="text-foreground">💰 Origen de los Datos:</strong> Los números provienen de tres fuentes principales que tú registras: <span className="text-primary font-medium">Ingresos</span> (ventas), <span className="text-destructive font-medium">Gastos</span> (costes operativos) y <span className="text-warning font-medium">Marketing</span> (inversión en canales). Solo admins y líderes pueden registrar transacciones.
                 </p>
                 <p>
-                  <strong className="text-foreground">📈 KPIs Calculados:</strong> El sistema calcula automáticamente métricas avanzadas como Margen Bruto, Burn Rate, Runway (meses de supervivencia), ROI por canal de marketing y distribuciones de ingresos/gastos.
+                  <strong className="text-foreground">📈 KPIs Calculados Automáticamente:</strong> El sistema calcula métricas avanzadas como Margen Bruto, Burn Rate, Runway (meses de supervivencia), ROI por canal de marketing y distribuciones de ingresos/gastos.
                 </p>
                 <p>
-                  <strong className="text-foreground">🎯 Para qué sirve:</strong> Te da visión estratégica de la salud financiera del negocio, identifica productos más rentables, canales con mejor ROI y proyecta la sostenibilidad económica del proyecto.
+                  <strong className="text-foreground">🏢 Datos Corporativos:</strong> Los datos aquí son <strong>financieros de la empresa</strong>, no personales. Todas las transacciones quedan registradas con fecha, hora y usuario para auditoría completa.
+                </p>
+                <p>
+                  <strong className="text-foreground">🎯 Para qué sirve:</strong> Te da visión estratégica de la salud financiera, identifica productos más rentables, canales con mejor ROI y proyecta la sostenibilidad económica del proyecto.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Dashboard Financiero */}
-        <div>
-          <h3 className="text-2xl font-bold mb-4">📊 Métricas Financieras Automáticas</h3>
-          <FinancialDashboard key={refreshKey} />
-        </div>
-
-        {/* Advertencia de datos de empresa */}
-        <Card className="border-warning bg-warning/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-warning mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-warning mb-2">⚠️ Contabilidad Detallada - Registro Manual</h4>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>
-                    <strong>📊 Datos manuales vs automáticos:</strong> Esta sección te permite registrar <strong>transacciones manualmente</strong> mediante formularios (ingresos específicos, gastos detallados, campañas de marketing).
-                    A diferencia del Panel Financiero de arriba que se sincroniza automáticamente, aquí tienes control total sobre cada entrada contable.
-                  </p>
-                  <p>
-                    <strong>🏢 Datos de la empresa:</strong> Los datos registrados aquí son <strong>datos financieros corporativos</strong>, no personales. 
-                    Todas las transacciones quedan registradas con fecha, hora y usuario que las creó para auditoría completa.
-                    Solo administradores y líderes pueden registrar transacciones financieras.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Botones de acción para registrar transacciones */}
+        {/* Sección de Registro Manual de Transacciones */}
         {(userProfile?.role === 'admin' || userProfile?.role === 'leader') ? (
           <Card>
             <CardHeader>
-              <CardTitle>Registrar Nueva Transacción</CardTitle>
-              <CardDescription>
-                Registra ingresos, gastos o campañas de marketing de la empresa manualmente
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Registrar Nueva Transacción</CardTitle>
+                  <CardDescription>
+                    Registra ingresos, gastos o campañas de marketing de la empresa manualmente
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    const transactionsSection = document.getElementById('transactions-history');
+                    transactionsSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="gap-2"
+                >
+                  📜 Historial de Transacciones
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-3">
@@ -308,10 +296,16 @@ const FinancialPage = () => {
           </Card>
         )}
 
+        {/* Dashboard Financiero */}
+        <div>
+          <h3 className="text-2xl font-bold mb-4">📊 Métricas Financieras Automáticas</h3>
+          <FinancialDashboard key={refreshKey} />
+        </div>
+
         {/* Tabla de últimas transacciones */}
-        <Card>
+        <Card id="transactions-history">
           <CardHeader>
-            <CardTitle>Historial de Transacciones</CardTitle>
+            <CardTitle>📜 Historial de Transacciones</CardTitle>
             <CardDescription>
               Historial completo de transacciones registradas manualmente con auditoría
             </CardDescription>

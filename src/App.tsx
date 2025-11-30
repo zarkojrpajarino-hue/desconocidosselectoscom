@@ -29,7 +29,6 @@ import UserOKRHistory from "./pages/okrs/UserOKRHistory";
 import FinancialPage from "./pages/FinancialPage";
 import AlertsPage from "./pages/AlertsPage";
 import CRMPage from "./pages/CRMPage";
-import DetailedFinancial from "./pages/financial/DetailedFinancial";
 import CRMLeads from "./pages/crm/CRMLeads";
 import Pipeline from "./pages/crm/Pipeline";
 import UserLeadsPage from "./pages/crm/UserLeadsPage";
@@ -154,11 +153,6 @@ const AppContent = () => {
       <Route path="/financial" element={
         <ProtectedRoute>
           <FinancialPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/financial/detailed" element={
-        <ProtectedRoute>
-          <DetailedFinancial />
         </ProtectedRoute>
       } />
       <Route path="/alerts" element={
