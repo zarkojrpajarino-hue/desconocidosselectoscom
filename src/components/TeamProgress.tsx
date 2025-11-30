@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -26,6 +26,10 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
   const [totalCompleted, setTotalCompleted] = useState(0);
   const [totalTasks, setTotalTasks] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTeamProgress();
+  }, [currentPhase]);
 
   const fetchTeamProgress = async () => {
     setLoading(true);
