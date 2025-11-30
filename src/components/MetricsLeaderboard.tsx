@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, TrendingUp, Flame, Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -223,14 +224,13 @@ const MetricsLeaderboard = () => {
             {leaderboard.map((stats, index) => (
               <div 
                 key={stats.user_id}
-                className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
+                className={`p-3 rounded-lg border transition-all ${
                   stats.user_id === user?.id 
-                    ? 'bg-primary/10 border-primary/50 hover:bg-primary/15' 
-                    : 'bg-muted/30 border-muted hover:bg-muted/50'
+                    ? 'bg-primary/10 border-primary/50' 
+                    : 'bg-muted/30 border-muted'
                 }`}
-                onClick={() => navigate(`/user-metrics/${stats.user_id}`)}
               >
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3">
                   {getRankIcon(index)}
                   <div className="flex-1">
                     <p className={`font-semibold ${stats.user_id === user?.id ? 'text-primary' : ''}`}>
@@ -255,6 +255,14 @@ const MetricsLeaderboard = () => {
                         <span className="text-sm font-semibold text-orange-500">{stats.streak_days}</span>
                       </div>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/business-metrics/user/${stats.user_id}`)}
+                      className="gap-2 whitespace-nowrap ml-4"
+                    >
+                      📊 Ver KPIs de {stats.full_name.split(' ')[0]}
+                    </Button>
                   </div>
                 </div>
               </div>
