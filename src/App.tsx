@@ -59,6 +59,8 @@ import AdminOnboardings from "./pages/AdminOnboardings";
 import Landing from "./pages/Landing";
 import GeneratingWorkspace from "./pages/GeneratingWorkspace";
 
+import SelectRole from "./pages/SelectRole";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -70,6 +72,11 @@ const AppContent = () => {
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
       <Route path="/onboarding/success" element={<OnboardingSuccess />} />
+      <Route path="/join/:token" element={
+        <ProtectedRoute>
+          <SelectRole />
+        </ProtectedRoute>
+      } />
       <Route path="/admin/onboardings" element={
         <ProtectedRoute>
           <AdminOnboardings />

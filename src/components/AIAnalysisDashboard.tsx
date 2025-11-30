@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react';
+
+interface AIAnalysisDashboardProps {
+  onAnalysisComplete?: () => void;
+}
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -151,7 +155,7 @@ interface AnalysisData {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-const AIAnalysisDashboard = () => {
+const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = {}) => {
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('money');
@@ -172,6 +176,11 @@ const AIAnalysisDashboard = () => {
 
       setData(analysisData);
       toast.success('Análisis actualizado');
+      
+      // Notificar que se completó el análisis
+      if (onAnalysisComplete) {
+        onAnalysisComplete();
+      }
     } catch (error) {
       console.error('Error fetching analysis:', error);
       toast.error('Error al cargar análisis');
