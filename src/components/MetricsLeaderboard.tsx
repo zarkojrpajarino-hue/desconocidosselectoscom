@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, TrendingUp, Flame, Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useUserRoles, formatUserWithRole } from '@/hooks/useUserRoles';
 
 interface UserMetricsStats {
   user_id: string;
@@ -23,6 +24,7 @@ const MetricsLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<UserMetricsStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserMetricsStats | null>(null);
+  const { data: rolesMap } = useUserRoles();
 
   useEffect(() => {
     loadLeaderboard();
@@ -234,7 +236,10 @@ const MetricsLeaderboard = () => {
                   {getRankIcon(index)}
                   <div className="flex-1">
                     <p className={`font-semibold ${stats.user_id === user?.id ? 'text-primary' : ''}`}>
-                      {stats.full_name}
+                      {formatUserWithRole(
+                        stats.full_name,
+                        rolesMap?.get(stats.user_id)?.role_name || null
+                      )}
                       {stats.user_id === user?.id && <span className="ml-2 text-xs">(Tú)</span>}
                     </p>
                     <div className="flex items-center gap-2 mt-1">

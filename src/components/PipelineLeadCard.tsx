@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, User, Calendar } from 'lucide-react';
 import { Lead } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
+import { useUserRoleName, formatUserWithRole } from '@/hooks/useUserRoles';
 
 interface PipelineLeadCardProps {
   lead: Lead;
@@ -12,6 +13,8 @@ interface PipelineLeadCardProps {
 }
 
 const PipelineLeadCard = ({ lead, onDragStart, onClick, isDragging }: PipelineLeadCardProps) => {
+  const assignedUserRole = useUserRoleName(lead.assigned_to);
+  
   const getLeadTypeIcon = (type: string) => {
     switch (type) {
       case 'hot': return '🔥';
@@ -100,7 +103,9 @@ const PipelineLeadCard = ({ lead, onDragStart, onClick, isDragging }: PipelineLe
         {lead.assigned_user_name && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <User className="h-3 w-3" />
-            <span className="line-clamp-1">{lead.assigned_user_name}</span>
+            <span className="line-clamp-1">
+              {formatUserWithRole(lead.assigned_user_name, assignedUserRole)}
+            </span>
           </div>
         )}
 

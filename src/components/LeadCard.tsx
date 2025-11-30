@@ -10,6 +10,7 @@ import {
   User,
   AlertCircle
 } from 'lucide-react';
+import { useUserRoleName, formatUserWithRole } from '@/hooks/useUserRoles';
 
 interface LeadCardProps {
   lead: {
@@ -27,11 +28,14 @@ interface LeadCardProps {
     last_contact_date?: string;
     interested_products?: string[];
     assigned_to_name?: string;
+    assigned_to?: string;
   };
   onClick: () => void;
 }
 
 const LeadCard = ({ lead, onClick }: LeadCardProps) => {
+  const assignedUserRole = useUserRoleName(lead.assigned_to);
+  
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
@@ -165,7 +169,9 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
           {lead.assigned_to_name && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1 border-t">
               <User className="w-3 h-3" />
-              <span className="truncate">{lead.assigned_to_name}</span>
+              <span className="truncate">
+                {formatUserWithRole(lead.assigned_to_name, assignedUserRole)}
+              </span>
             </div>
           )}
         </div>
