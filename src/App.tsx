@@ -32,6 +32,7 @@ import DetailedFinancial from "./pages/financial/DetailedFinancial";
 import CRMHub from "./pages/crm/CRMHub";
 import CRMLeads from "./pages/crm/CRMLeads";
 import Pipeline from "./pages/crm/Pipeline";
+import UserLeadsPage from "./pages/crm/UserLeadsPage";
 
 // Dashboard sub-pages
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -163,21 +164,26 @@ const AppContent = () => {
           <CRMPage />
         </ProtectedRoute>
       } />
-      <Route path="/crm" element={
-        <ProtectedRoute>
-          <CRMHub />
-        </ProtectedRoute>
-      } />
-      <Route path="/crm/leads" element={
-        <ProtectedRoute>
-          <CRMLeads />
-        </ProtectedRoute>
-      } />
-      <Route path="/crm/pipeline" element={
-        <ProtectedRoute>
-          <Pipeline />
-        </ProtectedRoute>
-      } />
+<Route path="/crm" element={
+  <ProtectedRoute>
+    <CRMHub />
+  </ProtectedRoute>
+} />
+<Route path="/crm/leads" element={
+  <ProtectedRoute>
+    <CRMLeads />
+  </ProtectedRoute>
+} />
+<Route path="/crm/pipeline" element={
+  <ProtectedRoute>
+    <Pipeline />
+  </ProtectedRoute>
+} />
+<Route path="/crm/user/:userId" element={
+  <ProtectedRoute>
+    <UserLeadsPage />
+  </ProtectedRoute>
+} />
       <Route path="/user-metrics/:userId" element={
         <ProtectedRoute>
           <UserMetricsHistoryPage />

@@ -51,6 +51,13 @@ export type Database = {
             foreignKeyName: "alert_actions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "alert_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -221,6 +228,13 @@ export type Database = {
             foreignKeyName: "business_metrics_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "business_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -263,6 +277,13 @@ export type Database = {
             foreignKeyName: "calendar_event_mappings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "calendar_event_mappings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -294,6 +315,13 @@ export type Database = {
           notes?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cash_balance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "cash_balance_created_by_fkey"
             columns: ["created_by"]
@@ -350,6 +378,13 @@ export type Database = {
           vendor?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "expense_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "expense_entries_created_by_fkey"
             columns: ["created_by"]
@@ -461,6 +496,13 @@ export type Database = {
             foreignKeyName: "google_calendar_tokens_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "google_calendar_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -541,33 +583,49 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          duration_minutes: number | null
           id: string
           interaction_type: string
           lead_id: string
+          next_steps: string | null
           outcome: string | null
+          sentiment: string | null
           subject: string
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          duration_minutes?: number | null
           id?: string
           interaction_type: string
           lead_id: string
+          next_steps?: string | null
           outcome?: string | null
+          sentiment?: string | null
           subject: string
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          duration_minutes?: number | null
           id?: string
           interaction_type?: string
           lead_id?: string
+          next_steps?: string | null
           outcome?: string | null
+          sentiment?: string | null
           subject?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lead_interactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "lead_interactions_created_by_fkey"
             columns: ["created_by"]
@@ -588,6 +646,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           company: string | null
+          conversion_date: string | null
           converted_to_customer: boolean | null
           created_at: string | null
           created_by: string | null
@@ -597,24 +656,31 @@ export type Database = {
           id: string
           interested_products: string[] | null
           last_contact_date: string | null
+          lead_score: string | null
+          lead_type: string | null
           lost_date: string | null
           lost_reason: string | null
           name: string
           next_action: string | null
           next_action_date: string | null
+          next_action_type: string | null
           notes: string | null
           phone: string | null
+          pipeline_stage: string | null
+          position: string | null
           priority: string
           probability: number | null
           revenue_entry_id: string | null
           source: string | null
           stage: string
+          tags: string[] | null
           updated_at: string | null
           won_date: string | null
         }
         Insert: {
           assigned_to?: string | null
           company?: string | null
+          conversion_date?: string | null
           converted_to_customer?: boolean | null
           created_at?: string | null
           created_by?: string | null
@@ -624,24 +690,31 @@ export type Database = {
           id?: string
           interested_products?: string[] | null
           last_contact_date?: string | null
+          lead_score?: string | null
+          lead_type?: string | null
           lost_date?: string | null
           lost_reason?: string | null
           name: string
           next_action?: string | null
           next_action_date?: string | null
+          next_action_type?: string | null
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
+          position?: string | null
           priority?: string
           probability?: number | null
           revenue_entry_id?: string | null
           source?: string | null
           stage?: string
+          tags?: string[] | null
           updated_at?: string | null
           won_date?: string | null
         }
         Update: {
           assigned_to?: string | null
           company?: string | null
+          conversion_date?: string | null
           converted_to_customer?: boolean | null
           created_at?: string | null
           created_by?: string | null
@@ -651,18 +724,24 @@ export type Database = {
           id?: string
           interested_products?: string[] | null
           last_contact_date?: string | null
+          lead_score?: string | null
+          lead_type?: string | null
           lost_date?: string | null
           lost_reason?: string | null
           name?: string
           next_action?: string | null
           next_action_date?: string | null
+          next_action_type?: string | null
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
+          position?: string | null
           priority?: string
           probability?: number | null
           revenue_entry_id?: string | null
           source?: string | null
           stage?: string
+          tags?: string[] | null
           updated_at?: string | null
           won_date?: string | null
         }
@@ -671,8 +750,22 @@ export type Database = {
             foreignKeyName: "leads_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "leads_created_by_fkey"
@@ -721,6 +814,13 @@ export type Database = {
           revenue_generated?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "marketing_spend_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "marketing_spend_created_by_fkey"
             columns: ["created_by"]
@@ -787,8 +887,22 @@ export type Database = {
             foreignKeyName: "objectives_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "objectives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectives_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "objectives_owner_user_id_fkey"
@@ -834,6 +948,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "okr_updates"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_evidences_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "okr_evidences_uploaded_by_fkey"
@@ -923,6 +1044,13 @@ export type Database = {
             foreignKeyName: "okr_updates_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "okr_updates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -960,6 +1088,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "points_history_user_id_fkey"
@@ -1017,6 +1152,13 @@ export type Database = {
           unit_price?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "revenue_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "revenue_entries_created_by_fkey"
             columns: ["created_by"]
@@ -1111,6 +1253,13 @@ export type Database = {
             foreignKeyName: "schedule_change_suggestions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "schedule_change_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1200,8 +1349,22 @@ export type Database = {
             foreignKeyName: "smart_alerts_dismissed_by_fkey"
             columns: ["dismissed_by"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "smart_alerts_dismissed_by_fkey"
+            columns: ["dismissed_by"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_alerts_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "smart_alerts_target_user_id_fkey"
@@ -1292,6 +1455,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "task_completions_user_id_fkey"
@@ -1404,6 +1574,13 @@ export type Database = {
             foreignKeyName: "task_schedule_collaborator_user_id_fkey"
             columns: ["collaborator_user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "task_schedule_collaborator_user_id_fkey"
+            columns: ["collaborator_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1413,6 +1590,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_schedule_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "task_schedule_user_id_fkey"
@@ -1472,6 +1656,13 @@ export type Database = {
             foreignKeyName: "task_swaps_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "task_swaps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1522,8 +1713,22 @@ export type Database = {
             foreignKeyName: "tasks_leader_id_fkey"
             columns: ["leader_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tasks_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "tasks_user_id_fkey"
@@ -1576,6 +1781,13 @@ export type Database = {
             foreignKeyName: "user_achievements_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1610,6 +1822,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "badges"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "user_badges_user_id_fkey"
@@ -1716,6 +1935,13 @@ export type Database = {
             foreignKeyName: "user_weekly_availability_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "user_weekly_availability_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1750,6 +1976,13 @@ export type Database = {
           week_start?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_weekly_data_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "user_weekly_data_user_id_fkey"
             columns: ["user_id"]
@@ -1867,6 +2100,13 @@ export type Database = {
             foreignKeyName: "weekly_schedule_preview_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "weekly_schedule_preview_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1874,6 +2114,19 @@ export type Database = {
       }
     }
     Views: {
+      crm_global_stats: {
+        Row: {
+          avg_deal_size: number | null
+          hot_leads: number | null
+          lost_leads: number | null
+          new_leads: number | null
+          total_leads: number | null
+          total_pipeline_value: number | null
+          total_won_value: number | null
+          won_leads: number | null
+        }
+        Relationships: []
+      }
       expenses_by_category_current_month: {
         Row: {
           avg_amount: number | null
@@ -1938,6 +2191,13 @@ export type Database = {
             foreignKeyName: "objectives_owner_user_id_fkey"
             columns: ["owner_user_id"]
             isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "objectives_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -1965,6 +2225,19 @@ export type Database = {
         }
         Relationships: []
       }
+      user_lead_stats: {
+        Row: {
+          full_name: string | null
+          hot_leads: number | null
+          role: string | null
+          total_leads: number | null
+          total_pipeline_value: number | null
+          total_won_value: number | null
+          user_id: string | null
+          won_leads: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_kr_progress: { Args: { kr_id: string }; Returns: number }
@@ -1972,6 +2245,7 @@ export type Database = {
         Args: { kr_id: string }
         Returns: number
       }
+      calculate_lead_score: { Args: { p_lead_id: string }; Returns: string }
       calculate_monthly_metrics: {
         Args: { target_month: string }
         Returns: {
