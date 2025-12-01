@@ -19,7 +19,7 @@ interface CreateLeadModalProps {
 }
 
 const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadModalProps) => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
@@ -112,6 +112,7 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
 
     setLoading(true);
     try {
+      // MULTI-TENANCY: Include organization_id
       const leadData = {
         name: formData.name.trim(),
         company: formData.company.trim() || null,
@@ -128,7 +129,8 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
         interested_products: formData.interested_products.length > 0 ? formData.interested_products : null,
         notes: formData.notes.trim() || null,
         last_contact_date: new Date().toISOString().split('T')[0],
-        created_by: user?.id
+        created_by: user?.id,
+        organization_id: currentOrganizationId
       };
 
       if (editLead) {
