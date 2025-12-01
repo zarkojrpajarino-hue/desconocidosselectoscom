@@ -12,7 +12,11 @@ import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Targe
 import { toast } from 'sonner';
 import { Lead, UserLeadStats, CRMGlobalStats } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
+import { formatCurrency } from '@/lib/currencyUtils';
 import { exportLeadsToExcel, exportUserStatsToExcel } from '@/lib/excelUtils';
+import { useLeads } from '@/hooks/useLeads';
+import { useDebounce } from '@/hooks/useDebounce';
+import { LoadingTable, LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 
@@ -20,12 +24,17 @@ const CRMPage = () => {
   const { user, userProfile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Use custom hook for leads data
+  const { 
+    leads, 
+    userStats, 
+    globalStats, 
+    loading, 
+    refetch,
+  } = useLeads(user?.id);
+
   // State
-  const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
-  const [userStats, setUserStats] = useState<UserLeadStats[]>([]);
-  const [globalStats, setGlobalStats] = useState<CRMGlobalStats | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -33,8 +42,9 @@ const CRMPage = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [editLead, setEditLead] = useState<Lead | null>(null);
 
-  // Filters
+  // Filters with debounce
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterCreatedBy, setFilterCreatedBy] = useState<string>('all');
@@ -50,34 +60,8 @@ const CRMPage = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
-  useEffect(() => {
     applyFilters();
-  }, [leads, searchTerm, filterStatus, filterType, filterCreatedBy]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        loadLeads(),
-        loadUserStats(),
-        loadGlobalStats()
-      ]);
-    } catch (error) {
-      console.error('Error loading CRM data:', error);
-      toast.error('Error al cargar datos del CRM');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadLeads = async () => {
-    try {
-      const { data, error } = await supabase
+  }, [leads, debouncedSearch, filterStatus, filterType, filterCreatedBy]);
         .from('leads')
         .select(`
           *,
