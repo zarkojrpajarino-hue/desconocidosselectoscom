@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import { useNavigate } from 'react-router-dom';
 
 const TOUR_COMPLETED_KEY = 'onboarding_tour_completed';
 
 export const useOnboardingTour = () => {
+  const navigate = useNavigate();
   const [isTourCompleted, setIsTourCompleted] = useState<boolean>(() => {
     return localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
   });
@@ -37,50 +39,130 @@ export const useOnboardingTour = () => {
         },
         {
           popover: {
-            title: '🏠 Panel Principal',
-            description: 'Desde aquí ves tus tareas de la semana, estadísticas y progreso. Es tu centro de control diario.',
+            title: '📊 Dashboard de Trabajo',
+            description: 'Tu centro de control diario. Vamos a verlo.',
+            onNextClick: () => {
+              navigate('/dashboard/home');
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: '#sidebar',
+          popover: {
+            title: '🧭 Navegación Principal',
+            description: 'Desde esta barra lateral accedes a todas las secciones de la plataforma.',
+            side: 'right',
+            align: 'center'
           }
         },
         {
           popover: {
             title: '📊 CRM y Gestión de Leads',
-            description: 'La plataforma incluye un CRM completo donde puedes gestionar tu pipeline de ventas, crear leads, asignar responsables y hacer seguimiento de oportunidades. Navega al menú "CRM y Leads" para explorarlo.',
+            description: 'Ahora vamos al CRM completo para gestionar tu pipeline de ventas.',
+            onNextClick: () => {
+              navigate('/crm');
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: '#crm-tabs',
+          popover: {
+            title: '📋 Secciones del CRM',
+            description: 'Pipeline visual, gestión de leads, y vista individual de tus oportunidades.',
+            side: 'bottom',
+            align: 'center',
+            onNextClick: () => {
+              navigate('/crm/pipeline');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
-            title: '🎯 OKRs (Objetivos y Resultados Clave)',
-            description: 'Define objetivos trimestrales con resultados medibles. Alinea a tu equipo con metas claras. Disponible en el menú "OKRs".',
+            title: '🎯 Pipeline de Ventas',
+            description: 'Arrastra leads entre etapas para gestionar tu embudo de ventas.',
+            onNextClick: () => {
+              navigate('/metrics-hub');
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: '#metrics-sections',
+          popover: {
+            title: '📈 Hub de Métricas',
+            description: 'Accede a OKRs, KPIs de negocio y finanzas desde aquí.',
+            side: 'bottom',
+            align: 'center',
+            onNextClick: () => {
+              navigate('/okrs');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
-            title: '📈 Métricas de Negocio',
-            description: 'Registra y analiza KPIs clave: ventas, conversión, CAC, NPS y más. Toma decisiones basadas en datos. Accede desde "Métricas de Negocio".',
+            title: '🎯 OKRs',
+            description: 'Define objetivos trimestrales con resultados medibles.',
+            onNextClick: () => {
+              navigate('/business-metrics');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
-            title: '🛠️ Herramientas Estratégicas',
-            description: 'Usa herramientas como Buyer Persona, Customer Journey, Growth Model y Lead Scoring para optimizar tu estrategia. En el menú "Herramientas".',
+            title: '📊 Métricas de Negocio',
+            description: 'Registra y analiza KPIs clave: ventas, conversión, CAC, NPS y más.',
+            onNextClick: () => {
+              navigate('/financial');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
             title: '💰 Finanzas',
-            description: 'Lleva control de ingresos, gastos, márgenes y proyecciones financieras. Disponible en "Finanzas".',
+            description: 'Control completo de ingresos, gastos, márgenes y proyecciones.',
+            onNextClick: () => {
+              navigate('/herramientas-hub');
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: '#tools-grid',
+          popover: {
+            title: '🛠️ Herramientas Estratégicas',
+            description: 'Buyer Persona, Customer Journey, Growth Model y más.',
+            side: 'top',
+            align: 'center',
+            onNextClick: () => {
+              navigate('/ai-analysis');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
             title: '🤖 Análisis con IA',
-            description: 'La plataforma analiza tus datos y te da recomendaciones personalizadas para mejorar. Encuentra esta función en "Análisis con IA".',
+            description: 'La IA analiza tus datos y te da recomendaciones personalizadas.',
+            onNextClick: () => {
+              navigate('/dashboard/gamification');
+              driverObj.moveNext();
+            }
           }
         },
         {
           popover: {
             title: '🏆 Gamificación',
-            description: 'Gana puntos, desbloquea badges y compite con tu equipo. Mantén la motivación alta con el sistema de recompensas.',
+            description: 'Gana puntos, desbloquea badges y compite con tu equipo.',
+            onNextClick: () => {
+              navigate('/home');
+              driverObj.moveNext();
+            }
           }
         },
         {

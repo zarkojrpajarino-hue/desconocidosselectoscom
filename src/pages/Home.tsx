@@ -1,12 +1,26 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Palette, Brain, TrendingUp, Bell, Users } from 'lucide-react';
+import { BarChart3, Palette, Brain, TrendingUp, Bell, Users, Building2, MapPin } from 'lucide-react';
 import { RoleInvitationCard } from '@/components/RoleInvitationCard';
+import { OnboardingTour } from '@/components/OnboardingTour';
+import { useOnboardingTour } from '@/hooks/useOnboardingTour';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Home = () => {
-  const { userProfile } = useAuth();
+  const { userProfile, currentOrganizationId, userOrganizations, switchOrganization } = useAuth();
   const navigate = useNavigate();
+  const { startTour } = useOnboardingTour();
+  
+  const currentOrganization = userOrganizations.find(org => org.organization_id === currentOrganizationId);
 
   const sections = [
     {
@@ -40,16 +54,83 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Bienvenido {userProfile?.full_name || 'Usuario'}
-          </h1>
-          <p className="text-muted-foreground">
-            Selecciona una sección para comenzar
-          </p>
-        </div>
+    <>
+      <OnboardingTour autoStart={true} />
+      
+      <div className="min-h-screen bg-background pb-24">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          {/* Profile Card with Organization Selector */}
+          <div id="user-profile-section" className="mb-8">
+            <Card className="bg-gradient-to-br from-primary/5 to-accent/5 shadow-card">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                      {userProfile?.full_name?.charAt(0) || 'U'}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">{userProfile?.full_name}</h2>
+                      <p className="text-sm text-muted-foreground">@{userProfile?.username}</p>
+                      {currentOrganization && (
+                        <div className="flex items-center gap-1 text-sm mt-1">
+                          <Building2 className="h-3 w-3" />
+                          <span className="font-medium">{currentOrganization.organization_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={startTour}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Tour Guiado
+                    </Button>
+                    
+                    {userOrganizations.length > 1 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <Building2 className="h-4 w-4" />
+                            Cambiar Organización
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                          <DropdownMenuLabel>Tus Organizaciones</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {userOrganizations.map((org) => (
+                            <DropdownMenuItem
+                              key={org.organization_id}
+                              onClick={() => switchOrganization(org.organization_id)}
+                              className={currentOrganizationId === org.organization_id ? 'bg-primary/10' : ''}
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-medium">{org.organization_name}</span>
+                                <span className="text-xs text-muted-foreground">{org.role}</span>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              Bienvenido {userProfile?.full_name || 'Usuario'}
+            </h1>
+            <p className="text-muted-foreground">
+              Selecciona una sección para comenzar
+            </p>
+          </div>
 
         {/* Tarjeta de invitación (solo para admins) */}
         <RoleInvitationCard />
@@ -78,6 +159,7 @@ const Home = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

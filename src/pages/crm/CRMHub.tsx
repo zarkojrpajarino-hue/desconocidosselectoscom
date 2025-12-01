@@ -63,7 +63,7 @@ const CRMHub = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="crm-tabs" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {crmOptions.map((option) => {
             const Icon = option.icon;
             return (
