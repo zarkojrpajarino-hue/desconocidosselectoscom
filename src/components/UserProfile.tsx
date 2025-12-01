@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Flame,
   Download,
+  Building2,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,7 +36,8 @@ import {
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
 
 const UserProfile = () => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, currentOrganizationId, userOrganizations } = useAuth();
+  const currentOrganization = userOrganizations.find(org => org.organization_id === currentOrganizationId);
   const [stats, setStats] = useState<any>(null);
   const [weeklyProgress, setWeeklyProgress] = useState<any[]>([]);
   const [tasksByArea, setTasksByArea] = useState<any[]>([]);
@@ -251,7 +253,14 @@ const UserProfile = () => {
             {/* Info */}
             <div className="flex-1">
               <h2 className="text-3xl font-bold mb-1">{userProfile?.full_name}</h2>
-              <p className="text-muted-foreground mb-4">@{userProfile?.username}</p>
+              <p className="text-muted-foreground mb-2">@{userProfile?.username}</p>
+              {currentOrganization && (
+                <div className="flex items-center gap-2 mb-3">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">{currentOrganization.organization_name}</span>
+                  <Badge variant="outline" className="text-xs">{currentOrganization.role}</Badge>
+                </div>
+              )}
 
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">

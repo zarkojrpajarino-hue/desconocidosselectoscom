@@ -2,12 +2,14 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User, MapPin } from 'lucide-react';
 import UserProfile from '@/components/UserProfile';
+import { useOnboardingTour } from '@/hooks/useOnboardingTour';
 
 const Profile = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { restartTour } = useOnboardingTour();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,14 +35,24 @@ const Profile = () => {
               Mi Perfil
             </h1>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/dashboard')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Dashboard
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={restartTour}
+              className="gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              Ver Tour Nuevamente
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/dashboard')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
