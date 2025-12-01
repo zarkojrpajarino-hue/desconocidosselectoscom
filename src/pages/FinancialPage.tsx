@@ -10,18 +10,11 @@ import FinancialDashboard from '@/components/FinancialDashboard';
 import RevenueFormModal from '@/components/financial/RevenueFormModal';
 import ExpenseFormModal from '@/components/financial/ExpenseFormModal';
 import MarketingFormModal from '@/components/financial/MarketingFormModal';
-import { supabase } from '@/integrations/supabase/client';
+import { useFinancialData } from '@/hooks/useFinancialData';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { formatCurrency } from '@/lib/currencyUtils';
+import { formatDate } from '@/lib/dateUtils';
 import { toast } from 'sonner';
-
-interface Transaction {
-  id: string;
-  date: string;
-  type: 'revenue' | 'expense' | 'marketing';
-  amount: number;
-  description: string;
-  category?: string;
-  created_by_name?: string;
-}
 
 const FinancialPage = () => {
   const { user, userProfile, loading } = useAuth();
@@ -29,9 +22,11 @@ const FinancialPage = () => {
   const [revenueModalOpen, setRevenueModalOpen] = useState(false);
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [marketingModalOpen, setMarketingModalOpen] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFinancialInfoOpen, setIsFinancialInfoOpen] = useState(false);
+
+  // Use custom hook for financial data
+  const { transactions, loading: transactionsLoading, refetch } = useFinancialData();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -39,45 +34,22 @@ const FinancialPage = () => {
     }
   }, [user, loading, navigate]);
 
-  useEffect(() => {
-    fetchRecentTransactions();
-  }, [refreshKey]);
+  const handleSuccess = () => {
+    refetch();
+    setRefreshKey(prev => prev + 1);
+    toast.success('Transacción guardada correctamente');
+  };
 
-  const fetchRecentTransactions = async () => {
-    try {
-      // Fetch últimos ingresos con información del usuario
-      const { data: revenueData } = await supabase
-        .from('revenue_entries')
-        .select(`
-          id, 
-          date, 
-          amount, 
-          product_category, 
-          product_name,
-          created_by,
-          users!revenue_entries_created_by_fkey(full_name)
-        `)
-        .order('date', { ascending: false })
-        .limit(10);
-
-      // Fetch últimos gastos con información del usuario
-      const { data: expenseData } = await supabase
-        .from('expense_entries')
-        .select(`
-          id, 
-          date, 
-          amount, 
-          category, 
-          description,
-          created_by,
-          users!expense_entries_created_by_fkey(full_name)
-        `)
-        .order('date', { ascending: false })
-        .limit(10);
-
-      // Fetch últimas campañas con información del usuario
-      const { data: marketingData } = await supabase
-        .from('marketing_spend')
+  if (loading || transactionsLoading) {
+    return (
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 h-8 bg-muted rounded w-1/4 animate-pulse" />
+          <LoadingSkeleton />
+        </div>
+      </div>
+    );
+  }
         .select(`
           id, 
           date, 
