@@ -5,12 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '@/types/auth';
 import { toast } from 'sonner';
 
+interface UserOrganization {
+  organization_id: string;
+  role: string;
+  organization_name: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   userProfile: UserProfile | null;
+  currentOrganizationId: string | null;
+  userOrganizations: UserOrganization[];
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  switchOrganization: (organizationId: string) => void;
   loading: boolean;
 }
 
@@ -20,6 +29,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [currentOrganizationId, setCurrentOrganizationId] = useState<string | null>(null);
+  const [userOrganizations, setUserOrganizations] = useState<UserOrganization[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -32,9 +43,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session?.user) {
           setTimeout(async () => {
             await fetchUserProfile(session.user.id);
+            await loadUserOrganizations(session.user.id);
           }, 0);
         } else {
           setUserProfile(null);
+          setUserOrganizations([]);
+          setCurrentOrganizationId(null);
         }
       }
     );
@@ -44,12 +58,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchUserProfile(session.user.id);
+        await loadUserOrganizations(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const loadUserOrganizations = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select(`
+          organization_id,
+          role,
+          organizations!inner(name)
+        `)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const orgs = data.map((item: any) => ({
+          organization_id: item.organization_id,
+          role: item.role,
+          organization_name: item.organizations?.name || 'Sin nombre'
+        }));
+        
+        setUserOrganizations(orgs);
+        
+        // Cargar organización guardada o usar la primera
+        const savedOrgId = localStorage.getItem('current_organization_id');
+        if (savedOrgId && orgs.some(o => o.organization_id === savedOrgId)) {
+          setCurrentOrganizationId(savedOrgId);
+        } else if (orgs.length === 1) {
+          // Si solo tiene una organización, seleccionarla automáticamente
+          setCurrentOrganizationId(orgs[0].organization_id);
+          localStorage.setItem('current_organization_id', orgs[0].organization_id);
+        } else {
+          // Si tiene múltiples y no hay guardada, mostrar selector
+          setCurrentOrganizationId(null);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error loading user organizations:', error);
+    }
+  };
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -92,12 +147,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUserProfile(null);
+    setUserOrganizations([]);
+    setCurrentOrganizationId(null);
+    localStorage.removeItem('current_organization_id');
     navigate('/login');
+  };
+
+  const switchOrganization = (organizationId: string) => {
+    setCurrentOrganizationId(organizationId);
+    localStorage.setItem('current_organization_id', organizationId);
+    toast.success('Organización cambiada');
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, userProfile, signIn, signOut, loading }}
+      value={{ 
+        user, 
+        session, 
+        userProfile, 
+        currentOrganizationId,
+        userOrganizations,
+        signIn, 
+        signOut, 
+        switchOrganization,
+        loading 
+      }}
     >
       {children}
     </AuthContext.Provider>

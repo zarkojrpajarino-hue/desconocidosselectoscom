@@ -1,12 +1,26 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading, currentOrganizationId, userOrganizations } = useAuth();
+  const location = useLocation();
+  
+  // Rutas que no requieren organización seleccionada
+  const noOrgRequiredRoutes = [
+    '/select-organization',
+    '/onboarding',
+    '/generating-workspace',
+    '/profile',
+    '/join'
+  ];
+  
+  const isNoOrgRoute = noOrgRequiredRoutes.some(route => 
+    location.pathname.startsWith(route)
+  );
   
   if (loading) {
     return (
@@ -21,6 +35,16 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  // Si el usuario no tiene organización seleccionada y tiene organizaciones disponibles
+  if (!isNoOrgRoute && !currentOrganizationId && userOrganizations.length > 0) {
+    return <Navigate to="/select-organization" replace />;
+  }
+  
+  // Si no tiene ninguna organización, redirigir a onboarding
+  if (!isNoOrgRoute && !currentOrganizationId && userOrganizations.length === 0) {
+    return <Navigate to="/onboarding" replace />;
   }
   
   return <>{children}</>;

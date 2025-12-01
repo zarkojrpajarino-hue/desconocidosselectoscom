@@ -17,12 +17,21 @@ export interface UserProfile {
   updated_at: string | null;
 }
 
+export interface UserOrganization {
+  organization_id: string;
+  role: string;
+  organization_name: string;
+}
+
 export interface AuthContextType {
   user: SupabaseUser | null;
   session: any | null;
   userProfile: UserProfile | null;
+  currentOrganizationId: string | null;
+  userOrganizations: UserOrganization[];
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  switchOrganization: (organizationId: string) => void;
   loading: boolean;
 }
 
