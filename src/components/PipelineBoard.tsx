@@ -368,6 +368,7 @@ const PipelineBoard = () => {
         <Button
           onClick={() => setCreateModalOpen(true)}
           className="gap-2"
+          data-action="create-lead"
         >
           <Plus className="h-4 w-4" />
           Nuevo Lead
@@ -384,8 +385,9 @@ const PipelineBoard = () => {
           return (
             <div
               key={stage.id}
+              data-stage={stage.name.toLowerCase().replace(/ /g, '-')}
               className={`
-                flex flex-col transition-all duration-200
+                flex flex-col transition-all duration-200 pipeline-column
                 ${isDropTarget ? 'scale-105' : ''}
               `}
               onDragOver={(e) => handleDragOver(e, stage.name)}
