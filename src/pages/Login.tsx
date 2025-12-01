@@ -95,9 +95,7 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 md:mt-6 text-xs md:text-sm text-muted-foreground text-center space-y-2">
-            <p>Usuarios del equipo:</p>
-            <p className="text-[10px] md:text-xs mt-1">zarko, angel, carla, miguel, fer, fernando, manu, casti, diego</p>
-            <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t">
+            <div className="pt-3 md:pt-4 border-t">
               <p className="text-[10px] md:text-xs mb-2">¿Primera vez usando el sistema?</p>
               <Button
                 variant="link"

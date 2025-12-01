@@ -57,13 +57,73 @@ export interface TaskCompletion {
   completed_by_user: boolean | null;
   validated_by_leader: boolean | null;
   completed_at: string | null;
-  ai_questions: Record<string, any> | null;
-  user_insights: Record<string, any> | null;
-  leader_evaluation: Record<string, any> | null;
-  task_metrics: Record<string, any> | null;
-  impact_measurement: Record<string, any> | null;
-  collaborator_feedback: Record<string, any> | null;
-  leader_feedback: Record<string, any> | null;
+  ai_questions: AIQuestions | null;
+  user_insights: UserInsights | null;
+  leader_evaluation: LeaderEvaluation | null;
+  task_metrics: TaskMetrics | null;
+  impact_measurement: ImpactMeasurement | null;
+  collaborator_feedback: CollaboratorFeedback | null;
+  leader_feedback: LeaderFeedback | null;
+}
+
+// Structured types for task completion data
+export interface AIQuestions {
+  questions: Array<{
+    id: string;
+    question: string;
+    answer: string;
+    type: 'text' | 'number' | 'boolean';
+  }>;
+  generated_at: string;
+}
+
+export interface UserInsights {
+  lessons_learned: string;
+  challenges_faced: string;
+  improvements_suggested: string;
+  time_spent_hours: number;
+  submitted_at: string;
+}
+
+export interface LeaderEvaluation {
+  score: number;
+  feedback: string;
+  approved: boolean;
+  evaluated_at: string;
+  evaluator_id: string;
+}
+
+export interface TaskMetrics {
+  actual_cost: number;
+  time_invested: number;
+  quality_score: number;
+  impact_level: 'low' | 'medium' | 'high';
+  completion_date: string;
+}
+
+export interface ImpactMeasurement {
+  revenue_impact: number | null;
+  cost_savings: number | null;
+  customer_satisfaction_change: number | null;
+  efficiency_improvement: number | null;
+  notes: string;
+  measured_at: string;
+}
+
+export interface CollaboratorFeedback {
+  collaborator_id: string;
+  rating: number;
+  feedback: string;
+  would_collaborate_again: boolean;
+  submitted_at: string;
+}
+
+export interface LeaderFeedback {
+  leader_id: string;
+  feedback: string;
+  suggestions: string;
+  rating: number;
+  provided_at: string;
 }
 
 export interface Badge {
