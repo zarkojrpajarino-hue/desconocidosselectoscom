@@ -55,32 +55,37 @@ const Home = () => {
 
   return (
     <>
-      <OnboardingTour autoStart={true} />
+      <OnboardingTour />
       
       <div className="min-h-screen bg-background pb-24">
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          {/* Profile Card with Organization Selector */}
+          {/* Profile Card with Welcome Message */}
           <div id="user-profile-section" className="mb-8">
             <Card className="bg-gradient-to-br from-primary/5 to-accent/5 shadow-card">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+              <CardContent className="pt-6 pb-6">
+                <div className="flex items-start justify-between flex-wrap gap-6">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-2xl font-bold text-white shadow-lg flex-shrink-0">
                       {userProfile?.full_name?.charAt(0) || 'U'}
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold">{userProfile?.full_name}</h2>
-                      <p className="text-sm text-muted-foreground">@{userProfile?.username}</p>
+                    <div className="flex-1">
+                      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+                        Bienvenido {userProfile?.full_name || 'Usuario'}
+                      </h1>
+                      <p className="text-sm text-muted-foreground mb-1">@{userProfile?.username}</p>
                       {currentOrganization && (
                         <div className="flex items-center gap-1 text-sm mt-1">
                           <Building2 className="h-3 w-3" />
                           <span className="font-medium">{currentOrganization.organization_name}</span>
                         </div>
                       )}
+                      <p className="text-muted-foreground mt-2">
+                        Selecciona una sección para comenzar
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       onClick={startTour}
                       variant="outline"
@@ -121,15 +126,6 @@ const Home = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Bienvenido {userProfile?.full_name || 'Usuario'}
-            </h1>
-            <p className="text-muted-foreground">
-              Selecciona una sección para comenzar
-            </p>
           </div>
 
         {/* Tarjeta de invitación (solo para admins) */}
