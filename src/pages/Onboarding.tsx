@@ -339,7 +339,18 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
     setLoading(true);
     
     try {
-      // 1. Create user account
+      // 1. Check if user already exists
+      const { data: existingUser } = await supabase.auth.getUser();
+      
+      if (existingUser?.user) {
+        toast.error('Ya tienes una cuenta activa', {
+          description: 'Si quieres crear una nueva organización, cierra sesión primero'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 2. Create user account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.accountEmail,
         password: formData.accountPassword,
@@ -350,12 +361,37 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message.includes('already registered')) {
+          throw new Error('Este email ya está registrado. Inicia sesión en su lugar.');
+        }
+        throw signUpError;
+      }
       if (!authData.user) throw new Error('No se pudo crear el usuario');
 
       const userId = authData.user.id;
 
-      // 2. Create organization
+      // 3. Wait for trigger to create user in public.users (max 3 seconds)
+      let userCreated = false;
+      for (let i = 0; i < 6; i++) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', userId)
+          .single();
+        
+        if (userData) {
+          userCreated = true;
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      if (!userCreated) {
+        throw new Error('Error al configurar el usuario. Intenta de nuevo.');
+      }
+
+      // 4. Create organization
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({
@@ -382,9 +418,13 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         .select()
         .single();
 
-      if (orgError) throw orgError;
+      if (orgError) {
+        // Cleanup: delete auth user if org creation fails
+        await supabase.auth.admin.deleteUser(userId);
+        throw new Error(`Error al crear organización: ${orgError.message}`);
+      }
 
-      // 3. Link user to organization
+      // 5. Link user to organization
       const { error: userUpdateError } = await supabase
         .from('users')
         .update({ 
@@ -393,21 +433,41 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         })
         .eq('id', userId);
 
-      if (userUpdateError) throw userUpdateError;
+      if (userUpdateError) {
+        throw new Error(`Error al vincular usuario: ${userUpdateError.message}`);
+      }
 
-      // 4. Trigger AI generation (async - NO esperar respuesta)
+      // 6. Trigger AI generation (async - NO esperar respuesta)
       supabase.functions.invoke('generate-workspace', {
         body: { organizationId: org.id }
       }).catch((error) => {
         console.error('AI generation error:', error);
       });
 
-      // 5. Redirect to generating workspace screen
+      // 7. Redirect to generating workspace screen
       navigate(`/generating-workspace?org=${org.id}`);
       
     } catch (error: any) {
       console.error('Error submitting onboarding:', error);
-      toast.error(error.message || "Error al crear tu cuenta. Intenta de nuevo.");
+      
+      // More descriptive error messages
+      let errorMessage = 'Error al crear tu cuenta';
+      let errorDescription = 'Intenta de nuevo o contacta soporte';
+      
+      if (error.message.includes('already registered') || error.message.includes('ya está registrado')) {
+        errorMessage = 'Email ya registrado';
+        errorDescription = 'Este email ya tiene una cuenta. Inicia sesión en su lugar.';
+      } else if (error.message.includes('organización')) {
+        errorMessage = 'Error al crear organización';
+        errorDescription = error.message;
+      } else if (error.message.includes('configurar el usuario')) {
+        errorMessage = 'Error de sincronización';
+        errorDescription = 'Hubo un problema al configurar tu cuenta. Intenta de nuevo.';
+      } else if (error.message) {
+        errorDescription = error.message;
+      }
+      
+      toast.error(errorMessage, { description: errorDescription });
     } finally {
       setLoading(false);
     }
