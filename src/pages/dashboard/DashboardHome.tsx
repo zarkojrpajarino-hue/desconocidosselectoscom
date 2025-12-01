@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Clock, RefreshCw, User } from 'lucide-react';
+import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -21,9 +21,19 @@ import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
+import { OnboardingTour } from '@/components/OnboardingTour';
+import { useOnboardingTour } from '@/hooks/useOnboardingTour';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const DashboardHome = () => {
-  const { user, userProfile, signOut, loading } = useAuth();
+  const { user, userProfile, signOut, loading, currentOrganizationId, userOrganizations, switchOrganization } = useAuth();
   const navigate = useNavigate();
   const [systemConfig, setSystemConfig] = useState<any>(null);
   const [userWeeklyData, setUserWeeklyData] = useState<any>(null);
@@ -35,6 +45,9 @@ const DashboardHome = () => {
   const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
+  const { startTour } = useOnboardingTour();
+  
+  const currentOrganization = userOrganizations.find(org => org.organization_id === currentOrganizationId);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -180,6 +193,8 @@ const DashboardHome = () => {
 
   return (
     <>
+      <OnboardingTour autoStart={true} />
+      
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
@@ -231,6 +246,70 @@ const DashboardHome = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
+        {/* Profile Card with Organization Selector */}
+        <div id="user-profile-section">
+          <Card className="bg-gradient-to-br from-primary/5 to-accent/5 shadow-card">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                    {userProfile?.full_name?.charAt(0) || 'U'}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">{userProfile?.full_name}</h2>
+                    <p className="text-sm text-muted-foreground">@{userProfile?.username}</p>
+                    {currentOrganization && (
+                      <div className="flex items-center gap-1 text-sm mt-1">
+                        <Building2 className="h-3 w-3" />
+                        <span className="font-medium">{currentOrganization.organization_name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={startTour}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Tour Guiado
+                  </Button>
+                  
+                  {userOrganizations.length > 1 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Building2 className="h-4 w-4" />
+                          Cambiar Organización
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuLabel>Tus Organizaciones</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {userOrganizations.map((org) => (
+                          <DropdownMenuItem
+                            key={org.organization_id}
+                            onClick={() => switchOrganization(org.organization_id)}
+                            className={currentOrganizationId === org.organization_id ? 'bg-primary/10' : ''}
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{org.organization_name}</span>
+                              <span className="text-xs text-muted-foreground">{org.role}</span>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* MOSTRAR BLOQUEO SI NO COMPLETÓ DISPONIBILIDAD */}
         {showAvailabilityBlock && !showQuestionnaire && availabilityDeadline && (
           <AvailabilityBlockScreen
