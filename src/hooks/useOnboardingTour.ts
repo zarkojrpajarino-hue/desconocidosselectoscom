@@ -21,84 +21,66 @@ export const useOnboardingTour = () => {
       animate: true,
       steps: [
         {
+          popover: {
+            title: '👋 ¡Bienvenido a tu CRM Inteligente!',
+            description: 'Te voy a mostrar cómo funciona toda la plataforma. Este tour te ayudará a entender cada sección y sacar el máximo provecho de las herramientas disponibles.',
+          }
+        },
+        {
           element: '#user-profile-section',
           popover: {
-            title: '👤 Tu Perfil',
-            description: 'Aquí puedes ver tu información y cambiar entre organizaciones. Accede a todas las empresas donde tienes acceso con un solo clic.',
+            title: '👤 Tu Perfil y Organizaciones',
+            description: 'Aquí puedes ver tu información y cambiar entre organizaciones. Accede a todas las empresas donde tienes acceso con un solo clic. También puedes iniciar este tour cuando quieras.',
             side: 'bottom',
             align: 'center'
           }
         },
         {
-          element: '#sidebar',
           popover: {
-            title: '🧭 Navegación Principal',
-            description: 'Desde esta barra lateral puedes navegar entre todas las secciones de la plataforma: Dashboard, CRM, OKRs, Métricas, Herramientas y más.',
-            side: 'right',
-            align: 'center'
+            title: '🏠 Panel Principal',
+            description: 'Desde aquí ves tus tareas de la semana, estadísticas y progreso. Es tu centro de control diario.',
           }
         },
         {
-          element: '#leads-section',
           popover: {
-            title: '📊 CRM y Pipeline de Ventas',
-            description: 'Gestiona tu pipeline de ventas completo. Arrastra leads entre etapas, asigna responsables y haz seguimiento de cada oportunidad comercial.',
-            side: 'top',
-            align: 'center'
+            title: '📊 CRM y Gestión de Leads',
+            description: 'La plataforma incluye un CRM completo donde puedes gestionar tu pipeline de ventas, crear leads, asignar responsables y hacer seguimiento de oportunidades. Navega al menú "CRM y Leads" para explorarlo.',
           }
         },
         {
-          element: '#create-lead-btn',
-          popover: {
-            title: '➕ Crear Nuevos Leads',
-            description: 'Añade nuevos leads manualmente con toda su información o importa múltiples leads desde un archivo CSV para mayor eficiencia.',
-            side: 'bottom',
-            align: 'center'
-          }
-        },
-        {
-          element: '#tasks-section',
-          popover: {
-            title: '✅ Sistema de Tareas',
-            description: 'Organiza todas las tareas de tu equipo por fases del negocio. Asigna responsables, establece prioridades y da seguimiento al progreso.',
-            side: 'top',
-            align: 'center'
-          }
-        },
-        {
-          element: '#okrs-section',
           popover: {
             title: '🎯 OKRs (Objetivos y Resultados Clave)',
-            description: 'Define y mide objetivos trimestrales con resultados clave medibles. Alinea a tu equipo con metas claras y trackea el progreso en tiempo real.',
-            side: 'top',
-            align: 'center'
+            description: 'Define objetivos trimestrales con resultados medibles. Alinea a tu equipo con metas claras. Disponible en el menú "OKRs".',
           }
         },
         {
-          element: '#automation-section',
           popover: {
-            title: '⚡ Automatizaciones',
-            description: 'Crea workflows automáticos para tareas repetitivas. Ahorra tiempo automatizando seguimientos, notificaciones y actualizaciones de estado.',
-            side: 'top',
-            align: 'center'
+            title: '📈 Métricas de Negocio',
+            description: 'Registra y analiza KPIs clave: ventas, conversión, CAC, NPS y más. Toma decisiones basadas en datos. Accede desde "Métricas de Negocio".',
           }
         },
         {
-          element: '#reports-section',
           popover: {
-            title: '📈 Reportes y Analíticas',
-            description: 'Analiza métricas clave de tu negocio: conversión, revenue, ROI, productividad del equipo y más. Toma decisiones basadas en datos.',
-            side: 'top',
-            align: 'center'
+            title: '🛠️ Herramientas Estratégicas',
+            description: 'Usa herramientas como Buyer Persona, Customer Journey, Growth Model y Lead Scoring para optimizar tu estrategia. En el menú "Herramientas".',
           }
         },
         {
-          element: '#settings-link',
           popover: {
-            title: '⚙️ Configuración',
-            description: 'Personaliza tu cuenta, gestiona usuarios, configura integraciones y ajusta las preferencias de la plataforma según las necesidades de tu empresa.',
-            side: 'left',
-            align: 'center'
+            title: '💰 Finanzas',
+            description: 'Lleva control de ingresos, gastos, márgenes y proyecciones financieras. Disponible en "Finanzas".',
+          }
+        },
+        {
+          popover: {
+            title: '🤖 Análisis con IA',
+            description: 'La plataforma analiza tus datos y te da recomendaciones personalizadas para mejorar. Encuentra esta función en "Análisis con IA".',
+          }
+        },
+        {
+          popover: {
+            title: '🏆 Gamificación',
+            description: 'Gana puntos, desbloquea badges y compite con tu equipo. Mantén la motivación alta con el sistema de recompensas.',
           }
         },
         {
