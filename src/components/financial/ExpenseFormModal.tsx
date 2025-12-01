@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { expenseEntrySchema } from '@/lib/metricsValidation';
 
 interface ExpenseFormModalProps {
   open: boolean;
@@ -34,20 +35,43 @@ const ExpenseFormModal = ({ open, onOpenChange, onSuccess }: ExpenseFormModalPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar con Zod
+    const validation = expenseEntrySchema.safeParse({
+      date: formData.date,
+      amount: parseFloat(formData.amount),
+      category: formData.category,
+      subcategory: formData.subcategory || undefined,
+      description: formData.description,
+      vendor: formData.vendor || undefined,
+      payment_method: formData.payment_method as any,
+      is_recurring: formData.is_recurring,
+      recurring_frequency: formData.is_recurring ? formData.recurring_frequency as any : undefined,
+      notes: formData.notes || undefined
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message, {
+        description: `Campo: ${firstError.path.join('.')}`
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.from('expense_entries').insert({
-        date: formData.date,
-        amount: parseFloat(formData.amount),
-        category: formData.category,
-        subcategory: formData.subcategory || null,
-        description: formData.description,
-        vendor: formData.vendor || null,
-        payment_method: formData.payment_method,
-        is_recurring: formData.is_recurring,
-        recurring_frequency: formData.is_recurring ? formData.recurring_frequency : null,
-        notes: formData.notes || null,
+        date: validation.data.date,
+        amount: validation.data.amount,
+        category: validation.data.category,
+        subcategory: validation.data.subcategory,
+        description: validation.data.description,
+        vendor: validation.data.vendor,
+        payment_method: validation.data.payment_method,
+        is_recurring: validation.data.is_recurring,
+        recurring_frequency: validation.data.recurring_frequency,
+        notes: validation.data.notes,
         created_by: user?.id
       });
 
@@ -70,9 +94,11 @@ const ExpenseFormModal = ({ open, onOpenChange, onSuccess }: ExpenseFormModalPro
         recurring_frequency: 'mensual',
         notes: ''
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating expense entry:', error);
-      toast.error('Error al registrar gasto');
+      toast.error('Error al registrar gasto', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setLoading(false);
     }

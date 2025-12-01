@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { taskFeedbackSchema, type TaskFeedbackData } from '@/lib/taskValidation';
 
 interface TaskFeedbackModalProps {
   open: boolean;
@@ -13,15 +14,7 @@ interface TaskFeedbackModalProps {
   feedbackType: 'to_leader' | 'to_collaborator';
   leaderName?: string;
   collaboratorName?: string;
-  onSubmit: (feedback: FeedbackData) => Promise<void>;
-}
-
-interface FeedbackData {
-  whatWentWell: string;
-  metDeadlines: 'always' | 'almost_always' | 'sometimes' | 'rarely' | 'never';
-  whatToImprove: string;
-  wouldRecommend: 'definitely_yes' | 'probably_yes' | 'not_sure' | 'probably_no' | 'definitely_no';
-  rating: number;
+  onSubmit: (feedback: TaskFeedbackData) => Promise<void>;
 }
 
 const TaskFeedbackModal = ({
@@ -34,9 +27,9 @@ const TaskFeedbackModal = ({
   onSubmit,
 }: TaskFeedbackModalProps) => {
   const [whatWentWell, setWhatWentWell] = useState('');
-  const [metDeadlines, setMetDeadlines] = useState<FeedbackData['metDeadlines'] | ''>('');
+  const [metDeadlines, setMetDeadlines] = useState<TaskFeedbackData['metDeadlines'] | ''>('');
   const [whatToImprove, setWhatToImprove] = useState('');
-  const [wouldRecommend, setWouldRecommend] = useState<FeedbackData['wouldRecommend'] | ''>('');
+  const [wouldRecommend, setWouldRecommend] = useState<TaskFeedbackData['wouldRecommend'] | ''>('');
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,9 +40,29 @@ const TaskFeedbackModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validar campos requeridos primero
     if (!whatWentWell.trim() || !metDeadlines || !whatToImprove.trim() || !wouldRecommend || rating === 0) {
       toast.error('Por favor completa todas las preguntas', {
-        description: 'Todos los campos son obligatorios para continuar'
+        description: 'Todos los campos son obligatorios'
+      });
+      return;
+    }
+
+    // Validar con Zod
+    const formData: TaskFeedbackData = {
+      whatWentWell,
+      metDeadlines,
+      whatToImprove,
+      wouldRecommend,
+      rating
+    };
+
+    const validation = taskFeedbackSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message, {
+        description: 'Revisa los campos marcados'
       });
       return;
     }
@@ -61,7 +74,7 @@ const TaskFeedbackModal = ({
         metDeadlines,
         whatToImprove,
         wouldRecommend,
-        rating,
+        rating
       });
       
       // Reset form
@@ -71,9 +84,11 @@ const TaskFeedbackModal = ({
       setWouldRecommend('');
       setRating(0);
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
-      toast.error('Error al enviar feedback');
+      toast.error('Error al enviar feedback', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setIsSubmitting(false);
     }
