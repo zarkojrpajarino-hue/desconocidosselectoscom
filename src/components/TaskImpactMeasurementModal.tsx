@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Target, DollarSign, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { impactMeasurementSchema } from '@/lib/taskValidation';
 
 interface TaskImpactMeasurementModalProps {
   open: boolean;
@@ -203,23 +204,23 @@ const TaskImpactMeasurementModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar: al menos 2 preguntas IA respondidas
-    const aiAnswersCount = Object.values(aiAnswers).filter(a => a && (Array.isArray(a) ? a.length > 0 : a.toString().trim())).length;
-    if (aiAnswersCount < 2) {
-      toast.error('Responde al menos 2 preguntas de la sección IA');
-      return;
-    }
+    const formData = {
+      ai_questions: aiAnswers,
+      key_metrics: keyMetrics.filter(m => m.metric && m.value),
+      impact_rating: impactRating as 'exceeded' | 'met' | 'close' | 'below' | undefined,
+      impact_explanation: impactExplanation,
+      future_decisions: futureDecisions,
+      investments_needed: investmentsNeeded
+    };
 
-    // Validar: al menos 2 campos de Medición completados
-    const filledMetrics = keyMetrics.filter(m => m.metric && m.value).length;
-    const hasImpactRating = !!impactRating;
-    const hasFutureDecisions = futureDecisions.trim().length > 0;
-    const hasInvestments = Object.keys(investmentsNeeded).length > 0;
+    // Validar con Zod
+    const validation = impactMeasurementSchema.safeParse(formData);
     
-    const impactFieldsCount = filledMetrics + (hasImpactRating ? 1 : 0) + (hasFutureDecisions ? 1 : 0) + (hasInvestments ? 1 : 0);
-    
-    if (impactFieldsCount < 2) {
-      toast.error('Completa al menos 2 campos de Medición de Impacto');
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message, {
+        description: 'Revisa los campos requeridos'
+      });
       return;
     }
 
@@ -230,17 +231,22 @@ const TaskImpactMeasurementModal = ({
       
       await onSubmit({
         ai_questions: aiAnswers,
-        key_metrics: keyMetrics.filter(m => m.metric && m.value),
+        key_metrics: keyMetrics.filter((m): m is { metric: string; value: string; unit: string } => 
+          Boolean(m.metric && m.value)
+        ),
         impact_rating: impactRating as any,
         impact_explanation: impactExplanation,
         future_decisions: futureDecisions,
         investments_needed: investmentsNeeded,
-        task_metrics: taskMetrics, // Nuevo campo estructurado
+        task_metrics: taskMetrics,
       });
       
       onOpenChange(false);
-    } catch (error) {
-      toast.error('Error al guardar');
+    } catch (error: any) {
+      console.error('Error al guardar medición:', error);
+      toast.error('Error al guardar', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { revenueEntrySchema } from '@/lib/metricsValidation';
 
 interface RevenueFormModalProps {
   open: boolean;
@@ -33,20 +34,43 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar con Zod
+    const validation = revenueEntrySchema.safeParse({
+      date: formData.date,
+      amount: parseFloat(formData.amount),
+      product_category: formData.product_category,
+      product_name: formData.product_name || undefined,
+      customer_name: formData.customer_name || undefined,
+      customer_type: formData.customer_type as any,
+      quantity: parseInt(formData.quantity),
+      unit_price: formData.unit_price ? parseFloat(formData.unit_price) : undefined,
+      payment_method: formData.payment_method as any,
+      notes: formData.notes || undefined
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message, {
+        description: `Campo: ${firstError.path.join('.')}`
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.from('revenue_entries').insert({
-        date: formData.date,
-        amount: parseFloat(formData.amount),
-        product_category: formData.product_category,
-        product_name: formData.product_name || null,
-        quantity: parseInt(formData.quantity),
-        unit_price: formData.unit_price ? parseFloat(formData.unit_price) : null,
-        customer_name: formData.customer_name || null,
-        customer_type: formData.customer_type,
-        payment_method: formData.payment_method,
-        notes: formData.notes || null,
+        date: validation.data.date,
+        amount: validation.data.amount,
+        product_category: validation.data.product_category,
+        product_name: validation.data.product_name,
+        customer_name: validation.data.customer_name,
+        customer_type: validation.data.customer_type,
+        quantity: validation.data.quantity,
+        unit_price: validation.data.unit_price,
+        payment_method: validation.data.payment_method,
+        notes: validation.data.notes,
         created_by: user?.id
       });
 
@@ -69,9 +93,11 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
         payment_method: 'stripe',
         notes: ''
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating revenue entry:', error);
-      toast.error('Error al registrar ingreso');
+      toast.error('Error al registrar ingreso', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setLoading(false);
     }

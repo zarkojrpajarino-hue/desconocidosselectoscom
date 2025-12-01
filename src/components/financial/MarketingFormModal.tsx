@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { marketingSpendSchema } from '@/lib/metricsValidation';
 
 interface MarketingFormModalProps {
   open: boolean;
@@ -30,17 +31,37 @@ const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar con Zod
+    const validation = marketingSpendSchema.safeParse({
+      date: formData.date,
+      channel: formData.channel,
+      amount: parseFloat(formData.amount),
+      leads_generated: parseInt(formData.leads_generated) || undefined,
+      conversions: parseInt(formData.conversions) || undefined,
+      revenue_generated: parseFloat(formData.revenue_generated) || undefined,
+      notes: formData.notes || undefined
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message, {
+        description: `Campo: ${firstError.path.join('.')}`
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.from('marketing_spend').insert({
-        date: formData.date,
-        channel: formData.channel,
-        amount: parseFloat(formData.amount),
-        leads_generated: parseInt(formData.leads_generated),
-        conversions: parseInt(formData.conversions),
-        revenue_generated: parseFloat(formData.revenue_generated),
-        notes: formData.notes || null,
+        date: validation.data.date,
+        channel: validation.data.channel,
+        amount: validation.data.amount,
+        leads_generated: validation.data.leads_generated,
+        conversions: validation.data.conversions,
+        revenue_generated: validation.data.revenue_generated,
+        notes: validation.data.notes,
         created_by: user?.id
       });
 
@@ -60,9 +81,11 @@ const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModa
         revenue_generated: '0',
         notes: ''
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating marketing entry:', error);
-      toast.error('Error al registrar campaña');
+      toast.error('Error al registrar campaña', {
+        description: error.message || 'Intenta de nuevo'
+      });
     } finally {
       setLoading(false);
     }
