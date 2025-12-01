@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const TOUR_COMPLETED_KEY = 'onboarding_tour_completed';
 
@@ -11,7 +12,14 @@ export const useOnboardingTour = () => {
     return localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
   });
 
-  const startTour = () => {
+  const simulateAction = (action: string, delay: number = 1500) => {
+    return new Promise((resolve) => {
+      toast.info(`Demo: ${action}`, { duration: delay });
+      setTimeout(resolve, delay);
+    });
+  };
+
+  const startTour = async () => {
     const driverObj = driver({
       showProgress: true,
       progressText: 'Paso {{current}} de {{total}}',
@@ -25,56 +33,37 @@ export const useOnboardingTour = () => {
         {
           popover: {
             title: '👋 ¡Bienvenido a tu CRM Inteligente!',
-            description: 'Te voy a mostrar cómo funciona toda la plataforma. Este tour te ayudará a entender cada sección y sacar el máximo provecho de las herramientas disponibles.',
-          }
-        },
-        {
-          element: '#user-profile-section',
-          popover: {
-            title: '👤 Tu Perfil y Organizaciones',
-            description: 'Aquí puedes ver tu información y cambiar entre organizaciones. Accede a todas las empresas donde tienes acceso con un solo clic. También puedes iniciar este tour cuando quieras.',
-            side: 'bottom',
-            align: 'center'
+            description: 'Te mostraré todas las funciones con ejemplos interactivos. Verás cómo crear leads, gestionar el pipeline, registrar métricas y más. ¡Todo en modo demostración!',
           }
         },
         {
           popover: {
             title: '📊 Dashboard de Trabajo',
-            description: 'Tu centro de control diario. Vamos a verlo.',
-            onNextClick: () => {
+            description: 'Vamos a ver tu centro de control diario...',
+            onNextClick: async () => {
               navigate('/dashboard/home');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
         },
         {
-          element: '#sidebar',
           popover: {
-            title: '🧭 Navegación Principal',
-            description: 'Desde esta barra lateral accedes a todas las secciones de la plataforma.',
-            side: 'right',
-            align: 'center'
-          }
-        },
-        {
-          popover: {
-            title: '📊 CRM y Gestión de Leads',
-            description: 'Ahora vamos al CRM completo para gestionar tu pipeline de ventas.',
-            onNextClick: () => {
-              navigate('/crm');
+            title: '📈 Panel Principal',
+            description: 'Aquí ves tus estadísticas clave: tareas pendientes, leads activos, objetivos del mes. Todo actualizado en tiempo real.',
+            onNextClick: async () => {
+              await simulateAction('Destacando tarjetas de métricas...');
               driverObj.moveNext();
             }
           }
         },
         {
-          element: '#crm-tabs',
           popover: {
-            title: '📋 Secciones del CRM',
-            description: 'Pipeline visual, gestión de leads, y vista individual de tus oportunidades.',
-            side: 'bottom',
-            align: 'center',
-            onNextClick: () => {
+            title: '📊 Gestión de Leads - CRM',
+            description: 'Ahora veremos cómo gestionar tus oportunidades de venta...',
+            onNextClick: async () => {
               navigate('/crm/pipeline');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
@@ -82,52 +71,93 @@ export const useOnboardingTour = () => {
         {
           popover: {
             title: '🎯 Pipeline de Ventas',
-            description: 'Arrastra leads entre etapas para gestionar tu embudo de ventas.',
-            onNextClick: () => {
-              navigate('/metrics-hub');
+            description: 'Imagina que tienes un lead "Juan Pérez - Empresa ABC". Arrastrarlo de "Descubrimiento" → "Calificación" → "Propuesta" es así de fácil.',
+            onNextClick: async () => {
+              await simulateAction('Simulando drag & drop de lead entre columnas...', 2000);
               driverObj.moveNext();
             }
           }
         },
         {
-          element: '#metrics-sections',
           popover: {
-            title: '📈 Hub de Métricas',
-            description: 'Accede a OKRs, KPIs de negocio y finanzas desde aquí.',
-            side: 'bottom',
-            align: 'center',
-            onNextClick: () => {
+            title: '➕ Crear Nuevo Lead',
+            description: 'Cuando necesites añadir un contacto, pulsas "+ Nuevo Lead", rellenas los datos (nombre, email, empresa, valor estimado) y listo.',
+            onNextClick: async () => {
+              await simulateAction('Mostrando formulario de creación de lead...', 1500);
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          popover: {
+            title: '🎯 OKRs - Objetivos y Resultados Clave',
+            description: 'Define tus objetivos trimestrales y mide el progreso...',
+            onNextClick: async () => {
               navigate('/okrs');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
         },
         {
           popover: {
-            title: '🎯 OKRs',
-            description: 'Define objetivos trimestrales con resultados medibles.',
-            onNextClick: () => {
+            title: '📊 Ejemplo de OKR',
+            description: 'Por ejemplo: "Aumentar ventas Q1 2025" con Key Results como "Cerrar 20 nuevas cuentas" o "Generar €50K MRR". La barra de progreso se actualiza automáticamente.',
+            onNextClick: async () => {
+              await simulateAction('Actualizando progreso de Key Result...', 2000);
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          popover: {
+            title: '📈 Métricas de Negocio',
+            description: 'Registra KPIs diarios: ventas, conversión, CAC, NPS...',
+            onNextClick: async () => {
               navigate('/business-metrics');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
         },
         {
           popover: {
-            title: '📊 Métricas de Negocio',
-            description: 'Registra y analiza KPIs clave: ventas, conversión, CAC, NPS y más.',
-            onNextClick: () => {
+            title: '📊 Dashboard de Métricas',
+            description: 'Ves gráficos de evolución, comparativas mensuales, tendencias. Los filtros te permiten analizar por periodo o por métrica específica.',
+            onNextClick: async () => {
+              await simulateAction('Mostrando gráficos de tendencias...', 1500);
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          popover: {
+            title: '💰 Panel Financiero',
+            description: 'Control total de ingresos, gastos y márgenes...',
+            onNextClick: async () => {
               navigate('/financial');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
         },
         {
           popover: {
-            title: '💰 Finanzas',
-            description: 'Control completo de ingresos, gastos, márgenes y proyecciones.',
-            onNextClick: () => {
+            title: '💵 Gestión Financiera',
+            description: 'Registra ventas, gastos operativos, inversión en marketing. La plataforma calcula automáticamente márgenes, CAC, runway y proyecciones.',
+            onNextClick: async () => {
+              await simulateAction('Calculando métricas financieras...', 1500);
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          popover: {
+            title: '🛠️ Herramientas Estratégicas',
+            description: 'Accede a plantillas y herramientas de crecimiento...',
+            onNextClick: async () => {
               navigate('/herramientas-hub');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
@@ -135,12 +165,13 @@ export const useOnboardingTour = () => {
         {
           element: '#tools-grid',
           popover: {
-            title: '🛠️ Herramientas Estratégicas',
-            description: 'Buyer Persona, Customer Journey, Growth Model y más.',
+            title: '🎨 Herramientas Visuales',
+            description: 'Buyer Persona, Customer Journey, Growth Model, Lead Scoring. Todo con plantillas personalizables.',
             side: 'top',
             align: 'center',
-            onNextClick: () => {
+            onNextClick: async () => {
               navigate('/ai-analysis');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
@@ -148,9 +179,11 @@ export const useOnboardingTour = () => {
         {
           popover: {
             title: '🤖 Análisis con IA',
-            description: 'La IA analiza tus datos y te da recomendaciones personalizadas.',
-            onNextClick: () => {
+            description: 'La inteligencia artificial analiza todos tus datos y genera insights: qué leads priorizar, qué campañas optimizar, proyecciones de cierre.',
+            onNextClick: async () => {
+              await simulateAction('Generando análisis con IA...', 2000);
               navigate('/dashboard/gamification');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
@@ -158,17 +191,18 @@ export const useOnboardingTour = () => {
         {
           popover: {
             title: '🏆 Gamificación',
-            description: 'Gana puntos, desbloquea badges y compite con tu equipo.',
-            onNextClick: () => {
+            description: 'Gana puntos completando tareas, desbloquea badges por logros, compite con tu equipo en el ranking mensual.',
+            onNextClick: async () => {
               navigate('/home');
+              await new Promise(resolve => setTimeout(resolve, 500));
               driverObj.moveNext();
             }
           }
         },
         {
           popover: {
-            title: '🎉 ¡Todo Listo!',
-            description: 'La plataforma se adapta completamente al contexto de tu empresa. Todas las tareas, métricas y objetivos están personalizados según tu industria y objetivos de negocio. ¡Comienza a usarla ahora!',
+            title: '🎉 ¡Tour Completado!',
+            description: 'Ya conoces todas las funciones. La plataforma está personalizada para tu industria y objetivos. Puedes repetir este tour cuando quieras desde el botón "Tour Guiado". ¡Comienza a trabajar!',
           }
         }
       ],
