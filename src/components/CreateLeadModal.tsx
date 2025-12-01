@@ -391,7 +391,13 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              disabled={loading}
+              data-action="close-modal"
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
