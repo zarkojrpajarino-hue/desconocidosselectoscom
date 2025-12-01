@@ -21,17 +21,17 @@ import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 
 const CRMPage = () => {
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, currentOrganizationId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Use custom hook for leads data
+  // Use custom hook for leads data with organization filtering
   const { 
     leads, 
     userStats, 
     globalStats, 
     loading, 
     refetch,
-  } = useLeads(user?.id);
+  } = useLeads(user?.id, currentOrganizationId);
 
   // State
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);

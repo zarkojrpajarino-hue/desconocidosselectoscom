@@ -13,6 +13,7 @@ import { useTaskSwaps } from "@/hooks/useTaskSwaps";
 import { isUserLeaderOfArea } from "@/lib/areaLeaders";
 import ConfettiEffect from "./ConfettiEffect";
 import BadgeUnlockAnimation from "./BadgeUnlockAnimation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TaskListProps {
   userId: string | undefined;
@@ -36,6 +37,9 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
   const [showConfetti, setShowConfetti] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
+
+  // Get current organization for multi-tenancy
+  const { currentOrganizationId } = useAuth();
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -200,12 +204,14 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             .update({ collaborator_feedback: feedback })
             .eq("id", completion.id);
         } else {
+          // MULTI-TENANCY: Include organization_id in insert
           await supabase.from("task_completions").insert({
             task_id: selectedTask.id,
             user_id: selectedTask.user_id,
             completed_by_user: false,
             validated_by_leader: false,
             collaborator_feedback: feedback,
+            organization_id: currentOrganizationId,
           });
         }
 
@@ -225,12 +231,14 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         setImpactMeasurementModalOpen(true);
       } else {
         // Colaborador da feedback a líder → 40%
+        // MULTI-TENANCY: Include organization_id
         await supabase.from("task_completions").insert({
           task_id: selectedTask.id,
           user_id: userId,
           completed_by_user: true,
           validated_by_leader: false,
           leader_feedback: feedback,
+          organization_id: currentOrganizationId,
         });
 
         // 🎮 OTORGAR PUNTOS POR DAR FEEDBACK
@@ -285,12 +293,14 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
 
             if (error) throw error;
           } else {
+            // MULTI-TENANCY: Include organization_id
             const { error } = await supabase.from("task_completions").insert({
               task_id: selectedTask.id,
               user_id: selectedTask.user_id,
               completed_by_user: true,
               validated_by_leader: true,
               impact_measurement: data,
+              organization_id: currentOrganizationId,
             });
 
             if (error) throw error;
@@ -358,6 +368,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         }
       } else {
         // Tarea individual → 100%
+        // MULTI-TENANCY: Include organization_id
         const { error } = await supabase.from("task_completions").insert({
           task_id: selectedTask.id,
           user_id: userId,
@@ -365,6 +376,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           validated_by_leader: true,
           impact_measurement: data,
           ai_questions: data.ai_questions,
+          organization_id: currentOrganizationId,
         });
 
         if (error) throw error;

@@ -1754,6 +1754,7 @@ export type Database = {
           impact_measurement: Json | null
           leader_evaluation: Json | null
           leader_feedback: Json | null
+          organization_id: string | null
           task_id: string
           task_metrics: Json | null
           user_id: string
@@ -1769,6 +1770,7 @@ export type Database = {
           impact_measurement?: Json | null
           leader_evaluation?: Json | null
           leader_feedback?: Json | null
+          organization_id?: string | null
           task_id: string
           task_metrics?: Json | null
           user_id: string
@@ -1784,6 +1786,7 @@ export type Database = {
           impact_measurement?: Json | null
           leader_evaluation?: Json | null
           leader_feedback?: Json | null
+          organization_id?: string | null
           task_id?: string
           task_metrics?: Json | null
           user_id?: string
@@ -1791,6 +1794,13 @@ export type Database = {
           validated_by_leader?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "task_completions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "task_completions_task_id_fkey"
             columns: ["task_id"]
@@ -1872,6 +1882,7 @@ export type Database = {
           created_at: string | null
           id: string
           is_collaborative: boolean | null
+          organization_id: string | null
           scheduled_date: string
           scheduled_end: string
           scheduled_start: string
@@ -1887,6 +1898,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_collaborative?: boolean | null
+          organization_id?: string | null
           scheduled_date: string
           scheduled_end: string
           scheduled_start: string
@@ -1902,6 +1914,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_collaborative?: boolean | null
+          organization_id?: string | null
           scheduled_date?: string
           scheduled_end?: string
           scheduled_start?: string
@@ -1924,6 +1937,13 @@ export type Database = {
             columns: ["collaborator_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_schedule_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {

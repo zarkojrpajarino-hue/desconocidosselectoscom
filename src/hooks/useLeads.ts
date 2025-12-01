@@ -6,8 +6,9 @@ import { toast } from 'sonner';
 /**
  * Hook for managing CRM leads data
  * Centralizes leads fetching and state management
+ * MULTI-TENANCY: Filters by organization_id
  */
-export const useLeads = (userId: string | undefined) => {
+export const useLeads = (userId: string | undefined, organizationId: string | null | undefined) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [userStats, setUserStats] = useState<UserLeadStats[]>([]);
   const [globalStats, setGlobalStats] = useState<CRMGlobalStats | null>(null);
@@ -21,14 +22,20 @@ export const useLeads = (userId: string | undefined) => {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
+      // MULTI-TENANCY: Filter by organization_id
+      let query = supabase
         .from('leads')
         .select(`
           *,
           creator:users!leads_created_by_fkey(id, full_name),
           assignee:users!leads_assigned_to_fkey(id, full_name)
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      if (organizationId) {
+        query = query.eq('organization_id', organizationId);
+      }
+
+      const { data, error: fetchError } = await query.order('created_at', { ascending: false });
 
       if (fetchError) {
         throw fetchError;
@@ -64,9 +71,16 @@ export const useLeads = (userId: string | undefined) => {
 
   const fetchGlobalStats = async () => {
     try {
-      const { data, error: globalError } = await supabase
+      // MULTI-TENANCY: Filter by organization_id
+      let query = supabase
         .from('leads')
         .select('stage, estimated_value, created_at');
+
+      if (organizationId) {
+        query = query.eq('organization_id', organizationId);
+      }
+
+      const { data, error: globalError } = await query;
 
       if (globalError) throw globalError;
 
@@ -143,7 +157,7 @@ export const useLeads = (userId: string | undefined) => {
       fetchUserStats();
       fetchGlobalStats();
     }
-  }, [userId]);
+  }, [userId, organizationId]);
 
   return {
     leads,

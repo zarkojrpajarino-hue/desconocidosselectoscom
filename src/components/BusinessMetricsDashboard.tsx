@@ -31,7 +31,7 @@ interface BusinessMetrics {
 }
 
 const BusinessMetricsDashboard = () => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const [metrics, setMetrics] = useState<BusinessMetrics>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -76,11 +76,13 @@ const BusinessMetricsDashboard = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
+      // MULTI-TENANCY: Include organization_id
       const { error } = await supabase
         .from('business_metrics')
         .upsert({
           user_id: user.id,
           metric_date: today,
+          organization_id: currentOrganizationId,
           ...metrics,
         }, {
           onConflict: 'user_id,metric_date'

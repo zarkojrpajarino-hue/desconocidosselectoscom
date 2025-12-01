@@ -52,7 +52,7 @@ interface Objective {
 }
 
 const OKRsDashboard = () => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, currentOrganizationId } = useAuth();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
@@ -94,12 +94,18 @@ const OKRsDashboard = () => {
   const fetchOKRs = async () => {
     setLoading(true);
     try {
-      const { data: objectivesData, error: objError } = await supabase
+      // MULTI-TENANCY: Filter by organization_id
+      let query = supabase
         .from('objectives')
         .select('*')
         .eq('owner_user_id', user?.id)
-        .ilike('quarter', `%${currentWeekStart}%`)
-        .order('created_at', { ascending: false });
+        .ilike('quarter', `%${currentWeekStart}%`);
+
+      if (currentOrganizationId) {
+        query = query.eq('organization_id', currentOrganizationId);
+      }
+
+      const { data: objectivesData, error: objError } = await query.order('created_at', { ascending: false });
 
       if (objError) throw objError;
 
