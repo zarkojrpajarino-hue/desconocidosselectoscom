@@ -52,7 +52,7 @@ const HerramientasHub = () => {
       </div>
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sections.map((section) => {
             const Icon = section.icon;
             return (
