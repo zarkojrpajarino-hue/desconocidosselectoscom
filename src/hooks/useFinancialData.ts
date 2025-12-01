@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Transaction {
   id: string;
@@ -17,11 +18,13 @@ interface Transaction {
  * Handles revenue, expenses, and marketing spend
  */
 export const useFinancialData = () => {
+  const { currentOrganizationId } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTransactions = async () => {
+    if (!currentOrganizationId) return;
     try {
       setLoading(true);
       setError(null);
@@ -37,6 +40,7 @@ export const useFinancialData = () => {
           product_name,
           users!revenue_entries_created_by_fkey(full_name)
         `)
+        .eq('organization_id', currentOrganizationId)
         .order('date', { ascending: false })
         .limit(10);
 
@@ -53,6 +57,7 @@ export const useFinancialData = () => {
           description,
           users!expense_entries_created_by_fkey(full_name)
         `)
+        .eq('organization_id', currentOrganizationId)
         .order('date', { ascending: false })
         .limit(10);
 
@@ -68,6 +73,7 @@ export const useFinancialData = () => {
           channel,
           users!marketing_spend_created_by_fkey(full_name)
         `)
+        .eq('organization_id', currentOrganizationId)
         .order('date', { ascending: false })
         .limit(10);
 
@@ -117,8 +123,10 @@ export const useFinancialData = () => {
   };
 
   useEffect(() => {
-    fetchTransactions();
-  }, []);
+    if (currentOrganizationId) {
+      fetchTransactions();
+    }
+  }, [currentOrganizationId]);
 
   return {
     transactions,

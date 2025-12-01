@@ -307,6 +307,7 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          organization_id: string | null
         }
         Insert: {
           balance: number
@@ -315,6 +316,7 @@ export type Database = {
           date: string
           id?: string
           notes?: string | null
+          organization_id?: string | null
         }
         Update: {
           balance?: number
@@ -323,6 +325,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          organization_id?: string | null
         }
         Relationships: [
           {
@@ -339,6 +342,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cash_balance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       expense_entries: {
@@ -352,6 +362,7 @@ export type Database = {
           id: string
           is_recurring: boolean | null
           notes: string | null
+          organization_id: string | null
           payment_method: string | null
           recurring_frequency: string | null
           subcategory: string | null
@@ -367,6 +378,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
+          organization_id?: string | null
           payment_method?: string | null
           recurring_frequency?: string | null
           subcategory?: string | null
@@ -382,6 +394,7 @@ export type Database = {
           id?: string
           is_recurring?: boolean | null
           notes?: string | null
+          organization_id?: string | null
           payment_method?: string | null
           recurring_frequency?: string | null
           subcategory?: string | null
@@ -400,6 +413,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -421,6 +441,7 @@ export type Database = {
           mrr: number | null
           net_margin: number | null
           new_customers: number | null
+          organization_id: string | null
           runway_months: number | null
           total_expenses: number | null
           total_revenue: number | null
@@ -441,6 +462,7 @@ export type Database = {
           mrr?: number | null
           net_margin?: number | null
           new_customers?: number | null
+          organization_id?: string | null
           runway_months?: number | null
           total_expenses?: number | null
           total_revenue?: number | null
@@ -461,11 +483,20 @@ export type Database = {
           mrr?: number | null
           net_margin?: number | null
           new_customers?: number | null
+          organization_id?: string | null
           runway_months?: number | null
           total_expenses?: number | null
           total_revenue?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "financial_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       google_calendar_tokens: {
         Row: {
@@ -807,6 +838,7 @@ export type Database = {
           id: string
           leads_generated: number | null
           notes: string | null
+          organization_id: string | null
           revenue_generated: number | null
         }
         Insert: {
@@ -819,6 +851,7 @@ export type Database = {
           id?: string
           leads_generated?: number | null
           notes?: string | null
+          organization_id?: string | null
           revenue_generated?: number | null
         }
         Update: {
@@ -831,6 +864,7 @@ export type Database = {
           id?: string
           leads_generated?: number | null
           notes?: string | null
+          organization_id?: string | null
           revenue_generated?: number | null
         }
         Relationships: [
@@ -846,6 +880,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_spend_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1410,6 +1451,7 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          organization_id: string | null
           payment_method: string | null
           product_category: string
           product_name: string | null
@@ -1425,6 +1467,7 @@ export type Database = {
           date: string
           id?: string
           notes?: string | null
+          organization_id?: string | null
           payment_method?: string | null
           product_category: string
           product_name?: string | null
@@ -1440,6 +1483,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          organization_id?: string | null
           payment_method?: string | null
           product_category?: string
           product_name?: string | null
@@ -1461,6 +1505,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "revenue_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       sales_targets: {
@@ -1468,6 +1519,7 @@ export type Database = {
           created_at: string | null
           id: string
           month: string
+          organization_id: string | null
           target_deals: number | null
           target_new_customers: number | null
           target_revenue: number | null
@@ -1477,6 +1529,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           month: string
+          organization_id?: string | null
           target_deals?: number | null
           target_new_customers?: number | null
           target_revenue?: number | null
@@ -1486,12 +1539,21 @@ export type Database = {
           created_at?: string | null
           id?: string
           month?: string
+          organization_id?: string | null
           target_deals?: number | null
           target_new_customers?: number | null
           target_revenue?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_targets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       schedule_change_suggestions: {
         Row: {
@@ -2763,6 +2825,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_or_leader: { Args: { _user_id: string }; Returns: boolean }
       register_ai_analysis_usage: {
         Args: { _user_id: string }
         Returns: undefined
