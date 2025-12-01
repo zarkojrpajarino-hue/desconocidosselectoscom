@@ -36,8 +36,12 @@ const Login = () => {
         });
       } else {
         toast.success('¡Bienvenido!');
-        const redirectTo = searchParams.get('redirect') || '/home';
-        navigate(redirectTo);
+        
+        // Esperar un momento para que AuthContext cargue las organizaciones
+        setTimeout(() => {
+          const redirectTo = searchParams.get('redirect') || '/home';
+          navigate(redirectTo);
+        }, 500);
       }
     } catch (error) {
       toast.error('Error inesperado');

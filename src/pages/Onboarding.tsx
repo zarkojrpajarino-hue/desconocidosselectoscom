@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,8 @@ import { OnboardingStep4 } from "@/components/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "@/components/onboarding/OnboardingStep5";
 import { OnboardingStep6 } from "@/components/onboarding/OnboardingStep6";
 import { OnboardingStep7 } from "@/components/onboarding/OnboardingStep7";
+import { ExistingUserOptions } from "@/components/onboarding/ExistingUserOptions";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface OnboardingFormData {
   // Paso 1: Cuenta
@@ -63,8 +65,11 @@ const TOTAL_STEPS = 7;
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { user, userOrganizations } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showExistingUserOptions, setShowExistingUserOptions] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
   
   const [formData, setFormData] = useState<OnboardingFormData>({
     accountEmail: "",
@@ -93,9 +98,27 @@ const Onboarding = () => {
     setFormData(prev => ({ ...prev, ...data }));
   };
 
+  // Detectar si el usuario ya está logueado al cargar el onboarding
+  useEffect(() => {
+    if (user && userOrganizations.length > 0) {
+      setIsExistingUser(true);
+      setShowExistingUserOptions(true);
+      // Pre-llenar algunos campos con datos del usuario
+      setFormData(prev => ({
+        ...prev,
+        accountEmail: user.email || '',
+        contactName: user.user_metadata?.full_name || '',
+        contactEmail: user.email || ''
+      }));
+    }
+  }, [user, userOrganizations]);
+
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
+        // Si es usuario existente, saltar validación de paso 1
+        if (isExistingUser) return true;
+        
         if (!formData.accountEmail || !formData.accountPassword) {
           toast.error("Por favor completa todos los campos del paso 1");
           return false;
@@ -339,59 +362,58 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
     setLoading(true);
     
     try {
-      // 1. Check if user already exists
-      const { data: existingUser } = await supabase.auth.getUser();
+      // 1. Check if user is already logged in
+      const { data: existingUserData } = await supabase.auth.getUser();
+      let userId: string;
+      let isNewUser = false;
       
-      if (existingUser?.user) {
-        toast.error('Ya tienes una cuenta activa', {
-          description: 'Si quieres crear una nueva organización, cierra sesión primero'
-        });
-        setLoading(false);
-        return;
-      }
-
-      // 2. Create user account
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.accountEmail,
-        password: formData.accountPassword,
-        options: {
-          data: {
-            full_name: formData.contactName,
+      if (existingUserData?.user) {
+        // Usuario ya logueado, crear solo la organización
+        userId = existingUserData.user.id;
+        toast.success('Creando nueva organización para tu cuenta existente...');
+      } else {
+        // 2. Create new user account
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.accountEmail,
+          password: formData.accountPassword,
+          options: {
+            data: {
+              full_name: formData.contactName,
+            }
           }
+        });
+
+        if (signUpError) {
+          if (signUpError.message.includes('already registered')) {
+            throw new Error('Este email ya está registrado. Por favor inicia sesión primero.');
+          }
+          throw signUpError;
         }
-      });
+        if (!authData.user) throw new Error('No se pudo crear el usuario');
 
-      if (signUpError) {
-        if (signUpError.message.includes('already registered')) {
-          throw new Error('Este email ya está registrado. Inicia sesión en su lugar.');
+        userId = authData.user.id;
+        isNewUser = true;
+
+        // 3. Wait for trigger to create user in public.users (only for new users)
+        let userCreated = false;
+        for (let i = 0; i < 6; i++) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', userId)
+            .single();
+          
+          if (userData) {
+            userCreated = true;
+            break;
+          }
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
-        throw signUpError;
-      }
-      if (!authData.user) throw new Error('No se pudo crear el usuario');
 
-      const userId = authData.user.id;
-
-      // 3. Wait for trigger to create user in public.users (max 3 seconds)
-      let userCreated = false;
-      for (let i = 0; i < 6; i++) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', userId)
-          .single();
-        
-        if (userData) {
-          userCreated = true;
-          break;
+        if (!userCreated) {
+          throw new Error('Error al configurar el usuario. Intenta de nuevo.');
         }
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
-
-      if (!userCreated) {
-        throw new Error('Error al configurar el usuario. Intenta de nuevo.');
-      }
-
-      // 4. Create organization
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({
@@ -419,12 +441,30 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         .single();
 
       if (orgError) {
-        // Cleanup: delete auth user if org creation fails
-        await supabase.auth.admin.deleteUser(userId);
+        // Cleanup: delete auth user if org creation fails (only for new users)
+        if (isNewUser) {
+          await supabase.auth.admin.deleteUser(userId);
+        }
         throw new Error(`Error al crear organización: ${orgError.message}`);
       }
 
-      // 5. Link user to organization
+      // 5. Create user_role entry (admin role for this organization)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          organization_id: org.id,
+          role: 'admin',
+          role_name: 'Administrador',
+          role_description: 'Administrador de la organización'
+        });
+
+      if (roleError) {
+        console.error('Error creating user role:', roleError);
+        throw new Error(`Error al asignar rol: ${roleError.message}`);
+      }
+
+      // 6. Update users table with organization_id for backwards compatibility
       const { error: userUpdateError } = await supabase
         .from('users')
         .update({ 
@@ -437,14 +477,17 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         throw new Error(`Error al vincular usuario: ${userUpdateError.message}`);
       }
 
-      // 6. Trigger AI generation (async - NO esperar respuesta)
+      // 7. Set this as current organization
+      localStorage.setItem('current_organization_id', org.id);
+
+      // 8. Trigger AI generation (async - NO esperar respuesta)
       supabase.functions.invoke('generate-workspace', {
         body: { organizationId: org.id }
       }).catch((error) => {
         console.error('AI generation error:', error);
       });
 
-      // 7. Redirect to generating workspace screen
+      // 9. Redirect to generating workspace screen
       navigate(`/generating-workspace?org=${org.id}`);
       
     } catch (error: any) {
@@ -511,44 +554,64 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
 
         {/* Form Steps */}
         <Card className="p-8">
-          {currentStep === 1 && <OnboardingStep1 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 2 && <OnboardingStep2 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 3 && <OnboardingStep3 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 4 && <OnboardingStep4 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 5 && <OnboardingStep5 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 6 && <OnboardingStep6 formData={formData} updateFormData={updateFormData} />}
-          {currentStep === 7 && <OnboardingStep7 formData={formData} updateFormData={updateFormData} />}
+          {/* Si es usuario existente con organizaciones, mostrar opciones */}
+          {showExistingUserOptions ? (
+            <ExistingUserOptions
+              userEmail={formData.accountEmail}
+              organizations={userOrganizations.map(o => ({
+                organization_id: o.organization_id,
+                organization_name: o.organization_name,
+                role: o.role
+              }))}
+              onCreateNew={() => {
+                setShowExistingUserOptions(false);
+                setCurrentStep(2); // Saltar paso 1 (ya tiene cuenta)
+              }}
+            />
+          ) : (
+            <>
+              {currentStep === 1 && <OnboardingStep1 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 2 && <OnboardingStep2 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 3 && <OnboardingStep3 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 4 && <OnboardingStep4 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 5 && <OnboardingStep5 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 6 && <OnboardingStep6 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 7 && <OnboardingStep7 formData={formData} updateFormData={updateFormData} />}
+            </>
+          )}
 
-          {/* Navigation */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 1 || loading}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Anterior
-            </Button>
+          {/* Navigation - solo si no está en opciones de usuario existente */}
+          {!showExistingUserOptions && (
+            <div className="flex justify-between mt-8 pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentStep === 1 || loading}
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Anterior
+              </Button>
 
-            <Button
-              onClick={handleNext}
-              disabled={loading}
-            >
-              {loading ? (
-                "Guardando..."
-              ) : currentStep === TOTAL_STEPS ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Finalizar
-                </>
-              ) : (
-                <>
-                  Siguiente
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
+              <Button
+                onClick={handleNext}
+                disabled={loading}
+              >
+                {loading ? (
+                  "Guardando..."
+                ) : currentStep === TOTAL_STEPS ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Finalizar
+                  </>
+                ) : (
+                  <>
+                    Siguiente
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Trial Info */}

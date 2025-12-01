@@ -58,6 +58,7 @@ import Guia from "./pages/practicar/Guia";
 import Onboarding from "./pages/Onboarding";
 import OnboardingSuccess from "./pages/OnboardingSuccess";
 import AdminOnboardings from "./pages/AdminOnboardings";
+import SelectOrganization from "./pages/SelectOrganization";
 import Landing from "./pages/Landing";
 import GeneratingWorkspace from "./pages/GeneratingWorkspace";
 
@@ -72,6 +73,11 @@ const AppContent = () => {
       {/* Landing y Onboarding (público) */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/select-organization" element={
+        <ProtectedRoute>
+          <SelectOrganization />
+        </ProtectedRoute>
+      } />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
