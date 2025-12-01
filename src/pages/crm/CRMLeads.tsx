@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/currencyUtils';
+import { LoadingTable } from '@/components/ui/loading-skeleton';
 
 interface Lead {
   id: string;
@@ -54,7 +56,13 @@ const CRMLeads = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching leads:', error);
+        toast.error('Error al cargar leads', {
+          description: error.message || 'Intenta de nuevo más tarde'
+        });
+        return;
+      }
 
       const leadsWithUserNames = data?.map(lead => ({
         ...lead,
@@ -62,9 +70,11 @@ const CRMLeads = () => {
       })) || [];
 
       setLeads(leadsWithUserNames);
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-      toast.error('Error al cargar los leads');
+    } catch (error: any) {
+      console.error('Unexpected error fetching leads:', error);
+      toast.error('Error inesperado', {
+        description: 'No se pudieron cargar los leads'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -72,28 +82,25 @@ const CRMLeads = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
+      case 'urgent':
       case 'high':
-        return 'bg-red-500/10 text-red-600 border-red-200';
+        return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'medium':
-        return 'bg-yellow-500/10 text-yellow-600 border-yellow-200';
+        return 'bg-warning/10 text-warning border-warning/20';
       case 'low':
-        return 'bg-green-500/10 text-green-600 border-green-200';
+        return 'bg-success/10 text-success border-success/20';
       default:
-        return 'bg-gray-500/10 text-gray-600 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
-
-  if (loading) {
+  if (loading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Cargando...</p>
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 h-8 bg-muted rounded w-1/4 animate-pulse" />
+          <LoadingTable rows={8} />
+        </div>
       </div>
     );
   }
