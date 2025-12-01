@@ -616,7 +616,7 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
 
         {/* Trial Info */}
         <div className="text-center mt-6 text-sm text-muted-foreground">
-          <p>🎁 <strong>Primera semana GRATIS</strong></p>
+          <p>🎁 <strong>14 días GRATIS</strong></p>
           <p>Luego desde €99/mes · Sin permanencia · Cancela cuando quieras</p>
         </div>
       </div>
