@@ -17,7 +17,7 @@ interface RevenueFormModalProps {
 }
 
 const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalProps) => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -71,7 +71,8 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
         unit_price: validation.data.unit_price,
         payment_method: validation.data.payment_method,
         notes: validation.data.notes,
-        created_by: user?.id
+        created_by: user?.id,
+        organization_id: currentOrganizationId
       });
 
       if (error) throw error;

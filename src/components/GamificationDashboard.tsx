@@ -7,16 +7,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const GamificationDashboard = () => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const [achievement, setAchievement] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [recentPoints, setRecentPoints] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user) return;
-    
-    fetchGamificationData();
+    if (user && currentOrganizationId) {
+      fetchGamificationData();
+    }
     
     // FASE 1: Suscripción a cambios en tiempo real con cleanup
     const channel = supabase
@@ -27,7 +27,7 @@ const GamificationDashboard = () => {
           event: '*',
           schema: 'public',
           table: 'user_achievements',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${user?.id}`,
         },
         () => {
           fetchGamificationData();
@@ -38,9 +38,11 @@ const GamificationDashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, currentOrganizationId]);
 
   const fetchGamificationData = async () => {
+    if (!currentOrganizationId) return;
+    
     try {
       // Achievements
       const { data: achievementData, error: achievementError } = await supabase
@@ -62,10 +64,18 @@ const GamificationDashboard = () => {
       if (badgesError) throw badgesError;
       setBadges(badgesData || []);
 
-      // Leaderboard (top 10)
+      // Leaderboard (top 10 de la organización)
       const { data: leaderboardData, error: leaderboardError } = await supabase
         .from('user_achievements')
-        .select('*, users(username, full_name)')
+        .select(`
+          *, 
+          users(
+            username, 
+            full_name,
+            user_roles!inner(organization_id)
+          )
+        `)
+        .eq('users.user_roles.organization_id', currentOrganizationId)
         .order('total_points', { ascending: false })
         .limit(10);
       

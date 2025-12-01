@@ -75,20 +75,20 @@ const OrganizationOKRs = () => {
   const fetchOrganizationOKRs = async () => {
     setLoading(true);
     try {
-      // Obtener la organización del usuario
-      const { data: userData, error: userError } = await supabase
-        .from('users')
+      // Obtener la organización del usuario desde user_roles
+      const { data: userRoleData, error: userRoleError } = await supabase
+        .from('user_roles')
         .select('organization_id')
-        .eq('id', user?.id)
+        .eq('user_id', user?.id)
         .single();
 
-      if (userError) throw userError;
+      if (userRoleError) throw userRoleError;
 
       // Obtener OKRs organizacionales (no tienen owner_user_id o tienen phase)
       const { data: objectivesData, error: objError } = await supabase
         .from('objectives')
         .select('*')
-        .eq('organization_id', userData.organization_id)
+        .eq('organization_id', userRoleData.organization_id)
         .is('phase', null) // Solo OKRs organizacionales (sin phase)
         .order('created_at', { ascending: false });
 

@@ -17,7 +17,7 @@ interface MarketingFormModalProps {
 }
 
 const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModalProps) => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -62,7 +62,8 @@ const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModa
         conversions: validation.data.conversions,
         revenue_generated: validation.data.revenue_generated,
         notes: validation.data.notes,
-        created_by: user?.id
+        created_by: user?.id,
+        organization_id: currentOrganizationId
       });
 
       if (error) throw error;

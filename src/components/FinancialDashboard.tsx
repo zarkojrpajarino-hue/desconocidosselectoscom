@@ -72,7 +72,7 @@ interface MarketingROI {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--secondary))'];
 
 const FinancialDashboard = () => {
-  const { userProfile } = useAuth();
+  const { userProfile, currentOrganizationId } = useAuth();
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
   const [revenueByProduct, setRevenueByProduct] = useState<RevenueByProduct[]>([]);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseByCategory[]>([]);
@@ -82,10 +82,14 @@ const FinancialDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
-    fetchFinancialData();
-  }, [selectedMonth]);
+    if (currentOrganizationId) {
+      fetchFinancialData();
+    }
+  }, [selectedMonth, currentOrganizationId]);
 
   const fetchFinancialData = async () => {
+    if (!currentOrganizationId) return;
+    
     setLoading(true);
     try {
       const monthStart = `${selectedMonth}-01`;
@@ -95,6 +99,7 @@ const FinancialDashboard = () => {
         .from('financial_metrics')
         .select('*')
         .eq('month', monthStart)
+        .eq('organization_id', currentOrganizationId)
         .single();
 
       if (metricsError && metricsError.code !== 'PGRST116') throw metricsError;
@@ -110,6 +115,7 @@ const FinancialDashboard = () => {
           .from('financial_metrics')
           .select('*')
           .eq('month', monthStart)
+          .eq('organization_id', currentOrganizationId)
           .single();
         
         if (newError) throw newError;
