@@ -62,57 +62,6 @@ const CRMPage = () => {
   useEffect(() => {
     applyFilters();
   }, [leads, debouncedSearch, filterStatus, filterType, filterCreatedBy]);
-        .from('leads')
-        .select(`
-          *,
-          creator:created_by(id, full_name, role),
-          assignee:assigned_to(id, full_name, role)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const leadsData = (data || []).map((lead: any) => ({
-        ...lead,
-        assigned_user_name: lead.assignee?.full_name || null
-      })) as Lead[];
-
-      setLeads(leadsData);
-    } catch (error: any) {
-      console.error('Error loading leads:', error);
-      throw error;
-    }
-  };
-
-  const loadUserStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_lead_stats')
-        .select('*')
-        .order('total_leads', { ascending: false });
-
-      if (error) throw error;
-      setUserStats(data || []);
-    } catch (error: any) {
-      console.error('Error loading user stats:', error);
-      throw error;
-    }
-  };
-
-  const loadGlobalStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('crm_global_stats')
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      setGlobalStats(data);
-    } catch (error: any) {
-      console.error('Error loading global stats:', error);
-      throw error;
-    }
-  };
 
   const applyFilters = () => {
     let filtered = [...leads];
@@ -169,7 +118,7 @@ const CRMPage = () => {
       if (error) throw error;
 
       toast.success('Etapa actualizada');
-      await loadData();
+      await refetch();
     } catch (error) {
       console.error('Error updating stage:', error);
       toast.error('Error al actualizar etapa');
@@ -658,7 +607,7 @@ const CRMPage = () => {
           setEditLead(null);
         }}
         onSuccess={() => {
-          loadData();
+          refetch();
           setCreateModalOpen(false);
           setEditLead(null);
         }}
@@ -673,7 +622,7 @@ const CRMPage = () => {
             setDetailModalOpen(false);
             setSelectedLead(null);
           }}
-          onUpdate={loadData}
+          onUpdate={refetch}
           onMoveStage={handleMoveStage}
         />
       )}
