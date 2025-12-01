@@ -9,15 +9,17 @@ export const OnboardingTour = ({ autoStart = false }: OnboardingTourProps) => {
   const { startTour, isTourCompleted } = useOnboardingTour();
 
   useEffect(() => {
+    // Solo auto-iniciar si autoStart está activo Y no se ha completado antes
     if (autoStart && !isTourCompleted) {
-      // Pequeño delay para asegurar que el DOM está completamente cargado
+      // Pequeño delay para asegurar que el DOM está listo
       const timer = setTimeout(() => {
         startTour();
-      }, 1000);
+      }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [autoStart, isTourCompleted, startTour]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Ejecutar solo una vez al montar el componente
 
   return null;
 };
