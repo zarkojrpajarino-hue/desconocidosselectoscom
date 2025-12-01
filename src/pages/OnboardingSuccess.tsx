@@ -45,7 +45,7 @@ const OnboardingSuccess = () => {
                   Periodo de Prueba
                 </h3>
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>Primera semana GRATIS.</strong> Luego podrás elegir tu plan:
+                  <strong>14 días GRATIS.</strong> Luego podrás elegir tu plan:
                 </p>
                 <ul className="text-sm text-yellow-800 dark:text-yellow-200 mt-2 space-y-1">
                   <li>• <strong>Essential:</strong> €99/mes - 10 usuarios</li>

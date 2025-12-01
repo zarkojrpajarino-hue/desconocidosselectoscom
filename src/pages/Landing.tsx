@@ -104,7 +104,7 @@ const Landing = () => {
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-16 text-center">
         <Badge className="mb-4 text-sm px-4 py-1">
-          🎁 Primera semana GRATIS
+          🎁 14 días GRATIS
         </Badge>
         
         <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
@@ -227,7 +227,7 @@ const Landing = () => {
           Precios Transparentes
         </h2>
         <p className="text-center text-muted-foreground mb-12">
-          Primera semana GRATIS · Sin permanencia · Cancela cuando quieras
+          14 días GRATIS · Sin permanencia · Cancela cuando quieras
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
