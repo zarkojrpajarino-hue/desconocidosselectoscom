@@ -10,6 +10,7 @@ import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import WeeklySchedulePreview from '@/components/WeeklySchedulePreview';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import { toast } from 'sonner';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const AgendaSemanal = () => {
   const { user, loading } = useAuth();
@@ -138,7 +139,7 @@ const AgendaSemanal = () => {
     <Card className="shadow-card bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/10 dark:to-blue-950/10">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex-1">
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-6 h-6" />
               📅 Agenda Semanal
@@ -147,16 +148,19 @@ const AgendaSemanal = () => {
               Agenda generada automáticamente según tu disponibilidad y coordinada con tu equipo
             </CardDescription>
           </div>
-          {hasAvailability && (
-            <Button
-              onClick={handleGenerateSchedules}
-              disabled={isGenerating}
-              className="bg-gradient-primary gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-              {isGenerating ? 'Generando...' : 'Generar Agenda'}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <SectionTourButton sectionId="agenda" variant="ghost" size="sm" />
+            {hasAvailability && (
+              <Button
+                onClick={handleGenerateSchedules}
+                disabled={isGenerating}
+                className="bg-gradient-primary gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                {isGenerating ? 'Generando...' : 'Generar Agenda'}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

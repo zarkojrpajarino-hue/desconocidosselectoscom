@@ -3,6 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Target, DollarSign, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const MetricsHub = () => {
   const { userProfile } = useAuth();
@@ -58,14 +59,17 @@ const MetricsHub = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
-          </Button>
+          <div className="flex items-center gap-2">
+            <SectionTourButton sectionId="metrics-hub" />
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Menú
+            </Button>
+          </div>
         </div>
       </header>
 

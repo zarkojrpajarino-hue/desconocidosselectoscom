@@ -21,6 +21,7 @@ import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const DashboardHome = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -194,6 +195,7 @@ const DashboardHome = () => {
             )}
           </div>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            <SectionTourButton sectionId="dashboard" variant="ghost" size="sm" />
             <Button
               onClick={() => navigate('/profile')}
               variant="outline"
