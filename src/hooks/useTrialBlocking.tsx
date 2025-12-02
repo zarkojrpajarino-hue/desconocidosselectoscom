@@ -184,11 +184,19 @@ export function useTrialEmailCheck() {
 
       if (error) throw error;
 
+      // Parse JSON response
+      const result = data as {
+        can_use_trial: boolean;
+        already_used: boolean;
+        message: string;
+        used_at?: string;
+      };
+
       return {
-        canUseTrial: data.can_use_trial,
-        alreadyUsed: data.already_used,
-        message: data.message,
-        usedAt: data.used_at,
+        canUseTrial: result.can_use_trial,
+        alreadyUsed: result.already_used,
+        message: result.message,
+        usedAt: result.used_at,
       };
     } catch (error) {
       console.error('[useTrialEmailCheck] Error:', error);

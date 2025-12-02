@@ -2924,6 +2924,47 @@ export type Database = {
           },
         ]
       }
+      trial_email_registry: {
+        Row: {
+          created_at: string
+          email: string
+          first_trial_started_at: string
+          id: string
+          ip_address: string | null
+          organization_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_trial_started_at?: string
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_trial_started_at?: string
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_email_registry_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           best_streak: number | null
@@ -3554,6 +3595,7 @@ export type Database = {
         Returns: number
       }
       can_use_ai_analysis: { Args: { _user_id: string }; Returns: Json }
+      can_use_trial: { Args: { user_email: string }; Returns: Json }
       can_user_swap: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: boolean
@@ -3604,6 +3646,16 @@ export type Database = {
       register_ai_analysis_usage: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      register_trial_email: {
+        Args: {
+          ip_addr?: string
+          org_id?: string
+          user_agent_param?: string
+          user_email: string
+          user_id_param?: string
+        }
+        Returns: Json
       }
       update_financial_metrics: {
         Args: { target_month: string }
