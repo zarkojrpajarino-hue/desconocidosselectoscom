@@ -44,28 +44,26 @@ const GamificationDashboard = () => {
     if (!currentOrganizationId) return;
     
     try {
-      // Achievements
-      const { data: achievementData, error: achievementError } = await supabase
+      // Achievements - no lanzar error si no existe, crear vacío
+      const { data: achievementData } = await supabase
         .from('user_achievements')
         .select('*')
         .eq('user_id', user?.id)
         .maybeSingle();
       
-      if (achievementError) throw achievementError;
-      setAchievement(achievementData);
+      setAchievement(achievementData || null);
 
-      // Badges del usuario
-      const { data: badgesData, error: badgesError } = await supabase
+      // Badges del usuario - ignorar errores
+      const { data: badgesData } = await supabase
         .from('user_badges')
         .select('*, badges(*)')
         .eq('user_id', user?.id)
         .order('earned_at', { ascending: false });
       
-      if (badgesError) throw badgesError;
       setBadges(badgesData || []);
 
-      // Leaderboard (top 10 de la organización)
-      const { data: leaderboardData, error: leaderboardError } = await supabase
+      // Leaderboard (top 10 de la organización) - ignorar errores
+      const { data: leaderboardData } = await supabase
         .from('user_achievements')
         .select(`
           *, 
@@ -79,23 +77,24 @@ const GamificationDashboard = () => {
         .order('total_points', { ascending: false })
         .limit(10);
       
-      if (leaderboardError) throw leaderboardError;
       setLeaderboard(leaderboardData || []);
 
-      // Historial reciente de puntos
-      const { data: pointsData, error: pointsError } = await supabase
+      // Historial reciente de puntos - ignorar errores
+      const { data: pointsData } = await supabase
         .from('points_history')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
         .limit(5);
       
-      if (pointsError) throw pointsError;
       setRecentPoints(pointsData || []);
     } catch (error) {
-      // FASE 1: Error handling mejorado
-      console.error('Error fetching gamification data:', error);
-      toast.error('Error al cargar datos de gamificación');
+      // Silenciar errores - mostrar UI vacía en lugar de error
+      console.log('Gamification data not yet initialized:', error);
+      setAchievement(null);
+      setBadges([]);
+      setLeaderboard([]);
+      setRecentPoints([]);
     }
   };
 

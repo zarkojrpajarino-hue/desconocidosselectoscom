@@ -431,24 +431,91 @@ export const useSectionTour = (sectionId: string) => {
   const getDashboardTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
-        title: '🏠 Tu Dashboard',
-        description: 'Centro de control con las métricas y tareas más importantes del día.',
+        title: '🏠 Panel Principal de Trabajo',
+        description: 'Aquí gestionas tus tareas semanales, cambios, y seguimiento de progreso. Vamos a explorar todo lo que puedes hacer.',
       }
     },
     {
-      element: '#key-metrics-cards',
+      element: '.shadow-card:has(.text-3xl.font-bold.bg-gradient-primary)',
       popover: {
-        title: '📊 Métricas clave',
-        description: 'Leads del mes, tareas pendientes, OKRs activos y más al alcance de un vistazo.',
+        title: '⏰ Countdown Semanal',
+        description: 'Tiempo restante hasta el deadline de la semana. Cuando llegue a 0, la semana se bloquea y ya no podrás hacer cambios.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '[data-testid="stats-cards"]',
+      popover: {
+        title: '📊 Métricas de Progreso',
+        description: 'Tareas asignadas, completadas, pendientes y tu porcentaje de avance semanal. Actualizado en tiempo real.',
         side: 'top',
       }
     },
     {
-      element: '#recent-activity',
+      element: '.bg-gradient-to-br.from-primary\\/5',
       popover: {
-        title: '🔔 Actividad reciente',
-        description: 'Mantente al día con las últimas acciones de tu equipo.',
+        title: '🔄 Sistema de Cambios de Tareas',
+        description: 'Según tu modo de trabajo (Relajado/Moderado/Intenso), tienes un límite de cambios por semana. Puedes intercambiar tareas que no te convengan.',
+        side: 'top',
+      }
+    },
+    {
+      element: '.space-y-2:has(input[type="radio"])',
+      popover: {
+        title: '⚙️ Modo de Trabajo',
+        description: 'Relajado (4 tareas, 3 cambios), Moderado (6 tareas, 2 cambios), Intenso (8 tareas, 1 cambio). Define tu carga semanal.',
         side: 'right',
+      }
+    },
+    {
+      element: '.bg-gradient-to-r.from-success\\/20',
+      popover: {
+        title: '📈 Barra de Progreso Semanal',
+        description: 'Visualización de cuántas tareas has completado vs. total asignadas. Muestra porcentaje en tiempo real.',
+        side: 'top',
+      }
+    },
+    {
+      popover: {
+        title: '📋 Lista de Tareas',
+        description: 'Ahora verás tu lista de tareas semanales. Cada tarea tiene estado, prioridad, y opciones de intercambio.',
+        onNextClick: () => {
+          driverObj.moveNext();
+        }
+      }
+    },
+    {
+      element: '.space-y-3',
+      popover: {
+        title: '✅ Completar Tareas',
+        description: 'Marca tareas como completadas con el checkbox. El líder de área debe validarlas para que cuenten al 100%.',
+        side: 'left',
+      }
+    },
+    {
+      element: 'button:has(.lucide-refresh-cw)',
+      popover: {
+        title: '🔀 Cambiar Tareas',
+        description: 'Haz clic en "Cambiar" para intercambiar una tarea por otra alternativa. Consume uno de tus cambios semanales.',
+        side: 'right',
+      }
+    },
+    {
+      popover: {
+        title: '⚠️ Urgencias y Deadlines',
+        description: 'Si hay tareas urgentes o próximas al deadline, verás alertas destacadas en rojo. Prioriza esas primero.',
+      }
+    },
+    {
+      popover: {
+        title: '👥 Progreso del Equipo',
+        description: 'Puedes ver el progreso de otros miembros del equipo. Aparecen badges junto a los nombres indicando sus roles.',
+      }
+    },
+    {
+      popover: {
+        title: '🎉 ¡Listo!',
+        description: 'Ya conoces el Dashboard completo: tareas, cambios, progreso, y deadlines. ¡Ahora a trabajar de forma organizada!',
       }
     }
   ];
@@ -503,6 +570,154 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
+  const getAgendaTour = (driverObj: any): DriveStep[] => [
+    {
+      popover: {
+        title: '📅 Agenda Semanal Inteligente',
+        description: 'Sistema automático que coordina tus tareas con el equipo según tu disponibilidad. Vamos a ver cómo funciona.',
+      }
+    },
+    {
+      popover: {
+        title: '⏰ ¿Cómo se genera?',
+        description: 'Cada lunes antes de las 13:00, debes configurar tu disponibilidad horaria. El sistema genera agendas coordinadas para todo el equipo.',
+      }
+    },
+    {
+      element: 'button:has-text("Configurar Disponibilidad"), button:has-text("Generar Agenda")',
+      popover: {
+        title: '🎛️ Configuración de Disponibilidad',
+        description: 'Haz clic aquí para indicar tus horarios disponibles: horas por día, bloques de tiempo, preferencias. El sistema respeta tu disponibilidad.',
+        side: 'bottom',
+      }
+    },
+    {
+      popover: {
+        title: '📋 Ejemplo: Cuestionario de Disponibilidad',
+        description: 'Te pregunta: ¿Cuántas horas puedes trabajar lunes, martes, etc.? ¿Prefieres mañanas o tardes? ¿Algún bloque bloqueado?',
+      }
+    },
+    {
+      popover: {
+        title: '🔄 Generación Automática',
+        description: 'Una vez todos completan su disponibilidad, el sistema genera agendas coordinadas. Asigna tareas a franjas horarias según prioridad y dependencias.',
+      }
+    },
+    {
+      popover: {
+        title: '📆 Vista de Agenda',
+        description: 'Tu agenda muestra cada día de la semana con bloques de tiempo asignados: tareas, horas estimadas, y posibles colaboraciones con el equipo.',
+      }
+    },
+    {
+      popover: {
+        title: '🔀 Sugerencias de Cambio',
+        description: 'Si un bloque no te conviene, puedes sugerir cambios. El sistema busca slots alternativos que no afecten al equipo.',
+      }
+    },
+    {
+      popover: {
+        title: '🔗 Integración con Google Calendar',
+        description: 'Puedes sincronizar tu agenda con Google Calendar para ver todo en un solo lugar. Los eventos se crean automáticamente.',
+      }
+    },
+    {
+      popover: {
+        title: '✅ Vista Previa vs. Final',
+        description: 'Antes del miércoles 13:30 ves un "preview" editable. Después, se convierte en agenda final y no se puede modificar hasta la próxima semana.',
+      }
+    },
+    {
+      popover: {
+        title: '🎉 ¡Perfecto!',
+        description: 'Ahora entiendes cómo funciona la Agenda Semanal: disponibilidad → generación automática → coordinación con equipo → ejecución.',
+      }
+    }
+  ];
+
+  const getGamificationTour = (driverObj: any): DriveStep[] => [
+    {
+      popover: {
+        title: '🏆 Sistema de Gamificación',
+        description: 'Gana puntos, badges y compite con tu equipo. Veamos cómo funciona este sistema de recompensas.',
+      }
+    },
+    {
+      element: '.grid.grid-cols-1.md\\:grid-cols-4 > .shadow-card:first-child',
+      popover: {
+        title: '⭐ Puntos Totales',
+        description: 'Acumulas puntos completando tareas, validando trabajo del equipo, y logrando objetivos. Más puntos = mejor ranking.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '.grid.grid-cols-1.md\\:grid-cols-4 > .shadow-card:nth-child(2)',
+      popover: {
+        title: '🔥 Racha Actual',
+        description: 'Semanas consecutivas completando todas tus tareas. Mantén la racha para ganar badges especiales y bonificaciones.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '.grid.grid-cols-1.md\\:grid-cols-4 > .shadow-card:nth-child(3)',
+      popover: {
+        title: '🎖️ Badges Desbloqueados',
+        description: 'Medallas por logros especiales: Primera Tarea, Racha de 5 Semanas, 100 Tareas Completadas, etc. Colecciónalos todos.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '.grid.grid-cols-1.md\\:grid-cols-4 > .shadow-card:nth-child(4)',
+      popover: {
+        title: '👑 Tu Ranking',
+        description: 'Posición en el leaderboard del equipo. Los 3 primeros lugares obtienen reconocimiento especial (🥇🥈🥉).',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '.shadow-card:has(.grid.grid-cols-2.md\\:grid-cols-4.lg\\:grid-cols-6)',
+      popover: {
+        title: '🎖️ Colección de Badges',
+        description: 'Badges por rareza: Común (gris), Raro (azul), Épico (morado), Legendario (dorado). Cada uno con su icono emoji único.',
+        side: 'top',
+      }
+    },
+    {
+      popover: {
+        title: '🏅 ¿Cómo ganar badges?',
+        description: 'Ejemplos: "Primera Tarea" (completar 1 tarea), "Imparable" (racha de 10 semanas), "Centurión" (100 tareas completadas), "Líder Nato" (validar 50 tareas del equipo).',
+      }
+    },
+    {
+      element: '.shadow-card:has(#\\31, #\\32, #\\33)',
+      popover: {
+        title: '🏆 Leaderboard del Equipo',
+        description: 'Ranking completo con puntos, tareas completadas, y rachas de cada miembro. Puedes verte destacado con borde especial si estás en la lista.',
+        side: 'top',
+      }
+    },
+    {
+      element: '.shadow-card:has-text("Actividad Reciente")',
+      popover: {
+        title: '📜 Historial de Puntos',
+        description: 'Últimas 5 acciones que te dieron puntos: "Tarea completada +10pts", "Validación de líder +15pts", "Racha semanal +20pts".',
+        side: 'top',
+      }
+    },
+    {
+      popover: {
+        title: '🎯 Estrategia de Puntos',
+        description: 'Completa tareas a tiempo (10-20pts), mantén rachas (bonus x2), valida trabajo de otros (+5-15pts), logra objetivos de equipo (bonus especial).',
+      }
+    },
+    {
+      popover: {
+        title: '🎉 ¡A jugar!',
+        description: 'Sistema completo: puntos, badges, rachas, leaderboard. Compite sanamente con tu equipo y celebra los logros juntos.',
+      }
+    }
+  ];
+
   const startSectionTour = () => {
     const driverObj = driver({
       showProgress: true,
@@ -553,6 +768,12 @@ export const useSectionTour = (sectionId: string) => {
         break;
       case 'buyer-persona':
         steps = getBuyerPersonaTour(driverObj);
+        break;
+      case 'agenda':
+        steps = getAgendaTour(driverObj);
+        break;
+      case 'gamification':
+        steps = getGamificationTour(driverObj);
         break;
       default:
         steps = [{

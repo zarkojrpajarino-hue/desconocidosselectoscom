@@ -284,12 +284,14 @@ const DashboardHome = () => {
             )}
 
             {/* Stats */}
-            <StatsCards 
-              userId={user?.id} 
-              currentPhase={systemConfig?.current_phase} 
-              organizationId={userProfile?.organization_id}
-              taskLimit={userWeeklyData?.task_limit} 
-            />
+            <div data-testid="stats-cards">
+              <StatsCards 
+                userId={user?.id} 
+                currentPhase={systemConfig?.current_phase} 
+                organizationId={userProfile?.organization_id}
+                taskLimit={userWeeklyData?.task_limit} 
+              />
+            </div>
 
             {/* Google Calendar Connect */}
             {user && <GoogleCalendarConnect userId={user.id} />}
