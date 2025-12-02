@@ -89,16 +89,27 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+// Chart payload item type for tooltips and legends
+interface ChartPayloadItem {
+  name?: string;
+  value?: number | string;
+  dataKey?: string;
+  color?: string;
+  fill?: string;
+  payload?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
     React.ComponentProps<"div"> & {
       active?: boolean;
-      payload?: any[];
+      payload?: ChartPayloadItem[];
       label?: string;
-      labelFormatter?: (value: any, payload: any[]) => React.ReactNode;
+      labelFormatter?: (value: unknown, payload: ChartPayloadItem[]) => React.ReactNode;
       labelClassName?: string;
-      formatter?: (value: any, name: any, item: any, index: number, payload: any) => React.ReactNode;
+      formatter?: (value: unknown, name: unknown, item: ChartPayloadItem, index: number, payload: Record<string, unknown>) => React.ReactNode;
       color?: string;
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -237,7 +248,7 @@ const ChartLegend = RechartsPrimitive.Legend;
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-      payload?: any[];
+      payload?: ChartPayloadItem[];
       verticalAlign?: "top" | "bottom";
       hideIcon?: boolean;
       nameKey?: string;
