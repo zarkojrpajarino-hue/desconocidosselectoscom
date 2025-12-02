@@ -308,6 +308,8 @@ export const createDemoRevenue = () => {
 
   // Always inject demo data overlay into revenue chart container
   const revenueChart = document.getElementById('revenue-by-product-chart');
+  console.log('🔍 Revenue chart element:', revenueChart);
+  
   if (revenueChart) {
     // Ensure container can host absolutely positioned overlay
     (revenueChart as HTMLElement).style.position = 'relative';
@@ -318,39 +320,57 @@ export const createDemoRevenue = () => {
       .forEach((el) => el.remove());
 
     const demoData = [
-      { label: 'Suscripciones', value: 12450, height: 85 },
-      { label: 'Productos', value: 8300, height: 60 },
-      { label: 'Servicios', value: 5200, height: 40 },
+      { label: 'Suscripciones', value: 12450, heightPx: 200 },
+      { label: 'Productos', value: 8300, heightPx: 150 },
+      { label: 'Servicios', value: 5200, heightPx: 100 },
     ];
 
     const demoContainer = document.createElement('div');
     demoContainer.className =
-      'demo-financial demo-chart-overlay pointer-events-none absolute inset-0 flex items-end justify-around px-8 pb-10 gap-4';
-    demoContainer.style.zIndex = '10';
+      'demo-financial demo-chart-overlay pointer-events-none absolute inset-0 flex items-end justify-around px-8 gap-4';
+    demoContainer.style.cssText = `
+      z-index: 10;
+      padding-bottom: 80px;
+      height: 300px;
+    `;
 
-    demoData.forEach((item) => {
+    console.log('🎨 Creating demo bars...');
+    demoData.forEach((item, idx) => {
       const bar = document.createElement('div');
       bar.className = 'flex flex-col items-center gap-2 flex-1 animate-scale-in';
-      bar.innerHTML = `
-        <div class="text-xs font-semibold text-primary">€${item.value.toLocaleString('es-ES')}</div>
-        <div class="w-full bg-primary rounded-t-lg transition-all duration-700" style="height: 0px;"></div>
-        <div class="text-xs text-muted-foreground font-medium">${item.label}</div>
-      `;
+      bar.style.maxWidth = '120px';
+      
+      const valueLabel = document.createElement('div');
+      valueLabel.className = 'text-xs font-semibold text-primary whitespace-nowrap';
+      valueLabel.textContent = `€${item.value.toLocaleString('es-ES')}`;
+      
+      const barElement = document.createElement('div');
+      barElement.className = 'w-full bg-primary rounded-t-lg transition-all duration-700';
+      barElement.style.cssText = `height: 0px; min-width: 60px;`;
+      
+      const label = document.createElement('div');
+      label.className = 'text-xs text-muted-foreground font-medium text-center';
+      label.textContent = item.label;
+      
+      bar.appendChild(valueLabel);
+      bar.appendChild(barElement);
+      bar.appendChild(label);
       demoContainer.appendChild(bar);
 
       // Animate bar height once inserted
       setTimeout(() => {
-        const barElement = bar.querySelector('div:nth-child(2)') as HTMLElement;
-        if (barElement) {
-          barElement.style.height = `${item.height}%`;
-        }
-      }, 50);
+        console.log(`📊 Animating bar ${idx + 1} to ${item.heightPx}px`);
+        barElement.style.height = `${item.heightPx}px`;
+      }, 100 + idx * 50);
     });
 
     revenueChart.appendChild(demoContainer);
+    console.log('✅ Demo revenue bars appended to chart');
 
     revenueChart.classList.add('animate-pulse');
     setTimeout(() => revenueChart.classList.remove('animate-pulse'), 2000);
+  } else {
+    console.error('❌ Revenue chart element not found!');
   }
 };
 
