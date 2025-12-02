@@ -7,6 +7,7 @@ import PipelineBoard from '@/components/PipelineBoard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const Pipeline = () => {
   const { user, loading } = useAuth();
@@ -43,14 +44,17 @@ const Pipeline = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/crm')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver a CRM y Leads
-          </Button>
+          <div className="flex items-center gap-2">
+            <SectionTourButton sectionId="crm-pipeline" />
+            <Button
+              variant="outline"
+              onClick={() => navigate('/crm')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver a CRM y Leads
+            </Button>
+          </div>
         </div>
       </header>
 

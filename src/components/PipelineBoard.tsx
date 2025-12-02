@@ -376,7 +376,7 @@ const PipelineBoard = () => {
       </div>
 
       {/* Pipeline Board */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div id="pipeline-columns" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {pipelineStages.map(stage => {
           const stageLeads = getLeadsByStage(stage.name);
           const stats = getStageStats(stage.name);
