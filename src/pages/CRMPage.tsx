@@ -211,10 +211,10 @@ const CRMPage = () => {
         </div>
       </header>
 
-      {/* Botón prominente Pipeline */}
+      {/* Botones prominentes Pipeline y CRM Hub */}
       <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border-y border-emerald-500/20">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-6 w-6 text-emerald-600" />
               <div>
@@ -222,13 +222,23 @@ const CRMPage = () => {
                 <p className="text-sm text-muted-foreground">Visualiza el embudo de conversión completo con drag & drop</p>
               </div>
             </div>
-            <Button
-              onClick={() => navigate('/crm/pipeline')}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 gap-2"
-            >
-              <TrendingUp className="h-4 w-4" />
-              Ver Pipeline
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => navigate('/crm/hub')}
+                variant="outline"
+                className="gap-2 border-primary/50 hover:bg-primary/10"
+              >
+                <Target className="h-4 w-4" />
+                CRM Analytics
+              </Button>
+              <Button
+                onClick={() => navigate('/crm/pipeline')}
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 gap-2"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Ver Pipeline
+              </Button>
+            </div>
           </div>
         </div>
       </div>
