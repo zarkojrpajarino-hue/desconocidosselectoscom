@@ -1,19 +1,26 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Target, History, Building2, ChevronDown } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
-import { useState } from 'react';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import {
+  OKRQuarterlyView,
+  OKRCheckInForm,
+  OKRDependencyMap,
+  OKRRetrospective,
+} from '@/components/enterprise';
 
 const OKRsPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('weekly');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -37,93 +44,103 @@ const OKRsPage = () => {
             <Target className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                OKRs Semanales Personalizados
+                Gestión de OKRs
               </h1>
               <p className="text-sm text-muted-foreground">
-                Objetivos generados con IA basados en tus tareas de la semana
+                Objetivos y Resultados Clave
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <SectionTourButton sectionId="okrs" />
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/okrs/organization')}
-              className="gap-2"
-            >
+            <Button variant="secondary" onClick={() => navigate('/okrs/organization')} className="gap-2">
               <Building2 className="h-4 w-4" />
               OKRs Empresa
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/okrs/history')}
-              className="gap-2"
-            >
+            <Button variant="secondary" onClick={() => navigate('/okrs/history')} className="gap-2">
               <History className="h-4 w-4" />
-              Historial de OKRs
+              Historial
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/metrics-hub')}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => navigate('/metrics-hub')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Volver a Métricas
+              Volver
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Explicación de OKRs Semanales */}
-        <Collapsible
-          open={isOkrInfoOpen}
-          onOpenChange={setIsOkrInfoOpen}
-          className="mb-6"
-        >
+        {/* Explicación */}
+        <Collapsible open={isOkrInfoOpen} onOpenChange={setIsOkrInfoOpen} className="mb-6">
           <Card>
             <CollapsibleTrigger className="w-full">
               <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
-                    🎯 ¿Qué son los OKRs Semanales Personalizados?
+                    🎯 ¿Qué son los OKRs?
                   </CardTitle>
-                  <ChevronDown 
-                    className={`h-5 w-5 text-muted-foreground transition-transform ${
-                      isOkrInfoOpen ? 'rotate-180' : ''
-                    }`}
-                  />
+                  <ChevronDown className={`h-5 w-5 transition-transform ${isOkrInfoOpen ? 'rotate-180' : ''}`} />
                 </div>
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6">
-                  <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
-                    <p>
-                      <strong className="text-foreground">OKR = Objectives and Key Results</strong> (Objetivos y Resultados Clave). Son marcos de trabajo para establecer metas ambiciosas y medir el progreso hacia ellas.
-                    </p>
-                    <p>
-                      <strong className="text-foreground">🎯 OKRs Semanales vs Empresa:</strong> Los OKRs semanales son <strong>personalizados y tácticos</strong>, generados automáticamente por IA basándose en tus tareas de la semana. Los OKRs de empresa son <strong>estratégicos y de largo plazo</strong>, definidos al inicio del trimestre.
-                    </p>
-                    <p>
-                      <strong className="text-foreground">🤖 Generación con IA:</strong> Puedes generar hasta <strong>1 OKR por semana</strong> (plan free, máx 2 semanas). La IA analiza tus tareas pendientes y crea objetivos alcanzables con resultados clave medibles.
-                    </p>
-                    <p>
-                      <strong className="text-foreground">📊 Cómo funcionan:</strong> Cada OKR tiene 1 Objetivo (qué quieres lograr) y 3-5 Key Results (cómo medirás el éxito). Los KRs tienen valores inicial, actual y objetivo. Actualiza el progreso semanalmente.
-                    </p>
-                    <p>
-                      <strong className="text-foreground">💡 Diferencia con KPIs:</strong> Los KPIs miden lo que ya haces (operación actual). Los OKRs definen hacia dónde quieres ir (objetivos ambiciosos futuros). Se complementan.
-                    </p>
-                  </div>
+                <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6 text-sm text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">OKR = Objectives and Key Results</strong> - Marcos para metas ambiciosas y medición de progreso.</p>
+                  <p><strong className="text-foreground">🎯 Semanales vs Empresa:</strong> Los semanales son tácticos, los de empresa estratégicos.</p>
+                  <p><strong className="text-foreground">📊 Estructura:</strong> 1 Objetivo + 3-5 Key Results medibles.</p>
                 </div>
               </CardContent>
             </CollapsibleContent>
           </Card>
         </Collapsible>
 
-        <OKRsDashboard />
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto mb-6">
+            <TabsTrigger value="weekly" className="gap-2">
+              <Target className="h-4 w-4" />
+              <span className="hidden md:inline">Semanales</span>
+            </TabsTrigger>
+            <TabsTrigger value="quarterly" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden md:inline">Trimestral</span>
+            </TabsTrigger>
+            <TabsTrigger value="checkin" className="gap-2">
+              <CheckSquare className="h-4 w-4" />
+              <span className="hidden md:inline">Check-in</span>
+            </TabsTrigger>
+            <TabsTrigger value="dependencies" className="gap-2">
+              <Link2 className="h-4 w-4" />
+              <span className="hidden md:inline">Dependencias</span>
+            </TabsTrigger>
+            <TabsTrigger value="retro" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden md:inline">Retrospectiva</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="weekly">
+            <OKRsDashboard />
+          </TabsContent>
+
+          <TabsContent value="quarterly">
+            <OKRQuarterlyView />
+          </TabsContent>
+
+          <TabsContent value="checkin">
+            <OKRCheckInForm />
+          </TabsContent>
+
+          <TabsContent value="dependencies">
+            <OKRDependencyMap />
+          </TabsContent>
+
+          <TabsContent value="retro">
+            <OKRRetrospective />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
