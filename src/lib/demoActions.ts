@@ -306,9 +306,51 @@ export const createDemoRevenue = () => {
     setTimeout(() => revenueCard.classList.remove('demo-highlight'), 3000);
   }
   
-  // Animate revenue chart
+  // Inject demo data into revenue chart if it's empty
   const revenueChart = document.getElementById('revenue-by-product-chart');
   if (revenueChart) {
+    // Check if chart is empty (no bars rendered)
+    const existingBars = revenueChart.querySelectorAll('.recharts-bar-rectangle');
+    
+    if (existingBars.length === 0) {
+      // Create demo visual bars
+      const demoData = [
+        { label: 'Suscripciones', value: 12450, color: 'hsl(var(--primary))', height: 85 },
+        { label: 'Productos', value: 8300, color: 'hsl(var(--primary))', height: 60 },
+        { label: 'Servicios', value: 5200, color: 'hsl(var(--primary))', height: 40 },
+      ];
+      
+      const demoContainer = document.createElement('div');
+      demoContainer.className = 'demo-financial demo-chart-overlay absolute inset-0 flex items-end justify-around px-12 pb-12 gap-4';
+      demoContainer.style.zIndex = '10';
+      
+      demoData.forEach(item => {
+        const bar = document.createElement('div');
+        bar.className = 'flex flex-col items-center gap-2 flex-1 animate-scale-in';
+        bar.innerHTML = `
+          <div class="text-xs font-semibold text-primary">€${item.value.toLocaleString()}</div>
+          <div class="w-full bg-primary rounded-t-lg transition-all duration-1000" style="height: 0px;"></div>
+          <div class="text-xs text-muted-foreground font-medium">${item.label}</div>
+        `;
+        demoContainer.appendChild(bar);
+        
+        // Animate bar height
+        setTimeout(() => {
+          const barElement = bar.querySelector('div:nth-child(2)') as HTMLElement;
+          if (barElement) {
+            barElement.style.height = `${item.height}%`;
+          }
+        }, 100);
+      });
+      
+      // Make chart container relative for absolute positioning
+      const chartWrapper = revenueChart.closest('.recharts-wrapper');
+      if (chartWrapper) {
+        (chartWrapper.parentElement as HTMLElement).style.position = 'relative';
+        chartWrapper.parentElement?.appendChild(demoContainer);
+      }
+    }
+    
     revenueChart.classList.add('animate-pulse');
     setTimeout(() => revenueChart.classList.remove('animate-pulse'), 2000);
   }
@@ -335,9 +377,69 @@ export const createDemoExpense = () => {
     setTimeout(() => expenseCard.classList.remove('demo-highlight'), 3000);
   }
   
-  // Animate expense chart
+  // Inject demo data into expense chart if it's empty
   const expenseChart = document.getElementById('expenses-by-category-chart');
   if (expenseChart) {
+    // Check if chart is empty (no pie slices rendered)
+    const existingSlices = expenseChart.querySelectorAll('.recharts-pie-sector');
+    
+    if (existingSlices.length === 0) {
+      // Create demo visual pie chart
+      const demoData = [
+        { label: 'Operaciones', value: 3200, color: '#3b82f6', percentage: 45 },
+        { label: 'Marketing', value: 2100, color: '#8b5cf6', percentage: 30 },
+        { label: 'Salarios', value: 1800, color: '#ec4899', percentage: 25 },
+      ];
+      
+      const demoContainer = document.createElement('div');
+      demoContainer.className = 'demo-financial demo-chart-overlay absolute inset-0 flex items-center justify-center';
+      demoContainer.style.zIndex = '10';
+      
+      // Create simple pie representation
+      const pieWrapper = document.createElement('div');
+      pieWrapper.className = 'flex flex-col items-center gap-4';
+      
+      // Pie chart visualization (simplified donut)
+      const pieVisual = document.createElement('div');
+      pieVisual.className = 'relative w-48 h-48 rounded-full animate-scale-in';
+      pieVisual.style.background = `conic-gradient(
+        ${demoData[0].color} 0deg ${demoData[0].percentage * 3.6}deg,
+        ${demoData[1].color} ${demoData[0].percentage * 3.6}deg ${(demoData[0].percentage + demoData[1].percentage) * 3.6}deg,
+        ${demoData[2].color} ${(demoData[0].percentage + demoData[1].percentage) * 3.6}deg 360deg
+      )`;
+      
+      // Center hole for donut effect
+      const centerHole = document.createElement('div');
+      centerHole.className = 'absolute inset-0 m-auto w-24 h-24 rounded-full bg-card';
+      pieVisual.appendChild(centerHole);
+      
+      pieWrapper.appendChild(pieVisual);
+      
+      // Legend
+      const legend = document.createElement('div');
+      legend.className = 'flex flex-col gap-2 animate-fade-in';
+      demoData.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'flex items-center gap-2 text-sm';
+        legendItem.innerHTML = `
+          <div class="w-3 h-3 rounded-full" style="background-color: ${item.color}"></div>
+          <span class="font-medium">${item.label}</span>
+          <span class="text-muted-foreground ml-auto">€${item.value.toLocaleString()} (${item.percentage}%)</span>
+        `;
+        legend.appendChild(legendItem);
+      });
+      
+      pieWrapper.appendChild(legend);
+      demoContainer.appendChild(pieWrapper);
+      
+      // Make chart container relative for absolute positioning
+      const chartWrapper = expenseChart.closest('.recharts-wrapper');
+      if (chartWrapper) {
+        (chartWrapper.parentElement as HTMLElement).style.position = 'relative';
+        chartWrapper.parentElement?.appendChild(demoContainer);
+      }
+    }
+    
     expenseChart.classList.add('animate-pulse');
     setTimeout(() => expenseChart.classList.remove('animate-pulse'), 2000);
   }

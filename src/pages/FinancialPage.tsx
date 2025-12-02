@@ -143,6 +143,7 @@ const FinancialPage = () => {
                   </CardDescription>
                 </div>
                 <Button 
+                  id="financial-history-button"
                   variant="outline"
                   onClick={() => navigate('/financial/transactions')}
                   className="gap-2"
