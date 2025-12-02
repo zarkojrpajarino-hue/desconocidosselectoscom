@@ -122,31 +122,28 @@ const FinancialDashboard = () => {
         setMetrics(newMetrics);
       }
 
-      // 2. Ingresos por producto
+      // 2. Ingresos por producto (vista agregada - no filtrar por org_id)
       const revenueQuery = (supabase as any)
         .from('revenue_by_product_current_month')
-        .select('product_category, total_revenue, total_quantity, percentage_of_total')
-        .eq('organization_id', currentOrganizationId);
+        .select('product_category, total_revenue, total_quantity, percentage_of_total');
       
       const { data: revenueData, error: revenueError } = await revenueQuery;
       if (revenueError) throw revenueError;
       setRevenueByProduct((revenueData as RevenueByProduct[]) || []);
 
-      // 3. Gastos por categoría
+      // 3. Gastos por categoría (vista agregada - no filtrar por org_id)
       const expensesQuery = (supabase as any)
         .from('expenses_by_category_current_month')
-        .select('category, total_amount, percentage_of_total')
-        .eq('organization_id', currentOrganizationId);
+        .select('category, total_amount, percentage_of_total');
       
       const { data: expensesData, error: expensesError } = await expensesQuery;
       if (expensesError) throw expensesError;
       setExpensesByCategory((expensesData as ExpenseByCategory[]) || []);
 
-      // 4. ROI de marketing
+      // 4. ROI de marketing (vista agregada - no filtrar por org_id)
       const marketingQuery = (supabase as any)
         .from('marketing_roi_by_channel')
-        .select('channel, total_spend, total_leads, total_conversions, total_revenue, roi_ratio, cac, conversion_rate')
-        .eq('organization_id', currentOrganizationId);
+        .select('channel, total_spend, total_leads, total_conversions, total_revenue, roi_ratio, cac, conversion_rate');
       
       const { data: marketingData, error: marketingError } = await marketingQuery;
       if (marketingError) throw marketingError;
