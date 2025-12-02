@@ -72,6 +72,7 @@ export interface PlanLimits {
   available_ai_tools: string[];
   ai_weekly_insights: boolean;
   ai_predictive_models: boolean;
+  ai_competitive_analysis: boolean;  // Análisis de competidores con IA
   custom_ai_tools: boolean;
   
   // ALERTAS
@@ -172,6 +173,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     available_ai_tools: ['buyer_persona', 'lead_scoring'],
     ai_weekly_insights: false,
     ai_predictive_models: false,
+    ai_competitive_analysis: false,
     custom_ai_tools: false,
     
     // ALERTAS
@@ -278,6 +280,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     ],
     ai_weekly_insights: false,
     ai_predictive_models: false,
+    ai_competitive_analysis: false,
     custom_ai_tools: false,
     
     // ALERTAS
@@ -383,6 +386,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     ],
     ai_weekly_insights: true,
     ai_predictive_models: false,
+    ai_competitive_analysis: true,  // Professional tiene análisis competitivo
     custom_ai_tools: false,
     
     // ALERTAS
@@ -479,6 +483,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     available_ai_tools: [],  // Todas + custom
     ai_weekly_insights: true,
     ai_predictive_models: true,
+    ai_competitive_analysis: true,  // Enterprise tiene análisis competitivo completo
     custom_ai_tools: true,
     
     // ALERTAS

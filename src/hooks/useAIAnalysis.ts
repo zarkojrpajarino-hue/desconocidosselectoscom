@@ -12,6 +12,7 @@ interface UseAIAnalysisOptions {
   organization_id: string;
   user_id: string;
   autoLoad?: boolean;
+  includeCompetitors?: boolean;
   data_period?: {
     start_date: string;
     end_date: string;
@@ -22,6 +23,7 @@ export function useAIAnalysis({
   organization_id,
   user_id,
   autoLoad = false,
+  includeCompetitors = false,
   data_period,
 }: UseAIAnalysisOptions) {
   const { toast } = useToast();
@@ -118,14 +120,13 @@ export function useAIAnalysis({
         description: 'Esto puede tardar hasta 2 minutos. Por favor espera.',
       });
 
-      // Llamar a la edge function
+      // Llamar a la edge function v3
       const { data, error } = await supabase.functions.invoke(
-        'analyze-project-data-v2',
+        'analyze-project-data-v3',
         {
           body: {
-            organization_id,
-            user_id,
-            data_period,
+            organizationId: organization_id,
+            includeCompetitors,
           },
         }
       );
@@ -166,7 +167,7 @@ export function useAIAnalysis({
         variant: 'destructive',
       });
     }
-  }, [organization_id, user_id, data_period, toast, loadHistory]);
+  }, [organization_id, includeCompetitors, toast, loadHistory]);
 
   // ============================================
   // EXPORTAR ANÁLISIS
