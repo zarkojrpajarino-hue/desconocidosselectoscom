@@ -12,7 +12,7 @@ interface StatsCardsProps {
 
 const StatsCards = ({ userId, currentPhase, organizationId, taskLimit }: StatsCardsProps) => {
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(userId, currentPhase, organizationId, taskLimit);
-  const { data: completions = new Map(), isLoading: completionsLoading } = useTaskCompletions(userId);
+  const { data: completions = new Map(), isLoading: completionsLoading } = useTaskCompletions(userId, organizationId);
 
   const completed = tasks.filter(task => completions.has(task.id) && completions.get(task.id).validated_by_leader).length;
   const total = tasks.length;

@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
+import { NO_ORG_REQUIRED_ROUTES } from '@/constants/limits';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,19 +10,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading, currentOrganizationId, userOrganizations } = useAuth();
   const location = useLocation();
   
-  // Rutas que no requieren organización seleccionada
-  const noOrgRequiredRoutes = [
-    '/select-organization',
-    '/onboarding',
-    '/generating-workspace',
-    '/profile',
-    '/join'
-  ];
-  
-  const isNoOrgRoute = noOrgRequiredRoutes.some(route => 
+  // Verificar si la ruta actual no requiere organización
+  const isNoOrgRoute = NO_ORG_REQUIRED_ROUTES.some(route => 
     location.pathname.startsWith(route)
   );
   
+  // 1. Esperar a que cargue completamente
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -33,20 +27,28 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
+  // 2. Sin usuario → login (guardar ruta actual para redirigir después)
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // Si el usuario no tiene organización seleccionada y tiene organizaciones disponibles
-  if (!isNoOrgRoute && !currentOrganizationId && userOrganizations.length > 0) {
-    return <Navigate to="/select-organization" replace />;
+  // 3. Si está en ruta que NO requiere org, permitir acceso
+  if (isNoOrgRoute) {
+    return <>{children}</>;
   }
   
-  // Si no tiene ninguna organización, redirigir a onboarding
-  if (!isNoOrgRoute && !currentOrganizationId && userOrganizations.length === 0) {
+  // 4. Necesita org pero no tiene ninguna → onboarding
+  if (!currentOrganizationId && userOrganizations.length === 0) {
     return <Navigate to="/onboarding" replace />;
   }
   
+  // 5. Tiene orgs pero no ha seleccionado → selector (con returnTo para volver)
+  if (!currentOrganizationId && userOrganizations.length > 0) {
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/select-organization?returnTo=${returnTo}`} replace />;
+  }
+  
+  // 6. Todo bien, mostrar contenido
   return <>{children}</>;
 };
 

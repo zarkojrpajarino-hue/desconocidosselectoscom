@@ -1,13 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { handleError, handleSuccess } from '@/utils/errorHandler';
+import { QUERY_STALE_TIMES } from '@/constants/limits';
 
 /**
- * FASE 2: React Query hook para tasks
- * Evita overfetching - múltiples componentes comparten el mismo cache
+ * Interface para Task
  */
-
-interface Task {
+export interface Task {
   id: string;
   title: string;
   description: string | null;
@@ -19,9 +18,55 @@ interface Task {
   estimated_cost: number | null;
   actual_cost: number | null;
   created_at: string | null;
+  organization_id?: string;
 }
 
-export const useTasks = (userId: string | undefined, currentPhase: number | undefined, organizationId: string | undefined, taskLimit?: number) => {
+/**
+ * Interface para TaskCompletion (flexible para JSON de Supabase)
+ */
+export interface TaskCompletion {
+  id: string;
+  task_id: string;
+  user_id: string;
+  organization_id?: string | null;
+  completed_at: string;
+  completed_by_user: boolean;
+  validated_by_leader: boolean | null;
+  leader_evaluation?: unknown;
+  ai_questions?: unknown;
+  user_insights?: unknown;
+  task_metrics?: unknown;
+  impact_measurement?: unknown;
+  collaborator_feedback?: unknown;
+}
+
+/**
+ * Interface para datos de completar tarea
+ */
+export interface TaskCompletionData {
+  completed_at?: string;
+  completed_by_user?: boolean;
+  notes?: string;
+  actual_cost?: number;
+  [key: string]: unknown;
+}
+
+export interface CompleteTaskParams {
+  taskId: string;
+  userId: string;
+  data: TaskCompletionData;
+}
+
+/**
+ * Hook para obtener tareas del usuario
+ * Multi-tenancy: filtra por organization_id
+ */
+export const useTasks = (
+  userId: string | undefined, 
+  currentPhase: number | undefined, 
+  organizationId: string | undefined, 
+  taskLimit?: number
+) => {
   return useQuery({
     queryKey: ['tasks', userId, currentPhase, organizationId, taskLimit],
     queryFn: async () => {
@@ -49,11 +94,19 @@ export const useTasks = (userId: string | undefined, currentPhase: number | unde
       return data as Task[];
     },
     enabled: !!userId && !!currentPhase,
-    staleTime: 5 * 60 * 1000, // Cache 5 minutos
+    staleTime: QUERY_STALE_TIMES.tasks,
   });
 };
 
-export const useSharedTasks = (userId: string | undefined, currentPhase: number | undefined, organizationId: string | undefined) => {
+/**
+ * Hook para obtener tareas compartidas (donde el usuario es líder)
+ * Multi-tenancy: filtra por organization_id
+ */
+export const useSharedTasks = (
+  userId: string | undefined, 
+  currentPhase: number | undefined, 
+  organizationId: string | undefined
+) => {
   return useQuery({
     queryKey: ['sharedTasks', userId, currentPhase, organizationId],
     queryFn: async () => {
@@ -78,57 +131,88 @@ export const useSharedTasks = (userId: string | undefined, currentPhase: number 
       return data as Task[];
     },
     enabled: !!userId && !!currentPhase,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.tasks,
   });
 };
 
-export const useTaskCompletions = (userId: string | undefined) => {
+/**
+ * Hook para obtener completaciones de tareas
+ * CRÍTICO: Requiere organizationId para multi-tenancy
+ */
+export const useTaskCompletions = (
+  userId: string | undefined,
+  organizationId: string | undefined
+) => {
   return useQuery({
-    queryKey: ['taskCompletions', userId],
+    queryKey: ['taskCompletions', userId, organizationId],
     queryFn: async () => {
-      if (!userId) return new Map();
+      if (!userId) return new Map<string, TaskCompletion>();
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("task_completions")
         .select("*")
         .eq("user_id", userId);
 
+      // CRITICAL: Filter by organization_id for multi-tenancy security
+      if (organizationId) {
+        query = query.eq("organization_id", organizationId);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
 
-      const map = new Map();
+      const map = new Map<string, TaskCompletion>();
       data?.forEach((c) => {
-        map.set(c.task_id, c);
+        map.set(c.task_id, c as unknown as TaskCompletion);
       });
       return map;
     },
     enabled: !!userId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: QUERY_STALE_TIMES.taskCompletions,
   });
 };
 
-export const useCompleteTask = () => {
+/**
+ * Hook para completar una tarea
+ * Invalidaciones específicas para evitar refetch innecesarios
+ */
+export const useCompleteTask = (organizationId: string | undefined) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ taskId, userId, data }: { taskId: string; userId: string; data: any }) => {
+    mutationFn: async ({ taskId, userId, data }: CompleteTaskParams) => {
+      const insertData = {
+        task_id: taskId,
+        user_id: userId,
+        organization_id: organizationId || null,
+        ...data,
+      };
+
       const { error } = await supabase
         .from("task_completions")
-        .insert({
-          task_id: taskId,
-          user_id: userId,
-          ...data,
-        });
+        .insert(insertData);
 
       if (error) throw error;
+      
+      return { taskId, userId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['taskCompletions'] });
-      toast.success("Tarea completada");
+    onSuccess: (result) => {
+      // Invalidar solo queries específicas del usuario/organización
+      queryClient.invalidateQueries({ 
+        queryKey: ['tasks', result.userId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['taskCompletions', result.userId, organizationId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['sharedTasks', result.userId] 
+      });
+      
+      handleSuccess("Tarea completada correctamente");
     },
     onError: (error) => {
-      console.error('Error completing task:', error);
-      toast.error("Error al completar tarea");
+      handleError(error, "Error al completar la tarea");
     },
   });
 };
