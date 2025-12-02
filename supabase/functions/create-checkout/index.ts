@@ -100,7 +100,6 @@ serve(async (req) => {
         },
       ],
       subscription_data: {
-        trial_period_days: 0, // Sin trial adicional
         metadata: {
           organization_id: organizationId,
           plan_name: planName,
