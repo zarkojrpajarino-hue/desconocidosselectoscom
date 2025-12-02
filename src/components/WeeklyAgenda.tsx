@@ -147,7 +147,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
         console.log('✅ Calendar synced after task acceptance');
       } catch (syncError) {
         console.error('Error syncing calendar:', syncError);
-        // No mostrar error al usuario, es opcional
+        toast.info('⚠️ No se pudo sincronizar con Google Calendar. Intenta manualmente.');
       }
 
       await fetchSchedule();
