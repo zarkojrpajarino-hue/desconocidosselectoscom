@@ -8,13 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { AIAnalysisDashboard } from '@/components/ai-analysis/AIAnalysisDashboard';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 const AIAnalysis = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
-  const [canUseAI, setCanUseAI] = useState<any>(null);
-  const [checkingAccess, setCheckingAccess] = useState(true);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const { canUseAiAnalysis, plan, aiAnalysisCount, limits } = useSubscriptionLimits();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -22,65 +23,24 @@ const AIAnalysis = () => {
     }
   }, [user, loading, navigate]);
 
-  useEffect(() => {
-    if (user) {
-      fetchOrganization();
-      checkAIAccess();
-    }
-  }, [user]);
-
-  const fetchOrganization = async () => {
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('user_roles')
-      .select('organization_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (data) {
-      setOrganizationId(data.organization_id);
-    }
-  };
-
-  const checkAIAccess = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase.rpc('can_use_ai_analysis', {
-        _user_id: user.id
-      });
-
-      if (error) {
-        console.error('Error checking AI access:', error);
-        setCanUseAI({ allowed: false, reason: 'Error al verificar permisos' });
-      } else {
-        setCanUseAI(data);
-      }
-    } catch (error) {
-      console.error('Exception checking AI access:', error);
-      setCanUseAI({ allowed: false, reason: 'Error al verificar permisos' });
-    } finally {
-      setCheckingAccess(false);
-    }
-  };
-
-  const handleAnalysisComplete = async () => {
-    if (user) {
-      await supabase.rpc('register_ai_analysis_usage', {
-        _user_id: user.id
-      });
-      checkAIAccess();
-    }
-  };
-
   const analysis = useAIAnalysis({
-    organization_id: organizationId || '',
+    organization_id: currentOrganizationId || '',
     user_id: user?.id || '',
     autoLoad: true,
   });
 
-  if (loading || checkingAccess || !organizationId) {
+  const handleGenerateAnalysis = async () => {
+    // Verificar límite de análisis IA
+    const { allowed } = canUseAiAnalysis();
+    if (!allowed) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    await analysis.generateAnalysis();
+  };
+
+  if (loading || !currentOrganizationId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Cargando...</p>
@@ -88,13 +48,23 @@ const AIAnalysis = () => {
     );
   }
 
+  // Verificar si tiene acceso
+  const { allowed: hasAccess, remaining } = canUseAiAnalysis();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Brain className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold">Análisis con IA</h1>
+            <div>
+              <h1 className="text-2xl font-bold">Análisis con IA</h1>
+              {limits.max_ai_analysis_per_month !== -1 && (
+                <p className="text-sm text-muted-foreground">
+                  {aiAnalysisCount}/{limits.max_ai_analysis_per_month} análisis este mes
+                </p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <SectionTourButton sectionId="ai-analysis" />
@@ -107,7 +77,7 @@ const AIAnalysis = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {canUseAI && !canUseAI.allowed ? (
+        {!hasAccess && !analysis.data ? (
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <div className="flex items-center gap-3 mb-4">
@@ -115,8 +85,8 @@ const AIAnalysis = () => {
                   <Lock className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Acceso Restringido</CardTitle>
-                  <CardDescription className="text-base">Limitaciones del Plan</CardDescription>
+                  <CardTitle className="text-2xl">Límite Alcanzado</CardTitle>
+                  <CardDescription className="text-base">Análisis IA agotados este mes</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -124,19 +94,19 @@ const AIAnalysis = () => {
               <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <AlertCircle className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
-                  <p className="font-semibold text-amber-900">{canUseAI.reason}</p>
-                  {canUseAI.days_remaining !== undefined && (
-                    <p className="text-sm text-amber-800">
-                      Podrás hacer un nuevo análisis en {canUseAI.days_remaining} días.
-                    </p>
-                  )}
+                  <p className="font-semibold text-amber-900">
+                    Has alcanzado el límite de {limits.max_ai_analysis_per_month} análisis IA este mes
+                  </p>
+                  <p className="text-sm text-amber-800">
+                    Mejora tu plan para obtener más análisis mensuales con IA.
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Button onClick={() => navigate('/home')} variant="outline" className="flex-1">
                   Volver al Menú
                 </Button>
-                <Button onClick={() => navigate('/pricing')} className="flex-1">
+                <Button onClick={() => setShowUpgradeModal(true)} className="flex-1">
                   Ver Planes
                 </Button>
               </div>
@@ -145,10 +115,7 @@ const AIAnalysis = () => {
         ) : analysis.data ? (
           <AIAnalysisDashboard
             data={analysis.data}
-            onRefresh={async () => {
-              await analysis.generateAnalysis();
-              handleAnalysisComplete();
-            }}
+            onRefresh={handleGenerateAnalysis}
             onExport={(format) => analysis.exportAnalysis(format)}
             loading={analysis.loading}
           />
@@ -156,14 +123,14 @@ const AIAnalysis = () => {
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle>Generar Análisis con IA</CardTitle>
-              <CardDescription>Analiza el rendimiento completo de tu empresa</CardDescription>
+              <CardDescription>
+                Analiza el rendimiento completo de tu empresa
+                {remaining !== -1 && ` (${remaining} análisis restantes este mes)`}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={async () => {
-                  await analysis.generateAnalysis();
-                  handleAnalysisComplete();
-                }}
+                onClick={handleGenerateAnalysis}
                 disabled={analysis.loading}
                 className="w-full"
               >
@@ -173,6 +140,15 @@ const AIAnalysis = () => {
           </Card>
         )}
       </main>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentPlan={plan}
+        limitType="ai_analysis"
+        currentValue={aiAnalysisCount}
+        limitValue={limits.max_ai_analysis_per_month}
+      />
     </div>
   );
 };

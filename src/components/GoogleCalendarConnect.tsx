@@ -2,18 +2,24 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Check, X, RefreshCw, AlertCircle } from 'lucide-react';
+import { Calendar, Check, X, RefreshCw, AlertCircle, Lock, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 interface GoogleCalendarConnectProps {
   userId: string;
 }
 
 const GoogleCalendarConnect = ({ userId }: GoogleCalendarConnectProps) => {
+  const { hasFeature, plan } = useSubscriptionLimits();
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const hasCalendarAccess = hasFeature('google_calendar');
 
   useEffect(() => {
     checkConnection();
@@ -47,6 +53,12 @@ const GoogleCalendarConnect = ({ userId }: GoogleCalendarConnectProps) => {
   };
 
   const handleConnect = async () => {
+    // Verificar si tiene acceso a la feature
+    if (!hasCalendarAccess) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     try {
       // Llamar a edge function que inicia el flujo OAuth
       const { data, error } = await supabase.functions.invoke('google-auth-url', {
@@ -109,98 +121,135 @@ const GoogleCalendarConnect = ({ userId }: GoogleCalendarConnectProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Google Calendar
-            </CardTitle>
-            <CardDescription>
-              Sincroniza tu agenda con Google Calendar para recibir notificaciones
-            </CardDescription>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Google Calendar
+              </CardTitle>
+              <CardDescription>
+                Sincroniza tu agenda con Google Calendar para recibir notificaciones
+              </CardDescription>
+            </div>
+            {!hasCalendarAccess ? (
+              <Badge variant="secondary" className="gap-1">
+                <Lock className="w-3 h-3" />
+                Professional+
+              </Badge>
+            ) : isConnected ? (
+              <Badge className="bg-success text-success-foreground">
+                <Check className="w-3 h-3 mr-1" />
+                Conectado
+              </Badge>
+            ) : (
+              <Badge variant="outline">
+                <X className="w-3 h-3 mr-1" />
+                No conectado
+              </Badge>
+            )}
           </div>
-          {isConnected ? (
-            <Badge className="bg-success text-success-foreground">
-              <Check className="w-3 h-3 mr-1" />
-              Conectado
-            </Badge>
-          ) : (
-            <Badge variant="outline">
-              <X className="w-3 h-3 mr-1" />
-              No conectado
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {isConnected ? (
-          <>
-            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                <div className="text-sm text-blue-900 dark:text-blue-100">
-                  <p className="font-medium mb-1">✅ Sincronización activa</p>
-                  <p>
-                    Tus tareas programadas se sincronizan automáticamente con tu Google Calendar.
-                    Recibirás notificaciones en tu móvil antes de cada tarea.
-                  </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!hasCalendarAccess ? (
+            <>
+              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Lock className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <div className="text-sm text-amber-900 dark:text-amber-100">
+                    <p className="font-medium mb-1">🔒 Funcionalidad Premium</p>
+                    <p>
+                      La integración con Google Calendar está disponible en los planes Professional y Enterprise.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={handleSyncNow}
-                disabled={syncing}
-                className="flex-1 bg-gradient-primary"
-              >
-                {syncing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Sincronizando...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Sincronizar Ahora
-                  </>
-                )}
-              </Button>
 
               <Button
-                onClick={handleDisconnect}
-                variant="outline"
-                className="flex-1"
+                onClick={() => setShowUpgradeModal(true)}
+                className="w-full gap-2"
               >
-                Desconectar
+                <Sparkles className="w-4 h-4" />
+                Mejorar Plan para Conectar
               </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium">Al conectar Google Calendar podrás:</p>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-                <li>Ver tus tareas en tu calendario de Google</li>
-                <li>Recibir notificaciones en tu móvil</li>
-                <li>Sincronización automática en tiempo real</li>
-                <li>Recordatorios 30 minutos antes de cada tarea</li>
-              </ul>
-            </div>
+            </>
+          ) : isConnected ? (
+            <>
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                  <div className="text-sm text-blue-900 dark:text-blue-100">
+                    <p className="font-medium mb-1">✅ Sincronización activa</p>
+                    <p>
+                      Tus tareas programadas se sincronizan automáticamente con tu Google Calendar.
+                      Recibirás notificaciones en tu móvil antes de cada tarea.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <Button
-              onClick={handleConnect}
-              className="w-full bg-gradient-primary h-12"
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Conectar con Google Calendar
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleSyncNow}
+                  disabled={syncing}
+                  className="flex-1 bg-gradient-primary"
+                >
+                  {syncing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Sincronizando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Sincronizar Ahora
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handleDisconnect}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Desconectar
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-medium">Al conectar Google Calendar podrás:</p>
+                <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+                  <li>Ver tus tareas en tu calendario de Google</li>
+                  <li>Recibir notificaciones en tu móvil</li>
+                  <li>Sincronización automática en tiempo real</li>
+                  <li>Recordatorios 30 minutos antes de cada tarea</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleConnect}
+                className="w-full bg-gradient-primary h-12"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Conectar con Google Calendar
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentPlan={plan}
+        limitType="feature"
+        featureName="Google Calendar"
+      />
+    </>
   );
 };
 
