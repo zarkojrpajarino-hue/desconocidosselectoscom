@@ -204,26 +204,30 @@ const AgendaSemanal = () => {
               setShowQuestionnaire(false);
               setHasAvailability(true);
               toast.success('✅ Disponibilidad guardada', {
-                description: 'Tu preview se generará automáticamente'
+                description: 'Ahora puedes generar tu agenda'
               });
               checkWeekStatus();
+              setScheduleKey(prev => prev + 1);
             }}
           />
-        ) : allUsersReady === false && nextWeekStart ? (
-          <WeeklySchedulePreview
-            userId={user!.id}
-            weekStart={nextWeekStart}
-            onSuggestChange={() => {
-              toast.info('Funcionalidad de sugerencias en desarrollo');
-            }}
-          />
-        ) : nextWeekStart ? (
-          <WeeklyAgenda
-            key={scheduleKey}
-            userId={user!.id}
-            weekStart={nextWeekStart}
-            isLocked={isWeekLocked}
-          />
+        ) : hasAvailability && nextWeekStart ? (
+          // Si ya tiene disponibilidad, mostrar agenda o preview
+          allUsersReady === false ? (
+            <WeeklySchedulePreview
+              userId={user!.id}
+              weekStart={nextWeekStart}
+              onSuggestChange={() => {
+                toast.info('Funcionalidad de sugerencias en desarrollo');
+              }}
+            />
+          ) : (
+            <WeeklyAgenda
+              key={scheduleKey}
+              userId={user!.id}
+              weekStart={nextWeekStart}
+              isLocked={isWeekLocked}
+            />
+          )
         ) : (
           <div className="text-center py-12">
             <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />

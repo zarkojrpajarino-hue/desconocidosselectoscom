@@ -63,21 +63,28 @@ const GamificationDashboard = () => {
       setBadges(badgesData || []);
 
       // Leaderboard (top 10 de la organización) - ignorar errores
-      const { data: leaderboardData } = await supabase
-        .from('user_achievements')
-        .select(`
-          *, 
-          users(
-            username, 
-            full_name,
-            user_roles!inner(organization_id)
-          )
-        `)
-        .eq('users.user_roles.organization_id', currentOrganizationId)
-        .order('total_points', { ascending: false })
-        .limit(10);
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('organization_id', currentOrganizationId);
       
-      setLeaderboard(leaderboardData || []);
+      const userIds = userRoles?.map(ur => ur.user_id) || [];
+      
+      if (userIds.length > 0) {
+        const { data: leaderboardData } = await supabase
+          .from('user_achievements')
+          .select(`
+            *, 
+            users(username, full_name)
+          `)
+          .in('user_id', userIds)
+          .order('total_points', { ascending: false })
+          .limit(10);
+        
+        setLeaderboard(leaderboardData || []);
+      } else {
+        setLeaderboard([]);
+      }
 
       // Historial reciente de puntos - ignorar errores
       const { data: pointsData } = await supabase
