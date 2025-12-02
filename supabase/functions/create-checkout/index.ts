@@ -31,13 +31,21 @@ serve(async (req) => {
       'enterprise': Deno.env.get('STRIPE_PRICE_ENTERPRISE') || ''
     };
 
-    const priceId = planMap[planName.toLowerCase()];
+    let priceId = planMap[planName.toLowerCase()];
+    
+    // Sanitize price ID in case it includes a full path like "/v1/prices/..." or a full URL
+    if (priceId.startsWith('/v1/prices/')) {
+      priceId = priceId.replace('/v1/prices/', '');
+    }
+    if (priceId.startsWith('https://api.stripe.com/v1/prices/')) {
+      priceId = priceId.replace('https://api.stripe.com/v1/prices/', '');
+    }
     
     if (!priceId) {
-      throw new Error(`Invalid plan name: ${planName}`);
+      throw new Error(`Invalid plan name or price ID for plan: ${planName}`);
     }
 
-    console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}`);
+    console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}, priceId: ${priceId}`);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
