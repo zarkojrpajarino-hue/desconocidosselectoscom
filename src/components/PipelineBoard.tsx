@@ -42,7 +42,7 @@ const PipelineBoard = () => {
   const [loading, setLoading] = useState(true);
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; full_name: string; role: string }>>([]);
 
   // Filters
   const [filterType, setFilterType] = useState<string>('all');
@@ -135,13 +135,16 @@ const PipelineBoard = () => {
       if (error) throw error;
 
       // Map assigned_user_name for cards
-      const leadsWithUserNames = (data || []).map((lead: any) => ({
+      const leadsWithUserNames = (data || []).map((lead) => ({
         ...lead,
-        assigned_user_name: lead.assignee?.full_name || null
-      })) as Lead[];
+        assigned_user_name: lead.assignee?.full_name || null,
+        // Remove nested objects to match Lead type
+        creator: undefined,
+        assignee: undefined
+      })) as unknown as Lead[];
 
       setLeads(leadsWithUserNames);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading leads:', error);
       throw error;
     }
@@ -211,7 +214,13 @@ const PipelineBoard = () => {
 
     try {
       // Update lead in database
-      const updateData: any = {
+      const updateData: {
+        pipeline_stage: string;
+        updated_at: string;
+        stage?: string;
+        lost_date?: string;
+        won_date?: string;
+      } = {
         pipeline_stage: targetStageName,
         updated_at: new Date().toISOString()
       };

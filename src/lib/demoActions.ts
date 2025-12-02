@@ -3,6 +3,7 @@
  */
 
 import { TOUR_DEMO_DATA } from './tourData';
+import { logger } from './logger';
 
 /**
  * Crear lead demo en el pipeline
@@ -65,7 +66,7 @@ export const animateDragDrop = (
   const targetColumn = document.querySelector(`[data-stage*="${toStage.toLowerCase()}"]`);
   
   if (!lead || !targetColumn) {
-    console.warn('Lead or target column not found for drag animation');
+    logger.warn('Lead or target column not found for drag animation');
     return;
   }
   
@@ -170,7 +171,7 @@ export const animateKRProgress = (
   const valueSpan = document.getElementById(`${krId}-value`);
   
   if (!progressBar || !valueSpan) {
-    console.warn('Progress bar or value span not found');
+    logger.warn('Progress bar or value span not found');
     return;
   }
   
@@ -259,7 +260,7 @@ export const animateMetricsCharts = () => {
  * Rellenar y animar KPI de ventas como ejemplo
  */
 export const fillAndAnimateSalesKPI = () => {
-  console.log('🎯 Filling sales KPI...');
+  logger.log('🎯 Filling sales KPI...');
   
   // Buscar el input de revenue (ventas)
   const revenueInput = document.getElementById('revenue') as HTMLInputElement;
@@ -321,7 +322,7 @@ export const fillAndAnimateSalesKPI = () => {
     }
   }, 2500);
   
-  console.log('✅ Sales KPI filled');
+  logger.log('✅ Sales KPI filled');
 };
 
 /**
@@ -335,7 +336,7 @@ export const highlightSaveButton = () => {
     return text === 'guardar' || text === 'save' || text?.includes('guardar');
   });
   
-  console.log('💾 Save button:', saveButton);
+  logger.log('💾 Save button:', saveButton);
   
   if (saveButton) {
     saveButton.classList.add('demo-highlight', 'animate-pulse', 'ring-4', 'ring-primary/50');
@@ -343,7 +344,7 @@ export const highlightSaveButton = () => {
       saveButton.classList.remove('demo-highlight', 'animate-pulse', 'ring-4', 'ring-primary/50');
     }, 3000);
   } else {
-    console.warn('⚠️ Save button not found');
+    logger.warn('⚠️ Save button not found');
   }
 };
 
@@ -390,7 +391,7 @@ export const createDemoRevenue = () => {
 
   // Always inject demo data overlay into revenue chart container
   const revenueChart = document.getElementById('revenue-by-product-chart');
-  console.log('🔍 Revenue chart element:', revenueChart);
+  logger.log('🔍 Revenue chart element:', revenueChart);
   
   if (revenueChart) {
     // Ensure container can host absolutely positioned overlay
@@ -416,7 +417,7 @@ export const createDemoRevenue = () => {
       height: 300px;
     `;
 
-    console.log('🎨 Creating demo bars...');
+    logger.log('🎨 Creating demo bars...');
     demoData.forEach((item, idx) => {
       const bar = document.createElement('div');
       bar.className = 'flex flex-col items-center gap-2 flex-1 animate-scale-in';
@@ -441,18 +442,18 @@ export const createDemoRevenue = () => {
 
       // Animate bar height once inserted
       setTimeout(() => {
-        console.log(`📊 Animating bar ${idx + 1} to ${item.heightPx}px`);
+        logger.log(`📊 Animating bar ${idx + 1} to ${item.heightPx}px`);
         barElement.style.height = `${item.heightPx}px`;
       }, 100 + idx * 50);
     });
 
     revenueChart.appendChild(demoContainer);
-    console.log('✅ Demo revenue bars appended to chart');
+    logger.log('✅ Demo revenue bars appended to chart');
 
     revenueChart.classList.add('animate-pulse');
     setTimeout(() => revenueChart.classList.remove('animate-pulse'), 2000);
   } else {
-    console.error('❌ Revenue chart element not found!');
+    logger.error('❌ Revenue chart element not found!');
   }
 };
 

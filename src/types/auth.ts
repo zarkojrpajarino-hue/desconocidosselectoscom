@@ -3,7 +3,7 @@
  * Eliminates 'any' types from auth context
  */
 
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session, AuthError } from '@supabase/supabase-js';
 
 export interface UserProfile {
   id: string;
@@ -25,11 +25,11 @@ export interface UserOrganization {
 
 export interface AuthContextType {
   user: SupabaseUser | null;
-  session: any | null;
+  session: Session | null;
   userProfile: UserProfile | null;
   currentOrganizationId: string | null;
   userOrganizations: UserOrganization[];
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   switchOrganization: (organizationId: string) => void;
   loading: boolean;
