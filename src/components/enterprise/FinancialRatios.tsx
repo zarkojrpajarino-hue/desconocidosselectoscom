@@ -59,16 +59,12 @@ export function FinancialRatios() {
     fetchRatios();
   }, [organizationId]);
 
-  const ratios = data;
-
   if (loading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-48" />
-          ))}
+          {[...Array(6)].map((_, i) => (<Skeleton key={i} className="h-48" />))}
         </div>
       </div>
     );
@@ -78,26 +74,19 @@ export function FinancialRatios() {
     return (
       <Card className="border-destructive/50 bg-destructive/5">
         <CardContent className="pt-6">
-          <p className="text-destructive text-center">
-            Error cargando ratios financieros
-          </p>
+          <p className="text-destructive text-center">Error cargando ratios financieros</p>
         </CardContent>
       </Card>
     );
   }
 
   const ratios = data || [];
-
-  // Calcular health score general
   const excellentCount = ratios.filter(r => r.status === 'excellent').length;
   const goodCount = ratios.filter(r => r.status === 'good').length;
-  const healthScore = ratios.length > 0 
-    ? Math.round(((excellentCount * 100 + goodCount * 75) / ratios.length)) 
-    : 0;
+  const healthScore = ratios.length > 0 ? Math.round(((excellentCount * 100 + goodCount * 75) / ratios.length)) : 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Ratios Financieros</h2>
@@ -105,168 +94,50 @@ export function FinancialRatios() {
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Health Score</p>
-          <p className={`text-3xl font-bold ${
-            healthScore >= 80 ? 'text-emerald-600' :
-            healthScore >= 60 ? 'text-blue-600' :
-            healthScore >= 40 ? 'text-amber-600' : 'text-rose-600'
-          }`}>
-            {healthScore}%
-          </p>
+          <p className={`text-3xl font-bold ${healthScore >= 80 ? 'text-emerald-600' : healthScore >= 60 ? 'text-blue-600' : 'text-amber-600'}`}>{healthScore}%</p>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard 
-          label="Excelente" 
-          count={excellentCount} 
-          total={ratios.length}
-          color="bg-emerald-500" 
-        />
-        <SummaryCard 
-          label="Bueno" 
-          count={goodCount} 
-          total={ratios.length}
-          color="bg-blue-500" 
-        />
-        <SummaryCard 
-          label="Regular" 
-          count={ratios.filter(r => r.status === 'fair').length} 
-          total={ratios.length}
-          color="bg-amber-500" 
-        />
-        <SummaryCard 
-          label="Necesita Mejora" 
-          count={ratios.filter(r => r.status === 'poor').length} 
-          total={ratios.length}
-          color="bg-rose-500" 
-        />
-      </div>
-
-      {/* Ratios Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ratios.map((ratio, index) => (
-          <RatioCard key={index} ratio={ratio} />
-        ))}
+        {ratios.map((ratio, index) => {
+          const config = statusConfig[ratio.status as keyof typeof statusConfig] || statusConfig.fair;
+          const StatusIcon = config.icon;
+          const percentageOfBenchmark = ratio.benchmark > 0 ? (ratio.value / ratio.benchmark) * 100 : 100;
+
+          return (
+            <Card key={index} className={`${config.bg} border-transparent`}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-medium">{ratio.name}</CardTitle>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="font-semibold">{ratio.formula}</p>
+                        <p className="text-xs mt-1">{ratio.explanation}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className={`text-3xl font-bold ${config.color}`}>{typeof ratio.value === 'number' ? ratio.value.toFixed(2) : ratio.value}</span>
+                  <Badge variant="outline" className={config.color}><StatusIcon className="h-3 w-3 mr-1" />{config.label}</Badge>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>vs Benchmark ({ratio.benchmark})</span>
+                    <span>{percentageOfBenchmark.toFixed(0)}%</span>
+                  </div>
+                  <Progress value={Math.min(percentageOfBenchmark, 150)} max={150} className="h-1.5" />
+                </div>
+                <p className="text-xs text-muted-foreground">{ratio.interpretation}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-
-      {/* Interpretación */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Guía de Interpretación</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <h4 className="font-semibold">Ratios de Liquidez</h4>
-              <p className="text-muted-foreground">
-                Miden la capacidad de la empresa para cumplir con sus obligaciones a corto plazo. 
-                Un Current Ratio &gt; 2 indica buena liquidez.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-semibold">Ratios de Rentabilidad</h4>
-              <p className="text-muted-foreground">
-                Evalúan la eficiencia en la generación de beneficios. 
-                Margen neto &gt; 10% es generalmente saludable.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-semibold">Ratios de Eficiencia</h4>
-              <p className="text-muted-foreground">
-                Miden qué tan bien la empresa utiliza sus recursos. 
-                ROI &gt; 15% indica buen retorno sobre inversión.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-semibold">Ratios de Solvencia</h4>
-              <p className="text-muted-foreground">
-                Evalúan la capacidad de la empresa para cumplir obligaciones a largo plazo. 
-                Debt-to-Equity &lt; 1 es generalmente seguro.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  );
-}
-
-function SummaryCard({ 
-  label, 
-  count, 
-  total, 
-  color 
-}: { 
-  label: string; 
-  count: number; 
-  total: number; 
-  color: string;
-}) {
-  const percentage = total > 0 ? (count / total) * 100 : 0;
-  
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-2xl font-bold">{count}</p>
-        <Progress value={percentage} className={`h-1 mt-2 [&>div]:${color}`} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function RatioCard({ ratio }: { ratio: any }) {
-  const config = statusConfig[ratio.status as keyof typeof statusConfig] || statusConfig.fair;
-  const StatusIcon = config.icon;
-  
-  const percentageOfBenchmark = ratio.benchmark > 0 
-    ? (ratio.value / ratio.benchmark) * 100 
-    : 100;
-
-  return (
-    <Card className={`${config.bg} border-transparent`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">{ratio.name}</CardTitle>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="font-semibold">{ratio.formula}</p>
-                <p className="text-xs mt-1">{ratio.explanation}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className={`text-3xl font-bold ${config.color}`}>
-            {typeof ratio.value === 'number' ? ratio.value.toFixed(2) : ratio.value}
-          </span>
-          <Badge variant="outline" className={config.color}>
-            <StatusIcon className="h-3 w-3 mr-1" />
-            {config.label}
-          </Badge>
-        </div>
-        
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>vs Benchmark ({ratio.benchmark})</span>
-            <span>{percentageOfBenchmark.toFixed(0)}%</span>
-          </div>
-          <Progress 
-            value={Math.min(percentageOfBenchmark, 150)} 
-            max={150}
-            className="h-1.5"
-          />
-        </div>
-        
-        <p className="text-xs text-muted-foreground">{ratio.interpretation}</p>
-      </CardContent>
-    </Card>
   );
 }
