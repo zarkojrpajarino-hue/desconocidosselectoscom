@@ -34,6 +34,7 @@ import TransactionsHistory from "./pages/financial/TransactionsHistory";
 import UserTransactionsHistory from "./pages/financial/UserTransactionsHistory";
 import AlertsPage from "./pages/AlertsPage";
 import CRMPage from "./pages/CRMPage";
+import CRMHub from "./pages/crm/CRMHub";
 import CRMLeads from "./pages/crm/CRMLeads";
 import Pipeline from "./pages/crm/Pipeline";
 import UserLeadsPage from "./pages/crm/UserLeadsPage";
@@ -231,6 +232,11 @@ const AppContent = () => {
           <CRMPage />
         </ProtectedRoute>
       } />
+<Route path="/crm/hub" element={
+  <ProtectedRoute>
+    <CRMHub />
+  </ProtectedRoute>
+} />
 <Route path="/crm/pipeline" element={
   <ProtectedRoute>
     <Pipeline />
