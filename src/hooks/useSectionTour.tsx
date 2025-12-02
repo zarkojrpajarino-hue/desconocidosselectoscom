@@ -7,7 +7,9 @@ import {
   animateDragDrop, 
   createDemoOKR, 
   animateKRProgress,
-  createDemoFinancialRecord,
+  createDemoRevenue,
+  createDemoExpense,
+  animateROICalculation,
   animateMetricsCharts,
   cleanupDemoData,
   fillFormDemo
@@ -134,41 +136,107 @@ export const useSectionTour = (sectionId: string) => {
     {
       popover: {
         title: '💰 Control Financiero',
-        description: 'Gestiona ingresos, gastos y analiza la salud financiera de tu negocio.',
+        description: 'Gestiona ingresos, gastos y analiza la salud financiera de tu negocio en tiempo real.',
       }
     },
     {
-      element: '#financial-summary',
+      element: '[data-metric="revenue"]',
       popover: {
-        title: '📊 Resumen financiero',
-        description: 'Vista general de ingresos, gastos, margen bruto y beneficio neto del mes.',
+        title: '📊 Panel de KPIs',
+        description: 'Cuatro métricas principales: Ingresos, Gastos, Margen Neto y Runway (meses de supervivencia).',
         side: 'top',
       }
     },
     {
       popover: {
-        title: '💵 Añadiendo ingreso de ejemplo...',
-        description: 'Mira cómo registrar ingresos recurrentes',
+        title: '💵 Creando ingreso de ejemplo...',
+        description: 'Observa cómo se registra un ingreso de €12,450 por suscripciones.',
         onNextClick: () => {
-          createDemoFinancialRecord();
-          setTimeout(() => driverObj.moveNext(), 1000);
+          createDemoRevenue();
+          setTimeout(() => driverObj.moveNext(), 2000);
         }
       }
     },
     {
-      element: '#demo-financial-1',
+      element: '[data-metric="revenue"]',
       popover: {
         title: '✅ Ingreso registrado',
-        description: `€${TOUR_DEMO_DATA.financialRecord.amount.toLocaleString()} - ${TOUR_DEMO_DATA.financialRecord.description}`,
+        description: 'El total de ingresos se actualizó automáticamente. Mira cómo aumentó el valor.',
         side: 'right',
       }
     },
     {
-      element: '#financial-chart',
+      element: '#revenue-by-product-chart',
       popover: {
-        title: '📈 Gráficos automáticos',
-        description: 'Visualiza la evolución de ingresos y gastos mes a mes con gráficos interactivos.',
+        title: '📈 Ingresos por Producto',
+        description: 'Gráfico de barras mostrando qué productos generan más ingresos. Se actualiza automáticamente.',
+        side: 'top',
+      }
+    },
+    {
+      popover: {
+        title: '💸 Ahora un gasto de ejemplo...',
+        description: 'Registramos un gasto operativo de €3,200.',
+        onNextClick: () => {
+          createDemoExpense();
+          setTimeout(() => driverObj.moveNext(), 2000);
+        }
+      }
+    },
+    {
+      element: '[data-metric="expenses"]',
+      popover: {
+        title: '✅ Gasto registrado',
+        description: 'Total de gastos actualizado. Esto afecta tu margen neto y burn rate.',
+        side: 'right',
+      }
+    },
+    {
+      element: '#expenses-by-category-chart',
+      popover: {
+        title: '🥧 Gastos por Categoría',
+        description: 'Gráfico circular que muestra dónde gastas más: producción, marketing, salarios, etc.',
+        side: 'top',
+      }
+    },
+    {
+      popover: {
+        title: '🎯 Calculando ROI...',
+        description: 'El sistema calcula automáticamente tu ROI (Retorno de Inversión) con los ingresos y gastos.',
+        onNextClick: () => {
+          animateROICalculation();
+          setTimeout(() => driverObj.moveNext(), 2500);
+        }
+      }
+    },
+    {
+      element: '[data-metric="margin"]',
+      popover: {
+        title: '💰 Margen Neto Calculado',
+        description: 'Margen = Ingresos - Gastos. Este es tu beneficio real del mes.',
+        side: 'left',
+      }
+    },
+    {
+      element: '#marketing-roi-table',
+      popover: {
+        title: '📊 ROI por Canal de Marketing',
+        description: 'Tabla detallada mostrando ROI, CAC, conversión y revenue por cada canal (LinkedIn, Google Ads, etc.).',
+        side: 'top',
+      }
+    },
+    {
+      element: '[data-metric="runway"]',
+      popover: {
+        title: '⏰ Runway: ¿Cuánto tiempo tienes?',
+        description: 'Basado en tu caja actual y burn rate, calcula cuántos meses puedes operar sin nuevos ingresos.',
         side: 'bottom',
+      }
+    },
+    {
+      popover: {
+        title: '🎉 ¡Listo!',
+        description: 'Ahora sabes cómo funciona el panel financiero: registra transacciones y analiza tu salud financiera automáticamente.',
       }
     }
   ];
