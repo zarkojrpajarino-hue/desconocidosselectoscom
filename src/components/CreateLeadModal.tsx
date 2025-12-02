@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { leadSchema, LeadFormData } from '@/lib/validation';
 import { Lead } from '@/types';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 interface CreateLeadModalProps {
   isOpen: boolean;
@@ -20,9 +22,11 @@ interface CreateLeadModalProps {
 
 const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadModalProps) => {
   const { user, currentOrganizationId } = useAuth();
+  const { canAddLead, plan, leadCount, limits } = useSubscriptionLimits();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -86,6 +90,15 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    // Verificar límite de leads (solo para nuevos leads, no ediciones)
+    if (!editLead) {
+      const { allowed } = canAddLead();
+      if (!allowed) {
+        setShowUpgradeModal(true);
+        return;
+      }
+    }
     
     // Validar con Zod
     const validation = leadSchema.safeParse({
@@ -180,233 +193,244 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{editLead ? 'Editar Lead' : 'Nuevo Lead'}</DialogTitle>
-          <DialogDescription>
-            {editLead ? 'Actualiza la información del lead' : 'Completa la información para crear un nuevo lead'}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editLead ? 'Editar Lead' : 'Nuevo Lead'}</DialogTitle>
+            <DialogDescription>
+              {editLead ? 'Actualiza la información del lead' : 'Completa la información para crear un nuevo lead'}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="name">Nombre *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="María González"
-                required
-                className={errors.name ? 'border-destructive' : ''}
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive mt-1">{errors.name}</p>
-              )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="name">Nombre *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="María González"
+                  required
+                  className={errors.name ? 'border-destructive' : ''}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive mt-1">{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="company">Empresa</Label>
+                <Input
+                  id="company"
+                  value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  placeholder="Hotel Boutique"
+                  className={errors.company ? 'border-destructive' : ''}
+                />
+                {errors.company && (
+                  <p className="text-xs text-destructive mt-1">{errors.company}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="maria@hotel.com"
+                  className={errors.email ? 'border-destructive' : ''}
+                />
+                {errors.email && (
+                  <p className="text-xs text-destructive mt-1">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+34 666 123 456"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="source">Origen</Label>
+                <Select value={formData.source} onValueChange={(value) => setFormData({ ...formData, source: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="google">Google</SelectItem>
+                    <SelectItem value="referral">Referido</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="phone">Teléfono</SelectItem>
+                    <SelectItem value="website">Website</SelectItem>
+                    <SelectItem value="event">Evento</SelectItem>
+                    <SelectItem value="other">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="stage">Etapa</Label>
+                <Select value={formData.stage} onValueChange={(value) => setFormData({ ...formData, stage: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lead">Lead</SelectItem>
+                    <SelectItem value="qualified">Calificado</SelectItem>
+                    <SelectItem value="proposal">Propuesta</SelectItem>
+                    <SelectItem value="negotiation">Negociación</SelectItem>
+                    <SelectItem value="won">Ganado</SelectItem>
+                    <SelectItem value="lost">Perdido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="priority">Prioridad</Label>
+                <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baja</SelectItem>
+                    <SelectItem value="medium">Media</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                    <SelectItem value="urgent">Urgente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="estimated_value">Valor Estimado (€)</Label>
+                <Input
+                  id="estimated_value"
+                  type="number"
+                  step="0.01"
+                  value={formData.estimated_value}
+                  onChange={(e) => setFormData({ ...formData, estimated_value: e.target.value })}
+                  placeholder="2400"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="probability">Probabilidad (%)</Label>
+                <Input
+                  id="probability"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.probability}
+                  onChange={(e) => setFormData({ ...formData, probability: e.target.value })}
+                />
+              </div>
             </div>
 
             <div>
-              <Label htmlFor="company">Empresa</Label>
-              <Input
-                id="company"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                placeholder="Hotel Boutique"
-                className={errors.company ? 'border-destructive' : ''}
-              />
-              {errors.company && (
-                <p className="text-xs text-destructive mt-1">{errors.company}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="maria@hotel.com"
-                className={errors.email ? 'border-destructive' : ''}
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive mt-1">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Teléfono</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+34 666 123 456"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="source">Origen</Label>
-              <Select value={formData.source} onValueChange={(value) => setFormData({ ...formData, source: value })}>
+              <Label htmlFor="assigned_to">Asignado a</Label>
+              <Select value={formData.assigned_to} onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="google">Google</SelectItem>
-                  <SelectItem value="referral">Referido</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="phone">Teléfono</SelectItem>
-                  <SelectItem value="website">Website</SelectItem>
-                  <SelectItem value="event">Evento</SelectItem>
-                  <SelectItem value="other">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="stage">Etapa</Label>
-              <Select value={formData.stage} onValueChange={(value) => setFormData({ ...formData, stage: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lead">Lead</SelectItem>
-                  <SelectItem value="qualified">Calificado</SelectItem>
-                  <SelectItem value="proposal">Propuesta</SelectItem>
-                  <SelectItem value="negotiation">Negociación</SelectItem>
-                  <SelectItem value="won">Ganado</SelectItem>
-                  <SelectItem value="lost">Perdido</SelectItem>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.full_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="priority">Prioridad</Label>
-              <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Baja</SelectItem>
-                  <SelectItem value="medium">Media</SelectItem>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="urgent">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="estimated_value">Valor Estimado (€)</Label>
-              <Input
-                id="estimated_value"
-                type="number"
-                step="0.01"
-                value={formData.estimated_value}
-                onChange={(e) => setFormData({ ...formData, estimated_value: e.target.value })}
-                placeholder="2400"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="probability">Probabilidad (%)</Label>
-              <Input
-                id="probability"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.probability}
-                onChange={(e) => setFormData({ ...formData, probability: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="assigned_to">Asignado a</Label>
-            <Select value={formData.assigned_to} onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map(u => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.full_name}
-                  </SelectItem>
+              <Label>Productos de Interés</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {['premium', 'personalizadas', 'estandar', 'basicas', 'corporativas'].map(product => (
+                  <Button
+                    key={product}
+                    type="button"
+                    size="sm"
+                    variant={formData.interested_products.includes(product) ? 'default' : 'outline'}
+                    onClick={() => handleProductToggle(product)}
+                  >
+                    {product}
+                  </Button>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Productos de Interés</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {['premium', 'personalizadas', 'estandar', 'basicas', 'corporativas'].map(product => (
-                <Button
-                  key={product}
-                  type="button"
-                  size="sm"
-                  variant={formData.interested_products.includes(product) ? 'default' : 'outline'}
-                  onClick={() => handleProductToggle(product)}
-                >
-                  {product}
-                </Button>
-              ))}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="next_action">Próxima Acción</Label>
-              <Input
-                id="next_action"
-                value={formData.next_action}
-                onChange={(e) => setFormData({ ...formData, next_action: e.target.value })}
-                placeholder="Llamar para seguimiento"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="next_action">Próxima Acción</Label>
+                <Input
+                  id="next_action"
+                  value={formData.next_action}
+                  onChange={(e) => setFormData({ ...formData, next_action: e.target.value })}
+                  placeholder="Llamar para seguimiento"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="next_action_date">Fecha</Label>
+                <Input
+                  id="next_action_date"
+                  type="date"
+                  value={formData.next_action_date}
+                  onChange={(e) => setFormData({ ...formData, next_action_date: e.target.value })}
+                />
+              </div>
             </div>
 
             <div>
-              <Label htmlFor="next_action_date">Fecha</Label>
-              <Input
-                id="next_action_date"
-                type="date"
-                value={formData.next_action_date}
-                onChange={(e) => setFormData({ ...formData, next_action_date: e.target.value })}
+              <Label htmlFor="notes">Notas</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Información adicional..."
+                rows={3}
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="notes">Notas</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Información adicional..."
-              rows={3}
-            />
-          </div>
+            <div className="flex gap-2 justify-end">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose} 
+                disabled={loading}
+                data-action="close-modal"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : editLead ? 'Actualizar' : 'Crear Lead'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-          <div className="flex gap-2 justify-end">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose} 
-              disabled={loading}
-              data-action="close-modal"
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Guardando...' : editLead ? 'Actualizar' : 'Crear Lead'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentPlan={plan}
+        limitType="leads"
+        currentValue={leadCount}
+        limitValue={limits.max_leads_per_month}
+      />
+    </>
   );
 };
 

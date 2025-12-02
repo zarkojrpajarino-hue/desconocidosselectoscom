@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OKRProgressModal } from './OKRProgressModal';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 interface KeyResult {
   id: string;
@@ -53,10 +55,12 @@ interface Objective {
 
 const OKRsDashboard = () => {
   const { user, userProfile, currentOrganizationId } = useAuth();
+  const { canAddOkr, plan, okrCount, limits } = useSubscriptionLimits();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
   const [generatingWithAI, setGeneratingWithAI] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedKR, setSelectedKR] = useState<{
     id: string;
     title: string;
@@ -231,6 +235,13 @@ const OKRsDashboard = () => {
   };
 
   const handleGenerateWeeklyOKR = async () => {
+    // Verificar límite de OKRs
+    const { allowed } = canAddOkr();
+    if (!allowed) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setGeneratingWithAI(true);
     try {
       const { data: aiResult, error: aiError } = await supabase.functions.invoke('generate-personalized-krs', {
@@ -513,6 +524,16 @@ const OKRsDashboard = () => {
           }}
         />
       )}
+
+      {/* Modal de upgrade */}
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentPlan={plan}
+        limitType="okrs"
+        currentValue={okrCount}
+        limitValue={limits.max_objectives}
+      />
     </div>
   );
 };
