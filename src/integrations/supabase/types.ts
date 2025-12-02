@@ -500,6 +500,88 @@ export type Database = {
           },
         ]
       }
+      competitors: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          last_analyzed_at: string | null
+          market_position: string | null
+          name: string
+          notes: string | null
+          organization_id: string
+          pricing_info: Json | null
+          strengths: string[] | null
+          target_audience: string | null
+          updated_at: string
+          weaknesses: string[] | null
+          website: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          market_position?: string | null
+          name: string
+          notes?: string | null
+          organization_id: string
+          pricing_info?: Json | null
+          strengths?: string[] | null
+          target_audience?: string | null
+          updated_at?: string
+          weaknesses?: string[] | null
+          website?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          market_position?: string | null
+          name?: string
+          notes?: string | null
+          organization_id?: string
+          pricing_info?: Json | null
+          strengths?: string[] | null
+          target_audience?: string | null
+          updated_at?: string
+          weaknesses?: string[] | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "competitors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_velocity_cache: {
         Row: {
           average_days: number | null

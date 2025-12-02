@@ -134,3 +134,6 @@ verify_jwt = true
 
 [functions.validate-plan-limits]
 verify_jwt = true
+
+[functions.analyze-project-data-v3]
+verify_jwt = true
