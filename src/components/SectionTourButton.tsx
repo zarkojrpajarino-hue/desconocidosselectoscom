@@ -11,8 +11,17 @@ export const SectionTourButton = ({
   variant = 'outline',
   size = 'sm'
 }: SectionTourButtonProps) => {
-  const {
-    startSectionTour
-  } = useSectionTour(sectionId);
-  return;
+  const { startSectionTour } = useSectionTour(sectionId);
+  
+  return (
+    <Button 
+      variant={variant} 
+      size={size}
+      onClick={startSectionTour}
+      className="gap-2"
+    >
+      <HelpCircle className="h-4 w-4" />
+      ¿Cómo funciona?
+    </Button>
+  );
 };

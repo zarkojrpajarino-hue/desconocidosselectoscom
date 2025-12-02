@@ -18,13 +18,8 @@ const Pricing = () => {
 
     if (success === 'true') {
       toast.success('¡Suscripción activada con éxito! 🎉', {
-        description: 'Tu plan ha sido activado. Redirigiendo al dashboard...',
+        description: 'Tu plan ha sido activado.',
       });
-      
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
     } else if (canceled === 'true') {
       toast.info('Pago cancelado', {
         description: 'Puedes intentarlo de nuevo cuando quieras.',

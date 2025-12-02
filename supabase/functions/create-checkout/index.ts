@@ -11,18 +11,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Validar que el plan existe
-function validatePlan(priceId: string): { valid: boolean; planName: string } {
-  const starterPrice = Deno.env.get('STRIPE_PRICE_STARTER');
-  const professionalPrice = Deno.env.get('STRIPE_PRICE_PROFESIONAL');
-  const enterprisePrice = Deno.env.get('STRIPE_PRICE_ENTERPRISE');
-
-  if (priceId === starterPrice) return { valid: true, planName: 'Starter' };
-  if (priceId === professionalPrice) return { valid: true, planName: 'Professional' };
-  if (priceId === enterprisePrice) return { valid: true, planName: 'Enterprise' };
-  
-  return { valid: false, planName: 'Unknown' };
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -30,19 +18,26 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, organizationId } = await req.json();
+    const { planName, organizationId } = await req.json();
 
-    if (!priceId || !organizationId) {
-      throw new Error('Missing priceId or organizationId');
+    if (!planName || !organizationId) {
+      throw new Error('Missing planName or organizationId');
     }
 
-    // Validar plan
-    const planValidation = validatePlan(priceId);
-    if (!planValidation.valid) {
-      throw new Error(`Invalid priceId: ${priceId}`);
+    // Map plan name to actual Stripe price ID
+    const planMap: Record<string, string> = {
+      'starter': Deno.env.get('STRIPE_PRICE_STARTER') || '',
+      'professional': Deno.env.get('STRIPE_PRICE_PROFESIONAL') || '',
+      'enterprise': Deno.env.get('STRIPE_PRICE_ENTERPRISE') || ''
+    };
+
+    const priceId = planMap[planName.toLowerCase()];
+    
+    if (!priceId) {
+      throw new Error(`Invalid plan name: ${planName}`);
     }
 
-    console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planValidation.planName}`);
+    console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}`);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -100,14 +95,14 @@ serve(async (req) => {
         trial_period_days: 0, // Sin trial adicional
         metadata: {
           organization_id: organizationId,
-          plan_name: planValidation.planName,
+          plan_name: planName,
         },
       },
-      success_url: `${Deno.env.get('APP_URL')}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${Deno.env.get('APP_URL')}/pricing?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${Deno.env.get('APP_URL')}/pricing?canceled=true`,
       metadata: {
         organization_id: organizationId,
-        plan_name: planValidation.planName,
+        plan_name: planName,
       },
       allow_promotion_codes: true, // Permitir códigos de descuento
       billing_address_collection: 'required',
