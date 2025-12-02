@@ -1,80 +1,77 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, Sparkles, Loader2 } from "lucide-react";
+import { Check, X, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
+import { PLAN_LIMITS, PLAN_PRICES } from "@/constants/subscriptionLimits";
 
 const plans = [
   {
     name: "Starter",
-    price: "€129",
-    priceId: "STRIPE_PRICE_STARTER", // Se reemplazará con env var
+    price: `€${PLAN_PRICES.starter}`,
+    priceId: "STRIPE_PRICE_STARTER",
     description: "Para equipos pequeños empezando",
     features: [
-      "Hasta 10 usuarios",
-      "2,000 leads/mes",
-      "20 generaciones IA/mes",
-      "CRM completo",
-      "50 tareas personalizadas",
-      "10 OKRs trimestrales",
-      "Reportes básicos",
-      "Soporte email (48h)",
+      { text: `Hasta ${PLAN_LIMITS.starter.max_users} usuarios`, included: true },
+      { text: `${PLAN_LIMITS.starter.max_leads_per_month.toLocaleString()} leads/mes`, included: true },
+      { text: `${PLAN_LIMITS.starter.max_ai_analysis_per_month} análisis IA/mes`, included: true },
+      { text: "CRM completo", included: true },
+      { text: `${PLAN_LIMITS.starter.tasks_per_phase_per_user} tareas/fase/usuario`, included: true },
+      { text: `${PLAN_LIMITS.starter.max_objectives} OKRs trimestrales`, included: true },
+      { text: "Exportar CSV", included: true },
+      { text: "Exportar Excel/PDF", included: false },
+      { text: "Herramientas estratégicas IA", included: false },
+      { text: "Inteligencia competitiva", included: false },
+      { text: "Integraciones", included: false },
+      { text: "Soporte email (48h)", included: true },
     ],
     ideal: "Startups 3-10 personas",
   },
   {
     name: "Professional",
-    price: "€249",
-    priceId: "STRIPE_PRICE_PROFESIONAL", // Se reemplazará con env var
+    price: `€${PLAN_PRICES.professional}`,
+    priceId: "STRIPE_PRICE_PROFESIONAL",
     description: "Para empresas en crecimiento",
     popular: true,
     features: [
-      "Hasta 25 usuarios",
-      "Leads ilimitados",
-      "100 generaciones IA/mes",
-      "CRM avanzado",
-      "Automatizaciones",
-      "Integraciones (Zapier, Email)",
-      "Reportes avanzados",
-      "Soporte prioritario (24h)",
-      "API acceso",
+      { text: `Hasta ${PLAN_LIMITS.professional.max_users} usuarios`, included: true },
+      { text: "Leads ilimitados", included: true },
+      { text: `${PLAN_LIMITS.professional.max_ai_analysis_per_month} análisis IA/mes`, included: true },
+      { text: "CRM avanzado con scoring", included: true },
+      { text: "Tareas ilimitadas", included: true },
+      { text: "OKRs ilimitados", included: true },
+      { text: "Exportar CSV, Excel y PDF", included: true },
+      { text: "Herramientas estratégicas IA", included: true },
+      { text: "Inteligencia competitiva", included: true },
+      { text: "Integraciones (Zapier, Calendar)", included: true },
+      { text: "API acceso", included: true },
+      { text: "Soporte prioritario (24h)", included: true },
     ],
     ideal: "PYMES 10-25 personas",
   },
   {
     name: "Enterprise",
-    price: "€499",
-    priceId: "STRIPE_PRICE_ENTERPRISE", // Se reemplazará con env var
+    price: `€${PLAN_PRICES.enterprise}`,
+    priceId: "STRIPE_PRICE_ENTERPRISE",
     description: "Para organizaciones grandes",
     features: [
-      "Usuarios ilimitados",
-      "Todo ilimitado",
-      "Generaciones IA ilimitadas",
-      "White-label (tu marca)",
-      "Account manager dedicado",
-      "Onboarding personalizado (2h)",
-      "Soporte 24/7",
-      "SLA 99.9%",
-      "API completa",
-      "Custom features bajo demanda",
+      { text: "Usuarios ilimitados", included: true },
+      { text: "Todo ilimitado", included: true },
+      { text: "Generaciones IA ilimitadas", included: true },
+      { text: "White-label (tu marca)", included: true },
+      { text: "Account manager dedicado", included: true },
+      { text: "Onboarding personalizado (2h)", included: true },
+      { text: "Soporte 24/7 telefónico", included: true },
+      { text: "SLA 99.9%", included: true },
+      { text: "API completa", included: true },
+      { text: "Custom features bajo demanda", included: true },
+      { text: "Multi-organización", included: true },
+      { text: "Auditoría y compliance", included: true },
     ],
     ideal: "Empresas 25+ personas",
   },
 ];
-
-// Helper para obtener el price_id real desde secrets
-async function getRealPriceId(planPriceKey: string): Promise<string | null> {
-  try {
-    // Los price IDs están en los secrets del backend
-    // El edge function los usará directamente
-    // Aquí solo necesitamos el KEY para pasarlo
-    return planPriceKey;
-  } catch (error) {
-    console.error('Error getting price ID:', error);
-    return null;
-  }
-}
 
 export function PricingPlans() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -83,7 +80,6 @@ export function PricingPlans() {
     setLoading(priceKey);
 
     try {
-      // Get current user & organization
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -106,7 +102,6 @@ export function PricingPlans() {
 
       console.log(`[PricingPlans] Creating checkout for plan: ${planName}`);
 
-      // Create Stripe checkout session - send plan name instead of priceId
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           planName: planName.toLowerCase(),
@@ -125,11 +120,9 @@ export function PricingPlans() {
         throw new Error('No se recibió URL de checkout');
       }
 
-      // Redirect to Stripe Checkout - abrimos en nueva pestaña para evitar problemas con iframe
       console.log('[PricingPlans] Redirecting to Stripe...');
       window.open(data.url, '_blank');
       
-      // Reseteamos loading después de abrir la pestaña
       setLoading(null);
       toast.success('Redirigiendo a Stripe. Si no se abre, verifica que los pop-ups estén permitidos.');
 
@@ -190,8 +183,14 @@ export function PricingPlans() {
               <ul className="space-y-3 mb-8 flex-grow">
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
+                    {feature.included ? (
+                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <X className="h-5 w-5 text-muted-foreground/50 flex-shrink-0 mt-0.5" />
+                    )}
+                    <span className={`text-sm ${!feature.included ? 'text-muted-foreground/50' : ''}`}>
+                      {feature.text}
+                    </span>
                   </li>
                 ))}
               </ul>
