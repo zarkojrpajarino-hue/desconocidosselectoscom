@@ -103,7 +103,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
     }
   };
 
-  const groupByDay = (tasks: any[], weekStart: string): DaySchedule[] => {
+  const groupByDay = (tasks: ScheduledTask[], weekStart: string): DaySchedule[] => {
     const weekStartDate = new Date(weekStart);
     const days: DaySchedule[] = [];
 

@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+// Type for demo data - flexible structure for tour demonstrations
+interface DemoData {
+  [key: string]: unknown;
+}
+
 interface DemoModeContextType {
   isDemoMode: boolean;
   setDemoMode: (value: boolean) => void;
-  demoData: any;
-  setDemoData: (data: any) => void;
+  demoData: DemoData;
+  setDemoData: (data: DemoData) => void;
   clearDemoData: () => void;
 }
 
@@ -12,7 +17,7 @@ const DemoModeContext = createContext<DemoModeContextType | undefined>(undefined
 
 export const DemoModeProvider = ({ children }: { children: ReactNode }) => {
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [demoData, setDemoData] = useState<any>({});
+  const [demoData, setDemoData] = useState<DemoData>({});
 
   const setDemoMode = (value: boolean) => {
     setIsDemoMode(value);
