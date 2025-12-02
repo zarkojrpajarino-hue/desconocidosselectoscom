@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
@@ -12,7 +11,10 @@ import { OnboardingStep3 } from "@/components/onboarding/OnboardingStep3";
 import { OnboardingStep4 } from "@/components/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "@/components/onboarding/OnboardingStep5";
 import { OnboardingStep6 } from "@/components/onboarding/OnboardingStep6";
-import { OnboardingStep7 } from "@/components/onboarding/OnboardingStep7";
+import { OnboardingStep7Competitors } from "@/components/onboarding/OnboardingStep7Competitors";
+import { OnboardingStep8Journey } from "@/components/onboarding/OnboardingStep8Journey";
+import { OnboardingStep9Objectives } from "@/components/onboarding/OnboardingStep9Objectives";
+import { OnboardingStepper } from "@/components/onboarding/OnboardingStepper";
 import { ExistingUserOptions } from "@/components/onboarding/ExistingUserOptions";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,23 +32,37 @@ export interface OnboardingFormData {
   companySize: string;
   annualRevenueRange: string;
   
-  // Paso 3: Negocio detallado
+  // Paso 3: Negocio detallado (MEJORADO)
   businessDescription: string;
   targetCustomers: string;
   valueProposition: string;
+  foundedYear: number | null;
+  geographicMarket: string[];
+  businessModel: string;
+  competitiveAdvantage: string;
   
-  // Paso 4: Productos/Servicios
+  // Paso 4: Productos/Servicios (MEJORADO)
   productsServices: Array<{
     name: string;
     price: string;
     category: string;
     description: string;
+    cost: string;
+    unitsSoldPerMonth: string;
+    productionTime: string;
   }>;
   
-  // Paso 5: Proceso comercial
+  // Paso 5: Proceso comercial (MEJORADO)
   salesProcess: string;
   salesCycleDays: string;
   leadSources: string[];
+  monthlyLeads: number | null;
+  conversionRate: number | null;
+  averageTicket: number | null;
+  monthlyMarketingBudget: number | null;
+  icpCriteria: string;
+  customerPainPoints: string[];
+  buyingMotivations: string[];
   
   // Paso 6: Equipo
   teamStructure: Array<{
@@ -55,13 +71,42 @@ export interface OnboardingFormData {
     responsibilities: string;
   }>;
   
-  // Paso 7: Objetivos
+  // Paso 7: Competencia y Mercado (NUEVO)
+  topCompetitors: Array<{
+    name: string;
+    priceRange: string;
+    strengths: string;
+    weaknesses: string;
+  }>;
+  marketSize: string;
+  marketGrowthRate: string;
+  marketShareGoal: number | null;
+  pricingStrategy: string;
+  brandPerception: string;
+  
+  // Paso 8: Customer Journey (NUEVO)
+  customerAcquisitionChannels: string[];
+  researchProcess: string;
+  mainObjections: string[];
+  decisionMakers: string;
+  purchaseTriggers: string[];
+  customerRetentionRate: number | null;
+  repurchaseFrequency: number | null;
+  npsScore: number | null;
+  churnReasons: string[];
+  
+  // Paso 9: Objetivos (MEJORADO)
   mainObjectives: string;
   kpisToMeasure: string[];
   currentProblems: string;
+  revenueGoal12Months: number | null;
+  customersGoal12Months: number | null;
+  growthPriority: string;
+  urgency: string;
+  budgetConstraints: string;
 }
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 9;
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -72,8 +117,10 @@ const Onboarding = () => {
   const [isExistingUser, setIsExistingUser] = useState(false);
   
   const [formData, setFormData] = useState<OnboardingFormData>({
+    // Paso 1
     accountEmail: "",
     accountPassword: "",
+    // Paso 2
     companyName: "",
     contactName: "",
     contactEmail: "",
@@ -81,17 +128,55 @@ const Onboarding = () => {
     industry: "",
     companySize: "",
     annualRevenueRange: "",
+    // Paso 3
     businessDescription: "",
     targetCustomers: "",
     valueProposition: "",
-    productsServices: [{ name: "", price: "", category: "", description: "" }],
+    foundedYear: null,
+    geographicMarket: [],
+    businessModel: "",
+    competitiveAdvantage: "",
+    // Paso 4
+    productsServices: [{ name: "", price: "", category: "", description: "", cost: "", unitsSoldPerMonth: "", productionTime: "" }],
+    // Paso 5
     salesProcess: "",
     salesCycleDays: "",
     leadSources: [],
+    monthlyLeads: null,
+    conversionRate: null,
+    averageTicket: null,
+    monthlyMarketingBudget: null,
+    icpCriteria: "",
+    customerPainPoints: ["", "", ""],
+    buyingMotivations: ["", "", ""],
+    // Paso 6
     teamStructure: [{ role: "", count: "", responsibilities: "" }],
+    // Paso 7
+    topCompetitors: [{ name: "", priceRange: "", strengths: "", weaknesses: "" }, { name: "", priceRange: "", strengths: "", weaknesses: "" }],
+    marketSize: "",
+    marketGrowthRate: "",
+    marketShareGoal: null,
+    pricingStrategy: "",
+    brandPerception: "",
+    // Paso 8
+    customerAcquisitionChannels: [],
+    researchProcess: "",
+    mainObjections: ["", "", ""],
+    decisionMakers: "",
+    purchaseTriggers: ["", "", ""],
+    customerRetentionRate: null,
+    repurchaseFrequency: null,
+    npsScore: null,
+    churnReasons: ["", "", ""],
+    // Paso 9
     mainObjectives: "",
     kpisToMeasure: [],
     currentProblems: "",
+    revenueGoal12Months: null,
+    customersGoal12Months: null,
+    growthPriority: "",
+    urgency: "",
+    budgetConstraints: "",
   });
 
   const updateFormData = (data: Partial<OnboardingFormData>) => {
@@ -170,8 +255,41 @@ const Onboarding = () => {
         return true;
       
       case 7:
+        // Competencia - solo críticos obligatorios
+        if (formData.topCompetitors.filter(c => c.name).length < 2) {
+          toast.error("Agrega al menos 2 competidores");
+          return false;
+        }
+        if (!formData.pricingStrategy) {
+          toast.error("Selecciona tu estrategia de precios");
+          return false;
+        }
+        return true;
+      
+      case 8:
+        // Customer Journey - solo críticos obligatorios
+        if (formData.customerAcquisitionChannels.length === 0) {
+          toast.error("Selecciona al menos un canal de adquisición");
+          return false;
+        }
+        if (formData.researchProcess.split(/\s+/).filter(Boolean).length < 150) {
+          toast.error("El proceso de investigación debe tener al menos 150 palabras");
+          return false;
+        }
+        if (formData.mainObjections.filter(o => o.trim()).length < 3) {
+          toast.error("Agrega al menos 3 objeciones de compra");
+          return false;
+        }
+        return true;
+      
+      case 9:
+        // Objetivos - solo críticos obligatorios
         if (!formData.mainObjectives || formData.kpisToMeasure.length === 0 || !formData.currentProblems) {
-          toast.error("Por favor completa todos los campos del paso 7");
+          toast.error("Por favor completa todos los campos obligatorios del paso 9");
+          return false;
+        }
+        if (!formData.revenueGoal12Months) {
+          toast.error("Define tu objetivo de facturación a 12 meses");
           return false;
         }
         return true;
@@ -424,14 +542,45 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
           business_description: formData.businessDescription,
           target_customers: formData.targetCustomers,
           value_proposition: formData.valueProposition,
+          founded_year: formData.foundedYear,
+          geographic_market: formData.geographicMarket,
+          business_model: formData.businessModel,
+          competitive_advantage: formData.competitiveAdvantage,
           sales_process: formData.salesProcess,
           sales_cycle_days: parseInt(formData.salesCycleDays) || null,
           lead_sources: formData.leadSources,
+          monthly_leads: formData.monthlyLeads,
+          conversion_rate: formData.conversionRate,
+          average_ticket: formData.averageTicket,
+          monthly_marketing_budget: formData.monthlyMarketingBudget,
+          icp_criteria: formData.icpCriteria,
+          customer_pain_points: formData.customerPainPoints.filter(p => p.trim()),
+          buying_motivations: formData.buyingMotivations.filter(m => m.trim()),
           products_services: formData.productsServices,
           team_structure: formData.teamStructure,
+          top_competitors: formData.topCompetitors.filter(c => c.name),
+          market_size: formData.marketSize,
+          market_growth_rate: formData.marketGrowthRate,
+          market_share_goal: formData.marketShareGoal,
+          pricing_strategy: formData.pricingStrategy,
+          brand_perception: formData.brandPerception,
+          customer_acquisition_channels: formData.customerAcquisitionChannels,
+          research_process: formData.researchProcess,
+          main_objections: formData.mainObjections.filter(o => o.trim()),
+          decision_makers: formData.decisionMakers,
+          purchase_triggers: formData.purchaseTriggers.filter(t => t.trim()),
+          customer_retention_rate: formData.customerRetentionRate,
+          repurchase_frequency: formData.repurchaseFrequency,
+          nps_score: formData.npsScore,
+          churn_reasons: formData.churnReasons.filter(r => r.trim()),
           main_objectives: formData.mainObjectives,
           kpis_to_measure: formData.kpisToMeasure,
           current_problems: formData.currentProblems,
+          revenue_goal_12_months: formData.revenueGoal12Months,
+          customers_goal_12_months: formData.customersGoal12Months,
+          growth_priority: formData.growthPriority,
+          urgency: formData.urgency,
+          budget_constraints: formData.budgetConstraints,
           contact_name: formData.contactName,
           contact_email: formData.contactEmail,
           contact_phone: formData.contactPhone,
@@ -534,22 +683,19 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
           </p>
         </div>
 
-        {/* Progress */}
+        {/* Progress - Stepper Visual */}
         <Card className="p-6 mb-6">
-          <div className="flex justify-between mb-2">
-            <span className="text-sm font-medium">Paso {currentStep} de {TOTAL_STEPS}</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-          <div className="flex justify-between mt-4 text-xs text-muted-foreground">
-            <span className={currentStep >= 1 ? "text-primary font-medium" : ""}>Cuenta</span>
-            <span className={currentStep >= 2 ? "text-primary font-medium" : ""}>Empresa</span>
-            <span className={currentStep >= 3 ? "text-primary font-medium" : ""}>Negocio</span>
-            <span className={currentStep >= 4 ? "text-primary font-medium" : ""}>Productos</span>
-            <span className={currentStep >= 5 ? "text-primary font-medium" : ""}>Comercial</span>
-            <span className={currentStep >= 6 ? "text-primary font-medium" : ""}>Equipo</span>
-            <span className={currentStep >= 7 ? "text-primary font-medium" : ""}>Objetivos</span>
-          </div>
+          <OnboardingStepper
+            currentStep={currentStep}
+            totalSteps={TOTAL_STEPS}
+            onStepClick={(step) => {
+              // Solo permitir ir a pasos ya completados o el actual
+              if (step <= currentStep) {
+                setCurrentStep(step);
+              }
+            }}
+            completedSteps={Array.from({ length: currentStep - 1 }, (_, i) => i + 1)}
+          />
         </Card>
 
         {/* Form Steps */}
@@ -576,7 +722,9 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
               {currentStep === 4 && <OnboardingStep4 formData={formData} updateFormData={updateFormData} />}
               {currentStep === 5 && <OnboardingStep5 formData={formData} updateFormData={updateFormData} />}
               {currentStep === 6 && <OnboardingStep6 formData={formData} updateFormData={updateFormData} />}
-              {currentStep === 7 && <OnboardingStep7 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 7 && <OnboardingStep7Competitors formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 8 && <OnboardingStep8Journey formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 9 && <OnboardingStep9Objectives formData={formData} updateFormData={updateFormData} />}
             </>
           )}
 

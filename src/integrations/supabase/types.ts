@@ -1831,23 +1831,52 @@ export type Database = {
           ai_generation_error: string | null
           ai_generation_status: string
           annual_revenue_range: string | null
+          average_ticket: number | null
+          brand_perception: string | null
+          budget_constraints: string | null
           business_description: string
+          business_model: string | null
+          buying_motivations: Json | null
+          churn_reasons: Json | null
           company_size: string
+          competitive_advantage: string | null
           contact_email: string
           contact_name: string
           contact_phone: string | null
+          conversion_rate: number | null
           created_at: string
           current_period_end: string | null
           current_problems: string
+          customer_acquisition_channels: Json | null
+          customer_pain_points: Json | null
+          customer_retention_rate: number | null
+          customers_goal_12_months: number | null
+          decision_makers: string | null
+          founded_year: number | null
+          geographic_market: Json | null
+          growth_priority: string | null
+          icp_criteria: string | null
           id: string
           industry: string
           kpis_to_measure: Json
           last_ai_analysis_at: string | null
           lead_sources: Json
+          main_objections: Json | null
           main_objectives: string
+          market_growth_rate: string | null
+          market_share_goal: number | null
+          market_size: string | null
+          monthly_leads: number | null
+          monthly_marketing_budget: number | null
           name: string
+          nps_score: number | null
           plan: string
+          pricing_strategy: string | null
           products_services: Json
+          purchase_triggers: Json | null
+          repurchase_frequency: number | null
+          research_process: string | null
+          revenue_goal_12_months: number | null
           sales_cycle_days: number | null
           sales_process: string
           stripe_customer_id: string | null
@@ -1856,8 +1885,10 @@ export type Database = {
           subscription_status: string | null
           target_customers: string
           team_structure: Json
+          top_competitors: Json | null
           trial_ends_at: string | null
           updated_at: string
+          urgency: string | null
           value_proposition: string
         }
         Insert: {
@@ -1866,23 +1897,52 @@ export type Database = {
           ai_generation_error?: string | null
           ai_generation_status?: string
           annual_revenue_range?: string | null
+          average_ticket?: number | null
+          brand_perception?: string | null
+          budget_constraints?: string | null
           business_description: string
+          business_model?: string | null
+          buying_motivations?: Json | null
+          churn_reasons?: Json | null
           company_size: string
+          competitive_advantage?: string | null
           contact_email: string
           contact_name: string
           contact_phone?: string | null
+          conversion_rate?: number | null
           created_at?: string
           current_period_end?: string | null
           current_problems: string
+          customer_acquisition_channels?: Json | null
+          customer_pain_points?: Json | null
+          customer_retention_rate?: number | null
+          customers_goal_12_months?: number | null
+          decision_makers?: string | null
+          founded_year?: number | null
+          geographic_market?: Json | null
+          growth_priority?: string | null
+          icp_criteria?: string | null
           id?: string
           industry: string
           kpis_to_measure?: Json
           last_ai_analysis_at?: string | null
           lead_sources?: Json
+          main_objections?: Json | null
           main_objectives: string
+          market_growth_rate?: string | null
+          market_share_goal?: number | null
+          market_size?: string | null
+          monthly_leads?: number | null
+          monthly_marketing_budget?: number | null
           name: string
+          nps_score?: number | null
           plan?: string
+          pricing_strategy?: string | null
           products_services?: Json
+          purchase_triggers?: Json | null
+          repurchase_frequency?: number | null
+          research_process?: string | null
+          revenue_goal_12_months?: number | null
           sales_cycle_days?: number | null
           sales_process: string
           stripe_customer_id?: string | null
@@ -1891,8 +1951,10 @@ export type Database = {
           subscription_status?: string | null
           target_customers: string
           team_structure?: Json
+          top_competitors?: Json | null
           trial_ends_at?: string | null
           updated_at?: string
+          urgency?: string | null
           value_proposition: string
         }
         Update: {
@@ -1901,23 +1963,52 @@ export type Database = {
           ai_generation_error?: string | null
           ai_generation_status?: string
           annual_revenue_range?: string | null
+          average_ticket?: number | null
+          brand_perception?: string | null
+          budget_constraints?: string | null
           business_description?: string
+          business_model?: string | null
+          buying_motivations?: Json | null
+          churn_reasons?: Json | null
           company_size?: string
+          competitive_advantage?: string | null
           contact_email?: string
           contact_name?: string
           contact_phone?: string | null
+          conversion_rate?: number | null
           created_at?: string
           current_period_end?: string | null
           current_problems?: string
+          customer_acquisition_channels?: Json | null
+          customer_pain_points?: Json | null
+          customer_retention_rate?: number | null
+          customers_goal_12_months?: number | null
+          decision_makers?: string | null
+          founded_year?: number | null
+          geographic_market?: Json | null
+          growth_priority?: string | null
+          icp_criteria?: string | null
           id?: string
           industry?: string
           kpis_to_measure?: Json
           last_ai_analysis_at?: string | null
           lead_sources?: Json
+          main_objections?: Json | null
           main_objectives?: string
+          market_growth_rate?: string | null
+          market_share_goal?: number | null
+          market_size?: string | null
+          monthly_leads?: number | null
+          monthly_marketing_budget?: number | null
           name?: string
+          nps_score?: number | null
           plan?: string
+          pricing_strategy?: string | null
           products_services?: Json
+          purchase_triggers?: Json | null
+          repurchase_frequency?: number | null
+          research_process?: string | null
+          revenue_goal_12_months?: number | null
           sales_cycle_days?: number | null
           sales_process?: string
           stripe_customer_id?: string | null
@@ -1926,8 +2017,10 @@ export type Database = {
           subscription_status?: string | null
           target_customers?: string
           team_structure?: Json
+          top_competitors?: Json | null
           trial_ends_at?: string | null
           updated_at?: string
+          urgency?: string | null
           value_proposition?: string
         }
         Relationships: []
