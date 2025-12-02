@@ -14,6 +14,55 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_results: {
+        Row: {
+          analysis_data: Json
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          organization_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_data: Json
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_results_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_actions: {
         Row: {
           action_type: string
