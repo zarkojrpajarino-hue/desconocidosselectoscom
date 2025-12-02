@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, ChevronDown, Search, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import { toast } from 'sonner';
@@ -34,6 +35,7 @@ const CRMLeads = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isCRMInfoOpen, setIsCRMInfoOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -141,6 +143,75 @@ const CRMLeads = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-[1600px]">
+        {/* Explicación del CRM */}
+        <Collapsible
+          open={isCRMInfoOpen}
+          onOpenChange={setIsCRMInfoOpen}
+          className="mb-6"
+        >
+          <Card>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Users className="h-5 w-5 text-blue-500" />
+                    📋 ¿Cómo funciona el CRM?
+                  </CardTitle>
+                  <ChevronDown 
+                    className={`h-5 w-5 text-muted-foreground transition-transform ${
+                      isCRMInfoOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="bg-gradient-to-br from-blue-500/10 via-background to-background border border-blue-500/20 rounded-xl p-6">
+                  <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
+                    <div>
+                      <strong className="text-foreground flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        Añadir un Lead:
+                      </strong>
+                      <p className="mt-1 ml-6">
+                        Haz clic en <span className="text-primary font-medium">"Nuevo Lead"</span> para registrar un contacto. Completa los datos básicos: nombre, empresa, email, teléfono, etapa del proceso, prioridad y valor estimado. Cada lead representa una oportunidad potencial de venta.
+                      </p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground flex items-center gap-2">
+                        <Search className="w-4 h-4 text-primary" />
+                        Filtro de Búsqueda:
+                      </strong>
+                      <p className="mt-1 ml-6">
+                        Usa la barra de búsqueda para filtrar leads por nombre, empresa o email. Filtra por etapa (Nuevo, Contactado, Calificado, etc.) o por prioridad (Alta, Media, Baja) para enfocarte en los contactos más importantes.
+                      </p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-primary" />
+                        Estadísticas del CRM:
+                      </strong>
+                      <p className="mt-1 ml-6">
+                        Las tarjetas superiores muestran métricas clave: total de leads, tasa de conversión, valor estimado del pipeline y leads ganados. Estas estadísticas se actualizan automáticamente con cada cambio.
+                      </p>
+                    </div>
+                    <div>
+                      <strong className="text-foreground flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        Vista Individual:
+                      </strong>
+                      <p className="mt-1 ml-6">
+                        Haz clic en cualquier lead para ver su detalle completo. Desde ahí puedes editar información, cambiar la etapa, asignar responsable, añadir notas o eliminar el contacto. También puedes ver el historial de interacciones.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold mb-1">Todos los Leads</h2>

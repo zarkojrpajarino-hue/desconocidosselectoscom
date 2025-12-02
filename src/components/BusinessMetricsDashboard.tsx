@@ -152,7 +152,7 @@ const BusinessMetricsDashboard = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="sales" className="space-y-4">
+        <TabsContent value="sales" className="space-y-4" id="metrics-grid">
           <Card>
             <CardHeader>
               <CardTitle>Ventas e Ingresos</CardTitle>
