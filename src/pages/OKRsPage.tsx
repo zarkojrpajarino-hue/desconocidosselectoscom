@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import OKRsDashboard from '@/components/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
 import { useState } from 'react';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const OKRsPage = () => {
   const { user, loading } = useAuth();
@@ -44,6 +45,7 @@ const OKRsPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <SectionTourButton sectionId="okrs" />
             <Button
               variant="secondary"
               onClick={() => navigate('/okrs/organization')}
