@@ -26,30 +26,14 @@ export const NO_ORG_REQUIRED_ROUTES = [
   '/setup'
 ] as const;
 
-export const PLAN_LIMITS = {
-  free: {
-    maxUsers: 10,
-    maxLeads: 100,
-    maxOKRs: 5,
-    aiAnalysesPerMonth: 1,
-    trialDays: 14,
-  },
-  starter: {
-    maxUsers: 10,
-    maxLeads: 2000,
-    maxOKRs: 10,
-    aiAnalysesPerMonth: 20,
-  },
-  professional: {
-    maxUsers: 25,
-    maxLeads: Infinity,
-    maxOKRs: Infinity,
-    aiAnalysesPerMonth: 100,
-  },
-  enterprise: {
-    maxUsers: Infinity,
-    maxLeads: Infinity,
-    maxOKRs: Infinity,
-    aiAnalysesPerMonth: Infinity,
-  },
-} as const;
+// Re-exportar desde el nuevo sistema de suscripciones para compatibilidad
+export { 
+  PLAN_LIMITS,
+  PLAN_NAMES,
+  PLAN_PRICES,
+  type PlanType,
+  type PlanLimits,
+  hasPlanFeature,
+  isLimitReached,
+  getRecommendedUpgrade 
+} from './subscriptionLimits';

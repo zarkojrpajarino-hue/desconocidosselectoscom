@@ -33,16 +33,17 @@ export function useSubscriptionLimits() {
   const plan: PlanType = (organization?.plan as PlanType) || 'free';
   const limits = PLAN_LIMITS[plan];
 
-  // Contar organizaciones del usuario (dueño/owner)
+  // Contar organizaciones del usuario como admin (owner)
   const { data: ownedOrgsCount = 0, isLoading: loadingOwnedOrgs } = useQuery({
     queryKey: ['owned-orgs-count', userId],
     queryFn: async () => {
       if (!userId) return 0;
 
       const { count, error } = await supabase
-        .from('organizations')
+        .from('user_roles')
         .select('*', { count: 'exact', head: true })
-        .eq('created_by', userId);
+        .eq('user_id', userId)
+        .eq('role', 'admin');
 
       if (error) throw error;
       return count || 0;
