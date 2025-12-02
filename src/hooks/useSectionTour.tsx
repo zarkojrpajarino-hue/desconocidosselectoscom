@@ -234,9 +234,17 @@ export const useSectionTour = (sectionId: string) => {
       }
     },
     {
+      element: '#financial-history-button',
+      popover: {
+        title: '📜 Historial Completo',
+        description: 'Accede al historial de todas tus transacciones: ingresos, gastos y campañas de marketing. Revisa, edita o elimina cualquier registro anterior.',
+        side: 'left',
+      }
+    },
+    {
       popover: {
         title: '🎉 ¡Listo!',
-        description: 'Ahora sabes cómo funciona el panel financiero: registra transacciones y analiza tu salud financiera automáticamente.',
+        description: 'Ahora sabes cómo funciona el panel financiero: registra transacciones, analiza tu salud financiera automáticamente y revisa el historial completo.',
       }
     }
   ];
