@@ -190,6 +190,56 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_items: {
+        Row: {
+          actual_amount: number | null
+          budgeted_amount: number | null
+          category: string | null
+          created_at: string | null
+          id: string
+          organization_id: string
+          period: string | null
+          status: string | null
+          updated_at: string | null
+          variance_amount: number | null
+          variance_percentage: number | null
+        }
+        Insert: {
+          actual_amount?: number | null
+          budgeted_amount?: number | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id: string
+          period?: string | null
+          status?: string | null
+          updated_at?: string | null
+          variance_amount?: number | null
+          variance_percentage?: number | null
+        }
+        Update: {
+          actual_amount?: number | null
+          budgeted_amount?: number | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          organization_id?: string
+          period?: string | null
+          status?: string | null
+          updated_at?: string | null
+          variance_amount?: number | null
+          variance_percentage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_metrics: {
         Row: {
           avg_ticket: number | null
@@ -400,6 +450,91 @@ export type Database = {
           },
         ]
       }
+      cash_flow_forecast: {
+        Row: {
+          closing_balance: number | null
+          created_at: string | null
+          id: string
+          inflows_breakdown: Json | null
+          month: string | null
+          net_cash_flow: number | null
+          opening_balance: number | null
+          organization_id: string
+          outflows_breakdown: Json | null
+          projected_inflows: number | null
+          projected_outflows: number | null
+        }
+        Insert: {
+          closing_balance?: number | null
+          created_at?: string | null
+          id?: string
+          inflows_breakdown?: Json | null
+          month?: string | null
+          net_cash_flow?: number | null
+          opening_balance?: number | null
+          organization_id: string
+          outflows_breakdown?: Json | null
+          projected_inflows?: number | null
+          projected_outflows?: number | null
+        }
+        Update: {
+          closing_balance?: number | null
+          created_at?: string | null
+          id?: string
+          inflows_breakdown?: Json | null
+          month?: string | null
+          net_cash_flow?: number | null
+          opening_balance?: number | null
+          organization_id?: string
+          outflows_breakdown?: Json | null
+          projected_inflows?: number | null
+          projected_outflows?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_forecast_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_velocity_cache: {
+        Row: {
+          average_days: number | null
+          calculated_at: string | null
+          deal_count: number | null
+          id: string
+          organization_id: string
+          stage: string
+        }
+        Insert: {
+          average_days?: number | null
+          calculated_at?: string | null
+          deal_count?: number | null
+          id?: string
+          organization_id: string
+          stage: string
+        }
+        Update: {
+          average_days?: number | null
+          calculated_at?: string | null
+          deal_count?: number | null
+          id?: string
+          organization_id?: string
+          stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_velocity_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_entries: {
         Row: {
           amount: number
@@ -547,6 +682,130 @@ export type Database = {
           },
         ]
       }
+      financial_projections: {
+        Row: {
+          alerts: Json | null
+          breakdown: Json | null
+          burn_rate: number | null
+          calculated_at: string | null
+          calculated_cac: number | null
+          calculated_ltv: number | null
+          confidence_level: number | null
+          id: string
+          ltv_cac_ratio: number | null
+          organization_id: string
+          period: string | null
+          projected_expenses: number | null
+          projected_revenue: number | null
+          revenue_from_new_customers: number | null
+          revenue_from_pipeline: number | null
+          revenue_from_recurring: number | null
+          runway_months: number | null
+        }
+        Insert: {
+          alerts?: Json | null
+          breakdown?: Json | null
+          burn_rate?: number | null
+          calculated_at?: string | null
+          calculated_cac?: number | null
+          calculated_ltv?: number | null
+          confidence_level?: number | null
+          id?: string
+          ltv_cac_ratio?: number | null
+          organization_id: string
+          period?: string | null
+          projected_expenses?: number | null
+          projected_revenue?: number | null
+          revenue_from_new_customers?: number | null
+          revenue_from_pipeline?: number | null
+          revenue_from_recurring?: number | null
+          runway_months?: number | null
+        }
+        Update: {
+          alerts?: Json | null
+          breakdown?: Json | null
+          burn_rate?: number | null
+          calculated_at?: string | null
+          calculated_cac?: number | null
+          calculated_ltv?: number | null
+          confidence_level?: number | null
+          id?: string
+          ltv_cac_ratio?: number | null
+          organization_id?: string
+          period?: string | null
+          projected_expenses?: number | null
+          projected_revenue?: number | null
+          revenue_from_new_customers?: number | null
+          revenue_from_pipeline?: number | null
+          revenue_from_recurring?: number | null
+          runway_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_projections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_ratios_cache: {
+        Row: {
+          calculated_at: string | null
+          cash_conversion_cycle: number | null
+          current_ratio: number | null
+          debt_to_equity: number | null
+          gross_margin: number | null
+          id: string
+          net_margin: number | null
+          operating_margin: number | null
+          organization_id: string
+          quick_ratio: number | null
+          revenue_per_employee: number | null
+          roi: number | null
+          working_capital_ratio: number | null
+        }
+        Insert: {
+          calculated_at?: string | null
+          cash_conversion_cycle?: number | null
+          current_ratio?: number | null
+          debt_to_equity?: number | null
+          gross_margin?: number | null
+          id?: string
+          net_margin?: number | null
+          operating_margin?: number | null
+          organization_id: string
+          quick_ratio?: number | null
+          revenue_per_employee?: number | null
+          roi?: number | null
+          working_capital_ratio?: number | null
+        }
+        Update: {
+          calculated_at?: string | null
+          cash_conversion_cycle?: number | null
+          current_ratio?: number | null
+          debt_to_equity?: number | null
+          gross_margin?: number | null
+          id?: string
+          net_margin?: number | null
+          operating_margin?: number | null
+          organization_id?: string
+          quick_ratio?: number | null
+          revenue_per_employee?: number | null
+          roi?: number | null
+          working_capital_ratio?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_ratios_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_calendar_tokens: {
         Row: {
           access_token: string
@@ -600,10 +859,12 @@ export type Database = {
       }
       key_results: {
         Row: {
+          auto_update: boolean | null
           created_at: string | null
           current_value: number | null
           description: string | null
           id: string
+          linked_kpi: string | null
           metric_type: string
           objective_id: string
           start_value: number | null
@@ -615,10 +876,12 @@ export type Database = {
           weight: number | null
         }
         Insert: {
+          auto_update?: boolean | null
           created_at?: string | null
           current_value?: number | null
           description?: string | null
           id?: string
+          linked_kpi?: string | null
           metric_type: string
           objective_id: string
           start_value?: number | null
@@ -630,10 +893,12 @@ export type Database = {
           weight?: number | null
         }
         Update: {
+          auto_update?: boolean | null
           created_at?: string | null
           current_value?: number | null
           description?: string | null
           id?: string
+          linked_kpi?: string | null
           metric_type?: string
           objective_id?: string
           start_value?: number | null
@@ -665,6 +930,153 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "okrs_with_progress"
             referencedColumns: ["objective_id"]
+          },
+        ]
+      }
+      kpi_benchmarks: {
+        Row: {
+          average_value: number | null
+          id: string
+          industry: string | null
+          kpi_metric: string | null
+          top_10_percentile: number | null
+          top_25_percentile: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_value?: number | null
+          id?: string
+          industry?: string | null
+          kpi_metric?: string | null
+          top_10_percentile?: number | null
+          top_25_percentile?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_value?: number | null
+          id?: string
+          industry?: string | null
+          kpi_metric?: string | null
+          top_10_percentile?: number | null
+          top_25_percentile?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      kpi_change_history: {
+        Row: {
+          change_percentage: number | null
+          changed_at: string | null
+          contributing_factors: Json | null
+          id: string
+          kpi_metric: string
+          new_value: number | null
+          old_value: number | null
+          organization_id: string
+        }
+        Insert: {
+          change_percentage?: number | null
+          changed_at?: string | null
+          contributing_factors?: Json | null
+          id?: string
+          kpi_metric: string
+          new_value?: number | null
+          old_value?: number | null
+          organization_id: string
+        }
+        Update: {
+          change_percentage?: number | null
+          changed_at?: string | null
+          contributing_factors?: Json | null
+          id?: string
+          kpi_metric?: string
+          new_value?: number | null
+          old_value?: number | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_change_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_targets: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          id: string
+          kpi_metric: string
+          organization_id: string
+          period_type: string | null
+          target_date: string | null
+          target_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          kpi_metric: string
+          organization_id: string
+          period_type?: string | null
+          target_date?: string | null
+          target_value: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          kpi_metric?: string
+          organization_id?: string
+          period_type?: string | null
+          target_date?: string | null
+          target_value?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_targets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_engagement: {
+        Row: {
+          event_data: Json | null
+          event_type: string | null
+          id: string
+          lead_id: string
+          occurred_at: string | null
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          lead_id: string
+          occurred_at?: string | null
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          lead_id?: string
+          occurred_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_engagement_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -732,6 +1144,69 @@ export type Database = {
           },
         ]
       }
+      lead_scores: {
+        Row: {
+          behavior_score: number | null
+          calculated_at: string | null
+          classification: string | null
+          engagement_score: number | null
+          fit_score: number | null
+          id: string
+          lead_id: string
+          next_best_action: string | null
+          organization_id: string
+          probability_to_close: number | null
+          source_score: number | null
+          total_score: number | null
+          urgency_score: number | null
+        }
+        Insert: {
+          behavior_score?: number | null
+          calculated_at?: string | null
+          classification?: string | null
+          engagement_score?: number | null
+          fit_score?: number | null
+          id?: string
+          lead_id: string
+          next_best_action?: string | null
+          organization_id: string
+          probability_to_close?: number | null
+          source_score?: number | null
+          total_score?: number | null
+          urgency_score?: number | null
+        }
+        Update: {
+          behavior_score?: number | null
+          calculated_at?: string | null
+          classification?: string | null
+          engagement_score?: number | null
+          fit_score?: number | null
+          id?: string
+          lead_id?: string
+          next_best_action?: string | null
+          organization_id?: string
+          probability_to_close?: number | null
+          source_score?: number | null
+          total_score?: number | null
+          urgency_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_scores_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
@@ -740,12 +1215,14 @@ export type Database = {
           converted_to_customer: boolean | null
           created_at: string | null
           created_by: string | null
+          days_in_current_stage: number | null
           email: string | null
           estimated_value: number | null
           expected_revenue: number | null
           id: string
           interested_products: string[] | null
           last_contact_date: string | null
+          last_stage_change: string | null
           lead_score: string | null
           lead_type: string | null
           lost_date: string | null
@@ -775,12 +1252,14 @@ export type Database = {
           converted_to_customer?: boolean | null
           created_at?: string | null
           created_by?: string | null
+          days_in_current_stage?: number | null
           email?: string | null
           estimated_value?: number | null
           expected_revenue?: number | null
           id?: string
           interested_products?: string[] | null
           last_contact_date?: string | null
+          last_stage_change?: string | null
           lead_score?: string | null
           lead_type?: string | null
           lost_date?: string | null
@@ -810,12 +1289,14 @@ export type Database = {
           converted_to_customer?: boolean | null
           created_at?: string | null
           created_by?: string | null
+          days_in_current_stage?: number | null
           email?: string | null
           estimated_value?: number | null
           expected_revenue?: number | null
           id?: string
           interested_products?: string[] | null
           last_contact_date?: string | null
+          last_stage_change?: string | null
           lead_score?: string | null
           lead_type?: string | null
           lost_date?: string | null
@@ -869,6 +1350,51 @@ export type Database = {
           },
           {
             foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lost_reasons: {
+        Row: {
+          additional_notes: string | null
+          deal_value: number | null
+          id: string
+          lead_id: string
+          lost_at: string | null
+          organization_id: string
+          reason: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          deal_value?: number | null
+          id?: string
+          lead_id: string
+          lost_at?: string | null
+          organization_id: string
+          reason: string
+        }
+        Update: {
+          additional_notes?: string | null
+          deal_value?: number | null
+          id?: string
+          lead_id?: string
+          lost_at?: string | null
+          organization_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lost_reasons_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lost_reasons_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1777,6 +2303,51 @@ export type Database = {
             columns: ["target_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stalled_deals: {
+        Row: {
+          days_in_stage: number | null
+          detected_at: string | null
+          excess_days: number | null
+          id: string
+          lead_id: string
+          organization_id: string
+          recommended_action: string | null
+        }
+        Insert: {
+          days_in_stage?: number | null
+          detected_at?: string | null
+          excess_days?: number | null
+          id?: string
+          lead_id: string
+          organization_id: string
+          recommended_action?: string | null
+        }
+        Update: {
+          days_in_stage?: number | null
+          detected_at?: string | null
+          excess_days?: number | null
+          id?: string
+          lead_id?: string
+          organization_id?: string
+          recommended_action?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stalled_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stalled_deals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -2700,6 +3271,44 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_lost_reasons_summary: {
+        Row: {
+          avg_deal_size: number | null
+          count: number | null
+          organization_id: string | null
+          percentage: number | null
+          reason: string | null
+          total_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lost_reasons_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_pipeline_forecast: {
+        Row: {
+          avg_deal_size: number | null
+          deal_count: number | null
+          expected_revenue: number | null
+          organization_id: string | null
+          stage: string | null
+          total_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses_by_category_current_month: {
         Row: {
           avg_amount: number | null
@@ -2813,12 +3422,24 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_deal_velocity: {
+        Args: { org_id: string }
+        Returns: {
+          average_days: number
+          deal_count: number
+          stage: string
+        }[]
+      }
       calculate_kr_progress: { Args: { kr_id: string }; Returns: number }
       calculate_kr_progress_from_tasks: {
         Args: { kr_id: string }
         Returns: number
       }
       calculate_lead_score: { Args: { p_lead_id: string }; Returns: string }
+      calculate_lead_score_enterprise: {
+        Args: { p_lead_id: string }
+        Returns: number
+      }
       calculate_monthly_metrics: {
         Args: { target_month: string }
         Returns: {
@@ -2862,6 +3483,17 @@ export type Database = {
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
+      }
+      detect_stalled_deals: {
+        Args: { org_id: string }
+        Returns: {
+          average_for_stage: number
+          current_stage: string
+          days_in_stage: number
+          deal_name: string
+          excess_days: number
+          lead_id: string
+        }[]
       }
       generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
