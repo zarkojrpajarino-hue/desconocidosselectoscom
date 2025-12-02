@@ -584,7 +584,7 @@ export const useSectionTour = (sectionId: string) => {
       }
     },
     {
-      element: 'button:has-text("Configurar Disponibilidad"), button:has-text("Generar Agenda")',
+      element: 'button.bg-gradient-primary',
       popover: {
         title: '🎛️ Configuración de Disponibilidad',
         description: 'Haz clic aquí para indicar tus horarios disponibles: horas por día, bloques de tiempo, preferencias. El sistema respeta tu disponibilidad.',
@@ -689,19 +689,15 @@ export const useSectionTour = (sectionId: string) => {
       }
     },
     {
-      element: '.shadow-card:has(#\\31, #\\32, #\\33)',
       popover: {
         title: '🏆 Leaderboard del Equipo',
-        description: 'Ranking completo con puntos, tareas completadas, y rachas de cada miembro. Puedes verte destacado con borde especial si estás en la lista.',
-        side: 'top',
+        description: 'Ranking completo con puntos, tareas completadas, y rachas de cada miembro (🥇🥈🥉). Puedes verte destacado con borde especial si estás en la lista.',
       }
     },
     {
-      element: '.shadow-card:has-text("Actividad Reciente")',
       popover: {
         title: '📜 Historial de Puntos',
-        description: 'Últimas 5 acciones que te dieron puntos: "Tarea completada +10pts", "Validación de líder +15pts", "Racha semanal +20pts".',
-        side: 'top',
+        description: 'Últimas 5 acciones que te dieron puntos: "Tarea completada +10pts", "Validación de líder +15pts", "Racha semanal +20pts". Se muestra debajo del leaderboard.',
       }
     },
     {
