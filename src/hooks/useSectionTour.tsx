@@ -12,7 +12,8 @@ import {
   animateROICalculation,
   animateMetricsCharts,
   cleanupDemoData,
-  fillFormDemo
+  fillAndAnimateSalesKPI,
+  highlightSaveButton
 } from '@/lib/demoActions';
 
 export const useSectionTour = (sectionId: string) => {
@@ -253,21 +254,49 @@ export const useSectionTour = (sectionId: string) => {
     {
       popover: {
         title: '📊 KPIs de Negocio',
-        description: 'Mide y analiza las métricas más importantes de tu empresa.',
+        description: 'Mide y analiza las métricas más importantes de tu empresa en tiempo real.',
       }
     },
     {
       element: '#metrics-grid',
       popover: {
         title: '🎯 Panel de métricas',
-        description: 'Todas tus métricas clave en un solo lugar: CAC, LTV, NPS, Conversión, etc.',
+        description: 'Todas tus métricas clave en un solo lugar: Ventas, CAC, LTV, NPS, Conversión, etc. Organizadas por categorías para facilitar su registro.',
         side: 'top',
       }
     },
     {
       popover: {
+        title: '💰 Rellenando KPI de Ventas...',
+        description: 'Observa cómo se registra un ingreso mensual de €25,650 con 42 pedidos.',
+        onNextClick: () => {
+          fillAndAnimateSalesKPI();
+          setTimeout(() => driverObj.moveNext(), 4000);
+        }
+      }
+    },
+    {
+      element: 'input[id*="revenue"]',
+      popover: {
+        title: '✅ Ventas registradas',
+        description: 'Así de fácil: introduces el valor, y automáticamente se calcula el ticket promedio y otras métricas derivadas.',
+        side: 'right',
+      }
+    },
+    {
+      popover: {
+        title: '💾 Guardando cambios...',
+        description: 'No olvides hacer clic en "Guardar" al finalizar para que las métricas queden registradas.',
+        onNextClick: () => {
+          highlightSaveButton();
+          setTimeout(() => driverObj.moveNext(), 2000);
+        }
+      }
+    },
+    {
+      popover: {
         title: '📈 Métricas en tiempo real',
-        description: 'Observa cómo las métricas se actualizan dinámicamente',
+        description: 'Las métricas se actualizan instantáneamente al rellenar los campos. Puedes consultar el historial de métricas para ver tendencias a lo largo del tiempo.',
         onNextClick: () => {
           animateMetricsCharts();
           setTimeout(() => driverObj.moveNext(), 1500);
@@ -275,11 +304,9 @@ export const useSectionTour = (sectionId: string) => {
       }
     },
     {
-      element: '#metric-trends',
       popover: {
-        title: '📊 Tendencias automáticas',
-        description: 'Visualiza si cada métrica mejora (↑), empeora (↓) o se mantiene (→) vs períodos anteriores.',
-        side: 'bottom',
+        title: '🎉 ¡Perfecto!',
+        description: 'Ya sabes cómo registrar KPIs, guardarlos y ver tendencias. Mantén tus métricas actualizadas para obtener mejores insights de la IA.',
       }
     }
   ];

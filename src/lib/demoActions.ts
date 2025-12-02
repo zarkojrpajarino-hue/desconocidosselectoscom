@@ -256,33 +256,115 @@ export const animateMetricsCharts = () => {
 };
 
 /**
- * Rellenar formulario automáticamente
+ * Rellenar y animar KPI de ventas como ejemplo
  */
-export const fillFormDemo = (formType: 'lead' | 'task' | 'okr') => {
-  setTimeout(() => {
-    const data = formType === 'lead' ? TOUR_DEMO_DATA.lead : 
-                 formType === 'task' ? TOUR_DEMO_DATA.task : 
-                 TOUR_DEMO_DATA.okr;
+export const fillAndAnimateSalesKPI = () => {
+  console.log('🎯 Filling sales KPI...');
+  
+  // Buscar el input de revenue (ventas)
+  const revenueInput = document.getElementById('revenue') as HTMLInputElement;
+  const ordersInput = document.getElementById('orders') as HTMLInputElement;
+  const avgTicketInput = document.getElementById('ticket') as HTMLInputElement;
+  
+  if (revenueInput) {
+    // Animar la escritura del valor
+    const targetValue = '25650';
+    let currentIndex = 0;
     
-    Object.keys(data).forEach(key => {
-      const input = document.querySelector(`[name="${key}"]`) as HTMLInputElement | HTMLTextAreaElement;
-      if (input) {
-        input.value = String((data as any)[key]);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
+    const typeInterval = setInterval(() => {
+      if (currentIndex <= targetValue.length) {
+        revenueInput.value = targetValue.substring(0, currentIndex);
+        revenueInput.dispatchEvent(new Event('input', { bubbles: true }));
+        revenueInput.dispatchEvent(new Event('change', { bubbles: true }));
+        currentIndex++;
+      } else {
+        clearInterval(typeInterval);
+        
+        // Highlight the card
+        const revenueCard = revenueInput.closest('.bg-card');
+        if (revenueCard) {
+          revenueCard.classList.add('demo-highlight', 'animate-pulse');
+          setTimeout(() => {
+            revenueCard.classList.remove('demo-highlight', 'animate-pulse');
+          }, 2000);
+        }
       }
-    });
-  }, 500);
+    }, 100);
+  }
+  
+  // Rellenar otros campos relacionados
+  setTimeout(() => {
+    if (ordersInput) {
+      ordersInput.value = '42';
+      ordersInput.dispatchEvent(new Event('input', { bubbles: true }));
+      ordersInput.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      const ordersCard = ordersInput.closest('.bg-card');
+      if (ordersCard) {
+        ordersCard.classList.add('demo-highlight');
+        setTimeout(() => ordersCard.classList.remove('demo-highlight'), 1500);
+      }
+    }
+  }, 1500);
+  
+  setTimeout(() => {
+    if (avgTicketInput) {
+      avgTicketInput.value = '611';
+      avgTicketInput.dispatchEvent(new Event('input', { bubbles: true }));
+      avgTicketInput.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      const avgCard = avgTicketInput.closest('.bg-card');
+      if (avgCard) {
+        avgCard.classList.add('demo-highlight');
+        setTimeout(() => avgCard.classList.remove('demo-highlight'), 1500);
+      }
+    }
+  }, 2500);
+  
+  console.log('✅ Sales KPI filled');
+};
+
+/**
+ * Highlight save button
+ */
+export const highlightSaveButton = () => {
+  // Find save button by text content
+  const allButtons = Array.from(document.querySelectorAll('button'));
+  const saveButton = allButtons.find(btn => {
+    const text = btn.textContent?.trim().toLowerCase();
+    return text === 'guardar' || text === 'save' || text?.includes('guardar');
+  });
+  
+  console.log('💾 Save button:', saveButton);
+  
+  if (saveButton) {
+    saveButton.classList.add('demo-highlight', 'animate-pulse', 'ring-4', 'ring-primary/50');
+    setTimeout(() => {
+      saveButton.classList.remove('demo-highlight', 'animate-pulse', 'ring-4', 'ring-primary/50');
+    }, 3000);
+  } else {
+    console.warn('⚠️ Save button not found');
+  }
 };
 
 /**
  * Limpiar todos los elementos demo
  */
 export const cleanupDemoData = () => {
-  const demoElements = document.querySelectorAll('.demo-lead, .demo-okr, .demo-task, .demo-financial, .demo-metric');
+  const demoElements = document.querySelectorAll('.demo-lead, .demo-okr, .demo-task, .demo-financial, .demo-metric, .demo-chart-overlay');
   demoElements.forEach(el => {
     el.classList.add('animate-fade-out');
     setTimeout(() => el.remove(), 300);
   });
+  
+  // Limpiar inputs de KPIs demo
+  const revenueInput = document.getElementById('revenue') as HTMLInputElement;
+  const ordersInput = document.getElementById('orders') as HTMLInputElement;
+  const avgTicketInput = document.getElementById('ticket') as HTMLInputElement;
+  
+  if (revenueInput) revenueInput.value = '';
+  if (ordersInput) ordersInput.value = '';
+  if (avgTicketInput) avgTicketInput.value = '';
 };
 
 /**
