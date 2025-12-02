@@ -32,7 +32,7 @@ const Home = () => {
       title: 'Métricas',
       description: 'KPI\'s, OKR, CRM y Panel Financiero del negocio',
       icon: TrendingUp,
-      path: '/metrics-hub',
+      path: '/metrics',
       gradient: 'from-emerald-500 to-teal-500'
     },
     {

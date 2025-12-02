@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { NO_ORG_REQUIRED_ROUTES } from '@/constants/limits';
+import { useTrialBlocking } from '@/hooks/useTrialBlocking';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,10 +10,16 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading, currentOrganizationId, userOrganizations } = useAuth();
   const location = useLocation();
+  const { isBlocked } = useTrialBlocking();
   
   // Verificar si la ruta actual no requiere organización
   const isNoOrgRoute = NO_ORG_REQUIRED_ROUTES.some(route => 
     location.pathname.startsWith(route)
+  );
+  
+  // Rutas que no deben ser bloqueadas por trial (pricing, perfil, etc.)
+  const isTrialExemptRoute = ['/pricing', '/profile', '/select-organization', '/onboarding'].some(
+    route => location.pathname.startsWith(route)
   );
   
   // 1. Esperar a que cargue completamente
@@ -32,23 +39,28 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // 3. Si está en ruta que NO requiere org, permitir acceso
+  // 3. Si el trial expiró y no está en ruta exenta → pricing
+  if (isBlocked && !isTrialExemptRoute) {
+    return <Navigate to="/pricing?expired=true" replace />;
+  }
+  
+  // 4. Si está en ruta que NO requiere org, permitir acceso
   if (isNoOrgRoute) {
     return <>{children}</>;
   }
   
-  // 4. Necesita org pero no tiene ninguna → onboarding
+  // 5. Necesita org pero no tiene ninguna → onboarding
   if (!currentOrganizationId && userOrganizations.length === 0) {
     return <Navigate to="/onboarding" replace />;
   }
   
-  // 5. Tiene orgs pero no ha seleccionado → selector (con returnTo para volver)
+  // 6. Tiene orgs pero no ha seleccionado → selector (con returnTo para volver)
   if (!currentOrganizationId && userOrganizations.length > 0) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/select-organization?returnTo=${returnTo}`} replace />;
   }
   
-  // 6. Todo bien, mostrar contenido
+  // 7. Todo bien, mostrar contenido
   return <>{children}</>;
 };
 

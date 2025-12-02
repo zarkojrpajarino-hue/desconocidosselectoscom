@@ -61,7 +61,7 @@ const OKRsPage = () => {
               <History className="h-4 w-4" />
               Historial
             </Button>
-            <Button variant="outline" onClick={() => navigate('/metrics-hub')} className="gap-2">
+            <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Volver
             </Button>
