@@ -60,10 +60,10 @@ const AvailabilityBlockScreen = ({ deadlineDate, onConfigure }: AvailabilityBloc
 
           <div>
             <h2 className="text-3xl font-bold mb-2">
-              {isUrgent ? '🚨 ¡Urgente!' : '⏰ Configura tu Agenda Primero'}
+              {isUrgent ? '🚨 ¡Urgente!' : '⏰ Rellena tu Disponibilidad Primero'}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Debes completar tu disponibilidad horaria antes de acceder a tus tareas
+              Debes completar tu disponibilidad horaria antes del <strong>Lunes 13:30</strong> para generar tu agenda
             </p>
           </div>
 
@@ -88,14 +88,22 @@ const AvailabilityBlockScreen = ({ deadlineDate, onConfigure }: AvailabilityBloc
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-left">
-            <p className="font-semibold mb-2">📋 ¿Qué sucederá después?</p>
+            <p className="font-semibold mb-2">📋 Ciclo de la Agenda Semanal:</p>
             <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>✅ Completas tu disponibilidad (5 minutos)</li>
-              <li>🤖 La IA genera tu agenda coordinada (Lunes 13:01)</li>
-              <li>📧 Recibes notificación cuando esté lista</li>
-              <li>📅 Puedes revisar y ajustar hasta el Miércoles 13:29</li>
-              <li>🚀 La semana comienza oficialmente el Miércoles 13:30</li>
+              <li>📅 <strong>Miércoles 13:30:</strong> Se abre período para rellenar disponibilidad</li>
+              <li>⏰ <strong>Hasta Lunes 13:30:</strong> Ventana para rellenar tu disponibilidad</li>
+              <li>🤖 <strong>Lunes 13:01:</strong> La IA genera agendas coordinadas (automático)</li>
+              <li>📝 <strong>Lunes 13:30 - Miércoles 13:29:</strong> Puedes revisar y sugerir cambios</li>
+              <li>🔒 <strong>Miércoles 10:30:</strong> Se cierra la semana anterior</li>
+              <li>🚀 <strong>Miércoles 13:30:</strong> Se activa la nueva agenda y vuelve a empezar</li>
             </ul>
+          </div>
+
+          <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
+            <p className="text-sm text-warning-foreground">
+              ⚠️ <strong>Importante:</strong> Quien rellena primero tiene más opciones para sugerir cambios en su agenda, 
+              ya que la IA adaptará los horarios de los demás usuarios que aún no hayan rellenado su disponibilidad.
+            </p>
           </div>
 
           <Button
@@ -103,7 +111,7 @@ const AvailabilityBlockScreen = ({ deadlineDate, onConfigure }: AvailabilityBloc
             size="lg"
             className="w-full h-14 text-lg bg-gradient-primary"
           >
-            🚀 Configurar mi Disponibilidad Ahora
+            🚀 Rellenar mi Disponibilidad Ahora
           </Button>
         </CardContent>
       </Card>

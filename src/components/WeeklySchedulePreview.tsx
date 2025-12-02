@@ -133,12 +133,12 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Estado de Disponibilidad
+                Estado de Disponibilidad del Equipo
               </CardTitle>
               <CardDescription>
                 {allUsersReady 
-                  ? '✅ Todos los usuarios completaron su disponibilidad'
-                  : `${readyCount}/${totalUsers} usuarios listos`
+                  ? '✅ Todos completaron su disponibilidad - Generación el Lunes 13:01'
+                  : `${readyCount}/${totalUsers} usuarios listos - Plazo: Lunes 13:30`
                 }
               </CardDescription>
             </div>
@@ -161,8 +161,8 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
                     ))}
                   </ul>
                   <p className="text-sm text-muted-foreground mt-3">
-                    💡 Recuérdales que rellenen su disponibilidad antes del lunes a las 13:00 
-                    para poder ver tu agenda completa de la semana que viene.
+                    💡 <strong>Recuérdales</strong> que rellenen antes del <strong>Lunes 13:30</strong>.
+                    La agenda completa se generará automáticamente el <strong>Lunes 13:01</strong>.
                   </p>
                 </div>
               </div>
@@ -178,12 +178,12 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                {allUsersReady ? 'Tu Agenda Final' : 'Preview de tu Agenda'}
+                {allUsersReady ? 'Preview de tu Agenda' : 'Preview Preliminar'}
               </CardTitle>
               <CardDescription>
                 {allUsersReady 
-                  ? 'Esta es tu agenda de la semana que viene'
-                  : 'Vista preliminar basada en disponibilidad actual'
+                  ? 'Generación final el Lunes 13:01 - Podrás ajustar hasta Miércoles 13:29'
+                  : 'Vista preliminar basada en disponibilidad actual (puede cambiar)'
                 }
               </CardDescription>
             </div>
@@ -216,7 +216,7 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={allUsersReady ? 'default' : 'secondary'}>
-                          {allUsersReady ? 'Final' : 'Preview'}
+                          {allUsersReady ? 'Casi Final' : 'Preview'}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
                           {new Date(task.scheduled_date).toLocaleDateString('es-ES', {
@@ -241,8 +241,19 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
           {!allUsersReady && previewTasks.length > 0 && (
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-blue-900 dark:text-blue-100">
-                ℹ️ Este es un preview preliminar. La agenda final se generará cuando todos completen su disponibilidad.
-                <strong> Rellenaste primero = más opciones para sugerir cambios</strong>
+                ℹ️ Este es un preview preliminar que puede cambiar. La agenda final se generará automáticamente el 
+                <strong> Lunes 13:01</strong> cuando todos completen su disponibilidad.
+                <br />
+                <strong>🎯 Ventaja:</strong> Rellenaste primero = más opciones para sugerir cambios después.
+              </p>
+            </div>
+          )}
+
+          {allUsersReady && previewTasks.length > 0 && (
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg">
+              <p className="text-sm text-success-foreground">
+                ✅ <strong>Todos listos!</strong> La agenda final se generará el <strong>Lunes 13:01</strong>.
+                Podrás revisarla y sugerir cambios desde el <strong>Lunes 13:30</strong> hasta el <strong>Miércoles 13:29</strong>.
               </p>
             </div>
           )}
