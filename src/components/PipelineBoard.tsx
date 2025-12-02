@@ -315,56 +315,8 @@ const PipelineBoard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Filters & Actions */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Filtros:</span>
-          </div>
-
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
-              <SelectItem value="hot">🔥 Caliente</SelectItem>
-              <SelectItem value="warm">🌡️ Templado</SelectItem>
-              <SelectItem value="cold">❄️ Frío</SelectItem>
-              <SelectItem value="mql">📊 MQL</SelectItem>
-              <SelectItem value="sql">💼 SQL</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={filterAssigned} onValueChange={setFilterAssigned}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Asignado a" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {users.map(u => (
-                <SelectItem key={u.id} value={u.id}>
-                  {u.full_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filterMinValue} onValueChange={setFilterMinValue}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">Todos</SelectItem>
-              <SelectItem value="1000">€1,000+</SelectItem>
-              <SelectItem value="5000">€5,000+</SelectItem>
-              <SelectItem value="10000">€10,000+</SelectItem>
-              <SelectItem value="25000">€25,000+</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
+      {/* Nuevo Lead Button */}
+      <div className="flex justify-end">
         <Button
           onClick={() => setCreateModalOpen(true)}
           className="gap-2"
@@ -374,6 +326,62 @@ const PipelineBoard = () => {
           Nuevo Lead
         </Button>
       </div>
+
+      {/* Filters & Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Filtrar por:</span>
+            </div>
+
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="hot">🔥 Caliente</SelectItem>
+                <SelectItem value="warm">🌡️ Templado</SelectItem>
+                <SelectItem value="cold">❄️ Frío</SelectItem>
+                <SelectItem value="mql">📊 MQL</SelectItem>
+                <SelectItem value="sql">💼 SQL</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterAssigned} onValueChange={setFilterAssigned}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Asignado a" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los usuarios</SelectItem>
+                {users.map(u => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterMinValue} onValueChange={setFilterMinValue}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Valor mínimo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Todos</SelectItem>
+                <SelectItem value="1000">€1,000+</SelectItem>
+                <SelectItem value="5000">€5,000+</SelectItem>
+                <SelectItem value="10000">€10,000+</SelectItem>
+                <SelectItem value="25000">€25,000+</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pipeline Board */}
       <div id="pipeline-columns" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">

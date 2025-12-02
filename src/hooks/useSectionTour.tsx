@@ -254,21 +254,21 @@ export const useSectionTour = (sectionId: string) => {
     {
       popover: {
         title: '📊 KPIs de Negocio',
-        description: 'Mide y analiza las métricas más importantes de tu empresa en tiempo real.',
+        description: 'Mide y analiza las métricas operativas más importantes de tu empresa en tiempo real.',
       }
     },
     {
       element: '#metrics-grid',
       popover: {
         title: '🎯 Panel de métricas',
-        description: 'Todas tus métricas clave en un solo lugar: Ventas, CAC, LTV, NPS, Conversión, etc. Organizadas por categorías para facilitar su registro.',
+        description: 'Todas tus métricas clave organizadas por categorías: Ventas, Marketing, Operaciones y Cliente. Cada pestaña agrupa métricas relacionadas para facilitar su registro.',
         side: 'top',
       }
     },
     {
       popover: {
-        title: '💰 Rellenando KPI de Ventas...',
-        description: 'Observa cómo se registra un ingreso mensual de €25,650 con 42 pedidos.',
+        title: '💰 Demo: Rellenando KPI de Ventas...',
+        description: 'Observa cómo se registra un ingreso mensual de €25,650 con 42 pedidos y ticket promedio de €610.',
         onNextClick: () => {
           fillAndAnimateSalesKPI();
           setTimeout(() => driverObj.moveNext(), 4000);
@@ -279,14 +279,31 @@ export const useSectionTour = (sectionId: string) => {
       element: 'input[id*="revenue"]',
       popover: {
         title: '✅ Ventas registradas',
-        description: 'Así de fácil: introduces el valor, y automáticamente se calcula el ticket promedio y otras métricas derivadas.',
+        description: 'Los campos se llenan automáticamente. En producción, tú introduces estos valores basándote en tus datos reales del mes.',
         side: 'right',
       }
     },
     {
       popover: {
+        title: '📊 Otras pestañas',
+        description: 'Marketing (leads, CAC, conversión), Operaciones (producción, capacidad, costes) y Cliente (NPS, retención, LTV). Todas funcionan igual: rellena campos y guarda.',
+        onNextClick: () => {
+          driverObj.moveNext();
+        }
+      }
+    },
+    {
+      element: '.justify-end > button:has(.lucide-download)',
+      popover: {
+        title: '📥 Exportar métricas',
+        description: 'Usa el botón "Exportar" para descargar todas tus métricas en formato CSV. Perfecto para análisis externos o reportes.',
+        side: 'left',
+      }
+    },
+    {
+      popover: {
         title: '💾 Guardando cambios...',
-        description: 'No olvides hacer clic en "Guardar" al finalizar para que las métricas queden registradas.',
+        description: 'Después de actualizar métricas, haz clic en "Guardar Métricas" al final de la página para registrarlas en la base de datos.',
         onNextClick: () => {
           highlightSaveButton();
           setTimeout(() => driverObj.moveNext(), 2000);
@@ -295,18 +312,63 @@ export const useSectionTour = (sectionId: string) => {
     },
     {
       popover: {
-        title: '📈 Métricas en tiempo real',
-        description: 'Las métricas se actualizan instantáneamente al rellenar los campos. Puedes consultar el historial de métricas para ver tendencias a lo largo del tiempo.',
-        onNextClick: () => {
-          animateMetricsCharts();
-          setTimeout(() => driverObj.moveNext(), 1500);
-        }
+        title: '🎉 ¡Listo!',
+        description: 'Ya sabes cómo registrar KPIs, exportarlos y guardarlos. Mantén tus métricas actualizadas semanalmente para obtener mejores insights de la IA.',
+      }
+    }
+  ];
+
+  const getCRMLeadsTour = (driverObj: any): DriveStep[] => [
+    {
+      popover: {
+        title: '👥 CRM - Gestión de Leads',
+        description: 'Tu base de datos centralizada de contactos, clientes potenciales y oportunidades de venta.',
+      }
+    },
+    {
+      popover: {
+        title: '📋 ¿Qué es un Lead?',
+        description: 'Un lead es cualquier persona u organización que mostró interés en tu producto/servicio. Aquí guardas: nombre, empresa, email, teléfono, valor estimado, prioridad y etapa.',
+      }
+    },
+    {
+      element: '.justify-end > button:contains("Nuevo Lead")',
+      popover: {
+        title: '➕ Añadir un Lead',
+        description: 'Haz clic en "Nuevo Lead" para registrar un contacto nuevo. Completa los datos básicos: nombre, empresa, email, teléfono, etapa del proceso, prioridad (Alta/Media/Baja) y valor estimado.',
+        side: 'bottom',
+      }
+    },
+    {
+      popover: {
+        title: '🔍 Filtros de Búsqueda',
+        description: 'Usa los filtros para encontrar leads específicos: por tipo (Caliente/Templado/Frío, MQL/SQL), por usuario asignado, o por rango de valor estimado (€1,000+, €5,000+, etc.).',
+      }
+    },
+    {
+      popover: {
+        title: '📊 Estadísticas del CRM',
+        description: 'Las tarjetas superiores muestran métricas clave: total de leads, tasa de conversión, valor estimado del pipeline total y leads ganados (convertidos en clientes). Se actualizan automáticamente.',
+      }
+    },
+    {
+      popover: {
+        title: '👁️ Vista Individual de Lead',
+        description: 'Haz clic en cualquier tarjeta de lead para ver su detalle completo. Desde ahí puedes editar información, cambiar la etapa, reasignar a otro usuario, añadir notas o eliminar el contacto.',
+      }
+    },
+    {
+      element: 'button:has(.lucide-trending-up)',
+      popover: {
+        title: '📈 Ver Pipeline de Ventas',
+        description: 'El Pipeline visualiza todos tus leads organizados por etapas: Descubrimiento → Calificación → Propuesta → Negociación → Ganado/Perdido. Puedes arrastrar leads entre etapas.',
+        side: 'left',
       }
     },
     {
       popover: {
         title: '🎉 ¡Perfecto!',
-        description: 'Ya sabes cómo registrar KPIs, guardarlos y ver tendencias. Mantén tus métricas actualizadas para obtener mejores insights de la IA.',
+        description: 'Ya sabes cómo gestionar tus leads: añadir nuevos contactos, filtrarlos, ver estadísticas y acceder al pipeline. ¡Mantén tu CRM actualizado!',
       }
     }
   ];
@@ -410,6 +472,9 @@ export const useSectionTour = (sectionId: string) => {
     // Obtener pasos del tour pasando el driverObj
     let steps: DriveStep[] = [];
     switch(sectionId) {
+      case 'crm-leads':
+        steps = getCRMLeadsTour(driverObj);
+        break;
       case 'crm-pipeline':
         steps = getCRMPipelineTour(driverObj);
         break;

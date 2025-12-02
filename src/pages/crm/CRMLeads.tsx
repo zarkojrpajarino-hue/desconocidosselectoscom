@@ -12,6 +12,7 @@ import LeadDetailModal from '@/components/LeadDetailModal';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/currencyUtils';
 import { LoadingTable } from '@/components/ui/loading-skeleton';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 interface Lead {
   id: string;
@@ -123,6 +124,7 @@ const CRMLeads = () => {
             </div>
           </div>
           <div className="flex gap-2">
+            <SectionTourButton sectionId="crm-leads" />
             <Button
               variant="outline"
               onClick={() => navigate('/metrics')}

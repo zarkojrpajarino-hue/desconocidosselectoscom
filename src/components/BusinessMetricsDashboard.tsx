@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw, Download } from 'lucide-react';
 
 interface BusinessMetrics {
   revenue?: number;
@@ -104,6 +104,39 @@ const BusinessMetricsDashboard = () => {
     setMetrics({ ...metrics, [key]: value });
   };
 
+  const handleExport = () => {
+    try {
+      const exportData = {
+        fecha: new Date().toISOString().split('T')[0],
+        ...metrics,
+        ultima_actualizacion: lastUpdate
+      };
+
+      // Convert to CSV
+      const headers = Object.keys(exportData).join(',');
+      const values = Object.values(exportData).map(v => 
+        typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+      ).join(',');
+      const csv = `${headers}\n${values}`;
+
+      // Download
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `metricas_kpis_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Métricas exportadas correctamente');
+    } catch (error) {
+      console.error('Error exporting metrics:', error);
+      toast.error('Error al exportar métricas');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -126,9 +159,9 @@ const BusinessMetricsDashboard = () => {
             </p>
           )}
         </div>
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
-          {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Guardar
+        <Button onClick={handleExport} variant="outline" className="gap-2">
+          <Download className="w-4 h-4" />
+          Exportar
         </Button>
       </div>
 
