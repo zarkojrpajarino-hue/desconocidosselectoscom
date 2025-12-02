@@ -125,9 +125,13 @@ export function PricingPlans() {
         throw new Error('No se recibió URL de checkout');
       }
 
-      // Redirect to Stripe Checkout - no reseteamos loading porque se descargará la página
+      // Redirect to Stripe Checkout - abrimos en nueva pestaña para evitar problemas con iframe
       console.log('[PricingPlans] Redirecting to Stripe...');
-      window.location.href = data.url;
+      window.open(data.url, '_blank');
+      
+      // Reseteamos loading después de abrir la pestaña
+      setLoading(null);
+      toast.success('Redirigiendo a Stripe. Si no se abre, verifica que los pop-ups estén permitidos.');
 
     } catch (error: any) {
       console.error('Subscription error:', error);
