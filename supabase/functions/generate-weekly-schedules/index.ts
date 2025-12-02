@@ -58,15 +58,23 @@ serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    console.log('🚀 Verificando disponibilidad para generación de agendas...');
+    console.log('🚀 Iniciando generación de agendas semanales...');
 
-    // 1. Calcular próximo miércoles (week_start)
+    // 1. Calcular próximo miércoles (week_start) - fecha de inicio de la semana
     const today = new Date();
     const dayOfWeek = today.getDay();
+    const currentTime = today.getHours() * 100 + today.getMinutes();
+    
     let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
     
-    if (dayOfWeek === 3 && today.getHours() >= 13 && today.getMinutes() >= 30) {
-      daysUntilWednesday = 7;
+    if (dayOfWeek === 3) {
+      if (currentTime < 1330) {
+        daysUntilWednesday = 0;
+      } else {
+        daysUntilWednesday = 7;
+      }
+    } else if (dayOfWeek > 3) {
+      daysUntilWednesday = 7 - dayOfWeek + 3;
     }
     
     const nextWednesday = new Date(today);
@@ -74,9 +82,39 @@ serve(async (req) => {
     nextWednesday.setHours(0, 0, 0, 0);
     
     const weekStart = nextWednesday.toISOString().split('T')[0];
-    console.log(`📅 Verificando disponibilidad para la semana del ${weekStart}`);
+    console.log(`📅 Generando agenda para la semana del ${weekStart}`);
 
-    // 🔒 VERIFICACIÓN CRÍTICA: Comprobar si TODOS completaron disponibilidad
+    // 2. 🔒 VERIFICACIÓN CRÍTICA: Comprobar que estamos en el período correcto de generación
+    // La generación SOLO debe ocurrir el Lunes 13:01 (o puede ser invocada manualmente después)
+    const isMonday = dayOfWeek === 1;
+    const isAfterDeadline = currentTime >= 1301;
+    const isBeforeWednesday = dayOfWeek < 3 || (dayOfWeek === 3 && currentTime < 1330);
+    
+    const canGenerate = isMonday && isAfterDeadline && isBeforeWednesday;
+    
+    console.log(`⏰ Verificación de período:`, {
+      isMonday,
+      currentTime,
+      isAfterDeadline,
+      isBeforeWednesday,
+      canGenerate
+    });
+
+    // Si no estamos en el período correcto, informar
+    if (!canGenerate && !req.url.includes('force=true')) {
+      console.log('⏸️ Fuera del período de generación automática');
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'La generación automática solo ocurre el Lunes 13:01',
+          current_period: dayOfWeek === 1 && currentTime >= 1330 ? 'reviewing' : 'filling',
+          next_generation: 'Próximo Lunes 13:01'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 3. 🔒 VERIFICACIÓN CRÍTICA: Comprobar si TODOS completaron disponibilidad
     const { data: weekConfig, error: weekError } = await supabase
       .from('week_config')
       .select('*')
@@ -107,8 +145,8 @@ serve(async (req) => {
           await supabase.from('smart_alerts').insert({
             alert_type: 'availability_pending',
             severity: 'important',
-            title: '⏳ Disponibilidad Pendiente',
-            message: `Hasta que ${pendingNames} no rellene su disponibilidad no podréis ver vuestra agenda de la semana que viene. ¡Recuérdale que la rellene!`,
+            title: '⏳ Esperando Disponibilidad del Equipo',
+            message: `La agenda se generará cuando ${pendingNames} rellene su disponibilidad. ¡Recuérdale que el plazo es Lunes 13:30!`,
             source: 'scheduling',
             category: 'availability',
             target_user_id: record.user_id,
@@ -122,10 +160,11 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false,
-          message: 'Esperando a que todos los usuarios completen disponibilidad',
+          message: 'Esperando a que todos los usuarios completen disponibilidad antes del Lunes 13:30',
           pending: weekConfig?.users_pending || [],
           ready: weekConfig?.ready_count || 0,
-          total: weekConfig?.total_users || 0
+          total: weekConfig?.total_users || 0,
+          deadline: 'Lunes 13:30'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -133,7 +172,7 @@ serve(async (req) => {
 
     console.log('✅ TODOS los usuarios completaron disponibilidad, procediendo con generación...');
 
-    // 2. Obtener todos los usuarios con su disponibilidad
+    // 4. Obtener todos los usuarios con su disponibilidad
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, full_name, username');
@@ -205,7 +244,7 @@ serve(async (req) => {
             },
           },
           preferred_hours_per_day: availability.preferred_hours_per_day || 4,
-          preferred_time_of_day: availability.preferred_time_of_day || 'mañana',
+          preferred_time_of_day: availability.preferred_time_of_day || 'flexible',
         });
       }
     }
@@ -220,7 +259,7 @@ serve(async (req) => {
 
     console.log(`👥 ${userAvailabilities.length} usuarios con disponibilidad completa`);
 
-    // 3. Obtener fase actual del sistema
+    // 5. Obtener fase actual del sistema
     const { data: systemConfig } = await supabase
       .from('system_config')
       .select('current_phase')
@@ -228,7 +267,7 @@ serve(async (req) => {
 
     const currentPhase = systemConfig?.current_phase || 1;
 
-    // 4. Obtener todas las tareas pendientes para la fase actual
+    // 6. Obtener todas las tareas pendientes para la fase actual
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select('*')
@@ -239,10 +278,10 @@ serve(async (req) => {
 
     console.log(`📋 ${tasks.length} tareas disponibles en Fase ${currentPhase}`);
 
-    // 5. Construir prompt para Lovable AI
+    // 7. Construir prompt para Lovable AI
     const prompt = buildAIPrompt(userAvailabilities, tasks, weekStart, currentPhase);
 
-    // 6. Llamar a Lovable AI Gateway con tool calling
+    // 8. Llamar a Lovable AI Gateway con tool calling
     console.log('🤖 Llamando a Lovable AI Gateway...');
     
     const aiPayload = {
@@ -315,7 +354,7 @@ serve(async (req) => {
     const aiResponse = await response.json();
     console.log('✅ Respuesta recibida de Lovable AI');
 
-    // 7. Parsear respuesta con tool calling
+    // 9. Parsear respuesta con tool calling
     let scheduledTasks: ScheduledTask[];
     try {
       const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
@@ -333,7 +372,7 @@ serve(async (req) => {
 
     console.log(`✅ Lovable AI generó ${scheduledTasks.length} tareas programadas`);
 
-    // 8. Insertar tareas programadas en task_schedule
+    // 10. Insertar tareas programadas en task_schedule
     if (scheduledTasks.length > 0) {
       // Primero borrar schedules existentes para esta semana
       await supabase
@@ -365,7 +404,7 @@ serve(async (req) => {
       console.log(`💾 Guardadas ${scheduledTasks.length} tareas en la base de datos`);
     }
 
-    // 9. Enviar alertas a usuarios
+    // 11. Enviar alertas a usuarios
     for (const user of userAvailabilities) {
       const userTasks = scheduledTasks.filter((st) => st.user_id === user.user_id);
       
@@ -373,7 +412,7 @@ serve(async (req) => {
         alert_type: 'agenda_generated',
         severity: 'info',
         title: '📅 Agenda Semanal Lista',
-        message: `Tu agenda para esta semana está lista con ${userTasks.length} tareas. ¡Revísala ahora!`,
+        message: `Tu agenda está lista con ${userTasks.length} tareas. Puedes revisarla y sugerir cambios hasta el Miércoles 13:29.`,
         source: 'scheduling',
         category: 'agenda',
         target_user_id: user.user_id,
@@ -392,6 +431,8 @@ serve(async (req) => {
         week_start: weekStart,
         users_processed: userAvailabilities.length,
         tasks_scheduled: scheduledTasks.length,
+        review_period: 'Hasta Miércoles 13:29',
+        activation: 'Miércoles 13:30'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -423,9 +464,14 @@ function buildAIPrompt(
 
 **CONTEXTO:**
 - Fase actual del negocio: ${currentPhase}
-- Semana que comienza: ${weekStart}
+- Semana que comienza: ${weekStart} (Miércoles 13:30)
 - Total de usuarios: ${userAvailabilities.length}
 - Total de tareas disponibles: ${tasks.length}
+
+**CICLO DE TRABAJO:**
+- Lunes 13:01: Generación automática de agendas
+- Lunes 13:30 - Miércoles 13:29: Período de revisión y ajustes
+- Miércoles 13:30: Activación de agenda y comienzo de semana
 
 **DISPONIBILIDAD DE USUARIOS:**
 ${JSON.stringify(userAvailabilities, null, 2)}
@@ -443,7 +489,7 @@ ${JSON.stringify(tasks, null, 2)}
 
 2. **Respetar disponibilidad horaria:**
    - Solo programar en días/horarios marcados como disponibles
-   - Considerar preferencias de horario (mañana/tarde/noche)
+   - Considerar preferencias de horario (morning/afternoon/evening/flexible)
    - Respetar horas preferidas por día (preferred_hours_per_day)
 
 3. **Distribución inteligente:**
@@ -472,6 +518,11 @@ ${JSON.stringify(tasks, null, 2)}
    - Primero programar tareas colaborativas (requieren coordinación)
    - Luego tareas individuales
    - Considerar order_index si está disponible
+
+8. **Coordinación por orden de disponibilidad:**
+   - Los usuarios que rellenaron primero su disponibilidad tienen prioridad
+   - Sus horarios preferidos deben respetarse más
+   - Adaptar horarios de usuarios que rellenaron después
 
 **IMPORTANTE:**
 - Todos los UUIDs (task_id, user_id, collaborator_user_id) deben ser válidos
