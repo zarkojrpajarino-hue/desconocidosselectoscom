@@ -20,7 +20,6 @@ import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import AIAnalysis from "./pages/AIAnalysis";
 import BusinessMetrics from "./pages/BusinessMetrics";
-import UserMetricsHistoryPage from "./pages/UserMetricsHistoryPage";
 import UserMetricsHistory from "./pages/businessMetrics/UserMetricsHistory";
 import HerramientasHub from "./pages/HerramientasHub";
 import MetricsHub from "./pages/MetricsHub";
@@ -35,7 +34,6 @@ import UserTransactionsHistory from "./pages/financial/UserTransactionsHistory";
 import AlertsPage from "./pages/AlertsPage";
 import CRMPage from "./pages/CRMPage";
 import CRMHub from "./pages/crm/CRMHub";
-import CRMLeads from "./pages/crm/CRMLeads";
 import Pipeline from "./pages/crm/Pipeline";
 import UserLeadsPage from "./pages/crm/UserLeadsPage";
 
@@ -217,17 +215,7 @@ const AppContent = () => {
           <AlertsPage />
         </ProtectedRoute>
       } />
-      <Route path="/crm-old" element={
-        <ProtectedRoute>
-          <CRMLeads />
-        </ProtectedRoute>
-      } />
       <Route path="/crm" element={
-        <ProtectedRoute>
-          <CRMPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/crm/leads" element={
         <ProtectedRoute>
           <CRMPage />
         </ProtectedRoute>
@@ -247,22 +235,12 @@ const AppContent = () => {
     <UserLeadsPage />
   </ProtectedRoute>
 } />
-      <Route path="/user-metrics/:userId" element={
-        <ProtectedRoute>
-          <UserMetricsHistoryPage />
-        </ProtectedRoute>
-      } />
       <Route path="/herramientas-hub" element={
         <ProtectedRoute>
           <HerramientasHub />
         </ProtectedRoute>
       } />
       <Route path="/metrics" element={
-        <ProtectedRoute>
-          <MetricsHub />
-        </ProtectedRoute>
-      } />
-      <Route path="/metrics-hub" element={
         <ProtectedRoute>
           <MetricsHub />
         </ProtectedRoute>

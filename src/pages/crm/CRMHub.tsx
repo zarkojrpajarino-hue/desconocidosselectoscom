@@ -53,7 +53,7 @@ const CRMHub = () => {
           </div>
           <div className="flex items-center gap-3">
             <SectionTourButton sectionId="crm-hub" />
-            <Button onClick={() => navigate('/crm/leads')} className="gap-2 bg-gradient-primary">
+            <Button onClick={() => navigate('/crm')} className="gap-2 bg-gradient-primary">
               <Users className="h-4 w-4" />
               Ver Leads
             </Button>
@@ -61,7 +61,7 @@ const CRMHub = () => {
               <TrendingUp className="h-4 w-4" />
               Pipeline
             </Button>
-            <Button variant="outline" onClick={() => navigate('/metrics-hub')} className="gap-2">
+            <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Volver
             </Button>

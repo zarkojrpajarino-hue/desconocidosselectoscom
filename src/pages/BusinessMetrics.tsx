@@ -58,7 +58,7 @@ const BusinessMetrics = () => {
             </div>
             <div className="flex items-center gap-2">
               <SectionTourButton sectionId="business-metrics" />
-              <Button variant="outline" onClick={() => navigate('/metrics-hub')} className="gap-2">
+              <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Volver a Métricas
               </Button>
