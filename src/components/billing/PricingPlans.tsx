@@ -102,19 +102,12 @@ export function PricingPlans() {
         return;
       }
 
-      // Obtener el price_id real
-      const priceId = await getRealPriceId(priceKey);
-      if (!priceId) {
-        toast.error('Error al obtener información del plan');
-        return;
-      }
-
       console.log(`[PricingPlans] Creating checkout for plan: ${planName}`);
 
-      // Create Stripe checkout session
+      // Create Stripe checkout session - send plan name instead of priceId
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          priceId,
+          planName: planName.toLowerCase(),
           organizationId: userRoles.organization_id,
         },
       });
