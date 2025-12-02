@@ -284,3 +284,126 @@ export const cleanupDemoData = () => {
     setTimeout(() => el.remove(), 300);
   });
 };
+
+/**
+ * Create demo revenue entry with animation
+ */
+export const createDemoRevenue = () => {
+  // Animate revenue card
+  const revenueCard = document.querySelector('[data-metric="revenue"]');
+  if (revenueCard) {
+    revenueCard.classList.add('demo-highlight');
+    
+    // Update revenue value with animation
+    const revenueValue = revenueCard.querySelector('[data-value="amount"]');
+    if (revenueValue) {
+      const currentText = revenueValue.textContent?.replace(/[^0-9]/g, '') || '0';
+      const currentValue = parseInt(currentText);
+      const newValue = currentValue + 12450;
+      animateValue(revenueValue as HTMLElement, currentValue, newValue, 1500, true);
+    }
+    
+    setTimeout(() => revenueCard.classList.remove('demo-highlight'), 3000);
+  }
+  
+  // Animate revenue chart
+  const revenueChart = document.getElementById('revenue-by-product-chart');
+  if (revenueChart) {
+    revenueChart.classList.add('animate-pulse');
+    setTimeout(() => revenueChart.classList.remove('animate-pulse'), 2000);
+  }
+};
+
+/**
+ * Create demo expense entry with animation
+ */
+export const createDemoExpense = () => {
+  // Animate expense card
+  const expenseCard = document.querySelector('[data-metric="expenses"]');
+  if (expenseCard) {
+    expenseCard.classList.add('demo-highlight');
+    
+    // Update expense value with animation
+    const expenseValue = expenseCard.querySelector('[data-value="amount"]');
+    if (expenseValue) {
+      const currentText = expenseValue.textContent?.replace(/[^0-9]/g, '') || '0';
+      const currentValue = parseInt(currentText);
+      const newValue = currentValue + 3200;
+      animateValue(expenseValue as HTMLElement, currentValue, newValue, 1500, true);
+    }
+    
+    setTimeout(() => expenseCard.classList.remove('demo-highlight'), 3000);
+  }
+  
+  // Animate expense chart
+  const expenseChart = document.getElementById('expenses-by-category-chart');
+  if (expenseChart) {
+    expenseChart.classList.add('animate-pulse');
+    setTimeout(() => expenseChart.classList.remove('animate-pulse'), 2000);
+  }
+};
+
+/**
+ * Animate ROI calculation
+ */
+export const animateROICalculation = () => {
+  // Highlight margin card
+  const marginCard = document.querySelector('[data-metric="margin"]');
+  if (marginCard) {
+    marginCard.classList.add('demo-highlight');
+    
+    // Update margin with animation
+    const marginValue = marginCard.querySelector('[data-value="amount"]');
+    const revenueElement = document.querySelector('[data-metric="revenue"] [data-value="amount"]');
+    const expenseElement = document.querySelector('[data-metric="expenses"] [data-value="amount"]');
+    
+    if (marginValue && revenueElement && expenseElement) {
+      const revenueText = revenueElement.textContent?.replace(/[^0-9]/g, '') || '0';
+      const expenseText = expenseElement.textContent?.replace(/[^0-9]/g, '') || '0';
+      const revenueValue = parseInt(revenueText);
+      const expenseValue = parseInt(expenseText);
+      const margin = revenueValue - expenseValue;
+      animateValue(marginValue as HTMLElement, 0, margin, 2000, true);
+    }
+    
+    setTimeout(() => marginCard.classList.remove('demo-highlight'), 4000);
+  }
+  
+  // Animate ROI table
+  const roiTable = document.getElementById('marketing-roi-table');
+  if (roiTable) {
+    roiTable.classList.add('animate-fade-in');
+    setTimeout(() => roiTable.classList.remove('animate-fade-in'), 2000);
+  }
+};
+
+/**
+ * Helper function to animate number values
+ */
+const animateValue = (element: HTMLElement, start: number, end: number, duration: number, isCurrency: boolean = false) => {
+  const startTime = Date.now();
+  const range = end - start;
+  
+  const updateValue = () => {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const current = start + (range * progress);
+    
+    if (isCurrency) {
+      element.textContent = new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(Math.round(current));
+    } else {
+      element.textContent = Math.round(current).toString();
+    }
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateValue);
+    }
+  };
+  
+  requestAnimationFrame(updateValue);
+};

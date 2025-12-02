@@ -100,7 +100,7 @@ const FinancialDashboard = () => {
         .select('*')
         .eq('month', monthStart)
         .eq('organization_id', currentOrganizationId)
-        .single();
+        .maybeSingle();
 
       if (metricsError && metricsError.code !== 'PGRST116') throw metricsError;
 
@@ -116,43 +116,50 @@ const FinancialDashboard = () => {
           .select('*')
           .eq('month', monthStart)
           .eq('organization_id', currentOrganizationId)
-          .single();
+          .maybeSingle();
         
         if (newError) throw newError;
         setMetrics(newMetrics);
       }
 
       // 2. Ingresos por producto
-      const { data: revenueData, error: revenueError } = await supabase
+      const revenueQuery = (supabase as any)
         .from('revenue_by_product_current_month')
-        .select('*');
+        .select('product_category, total_revenue, total_quantity, percentage_of_total')
+        .eq('organization_id', currentOrganizationId);
       
+      const { data: revenueData, error: revenueError } = await revenueQuery;
       if (revenueError) throw revenueError;
-      setRevenueByProduct(revenueData || []);
+      setRevenueByProduct((revenueData as RevenueByProduct[]) || []);
 
       // 3. Gastos por categoría
-      const { data: expensesData, error: expensesError } = await supabase
+      const expensesQuery = (supabase as any)
         .from('expenses_by_category_current_month')
-        .select('*');
+        .select('category, total_amount, percentage_of_total')
+        .eq('organization_id', currentOrganizationId);
       
+      const { data: expensesData, error: expensesError } = await expensesQuery;
       if (expensesError) throw expensesError;
-      setExpensesByCategory(expensesData || []);
+      setExpensesByCategory((expensesData as ExpenseByCategory[]) || []);
 
       // 4. ROI de marketing
-      const { data: marketingData, error: marketingError } = await supabase
+      const marketingQuery = (supabase as any)
         .from('marketing_roi_by_channel')
-        .select('*');
+        .select('channel, total_spend, total_leads, total_conversions, total_revenue, roi_ratio, cac, conversion_rate')
+        .eq('organization_id', currentOrganizationId);
       
+      const { data: marketingData, error: marketingError } = await marketingQuery;
       if (marketingError) throw marketingError;
-      setMarketingROI(marketingData || []);
+      setMarketingROI((marketingData as MarketingROI[]) || []);
 
       // 5. Balance de caja actual
       const { data: balanceData, error: balanceError } = await supabase
         .from('cash_balance')
         .select('balance')
+        .eq('organization_id', currentOrganizationId)
         .order('date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (balanceError && balanceError.code !== 'PGRST116') throw balanceError;
       setCashBalance(balanceData?.balance || 0);
@@ -247,13 +254,13 @@ const FinancialDashboard = () => {
       {/* KPIs Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Ingresos */}
-        <Card>
+        <Card data-metric="revenue">
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-success" />
               Ingresos del Mes
             </CardDescription>
-            <CardTitle className="text-3xl text-success">
+            <CardTitle className="text-3xl text-success" data-value="amount">
               {formatCurrency(metrics?.total_revenue || 0)}
             </CardTitle>
           </CardHeader>
@@ -265,13 +272,13 @@ const FinancialDashboard = () => {
         </Card>
 
         {/* Gastos */}
-        <Card>
+        <Card data-metric="expenses">
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-destructive" />
               Gastos del Mes
             </CardDescription>
-            <CardTitle className="text-3xl text-destructive">
+            <CardTitle className="text-3xl text-destructive" data-value="amount">
               {formatCurrency(metrics?.total_expenses || 0)}
             </CardTitle>
           </CardHeader>
@@ -283,13 +290,13 @@ const FinancialDashboard = () => {
         </Card>
 
         {/* Margen */}
-        <Card>
+        <Card data-metric="margin">
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Margen Neto
             </CardDescription>
-            <CardTitle className="text-3xl">
+            <CardTitle className="text-3xl" data-value="amount">
               {formatCurrency(metrics?.gross_margin || 0)}
             </CardTitle>
           </CardHeader>
@@ -304,7 +311,7 @@ const FinancialDashboard = () => {
         </Card>
 
         {/* Runway */}
-        <Card>
+        <Card data-metric="runway">
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
@@ -354,7 +361,8 @@ const FinancialDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <div id="revenue-by-product-chart">
+              <ResponsiveContainer width="100%" height={300}>
               <BarChart data={revenueByProduct}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
@@ -394,6 +402,7 @@ const FinancialDashboard = () => {
                 </div>
               ))}
             </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -409,7 +418,8 @@ const FinancialDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <div id="expenses-by-category-chart">
+              <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
                 <Pie
                   data={expensesByCategory as any}
@@ -453,6 +463,7 @@ const FinancialDashboard = () => {
                 </div>
               ))}
             </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -469,7 +480,7 @@ const FinancialDashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" id="marketing-roi-table">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
