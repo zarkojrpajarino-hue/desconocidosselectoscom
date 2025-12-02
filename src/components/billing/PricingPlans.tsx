@@ -88,6 +88,7 @@ export function PricingPlans() {
       
       if (userError || !user) {
         toast.error('Debes estar autenticado para suscribirte');
+        setLoading(null);
         return;
       }
 
@@ -99,6 +100,7 @@ export function PricingPlans() {
 
       if (rolesError || !userRoles?.organization_id) {
         toast.error('No se encontró tu organización');
+        setLoading(null);
         return;
       }
 
@@ -114,21 +116,22 @@ export function PricingPlans() {
 
       if (error) {
         console.error('Checkout error:', error);
+        setLoading(null);
         throw new Error(error.message);
       }
 
       if (!data?.url) {
+        setLoading(null);
         throw new Error('No se recibió URL de checkout');
       }
 
-      // Redirect to Stripe Checkout
+      // Redirect to Stripe Checkout - no reseteamos loading porque se descargará la página
       console.log('[PricingPlans] Redirecting to Stripe...');
       window.location.href = data.url;
 
     } catch (error: any) {
       console.error('Subscription error:', error);
       toast.error(error.message || 'Error al procesar el pago. Intenta de nuevo.');
-    } finally {
       setLoading(null);
     }
   };
