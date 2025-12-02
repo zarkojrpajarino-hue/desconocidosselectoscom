@@ -318,6 +318,61 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
+  const getCRMHubTour = (driverObj: any): DriveStep[] => [
+    {
+      popover: {
+        title: '👥 CRM Professional',
+        description: 'Sistema completo de gestión de leads con estadísticas globales y filtros avanzados.',
+      }
+    },
+    {
+      element: '#crm-new-lead-button',
+      popover: {
+        title: '➕ Añadir un Lead',
+        description: 'Haz clic aquí para crear un nuevo lead. Rellena: nombre, empresa, email, teléfono, valor estimado, prioridad y etapa del proceso de venta.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '#crm-filters-card',
+      popover: {
+        title: '🔍 Filtros de Búsqueda',
+        description: 'Usa la barra de búsqueda para filtrar por nombre, empresa o email. Los selectores te permiten filtrar por estado (Nuevo, Contactado, Calificado), tipo de lead (Caliente 🔥, Templado 🌡️, Frío ❄️) y usuario creador.',
+        side: 'top',
+      }
+    },
+    {
+      element: '.grid.grid-cols-1.md\\:grid-cols-4.gap-4',
+      popover: {
+        title: '📊 Estadísticas Globales',
+        description: 'Total de Leads: todos los contactos registrados. Pipeline Total: suma del valor estimado de todos los leads activos. Leads Calientes: oportunidades prioritarias 🔥. Ganados: leads convertidos en clientes ✅.',
+        side: 'bottom',
+      }
+    },
+    {
+      element: '#crm-individual-stats',
+      popover: {
+        title: '👤 Estadísticas Individuales',
+        description: 'Aquí ves el rendimiento de cada miembro del equipo: leads creados, tasa de conversión, valor total pipeline y leads ganados. Ideal para comparar performance y reconocer top performers.',
+        side: 'top',
+      }
+    },
+    {
+      element: 'button:has(.lucide-trending-up)',
+      popover: {
+        title: '📈 Vista Pipeline',
+        description: 'Haz clic para ver el Pipeline de Ventas: una visualización tipo Kanban con drag & drop donde puedes mover leads entre etapas (Descubrimiento, Calificación, Propuesta, Negociación, Ganado/Perdido).',
+        side: 'left',
+      }
+    },
+    {
+      popover: {
+        title: '🎉 ¡Listo!',
+        description: 'Ya sabes cómo usar el CRM: añadir leads, filtrarlos, ver estadísticas globales e individuales, y acceder al pipeline visual. ¡Mantén tu CRM actualizado para mejores insights!',
+      }
+    }
+  ];
+
   const getCRMLeadsTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
@@ -472,6 +527,9 @@ export const useSectionTour = (sectionId: string) => {
     // Obtener pasos del tour pasando el driverObj
     let steps: DriveStep[] = [];
     switch(sectionId) {
+      case 'crm-hub':
+        steps = getCRMHubTour(driverObj);
+        break;
       case 'crm-leads':
         steps = getCRMLeadsTour(driverObj);
         break;

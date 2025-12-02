@@ -19,6 +19,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { LoadingTable, LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const CRMPage = () => {
   const { user, userProfile, currentOrganizationId, loading: authLoading } = useAuth();
@@ -188,6 +189,7 @@ const CRMPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <SectionTourButton sectionId="crm-hub" />
             <Button
               variant="outline"
               onClick={handleExportLeads}
@@ -196,16 +198,6 @@ const CRMPage = () => {
             >
               <Download className="h-4 w-4" />
               <span className="hidden md:inline">Exportar Leads</span>
-            </Button>
-            <Button
-              onClick={() => {
-                setEditLead(null);
-                setCreateModalOpen(true);
-              }}
-              className="bg-gradient-primary gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden md:inline">Nuevo Lead</span>
             </Button>
             <Button
               variant="outline"
@@ -296,7 +288,27 @@ const CRMPage = () => {
         )}
 
         {/* Filtros */}
-        <Card>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-1">Gestión de Leads</h2>
+            <p className="text-sm text-muted-foreground">
+              Filtra y organiza tus contactos
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setEditLead(null);
+              setCreateModalOpen(true);
+            }}
+            className="bg-gradient-primary gap-2"
+            id="crm-new-lead-button"
+          >
+            <Plus className="h-4 w-4" />
+            Nuevo Lead
+          </Button>
+        </div>
+        
+        <Card id="crm-filters-card">
           <CardHeader>
             <CardTitle>Filtros de Búsqueda</CardTitle>
           </CardHeader>
@@ -488,7 +500,7 @@ const CRMPage = () => {
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="space-y-6 mt-4">
+                <div className="space-y-6 mt-4" id="crm-individual-stats">
                   {/* TU TARJETA (Destacada) */}
                   {currentUserStats && (
                     <Card className="border-2 border-primary shadow-lg bg-gradient-to-br from-primary/10 via-card to-card">
