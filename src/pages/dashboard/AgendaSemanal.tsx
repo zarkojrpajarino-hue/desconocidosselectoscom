@@ -31,13 +31,16 @@ const AgendaSemanal = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user) {
-      calculateNextWeekStart();
+    calculateNextWeekStart();
+  }, []);
+
+  useEffect(() => {
+    if (user && nextWeekStart) {
       checkAvailability();
       checkWeekStatus();
       checkDeadline();
     }
-  }, [user]);
+  }, [user, nextWeekStart]);
 
   const checkWeekStatus = async () => {
     if (!nextWeekStart) return;
@@ -69,17 +72,19 @@ const AgendaSemanal = () => {
   };
 
   const checkAvailability = async () => {
-    if (!user) return;
+    if (!user || !nextWeekStart) return;
     
     try {
       const { data, error } = await supabase
         .from('user_weekly_availability')
         .select('id')
         .eq('user_id', user.id)
+        .eq('week_start', nextWeekStart)
         .maybeSingle();
       
       if (error) throw error;
       setHasAvailability(!!data);
+      console.log('Availability check:', { hasData: !!data, weekStart: nextWeekStart });
     } catch (error) {
       console.error('Error checking availability:', error);
       setHasAvailability(false);
@@ -110,21 +115,25 @@ const AgendaSemanal = () => {
   };
 
   const calculateNextWeekStart = () => {
-    // Calcular próximo miércoles
     const today = new Date();
     const dayOfWeek = today.getDay();
-    let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
     
-    // Si hoy es miércoles y ya pasó la 13:30, siguiente miércoles
-    if (dayOfWeek === 3 && today.getHours() >= 13 && today.getMinutes() >= 30) {
-      daysUntilWednesday = 7;
+    // Calcular próximo miércoles 13:30
+    let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
+    if (daysUntilWednesday === 0) {
+      // Si hoy es miércoles, verificar la hora
+      if (today.getHours() >= 13 && today.getMinutes() >= 30) {
+        daysUntilWednesday = 7; // Siguiente miércoles
+      }
     }
     
     const nextWed = new Date(today);
     nextWed.setDate(today.getDate() + daysUntilWednesday);
     nextWed.setHours(13, 30, 0, 0);
     
-    setNextWeekStart(nextWed.toISOString().split('T')[0]);
+    const weekStartStr = nextWed.toISOString().split('T')[0];
+    setNextWeekStart(weekStartStr);
+    console.log('Next week start calculated:', weekStartStr);
   };
 
   if (loading) {

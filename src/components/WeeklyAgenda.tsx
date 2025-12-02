@@ -193,14 +193,16 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
   if (schedule.every(day => day.tasks.length === 0)) {
     return (
       <Card>
-        <CardContent className="py-12 text-center">
-          <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground text-lg">
-            No tienes tareas programadas para esta semana
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Asegúrate de completar tu disponibilidad antes del Lunes 13:00
-          </p>
+        <CardContent className="py-16 text-center space-y-4">
+          <Calendar className="w-20 h-20 mx-auto text-muted-foreground opacity-40" />
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">
+              No tienes tareas programadas para esta semana
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              La agenda se generará automáticamente el Lunes a las 13:01. Asegúrate de completar tu disponibilidad antes.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
