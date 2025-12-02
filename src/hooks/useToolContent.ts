@@ -3,7 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-export type ToolType = 'buyer_persona' | 'customer_journey' | 'growth_model' | 'lead_scoring';
+export type ToolType = 
+  | 'buyer_persona' 
+  | 'customer_journey' 
+  | 'growth_model' 
+  | 'lead_scoring'
+  | 'guia_comunicacion'
+  | 'simulador_ventas'
+  | 'sales_playbook'
+  | 'calculadora_oportunidad';
 
 export const useToolContent = (toolType: ToolType) => {
   const { user } = useAuth();
