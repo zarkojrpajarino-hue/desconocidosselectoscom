@@ -6,6 +6,7 @@ import { ArrowLeft, Brain, Lock, AlertCircle } from 'lucide-react';
 import AIAnalysisDashboard from '@/components/AIAnalysisDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const AIAnalysis = () => {
   const { user, loading } = useAuth();
@@ -76,14 +77,17 @@ const AIAnalysis = () => {
               Análisis con IA
             </h1>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Menú
-          </Button>
+          <div className="flex items-center gap-2">
+            <SectionTourButton sectionId="ai-analysis" />
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Menú
+            </Button>
+          </div>
         </div>
       </header>
 

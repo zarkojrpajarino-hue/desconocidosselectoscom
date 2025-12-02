@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useMetricsReminder } from '@/hooks/useMetricsReminder';
 import MyMetrics from './businessMetrics/MyMetrics';
 import TeamRanking from './businessMetrics/TeamRanking';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const BusinessMetrics = () => {
   const { user, loading } = useAuth();
@@ -52,14 +53,17 @@ const BusinessMetrics = () => {
                 Métricas del Negocio (KPI's)
               </h1>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/metrics-hub')}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver a Métricas
-            </Button>
+            <div className="flex items-center gap-2">
+              <SectionTourButton sectionId="business-metrics" />
+              <Button
+                variant="outline"
+                onClick={() => navigate('/metrics-hub')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Volver a Métricas
+              </Button>
+            </div>
           </div>
           
           {/* Tabs Navigation */}

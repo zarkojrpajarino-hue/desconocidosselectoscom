@@ -15,6 +15,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { formatCurrency } from '@/lib/currencyUtils';
 import { formatDate } from '@/lib/dateUtils';
 import { toast } from 'sonner';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const FinancialPage = () => {
   const { user, userProfile, loading } = useAuth();
@@ -67,14 +68,17 @@ const FinancialPage = () => {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/metrics-hub')}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver a Métricas
-            </Button>
+            <div className="flex items-center gap-2">
+              <SectionTourButton sectionId="financial" />
+              <Button
+                variant="outline"
+                onClick={() => navigate('/metrics-hub')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Volver a Métricas
+              </Button>
+            </div>
           </div>
         </div>
       </header>

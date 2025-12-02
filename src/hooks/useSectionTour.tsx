@@ -16,7 +16,7 @@ import {
 export const useSectionTour = (sectionId: string) => {
   const navigate = useNavigate();
 
-  const getCRMPipelineTour = (): DriveStep[] => [
+  const getCRMPipelineTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '📊 Pipeline de Ventas',
@@ -35,9 +35,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '👤 Creando lead de ejemplo...',
         description: 'Mira cómo añadimos a Ana García de TechStart Solutions',
-        onNextClick: function() {
+        onNextClick: () => {
           createDemoLead();
-          setTimeout(() => (this as any).moveNext(), 1000);
+          setTimeout(() => driverObj.moveNext(), 1000);
         }
       }
     },
@@ -53,9 +53,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '🎯 Moviendo lead entre etapas...',
         description: 'Observa cómo lo arrastramos a "Calificación"',
-        onNextClick: function() {
+        onNextClick: () => {
           animateDragDrop('demo-lead-1', 'descubrimiento', 'calificación');
-          setTimeout(() => (this as any).moveNext(), 2000);
+          setTimeout(() => driverObj.moveNext(), 2000);
         }
       }
     },
@@ -77,7 +77,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getOKRsTour = (): DriveStep[] => [
+  const getOKRsTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '🎯 Objetivos y Resultados Clave (OKRs)',
@@ -88,9 +88,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '📝 Creando OKR de ejemplo...',
         description: 'Vamos a crear un objetivo de crecimiento con métricas reales',
-        onNextClick: function() {
+        onNextClick: () => {
           createDemoOKR();
-          setTimeout(() => (this as any).moveNext(), 1000);
+          setTimeout(() => driverObj.moveNext(), 1000);
         }
       }
     },
@@ -114,9 +114,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '📈 Actualizando progreso...',
         description: 'Mira cómo se actualiza el progreso del primer Key Result',
-        onNextClick: function() {
+        onNextClick: () => {
           animateKRProgress('demo-kr-1', 32, 38);
-          setTimeout(() => (this as any).moveNext(), 2000);
+          setTimeout(() => driverObj.moveNext(), 2000);
         }
       }
     },
@@ -130,7 +130,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getFinancialTour = (): DriveStep[] => [
+  const getFinancialTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '💰 Control Financiero',
@@ -149,9 +149,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '💵 Añadiendo ingreso de ejemplo...',
         description: 'Mira cómo registrar ingresos recurrentes',
-        onNextClick: function() {
+        onNextClick: () => {
           createDemoFinancialRecord();
-          setTimeout(() => (this as any).moveNext(), 1000);
+          setTimeout(() => driverObj.moveNext(), 1000);
         }
       }
     },
@@ -173,7 +173,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getBusinessMetricsTour = (): DriveStep[] => [
+  const getBusinessMetricsTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '📊 KPIs de Negocio',
@@ -192,9 +192,9 @@ export const useSectionTour = (sectionId: string) => {
       popover: {
         title: '📈 Métricas en tiempo real',
         description: 'Observa cómo las métricas se actualizan dinámicamente',
-        onNextClick: function() {
+        onNextClick: () => {
           animateMetricsCharts();
-          setTimeout(() => (this as any).moveNext(), 1500);
+          setTimeout(() => driverObj.moveNext(), 1500);
         }
       }
     },
@@ -208,7 +208,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getDashboardTour = (): DriveStep[] => [
+  const getDashboardTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '🏠 Tu Dashboard',
@@ -233,7 +233,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getAIAnalysisTour = (): DriveStep[] => [
+  const getAIAnalysisTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '🤖 Análisis Inteligente',
@@ -258,7 +258,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getBuyerPersonaTour = (): DriveStep[] => [
+  const getBuyerPersonaTour = (driverObj: any): DriveStep[] => [
     {
       popover: {
         title: '👤 Buyer Persona',
@@ -283,35 +283,7 @@ export const useSectionTour = (sectionId: string) => {
     }
   ];
 
-  const getTourSteps = (sectionId: string) => {
-    switch(sectionId) {
-      case 'crm-pipeline':
-        return getCRMPipelineTour();
-      case 'okrs':
-        return getOKRsTour();
-      case 'financial':
-        return getFinancialTour();
-      case 'business-metrics':
-        return getBusinessMetricsTour();
-      case 'dashboard':
-        return getDashboardTour();
-      case 'ai-analysis':
-        return getAIAnalysisTour();
-      case 'buyer-persona':
-        return getBuyerPersonaTour();
-      default:
-        return [{
-          popover: {
-            title: '🎯 Tour de la sección',
-            description: 'Este tour te mostrará cómo usar esta sección paso a paso.',
-          }
-        }];
-    }
-  };
-  
   const startSectionTour = () => {
-    const steps = getTourSteps(sectionId);
-    
     const driverObj = driver({
       showProgress: true,
       progressText: 'Paso {{current}} de {{total}}',
@@ -322,17 +294,51 @@ export const useSectionTour = (sectionId: string) => {
       smoothScroll: true,
       animate: true,
       allowClose: true,
-      steps,
+      steps: [],
       onDestroyStarted: () => {
         cleanupDemoData();
         if (!driverObj.hasNextStep()) {
-          // Tour completado
           console.log(`Tour de ${sectionId} completado`);
         }
         driverObj.destroy();
       }
     });
-    
+
+    // Obtener pasos del tour pasando el driverObj
+    let steps: DriveStep[] = [];
+    switch(sectionId) {
+      case 'crm-pipeline':
+        steps = getCRMPipelineTour(driverObj);
+        break;
+      case 'okrs':
+        steps = getOKRsTour(driverObj);
+        break;
+      case 'financial':
+        steps = getFinancialTour(driverObj);
+        break;
+      case 'business-metrics':
+        steps = getBusinessMetricsTour(driverObj);
+        break;
+      case 'dashboard':
+        steps = getDashboardTour(driverObj);
+        break;
+      case 'ai-analysis':
+        steps = getAIAnalysisTour(driverObj);
+        break;
+      case 'buyer-persona':
+        steps = getBuyerPersonaTour(driverObj);
+        break;
+      default:
+        steps = [{
+          popover: {
+            title: '🎯 Tour de la sección',
+            description: 'Este tour te mostrará cómo usar esta sección paso a paso.',
+          }
+        }];
+    }
+
+    // Actualizar los pasos del driver
+    driverObj.setSteps(steps);
     driverObj.drive();
   };
   
