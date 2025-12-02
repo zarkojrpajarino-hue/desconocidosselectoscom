@@ -139,7 +139,7 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
         </CardTitle>
         <CardDescription>
           Semana del {new Date(weekStart).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-          {' '}- La IA generará tu agenda coordinada automáticamente
+          {' '}- Plazo hasta <strong>Lunes 13:30</strong>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -248,15 +248,24 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-900 dark:text-blue-100 space-y-1">
-              <p className="font-medium">ℹ️ Importante:</p>
+              <p className="font-medium">📋 Ciclo de la Agenda:</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Tu agenda se generará <strong>automáticamente el Lunes a las 13:01</strong></li>
-                <li>Las tareas colaborativas se coordinarán con tus compañeros</li>
-                <li>Podrás revisar y ajustar la agenda entre Lunes 13:30 y Miércoles 13:29</li>
-                <li>La semana comenzará oficialmente el <strong>Miércoles a las 13:30</strong></li>
+                <li><strong>Hasta Lunes 13:30:</strong> Plazo para rellenar disponibilidad</li>
+                <li><strong>Lunes 13:01:</strong> IA genera agendas coordinadas (automático)</li>
+                <li><strong>Lunes 13:30 - Miércoles 13:29:</strong> Puedes revisar y sugerir cambios</li>
+                <li><strong>Miércoles 10:30:</strong> Se cierra la semana anterior</li>
+                <li><strong>Miércoles 13:30:</strong> Se activa la nueva agenda</li>
               </ul>
             </div>
           </div>
+        </div>
+
+        {/* Ventaja de rellenar primero */}
+        <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+          <p className="text-sm text-success-foreground">
+            🎯 <strong>Ventaja:</strong> Quien rellena primero tiene más opciones para sugerir cambios, 
+            ya que la IA coordinará a los demás usuarios con tu disponibilidad.
+          </p>
         </div>
 
         {/* Botón submit */}
