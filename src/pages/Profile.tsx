@@ -2,14 +2,21 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, MapPin } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, User, MapPin, Building2, Users } from 'lucide-react';
 import UserProfile from '@/components/UserProfile';
+import UserOrganizations from '@/components/UserOrganizations';
+import OrganizationUsers from '@/components/OrganizationUsers';
 import { useOnboardingTour } from '@/hooks/useOnboardingTour';
 
 const Profile = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, userOrganizations, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
   const { restartTour } = useOnboardingTour();
+
+  const isAdmin = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role === 'admin';
 
   useEffect(() => {
     if (!loading && !user) {
@@ -57,7 +64,38 @@ const Profile = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <UserProfile />
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsTrigger value="profile" className="gap-2">
+              <User className="w-4 h-4" />
+              Mi Perfil
+            </TabsTrigger>
+            <TabsTrigger value="organizations" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              Organizaciones
+            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="team" className="gap-2">
+                <Users className="w-4 h-4" />
+                Equipo
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="profile">
+            <UserProfile />
+          </TabsContent>
+
+          <TabsContent value="organizations">
+            <UserOrganizations />
+          </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="team">
+              <OrganizationUsers />
+            </TabsContent>
+          )}
+        </Tabs>
       </main>
     </div>
   );

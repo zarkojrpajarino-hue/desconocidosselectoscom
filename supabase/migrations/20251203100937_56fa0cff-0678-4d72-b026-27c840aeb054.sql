@@ -1,7 +1,3 @@
--- ============================================
--- MIGRACIÓN: 7 PREGUNTAS CRÍTICAS
--- ============================================
-
 -- 1. Agregar business_type a organizations (si no existe)
 DO $$ 
 BEGIN

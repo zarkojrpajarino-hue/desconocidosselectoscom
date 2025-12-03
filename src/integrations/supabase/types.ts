@@ -1548,6 +1548,53 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          organization_id: string
+          read: boolean | null
+          related_id: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          organization_id: string
+          read?: boolean | null
+          related_id?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          organization_id?: string
+          read?: boolean | null
+          related_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objectives: {
         Row: {
           budget_allocated: number | null
@@ -1875,25 +1922,31 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string
+          custom_slug: string | null
           id: string
           is_active: boolean | null
           organization_id: string
+          slug_type: string | null
           token: string
         }
         Insert: {
           created_at?: string | null
           created_by: string
+          custom_slug?: string | null
           id?: string
           is_active?: boolean | null
           organization_id: string
+          slug_type?: string | null
           token?: string
         }
         Update: {
           created_at?: string | null
           created_by?: string
+          custom_slug?: string | null
           id?: string
           is_active?: boolean | null
           organization_id?: string
+          slug_type?: string | null
           token?: string
         }
         Relationships: [
@@ -4058,6 +4111,7 @@ export type Database = {
         }
         Returns: Json
       }
+      slugify: { Args: { text_input: string }; Returns: string }
       update_financial_metrics: {
         Args: { target_month: string }
         Returns: undefined
