@@ -3,6 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Palette, Target, Calculator, ArrowLeft } from 'lucide-react';
+import { SectionTourButton } from '@/components/SectionTourButton';
 
 const HerramientasHub = () => {
   const { userProfile } = useAuth();
@@ -40,19 +41,22 @@ const HerramientasHub = () => {
             <h1 className="text-2xl font-bold">Herramientas</h1>
             <p className="text-sm text-muted-foreground">Selecciona una sección</p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/home')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver
-          </Button>
+          <div className="flex items-center gap-2">
+            <SectionTourButton sectionId="herramientas-hub" />
+            <Button
+              variant="outline"
+              onClick={() => navigate('/home')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div id="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="tools-grid" data-tour="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sections.map((section) => {
             const Icon = section.icon;
             return (
