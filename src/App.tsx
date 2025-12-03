@@ -83,6 +83,7 @@ const Guia = lazy(() => import("./pages/practicar/Guia"));
 
 // Lazy loaded pages - Onboarding
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const OnboardingStartup = lazy(() => import("./pages/onboarding/OnboardingStartup"));
 const OnboardingSuccess = lazy(() => import("./pages/OnboardingSuccess"));
 const AdminOnboardings = lazy(() => import("./pages/AdminOnboardings"));
 const SelectOrganization = lazy(() => import("./pages/SelectOrganization"));
@@ -116,6 +117,11 @@ const AppContent = () => {
         } />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding/startup" element={
+          <ProtectedRoute>
+            <OnboardingStartup />
+          </ProtectedRoute>
+        } />
         <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         <Route path="/join/:token" element={
