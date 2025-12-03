@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, Users, AlertCircle } from "lucide-react";
+import { RefreshCw, Users, AlertCircle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import TaskFeedbackModal from "./TaskFeedbackModal";
 import TaskImpactMeasurementModal from "./TaskImpactMeasurementModal";
@@ -14,6 +14,8 @@ import { isUserLeaderOfArea } from "@/lib/areaLeaders";
 import ConfettiEffect from "./ConfettiEffect";
 import BadgeUnlockAnimation from "./BadgeUnlockAnimation";
 import { useAuth } from "@/contexts/AuthContext";
+import { AIResourcesPanel } from "./tasks/ai-resources";
+import type { AIResourceType } from "@/types/ai-resources.types";
 
 interface TaskListProps {
   userId: string | undefined;
@@ -37,6 +39,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
   const [showConfetti, setShowConfetti] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPanelTask, setAiPanelTask] = useState<{ id: string; title: string; description: string; resourceType: AIResourceType } | null>(null);
 
   // Get current organization for multi-tenancy
   const { currentOrganizationId } = useAuth();
@@ -540,6 +544,19 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     };
   };
 
+  // Mapear área de tarea a tipo de recurso IA
+  const getResourceTypeFromArea = (area: string): AIResourceType => {
+    const areaLower = area.toLowerCase();
+    if (areaLower.includes('video') || areaLower.includes('contenido')) return 'video_scripts';
+    if (areaLower.includes('influencer')) return 'influencer_list';
+    if (areaLower.includes('ads') || areaLower.includes('publicidad') || areaLower.includes('paid')) return 'ad_campaign';
+    if (areaLower.includes('redes') || areaLower.includes('social')) return 'social_posts';
+    if (areaLower.includes('diseño') || areaLower.includes('design')) return 'design_brief';
+    if (areaLower.includes('email') || areaLower.includes('correo')) return 'email_sequences';
+    if (areaLower.includes('ventas') || areaLower.includes('sales') || areaLower.includes('outreach')) return 'outreach_templates';
+    return 'social_posts'; // Default
+  };
+
   if (tasks.length === 0 && sharedTasks.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -671,6 +688,28 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
                 : "Revisa los objetivos de la tarea, coordina con tu líder si aplica y deja evidencias claras al finalizar."}
             </p>
           </details>
+
+          {/* Botón Generar con IA - Solo para tareas de marketing/contenido */}
+          {!isCompleted && task.area && ['marketing', 'contenido', 'ventas', 'redes', 'diseño'].some(a => task.area?.toLowerCase().includes(a)) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const resourceType = getResourceTypeFromArea(task.area);
+                setAiPanelTask({
+                  id: task.id,
+                  title: task.title,
+                  description: task.description || '',
+                  resourceType
+                });
+                setAiPanelOpen(true);
+              }}
+              className="mt-2 w-full border-primary/50 text-primary hover:bg-primary/10"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generar Recursos con IA
+            </Button>
+          )}
         </div>
         {!isCompleted && !isLocked && canSwap && (
           <Button
@@ -759,6 +798,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         badge={unlockedBadge}
         onClose={() => setUnlockedBadge(null)}
       />
+
+      {/* Panel de Recursos IA */}
+      {aiPanelTask && (
+        <AIResourcesPanel
+          taskId={aiPanelTask.id}
+          resourceType={aiPanelTask.resourceType}
+          taskTitle={aiPanelTask.title}
+          taskDescription={aiPanelTask.description}
+          open={aiPanelOpen}
+          onOpenChange={setAiPanelOpen}
+        />
+      )}
     </>
   );
 };
