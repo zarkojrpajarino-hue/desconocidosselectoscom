@@ -146,3 +146,6 @@ verify_jwt = true
 
 [functions.generate-startup-workspace]
 verify_jwt = true
+
+[functions.generate-task-ai-resources]
+verify_jwt = true
