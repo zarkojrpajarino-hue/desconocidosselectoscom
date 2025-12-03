@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PLAN_LIMITS, PLAN_PRICES } from "@/constants/subscriptionLimits";
-
+import { logger } from "@/lib/logger";
+import { handleError } from "@/utils/errorHandler";
 const plans = [
   {
     name: "Starter",
@@ -100,7 +101,7 @@ export function PricingPlans() {
         return;
       }
 
-      console.log(`[PricingPlans] Creating checkout for plan: ${planName}`);
+      logger.log(`[PricingPlans] Creating checkout for plan: ${planName}`);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -110,7 +111,7 @@ export function PricingPlans() {
       });
 
       if (error) {
-        console.error('Checkout error:', error);
+        logger.error('Checkout error:', error);
         setLoading(null);
         throw new Error(error.message);
       }
@@ -120,15 +121,14 @@ export function PricingPlans() {
         throw new Error('No se recibió URL de checkout');
       }
 
-      console.log('[PricingPlans] Redirecting to Stripe...');
+      logger.log('[PricingPlans] Redirecting to Stripe...');
       window.open(data.url, '_blank');
       
       setLoading(null);
       toast.success('Redirigiendo a Stripe. Si no se abre, verifica que los pop-ups estén permitidos.');
 
-    } catch (error: any) {
-      console.error('Subscription error:', error);
-      toast.error(error.message || 'Error al procesar el pago. Intenta de nuevo.');
+    } catch (error) {
+      handleError(error, 'Error al procesar el pago. Intenta de nuevo.');
       setLoading(null);
     }
   };

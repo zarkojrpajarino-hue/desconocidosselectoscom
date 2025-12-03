@@ -11,6 +11,7 @@ import WeeklySchedulePreview from '@/components/WeeklySchedulePreview';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import { toast } from 'sonner';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { logger } from '@/lib/logger';
 
 const AgendaSemanal = () => {
   const { user, loading } = useAuth();
@@ -101,9 +102,9 @@ const AgendaSemanal = () => {
       
       if (error) throw error;
       setHasAvailability(!!data);
-      console.log('Availability check:', { hasData: !!data, weekStart: nextWeekStart });
+      logger.debug('Availability check:', { hasData: !!data, weekStart: nextWeekStart });
     } catch (error) {
-      console.error('Error checking availability:', error);
+      logger.error('Error checking availability:', error);
       setHasAvailability(false);
     }
   };
@@ -120,10 +121,10 @@ const AgendaSemanal = () => {
       });
       
       setScheduleKey(prev => prev + 1);
-    } catch (error: any) {
-      console.error('Error generating schedules:', error);
+    } catch (error) {
+      logger.error('Error generating schedules:', error);
       toast.error('Error al generar agenda', {
-        description: error.message || 'Intenta nuevamente'
+        description: 'Intenta nuevamente'
       });
     } finally {
       setIsGenerating(false);
@@ -159,7 +160,7 @@ const AgendaSemanal = () => {
     
     const weekStartStr = nextWed.toISOString().split('T')[0];
     setNextWeekStart(weekStartStr);
-    console.log('Next week start calculated:', weekStartStr, 'Days until:', daysUntilWednesday);
+    logger.debug('Next week start calculated:', weekStartStr, 'Days until:', daysUntilWednesday);
   };
 
   if (loading) {

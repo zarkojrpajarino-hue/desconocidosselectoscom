@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import RescheduleModal from './RescheduleModal';
 import { formatTime, formatShortDate } from '@/lib/dateUtils';
+import { logger } from '@/lib/logger';
 
 interface WeeklyAgendaProps {
   userId: string;
@@ -63,7 +64,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          console.log('Schedule updated, refreshing...');
+          logger.log('Schedule updated, refreshing...');
           fetchSchedule();
         }
       )
@@ -144,16 +145,16 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
         await supabase.functions.invoke('sync-calendar-events', {
           body: { user_id: userId },
         });
-        console.log('✅ Calendar synced after task acceptance');
+        logger.log('✅ Calendar synced after task acceptance');
       } catch (syncError) {
-        console.error('Error syncing calendar:', syncError);
+        logger.error('Error syncing calendar:', syncError);
         toast.info('⚠️ No se pudo sincronizar con Google Calendar. Intenta manualmente.');
       }
 
       await fetchSchedule();
     } catch (error) {
       // FASE 1: Error handling mejorado
-      console.error('Error accepting task:', error);
+      logger.error('Error accepting task:', error);
       toast.error('Error al aceptar tarea. Por favor intenta nuevamente.');
     }
   };

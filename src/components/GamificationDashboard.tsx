@@ -5,6 +5,7 @@ import { Trophy, Flame, Star, Target, Crown, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const GamificationDashboard = () => {
   const { user, currentOrganizationId } = useAuth();
@@ -97,7 +98,7 @@ const GamificationDashboard = () => {
       setRecentPoints(pointsData || []);
     } catch (error) {
       // Silenciar errores - mostrar UI vacía en lugar de error
-      console.log('Gamification data not yet initialized:', error);
+      logger.debug('Gamification data not yet initialized:', error);
       setAchievement(null);
       setBadges([]);
       setLeaderboard([]);
