@@ -1,5 +1,3 @@
-// src/components/RoleInvitationCardWithSlug.tsx
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -8,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Check, Link2, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface RoleInvitation {
   id: string;
   token: string;
-  role: string;
   custom_slug: string | null;
   slug_type: string;
   organization_name: string;
@@ -28,14 +25,13 @@ interface Props {
 type SlugType = 'auto' | 'organization_name' | 'custom';
 
 export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Props) {
-  const [slugType, setSlugType] = useState<SlugType>(invitation.slug_type as SlugType || 'auto');
+  const [slugType, setSlugType] = useState<SlugType>((invitation.slug_type as SlugType) || 'auto');
   const [customSlug, setCustomSlug] = useState(invitation.custom_slug || '');
   const [isSaving, setIsSaving] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
-    // Si cambiamos a organization_name, auto-generar el slug
     if (slugType === 'organization_name') {
       const orgSlug = slugify(invitation.organization_name);
       setCustomSlug(orgSlug);
@@ -44,7 +40,6 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
     }
   }, [slugType, invitation.organization_name]);
 
-  // Validar custom slug mientras escribe
   useEffect(() => {
     if (slugType === 'custom' && customSlug) {
       validateSlug(customSlug);
@@ -57,11 +52,11 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
     return text
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
-      .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
-      .replace(/\s+/g, '-') // Espacios a guiones
-      .replace(/-+/g, '-') // Múltiples guiones a uno
-      .substring(0, 50); // Máximo 50 caracteres
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 50);
   };
 
   const validateSlug = (slug: string) => {
@@ -87,25 +82,21 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
 
   const getInvitationLink = () => {
     const baseUrl = window.location.origin;
-    
     if (slugType === 'auto' || !customSlug) {
       return `${baseUrl}/join/${invitation.token}`;
     }
-    
     return `${baseUrl}/join/${customSlug}`;
   };
 
   const handleUpdateSlug = async () => {
     setIsSaving(true);
     try {
-      // Si es custom, validar primero
       if (slugType === 'custom' && customSlug && !validateSlug(customSlug)) {
         toast.error('Slug inválido');
         setIsSaving(false);
         return;
       }
 
-      // Si es custom, verificar que no exista
       if (slugType === 'custom' && customSlug) {
         const { data: existing } = await supabase
           .from('organization_invitations')
@@ -121,7 +112,6 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
         }
       }
 
-      // Guardar
       const { error } = await supabase
         .from('organization_invitations')
         .update({
@@ -155,11 +145,10 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Link2 className="w-5 h-5" />
-          Link de Invitación - {invitation.role}
+          Link de Invitación
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        
         {/* Tipo de Slug */}
         <div className="space-y-3">
           <Label>Tipo de Link</Label>
@@ -276,11 +265,11 @@ export default function RoleInvitationCardWithSlug({ invitation, onUpdate }: Pro
         </div>
 
         {/* Info */}
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 text-sm mb-1">
+        <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <h4 className="font-semibold text-sm mb-1">
             💡 ¿Cuál usar?
           </h4>
-          <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-xs text-muted-foreground space-y-1">
             <li><strong>Aleatorio:</strong> Máxima seguridad, único garantizado</li>
             <li><strong>Org name:</strong> Fácil de compartir verbalmente</li>
             <li><strong>Custom:</strong> Branding personalizado (ej: /join/nuestro-equipo)</li>

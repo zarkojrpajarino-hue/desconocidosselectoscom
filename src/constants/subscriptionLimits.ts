@@ -106,6 +106,12 @@ export interface PlanLimits {
   onboarding: 'self_service' | 'guided_30min' | 'premium_2h';
   account_manager: boolean;
   sla: string | null;
+  
+  // STARTUP ONBOARDING
+  startup_onboarding: boolean;
+  startup_ai_tools: string[];
+  startup_max_hypotheses: number;  // -1 = ilimitado
+  startup_pre_launch_metrics: boolean;
 }
 
 /**
@@ -207,6 +213,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     onboarding: 'self_service',
     account_manager: false,
     sla: null,
+    
+    // STARTUP
+    startup_onboarding: true,
+    startup_ai_tools: ['lean_canvas', 'validation_board'],
+    startup_max_hypotheses: 3,
+    startup_pre_launch_metrics: true,
   },
 
   // 💼 STARTER - €129/mes
@@ -314,6 +326,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     onboarding: 'self_service',
     account_manager: false,
     sla: null,
+    
+    // STARTUP
+    startup_onboarding: true,
+    startup_ai_tools: ['lean_canvas', 'validation_board', 'mvp_roadmap', 'customer_interview_guide'],
+    startup_max_hypotheses: 10,
+    startup_pre_launch_metrics: true,
   },
 
   // ⚡ PROFESSIONAL - €249/mes (MÁS POPULAR)
@@ -420,6 +438,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     onboarding: 'guided_30min',
     account_manager: false,
     sla: null,
+    
+    // STARTUP
+    startup_onboarding: true,
+    startup_ai_tools: [],  // Todas incluidas
+    startup_max_hypotheses: -1,  // Ilimitado
+    startup_pre_launch_metrics: true,
   },
 
   // 🚀 ENTERPRISE - €499/mes
@@ -517,6 +541,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     onboarding: 'premium_2h',
     account_manager: true,
     sla: '99.9%',
+    
+    // STARTUP
+    startup_onboarding: true,
+    startup_ai_tools: [],  // Todas incluidas
+    startup_max_hypotheses: -1,  // Ilimitado
+    startup_pre_launch_metrics: true,
   },
 };
 
@@ -596,4 +626,36 @@ export function getRecommendedUpgrade(currentPlan: PlanType): PlanType | null {
   };
   
   return upgradeChain[currentPlan];
+}
+
+/**
+ * Verificar si el plan tiene acceso a startup onboarding
+ */
+export function hasStartupAccess(plan: PlanType): boolean {
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  return limits.startup_onboarding;
+}
+
+/**
+ * Verificar si un AI tool está disponible para startup
+ */
+export function hasStartupAIToolAccess(plan: PlanType, toolName: string): boolean {
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  
+  // Si startup_ai_tools está vacío, todas están disponibles
+  if (limits.startup_ai_tools.length === 0) return true;
+  
+  return limits.startup_ai_tools.includes(toolName);
+}
+
+/**
+ * Verificar si puede crear más hipótesis de startup
+ */
+export function canCreateHypothesis(plan: PlanType, currentCount: number): boolean {
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  
+  // -1 significa ilimitado
+  if (limits.startup_max_hypotheses === -1) return true;
+  
+  return currentCount < limits.startup_max_hypotheses;
 }

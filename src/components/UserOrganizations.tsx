@@ -1,19 +1,16 @@
-// src/components/UserOrganizations.tsx
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Check, Bell, Crown, Shield, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface OrganizationWithNotifications {
   organization_id: string;
   organization_name: string;
   role: string;
-  role_name: string | null;
   unreadNotifications: number;
 }
 
@@ -46,7 +43,6 @@ export default function UserOrganizations() {
             organization_id: org.organization_id,
             organization_name: org.organization_name,
             role: org.role,
-            role_name: org.role_name,
             unreadNotifications: count || 0
           };
         })
@@ -61,46 +57,34 @@ export default function UserOrganizations() {
     }
   };
 
-  const handleSwitchOrganization = async (orgId: string) => {
+  const handleSwitchOrganization = (orgId: string) => {
     if (orgId === currentOrganizationId) return;
-
     setIsSwitching(true);
-    try {
-      await switchOrganization(orgId);
-      toast.success('Organización cambiada');
-    } catch (error) {
-      console.error('Error switching organization:', error);
-      toast.error('Error al cambiar de organización');
-    } finally {
-      setIsSwitching(false);
-    }
+    switchOrganization(orgId);
+    setIsSwitching(false);
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin': return <Crown className="w-4 h-4 text-red-500" />;
+      case 'admin': return <Crown className="w-4 h-4 text-destructive" />;
       case 'leader': return <Shield className="w-4 h-4 text-purple-500" />;
-      case 'member': return <UserIcon className="w-4 h-4 text-blue-500" />;
-      default: return <UserIcon className="w-4 h-4 text-gray-500" />;
+      default: return <UserIcon className="w-4 h-4 text-primary" />;
     }
   };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300';
+      case 'admin': return 'bg-destructive/10 text-destructive';
       case 'leader': return 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300';
-      case 'member': return 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300';
+      default: return 'bg-primary/10 text-primary';
     }
   };
 
-  const getRoleLabel = (role: string, roleName: string | null) => {
-    if (roleName) return roleName;
+  const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin': return 'Admin';
-      case 'leader': return 'Leader';
-      case 'member': return 'Member';
-      default: return role;
+      case 'leader': return 'Líder';
+      default: return 'Miembro';
     }
   };
 
@@ -148,7 +132,7 @@ export default function UserOrganizations() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Como Admin</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{adminOrgsCount}</div>
+            <div className="text-2xl font-bold text-destructive">{adminOrgsCount}</div>
           </CardContent>
         </Card>
 
@@ -157,7 +141,7 @@ export default function UserOrganizations() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Notificaciones Sin Leer</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{totalNotifications}</div>
+            <div className="text-2xl font-bold text-primary">{totalNotifications}</div>
           </CardContent>
         </Card>
       </div>
@@ -178,7 +162,6 @@ export default function UserOrganizations() {
               <Card key={org.organization_id} className={`transition-all ${isCurrent ? 'border-2 border-primary' : 'hover:border-primary/50'}`}>
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
-                    
                     {/* Left: Org Info */}
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
@@ -195,14 +178,14 @@ export default function UserOrganizations() {
                         <div className="flex items-center gap-1">
                           {getRoleIcon(org.role)}
                           <Badge className={getRoleBadgeColor(org.role)}>
-                            {getRoleLabel(org.role, org.role_name)}
+                            {getRoleLabel(org.role)}
                           </Badge>
                         </div>
 
                         {org.unreadNotifications > 0 && (
                           <div className="flex items-center gap-1">
-                            <Bell className="w-4 h-4 text-blue-500" />
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                            <Bell className="w-4 h-4 text-primary" />
+                            <Badge variant="secondary">
                               {org.unreadNotifications} sin leer
                             </Badge>
                           </div>
