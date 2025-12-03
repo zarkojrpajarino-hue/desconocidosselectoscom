@@ -63,6 +63,54 @@ export type Database = {
           },
         ]
       }
+      ai_task_resources: {
+        Row: {
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          organization_id: string
+          resource_type: string
+          resources: Json
+          task_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id: string
+          resource_type: string
+          resources?: Json
+          task_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id?: string
+          resource_type?: string
+          resources?: Json
+          task_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_task_resources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_task_resources_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: true
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_actions: {
         Row: {
           action_type: string
