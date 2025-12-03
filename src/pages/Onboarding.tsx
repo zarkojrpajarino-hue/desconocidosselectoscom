@@ -37,6 +37,8 @@ export interface OnboardingFormData {
   targetCustomers: string;
   valueProposition: string;
   foundedYear: number | null;
+  countryCode: string;
+  region: string;
   geographicMarket: string[];
   businessModel: string;
   competitiveAdvantage: string;
@@ -133,6 +135,8 @@ const Onboarding = () => {
     targetCustomers: "",
     valueProposition: "",
     foundedYear: null,
+    countryCode: "",
+    region: "",
     geographicMarket: [],
     businessModel: "",
     competitiveAdvantage: "",
@@ -543,6 +547,8 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
           target_customers: formData.targetCustomers,
           value_proposition: formData.valueProposition,
           founded_year: formData.foundedYear,
+          country_code: formData.countryCode || null,
+          region: formData.region || null,
           geographic_market: formData.geographicMarket,
           business_model: formData.businessModel,
           competitive_advantage: formData.competitiveAdvantage,

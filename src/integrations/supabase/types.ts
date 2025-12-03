@@ -450,6 +450,78 @@ export type Database = {
           },
         ]
       }
+      buyer_personas: {
+        Row: {
+          age: number | null
+          buying_behavior: Json | null
+          country_code: string | null
+          created_at: string | null
+          demographics: Json | null
+          goals: string[] | null
+          id: string
+          income_range: string | null
+          location: string | null
+          name: string
+          occupation: string | null
+          organization_id: string
+          pain_points: string[] | null
+          preferred_channels: string[] | null
+          psychographics: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          age?: number | null
+          buying_behavior?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          demographics?: Json | null
+          goals?: string[] | null
+          id?: string
+          income_range?: string | null
+          location?: string | null
+          name: string
+          occupation?: string | null
+          organization_id: string
+          pain_points?: string[] | null
+          preferred_channels?: string[] | null
+          psychographics?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number | null
+          buying_behavior?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          demographics?: Json | null
+          goals?: string[] | null
+          id?: string
+          income_range?: string | null
+          location?: string | null
+          name?: string
+          occupation?: string | null
+          organization_id?: string
+          pain_points?: string[] | null
+          preferred_channels?: string[] | null
+          psychographics?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_personas_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_data"
+            referencedColumns: ["country_code"]
+          },
+          {
+            foreignKeyName: "buyer_personas_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_event_mappings: {
         Row: {
           calendar_id: string
@@ -601,6 +673,53 @@ export type Database = {
           },
         ]
       }
+      competitive_landscape: {
+        Row: {
+          competitor_name: string
+          competitor_website: string | null
+          country_code: string | null
+          created_at: string | null
+          estimated_market_share: number | null
+          id: string
+          industry: string
+          market_position: string | null
+          strengths: string[] | null
+          weaknesses: string[] | null
+        }
+        Insert: {
+          competitor_name: string
+          competitor_website?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          estimated_market_share?: number | null
+          id?: string
+          industry: string
+          market_position?: string | null
+          strengths?: string[] | null
+          weaknesses?: string[] | null
+        }
+        Update: {
+          competitor_name?: string
+          competitor_website?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          estimated_market_share?: number | null
+          id?: string
+          industry?: string
+          market_position?: string | null
+          strengths?: string[] | null
+          weaknesses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitive_landscape_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_data"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
       competitors: {
         Row: {
           ai_analysis: Json | null
@@ -682,6 +801,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      country_data: {
+        Row: {
+          corporate_tax_rate: number | null
+          country_code: string
+          country_name: string
+          created_at: string | null
+          currency: string
+          data_privacy_law: string | null
+          ecommerce_penetration: number | null
+          gdp_per_capita: number | null
+          id: string
+          internet_penetration: number | null
+          median_age: number | null
+          population: number | null
+          top_ecommerce_platforms: Json | null
+          top_social_platforms: Json | null
+          unemployment_rate: number | null
+          updated_at: string | null
+          vat_rate: number | null
+        }
+        Insert: {
+          corporate_tax_rate?: number | null
+          country_code: string
+          country_name: string
+          created_at?: string | null
+          currency: string
+          data_privacy_law?: string | null
+          ecommerce_penetration?: number | null
+          gdp_per_capita?: number | null
+          id?: string
+          internet_penetration?: number | null
+          median_age?: number | null
+          population?: number | null
+          top_ecommerce_platforms?: Json | null
+          top_social_platforms?: Json | null
+          unemployment_rate?: number | null
+          updated_at?: string | null
+          vat_rate?: number | null
+        }
+        Update: {
+          corporate_tax_rate?: number | null
+          country_code?: string
+          country_name?: string
+          created_at?: string | null
+          currency?: string
+          data_privacy_law?: string | null
+          ecommerce_penetration?: number | null
+          gdp_per_capita?: number | null
+          id?: string
+          internet_penetration?: number | null
+          median_age?: number | null
+          population?: number | null
+          top_ecommerce_platforms?: Json | null
+          top_social_platforms?: Json | null
+          unemployment_rate?: number | null
+          updated_at?: string | null
+          vat_rate?: number | null
+        }
+        Relationships: []
       }
       deal_velocity_cache: {
         Row: {
@@ -2081,6 +2260,7 @@ export type Database = {
           contact_name: string
           contact_phone: string | null
           conversion_rate: number | null
+          country_code: string | null
           created_at: string
           current_period_end: string | null
           current_problems: string
@@ -2109,8 +2289,10 @@ export type Database = {
           nps_score: number | null
           plan: string
           pricing_strategy: string | null
+          primary_markets: string[] | null
           products_services: Json
           purchase_triggers: Json | null
+          region: string | null
           repurchase_frequency: number | null
           research_process: string | null
           revenue_goal_12_months: number | null
@@ -2122,6 +2304,7 @@ export type Database = {
           subscription_status: string | null
           target_customers: string
           team_structure: Json
+          timezone: string | null
           top_competitors: Json | null
           trial_ends_at: string | null
           updated_at: string
@@ -2148,6 +2331,7 @@ export type Database = {
           contact_name: string
           contact_phone?: string | null
           conversion_rate?: number | null
+          country_code?: string | null
           created_at?: string
           current_period_end?: string | null
           current_problems: string
@@ -2176,8 +2360,10 @@ export type Database = {
           nps_score?: number | null
           plan?: string
           pricing_strategy?: string | null
+          primary_markets?: string[] | null
           products_services?: Json
           purchase_triggers?: Json | null
+          region?: string | null
           repurchase_frequency?: number | null
           research_process?: string | null
           revenue_goal_12_months?: number | null
@@ -2189,6 +2375,7 @@ export type Database = {
           subscription_status?: string | null
           target_customers: string
           team_structure?: Json
+          timezone?: string | null
           top_competitors?: Json | null
           trial_ends_at?: string | null
           updated_at?: string
@@ -2215,6 +2402,7 @@ export type Database = {
           contact_name?: string
           contact_phone?: string | null
           conversion_rate?: number | null
+          country_code?: string | null
           created_at?: string
           current_period_end?: string | null
           current_problems?: string
@@ -2243,8 +2431,10 @@ export type Database = {
           nps_score?: number | null
           plan?: string
           pricing_strategy?: string | null
+          primary_markets?: string[] | null
           products_services?: Json
           purchase_triggers?: Json | null
+          region?: string | null
           repurchase_frequency?: number | null
           research_process?: string | null
           revenue_goal_12_months?: number | null
@@ -2256,6 +2446,7 @@ export type Database = {
           subscription_status?: string | null
           target_customers?: string
           team_structure?: Json
+          timezone?: string | null
           top_competitors?: Json | null
           trial_ends_at?: string | null
           updated_at?: string

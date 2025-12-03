@@ -2,20 +2,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { OnboardingFormData } from "@/pages/Onboarding";
 import { AlertCircle, FileText } from "lucide-react";
+import { CountryRegionSelector } from "./CountryRegionSelector";
 
 interface OnboardingStep3Props {
   formData: OnboardingFormData;
   updateFormData: (data: Partial<OnboardingFormData>) => void;
 }
-
-const GEOGRAPHIC_MARKETS = [
-  "España", "México", "Argentina", "Colombia", "Chile", "Perú",
-  "USA", "UK", "Alemania", "Francia", "Italia", "Portugal",
-  "Latinoamérica", "Europa", "Global"
-];
 
 const BUSINESS_MODELS = [
   { value: "b2b", label: "B2B - Vendes a empresas" },
@@ -33,13 +27,12 @@ export const OnboardingStep3 = ({ formData, updateFormData }: OnboardingStep3Pro
   const wordCount = formData.businessDescription.trim().split(/\s+/).filter(Boolean).length;
   const isValid = wordCount >= 300;
 
-  const toggleMarket = (market: string) => {
-    const current = formData.geographicMarket;
-    if (current.includes(market)) {
-      updateFormData({ geographicMarket: current.filter(m => m !== market) });
-    } else {
-      updateFormData({ geographicMarket: [...current, market] });
-    }
+  const handleCountryChange = (value: { country: string; region: string; markets: string[] }) => {
+    updateFormData({ 
+      countryCode: value.country,
+      region: value.region,
+      geographicMarket: value.markets 
+    });
   };
 
   return (
@@ -98,23 +91,20 @@ export const OnboardingStep3 = ({ formData, updateFormData }: OnboardingStep3Pro
         </div>
       </div>
 
-      {/* Mercados geográficos */}
+      {/* País principal de operación */}
       <div className="space-y-2">
-        <Label>¿En qué países/regiones opera?</Label>
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-          {GEOGRAPHIC_MARKETS.map((market) => (
-            <div key={market} className="flex items-center space-x-2">
-              <Checkbox
-                id={`market-${market}`}
-                checked={formData.geographicMarket.includes(market)}
-                onCheckedChange={() => toggleMarket(market)}
-              />
-              <label htmlFor={`market-${market}`} className="text-sm cursor-pointer">
-                {market}
-              </label>
-            </div>
-          ))}
-        </div>
+        <Label className="text-base font-medium">País Principal de Operación *</Label>
+        <p className="text-sm text-muted-foreground mb-3">
+          Selecciona el país donde opera tu negocio para personalizar tu experiencia con datos locales (IVA, demografía, plataformas populares)
+        </p>
+        <CountryRegionSelector
+          value={{
+            country: formData.countryCode || '',
+            region: formData.region || '',
+            markets: formData.geographicMarket || [],
+          }}
+          onChange={handleCountryChange}
+        />
       </div>
 
       {/* Descripción del negocio */}
