@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -77,7 +77,15 @@ const Login = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm md:text-base">Contraseña</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm md:text-base">Contraseña</Label>
+                <Link 
+                  to="/forgot-password" 
+                  className="text-xs text-primary hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -98,9 +106,15 @@ const Login = () => {
               Iniciar Sesión
             </Button>
           </form>
-          <div className="mt-4 md:mt-6 text-xs md:text-sm text-muted-foreground text-center space-y-2">
+          <div className="mt-4 md:mt-6 text-center space-y-4">
+            <div className="text-sm">
+              <span className="text-muted-foreground">¿No tienes cuenta? </span>
+              <Link to="/signup" className="text-primary font-medium hover:underline">
+                Regístrate
+              </Link>
+            </div>
             <div className="pt-3 md:pt-4 border-t">
-              <p className="text-[10px] md:text-xs mb-2">¿Primera vez usando el sistema?</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-2">¿Primera vez usando el sistema?</p>
               <Button
                 variant="link"
                 className="text-xs h-auto p-0"
