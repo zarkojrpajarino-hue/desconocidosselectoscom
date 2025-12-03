@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, TrendingUp, Flame, Star } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useUserRoles, formatUserWithRole } from '@/hooks/useUserRoles';
-
+import { logger } from '@/lib/logger';
 interface UserMetricsStats {
   user_id: string;
   full_name: string;
@@ -55,8 +55,8 @@ const MetricsLeaderboard = () => {
 
       if (!usersData) return;
 
-      console.log('Current user ID:', user.id);
-      console.log('All users:', usersData.map(u => ({ id: u.id, name: u.full_name })));
+      logger.debug('Current user ID:', user.id);
+      logger.debug('All users:', usersData.map(u => ({ id: u.id, name: u.full_name })));
 
       // Count updates per user and calculate stats
       const userStatsMap = new Map<string, UserMetricsStats>();
@@ -100,18 +100,18 @@ const MetricsLeaderboard = () => {
       const sortedStats = Array.from(userStatsMap.values())
         .sort((a, b) => b.total_updates - a.total_updates);
 
-      console.log('Leaderboard entries:', sortedStats.length);
-      console.log('Current user in leaderboard?', sortedStats.some(s => s.user_id === user.id));
+      logger.debug('Leaderboard entries:', sortedStats.length);
+      logger.debug('Current user in leaderboard?', sortedStats.some(s => s.user_id === user.id));
 
       setLeaderboard(sortedStats);
       
       // Find current user stats
       const currentUserStats = sortedStats.find(s => s.user_id === user.id);
-      console.log('Current user stats:', currentUserStats);
+      logger.debug('Current user stats:', currentUserStats);
       setUserStats(currentUserStats || null);
 
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
+      logger.error('Error loading leaderboard:', error);
     } finally {
       setLoading(false);
     }

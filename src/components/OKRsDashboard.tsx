@@ -19,7 +19,10 @@ import {
 import { toast } from 'sonner';
 import { OKRProgressModal } from './OKRProgressModal';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/utils/errorHandler';
 
 interface KeyResult {
   id: string;
@@ -56,6 +59,7 @@ interface Objective {
 const OKRsDashboard = () => {
   const { user, userProfile, currentOrganizationId } = useAuth();
   const { canAddOkr, plan, okrCount, limits } = useSubscriptionLimits();
+  const { canAddOkr: validateOkrBackend, validating } = useBackendValidation();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
@@ -91,7 +95,7 @@ const OKRsDashboard = () => {
         setCurrentWeekStart(new Date(data.week_start).toISOString().split('T')[0]);
       }
     } catch (error) {
-      console.error('Error fetching week start:', error);
+      logger.error('Error fetching week start:', error);
     }
   };
 
@@ -168,9 +172,8 @@ const OKRsDashboard = () => {
       );
 
       setObjectives(objectivesWithKRs);
-    } catch (error: any) {
-      console.error('Error fetching OKRs:', error);
-      toast.error(error.message || 'Error al cargar OKRs');
+    } catch (error) {
+      handleError(error, 'Error al cargar OKRs');
     } finally {
       setLoading(false);
     }
@@ -235,9 +238,17 @@ const OKRsDashboard = () => {
   };
 
   const handleGenerateWeeklyOKR = async () => {
-    // Verificar límite de OKRs
+    // Validación frontend primero (rápida)
     const { allowed } = canAddOkr();
     if (!allowed) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    // Validación backend (segura)
+    const backendValidation = await validateOkrBackend();
+    if (!backendValidation.allowed) {
+      toast.error(backendValidation.message || 'Has alcanzado el límite de OKRs de tu plan');
       setShowUpgradeModal(true);
       return;
     }
@@ -256,14 +267,15 @@ const OKRsDashboard = () => {
 
       toast.success(`✨ OKR semanal generado con ${aiResult.count} Key Results`);
       fetchOKRs();
-    } catch (error: any) {
-      console.error('Error generating weekly OKR:', error);
-      if (error.message?.includes('429')) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al generar OKR semanal';
+      logger.error('Error generating weekly OKR:', error);
+      if (errorMessage.includes('429')) {
         toast.error('Límite de IA alcanzado. Intenta en unos minutos.');
-      } else if (error.message?.includes('402')) {
+      } else if (errorMessage.includes('402')) {
         toast.error('Créditos de IA agotados. Contacta al administrador.');
       } else {
-        toast.error(error.message || 'Error al generar OKR semanal');
+        toast.error(errorMessage);
       }
     } finally {
       setGeneratingWithAI(false);

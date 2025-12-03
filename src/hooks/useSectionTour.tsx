@@ -2,6 +2,7 @@ import { driver, type DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useNavigate } from 'react-router-dom';
 import { TOUR_DEMO_DATA } from '@/lib/tourData';
+import { logger } from '@/lib/logger';
 import { 
   createDemoLead, 
   animateDragDrop, 
@@ -1117,7 +1118,7 @@ export const useSectionTour = (sectionId: string) => {
       onDestroyStarted: () => {
         cleanupDemoData();
         if (!driverObj.hasNextStep()) {
-          console.log(`Tour de ${sectionId} completado`);
+          logger.log(`Tour de ${sectionId} completado`);
         }
         driverObj.destroy();
       }

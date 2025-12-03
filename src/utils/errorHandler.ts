@@ -1,52 +1,92 @@
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
+
+type ErrorSeverity = 'error' | 'warning' | 'info';
+
+interface ErrorOptions {
+  severity?: ErrorSeverity;
+  showToast?: boolean;
+  userMessage?: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
+const defaultOptions: ErrorOptions = {
+  severity: 'error',
+  showToast: true,
+};
 
 /**
  * Maneja errores de forma consistente en toda la aplicación
  */
-export function handleError(error: unknown, userMessage?: string): void {
-  // Log para debugging
-  console.error('Error:', error);
+export function handleError(error: unknown, userMessage?: string, options: ErrorOptions = {}): void {
+  const opts = { ...defaultOptions, ...options };
   
-  // Determinar mensaje para usuario
-  let message = userMessage || 'Ha ocurrido un error inesperado';
+  // Log para debugging (solo en desarrollo)
+  logger.error('Error:', error);
   
-  if (!userMessage && error instanceof Error) {
+  // Extraer mensaje del error
+  let errorMessage = 'Ha ocurrido un error inesperado';
+  
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    
     // Mensajes amigables para errores comunes
-    if (error.message.includes('network')) {
-      message = 'Error de conexión. Verifica tu internet.';
+    if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMessage = 'Error de conexión. Verifica tu internet.';
     } else if (error.message.includes('timeout')) {
-      message = 'La operación tardó demasiado. Intenta de nuevo.';
+      errorMessage = 'La operación tardó demasiado. Intenta de nuevo.';
     } else if (error.message.includes('unauthorized') || error.message.includes('401')) {
-      message = 'Sesión expirada. Por favor, inicia sesión de nuevo.';
+      errorMessage = 'Sesión expirada. Por favor, inicia sesión de nuevo.';
     } else if (error.message.includes('forbidden') || error.message.includes('403')) {
-      message = 'No tienes permisos para realizar esta acción.';
+      errorMessage = 'No tienes permisos para realizar esta acción.';
     } else if (error.message.includes('not found') || error.message.includes('404')) {
-      message = 'El recurso solicitado no existe.';
+      errorMessage = 'El recurso solicitado no existe.';
+    } else if (error.message.includes('duplicate') || error.message.includes('23505')) {
+      errorMessage = 'Este registro ya existe.';
+    } else if (error.message.includes('violates row-level security')) {
+      errorMessage = 'No tienes permisos para esta operación.';
     }
+  } else if (typeof error === 'string') {
+    errorMessage = error;
   }
   
-  toast.error(message);
+  // Usar mensaje personalizado si se proporciona
+  const displayMessage = userMessage || errorMessage;
+  
+  // Mostrar toast al usuario
+  if (opts.showToast) {
+    const toastFn = opts.severity === 'warning' ? toast.warning : 
+                    opts.severity === 'info' ? toast.info : 
+                    toast.error;
+    
+    toastFn(displayMessage, {
+      action: opts.action,
+    });
+  }
 }
 
 /**
  * Muestra mensaje de éxito
  */
-export function handleSuccess(message: string): void {
-  toast.success(message);
+export function handleSuccess(message: string, description?: string): void {
+  toast.success(message, { description });
 }
 
 /**
  * Muestra mensaje informativo
  */
-export function handleInfo(message: string): void {
-  toast.info(message);
+export function handleInfo(message: string, description?: string): void {
+  toast.info(message, { description });
 }
 
 /**
  * Muestra mensaje de advertencia
  */
-export function handleWarning(message: string): void {
-  toast.warning(message);
+export function handleWarning(message: string, description?: string): void {
+  toast.warning(message, { description });
 }
 
 /**
@@ -62,4 +102,32 @@ export async function withErrorHandling<T>(
     handleError(error, errorMessage);
     return null;
   }
+}
+
+/**
+ * Wrapper con retry para operaciones async
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 2,
+  errorMessage?: string
+): Promise<T | null> {
+  let lastError: unknown;
+  
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      logger.warn(`Attempt ${i + 1}/${maxRetries + 1} failed:`, error);
+      
+      if (i < maxRetries) {
+        // Esperar antes de reintentar (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+      }
+    }
+  }
+  
+  handleError(lastError, errorMessage);
+  return null;
 }

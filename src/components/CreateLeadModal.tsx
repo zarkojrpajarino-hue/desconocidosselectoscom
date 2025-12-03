@@ -11,8 +11,10 @@ import { toast } from 'sonner';
 import { leadSchema, LeadFormData } from '@/lib/validation';
 import { Lead } from '@/types';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
-
+import { logger } from '@/lib/logger';
+import { handleError } from '@/utils/errorHandler';
 interface CreateLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,6 +25,7 @@ interface CreateLeadModalProps {
 const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadModalProps) => {
   const { user, currentOrganizationId } = useAuth();
   const { canAddLead, plan, leadCount, limits } = useSubscriptionLimits();
+  const { canAddLead: validateBackend, validating } = useBackendValidation();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
@@ -75,15 +78,14 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
         .order('full_name');
       
       if (error) {
-        console.error('Error fetching users:', error);
+        logger.error('Error fetching users:', error);
         toast.error('Error al cargar usuarios');
         return;
       }
       
       setUsers(data || []);
-    } catch (err: any) {
-      console.error('Unexpected error fetching users:', err);
-      toast.error('Error inesperado al cargar usuarios');
+    } catch (err) {
+      handleError(err, 'Error inesperado al cargar usuarios');
     }
   };
 
@@ -93,8 +95,17 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
 
     // Verificar límite de leads (solo para nuevos leads, no ediciones)
     if (!editLead) {
+      // Validación frontend primero (rápida)
       const { allowed } = canAddLead();
       if (!allowed) {
+        setShowUpgradeModal(true);
+        return;
+      }
+      
+      // Validación backend (segura)
+      const backendValidation = await validateBackend();
+      if (!backendValidation.allowed) {
+        toast.error(backendValidation.message || 'Has alcanzado el límite de leads de tu plan');
         setShowUpgradeModal(true);
         return;
       }
@@ -153,7 +164,7 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
           .eq('id', editLead.id);
         
         if (error) {
-          console.error('Error updating lead:', error);
+          logger.error('Error updating lead:', error);
           throw error;
         }
         
@@ -164,7 +175,7 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
           .insert([leadData]);
         
         if (error) {
-          console.error('Error creating lead:', error);
+          logger.error('Error creating lead:', error);
           throw error;
         }
         
@@ -173,11 +184,8 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
 
       onSuccess();
       onClose();
-    } catch (error: any) {
-      console.error('Error saving lead:', error);
-      toast.error('Error al guardar lead', {
-        description: error.message || 'Intenta de nuevo más tarde',
-      });
+    } catch (error) {
+      handleError(error, 'Error al guardar lead');
     } finally {
       setLoading(false);
     }

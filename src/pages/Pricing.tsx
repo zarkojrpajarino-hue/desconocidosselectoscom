@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
+import { logger } from "@/lib/logger";
 const Pricing = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -26,12 +26,12 @@ const Pricing = () => {
       });
     } else if (expired === 'true') {
       // No mostrar toast aquí, ya se mostró desde useTrialExpiration
-      console.log('[Pricing] User redirected due to expired trial');
+      logger.log('[Pricing] User redirected due to expired trial');
     }
 
     // Log session ID for debugging
     if (sessionId) {
-      console.log('[Pricing] Stripe session ID:', sessionId);
+      logger.log('[Pricing] Stripe session ID:', sessionId);
     }
   }, [searchParams, navigate]);
 

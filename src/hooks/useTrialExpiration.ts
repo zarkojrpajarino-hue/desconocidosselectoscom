@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-
+import { logger } from '@/lib/logger';
 /**
  * Hook para verificar si el trial ha expirado
  * Redirige a /pricing si el plan es trial/free y ha expirado
@@ -46,7 +46,7 @@ export function useTrialExpiration() {
           const now = new Date();
 
           if (now > trialEnd) {
-            console.log('[useTrialExpiration] Trial expired, redirecting to pricing');
+            logger.log('[useTrialExpiration] Trial expired, redirecting to pricing');
             
             // Actualizar plan a 'free' si todavía está en 'trial'
             if (org.plan === 'trial') {
@@ -69,7 +69,7 @@ export function useTrialExpiration() {
           }
         }
       } catch (error) {
-        console.error('[useTrialExpiration] Error:', error);
+        logger.error('[useTrialExpiration] Error:', error);
       }
     };
 

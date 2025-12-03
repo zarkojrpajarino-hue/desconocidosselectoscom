@@ -9,12 +9,16 @@ import { SectionTourButton } from '@/components/SectionTourButton';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { AIAnalysisDashboard } from '@/components/ai-analysis/AIAnalysisDashboard';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const AIAnalysis = () => {
   const { user, loading, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
   const { canUseAiAnalysis, plan, aiAnalysisCount, limits } = useSubscriptionLimits();
+  const { canUseAiAnalysis: validateAiBackend, validating } = useBackendValidation();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
@@ -30,9 +34,17 @@ const AIAnalysis = () => {
   });
 
   const handleGenerateAnalysis = async () => {
-    // Verificar límite de análisis IA
+    // Validación frontend primero (rápida)
     const { allowed } = canUseAiAnalysis();
     if (!allowed) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    // Validación backend (segura)
+    const backendValidation = await validateAiBackend();
+    if (!backendValidation.allowed) {
+      toast.error(backendValidation.message || 'Has alcanzado el límite de análisis IA de tu plan');
       setShowUpgradeModal(true);
       return;
     }

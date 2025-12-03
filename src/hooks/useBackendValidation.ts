@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
+import { logger } from '@/lib/logger';
 
 type LimitType = 'leads' | 'users' | 'okrs' | 'ai_analysis';
 
@@ -32,14 +33,25 @@ export function useBackendValidation() {
       });
 
       if (error) {
-        console.error('Backend validation error:', error);
-        // En caso de error, permitir la acción (fail open) pero loggear
-        return { allowed: true, message: 'Validation service unavailable' };
+        logger.error('Backend validation error:', error);
+        // Reintentar una vez antes de fallar
+        try {
+          const retryResult = await supabase.functions.invoke('validate-plan-limits', {
+            body: { organizationId, limitType }
+          });
+          if (retryResult.error) {
+            logger.warn('Backend validation retry failed, allowing action');
+            return { allowed: true, message: 'Validation service unavailable' };
+          }
+          return retryResult.data as ValidationResult;
+        } catch {
+          return { allowed: true, message: 'Validation service unavailable' };
+        }
       }
 
       return data as ValidationResult;
     } catch (err) {
-      console.error('Backend validation exception:', err);
+      logger.error('Backend validation exception:', err);
       return { allowed: true, message: 'Validation service unavailable' };
     } finally {
       setValidating(false);
