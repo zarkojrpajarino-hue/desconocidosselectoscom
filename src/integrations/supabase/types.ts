@@ -1918,6 +1918,7 @@ export type Database = {
           budget_constraints: string | null
           business_description: string
           business_model: string | null
+          business_type: string | null
           buying_motivations: Json | null
           churn_reasons: Json | null
           company_size: string
@@ -1984,6 +1985,7 @@ export type Database = {
           budget_constraints?: string | null
           business_description: string
           business_model?: string | null
+          business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
           company_size: string
@@ -2050,6 +2052,7 @@ export type Database = {
           budget_constraints?: string | null
           business_description?: string
           business_model?: string | null
+          business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
           company_size?: string
@@ -2520,6 +2523,322 @@ export type Database = {
           },
           {
             foreignKeyName: "stalled_deals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_onboardings: {
+        Row: {
+          acquisition_channels: Json | null
+          business_name: string
+          capital_needed: number | null
+          competitive_advantage: string | null
+          competitors: Json | null
+          completed_at: string | null
+          content_strategy: string | null
+          core_features: Json | null
+          cost_structure: Json | null
+          created_at: string | null
+          created_by: string
+          critical_hypotheses: Json | null
+          current_capital: number | null
+          current_step: number | null
+          customer_pain_points: string[] | null
+          development_timeline_weeks: number | null
+          distribution_channels: string[] | null
+          estimated_cac: number | null
+          estimated_ltv: number | null
+          exit_strategy: string | null
+          first_100_customers_strategy: string | null
+          founders: Json | null
+          funding_strategy: string | null
+          id: string
+          ideal_customer_profile: string | null
+          initial_marketing_budget: number | null
+          inspiration: string | null
+          launch_strategy: string | null
+          market_sam: string | null
+          market_som: string | null
+          market_tam: string | null
+          milestones: Json | null
+          missing_skills: string[] | null
+          monetization_strategy: string | null
+          mvp_description: string | null
+          organization_id: string
+          partnerships_strategy: string | null
+          pivot_criteria: string | null
+          postlaunch_kpis: string[] | null
+          prelaunch_metrics: string[] | null
+          pricing_currency: string | null
+          pricing_highest_tier: number | null
+          pricing_lowest_tier: number | null
+          pricing_middle_tier: number | null
+          problem_statement: string
+          revenue_streams: string[] | null
+          runway_goal_months: number | null
+          six_month_goal: string | null
+          solution_description: string
+          status: string | null
+          success_definition: string | null
+          tagline: string | null
+          target_ltv_cac_ratio: number | null
+          technical_challenges: string | null
+          technology_stack: string[] | null
+          three_month_goal: string | null
+          twelve_month_goal: string | null
+          unique_value_proposition: string | null
+          updated_at: string | null
+          why_now: string | null
+        }
+        Insert: {
+          acquisition_channels?: Json | null
+          business_name: string
+          capital_needed?: number | null
+          competitive_advantage?: string | null
+          competitors?: Json | null
+          completed_at?: string | null
+          content_strategy?: string | null
+          core_features?: Json | null
+          cost_structure?: Json | null
+          created_at?: string | null
+          created_by: string
+          critical_hypotheses?: Json | null
+          current_capital?: number | null
+          current_step?: number | null
+          customer_pain_points?: string[] | null
+          development_timeline_weeks?: number | null
+          distribution_channels?: string[] | null
+          estimated_cac?: number | null
+          estimated_ltv?: number | null
+          exit_strategy?: string | null
+          first_100_customers_strategy?: string | null
+          founders?: Json | null
+          funding_strategy?: string | null
+          id?: string
+          ideal_customer_profile?: string | null
+          initial_marketing_budget?: number | null
+          inspiration?: string | null
+          launch_strategy?: string | null
+          market_sam?: string | null
+          market_som?: string | null
+          market_tam?: string | null
+          milestones?: Json | null
+          missing_skills?: string[] | null
+          monetization_strategy?: string | null
+          mvp_description?: string | null
+          organization_id: string
+          partnerships_strategy?: string | null
+          pivot_criteria?: string | null
+          postlaunch_kpis?: string[] | null
+          prelaunch_metrics?: string[] | null
+          pricing_currency?: string | null
+          pricing_highest_tier?: number | null
+          pricing_lowest_tier?: number | null
+          pricing_middle_tier?: number | null
+          problem_statement: string
+          revenue_streams?: string[] | null
+          runway_goal_months?: number | null
+          six_month_goal?: string | null
+          solution_description: string
+          status?: string | null
+          success_definition?: string | null
+          tagline?: string | null
+          target_ltv_cac_ratio?: number | null
+          technical_challenges?: string | null
+          technology_stack?: string[] | null
+          three_month_goal?: string | null
+          twelve_month_goal?: string | null
+          unique_value_proposition?: string | null
+          updated_at?: string | null
+          why_now?: string | null
+        }
+        Update: {
+          acquisition_channels?: Json | null
+          business_name?: string
+          capital_needed?: number | null
+          competitive_advantage?: string | null
+          competitors?: Json | null
+          completed_at?: string | null
+          content_strategy?: string | null
+          core_features?: Json | null
+          cost_structure?: Json | null
+          created_at?: string | null
+          created_by?: string
+          critical_hypotheses?: Json | null
+          current_capital?: number | null
+          current_step?: number | null
+          customer_pain_points?: string[] | null
+          development_timeline_weeks?: number | null
+          distribution_channels?: string[] | null
+          estimated_cac?: number | null
+          estimated_ltv?: number | null
+          exit_strategy?: string | null
+          first_100_customers_strategy?: string | null
+          founders?: Json | null
+          funding_strategy?: string | null
+          id?: string
+          ideal_customer_profile?: string | null
+          initial_marketing_budget?: number | null
+          inspiration?: string | null
+          launch_strategy?: string | null
+          market_sam?: string | null
+          market_som?: string | null
+          market_tam?: string | null
+          milestones?: Json | null
+          missing_skills?: string[] | null
+          monetization_strategy?: string | null
+          mvp_description?: string | null
+          organization_id?: string
+          partnerships_strategy?: string | null
+          pivot_criteria?: string | null
+          postlaunch_kpis?: string[] | null
+          prelaunch_metrics?: string[] | null
+          pricing_currency?: string | null
+          pricing_highest_tier?: number | null
+          pricing_lowest_tier?: number | null
+          pricing_middle_tier?: number | null
+          problem_statement?: string
+          revenue_streams?: string[] | null
+          runway_goal_months?: number | null
+          six_month_goal?: string | null
+          solution_description?: string
+          status?: string | null
+          success_definition?: string | null
+          tagline?: string | null
+          target_ltv_cac_ratio?: number | null
+          technical_challenges?: string | null
+          technology_stack?: string[] | null
+          three_month_goal?: string | null
+          twelve_month_goal?: string | null
+          unique_value_proposition?: string | null
+          updated_at?: string | null
+          why_now?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_onboardings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_projections: {
+        Row: {
+          created_at: string | null
+          id: string
+          initial_capital: number | null
+          month_1_revenue: number | null
+          month_1_signups: number | null
+          month_12_revenue: number | null
+          month_12_signups: number | null
+          month_3_revenue: number | null
+          month_3_signups: number | null
+          month_6_revenue: number | null
+          month_6_signups: number | null
+          monthly_burn_rate: number | null
+          onboarding_id: string | null
+          organization_id: string
+          runway_months: number | null
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          initial_capital?: number | null
+          month_1_revenue?: number | null
+          month_1_signups?: number | null
+          month_12_revenue?: number | null
+          month_12_signups?: number | null
+          month_3_revenue?: number | null
+          month_3_signups?: number | null
+          month_6_revenue?: number | null
+          month_6_signups?: number | null
+          monthly_burn_rate?: number | null
+          onboarding_id?: string | null
+          organization_id: string
+          runway_months?: number | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          initial_capital?: number | null
+          month_1_revenue?: number | null
+          month_1_signups?: number | null
+          month_12_revenue?: number | null
+          month_12_signups?: number | null
+          month_3_revenue?: number | null
+          month_3_signups?: number | null
+          month_6_revenue?: number | null
+          month_6_signups?: number | null
+          monthly_burn_rate?: number | null
+          onboarding_id?: string | null
+          organization_id?: string
+          runway_months?: number | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_projections_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "startup_onboardings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_projections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_validation_metrics: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          id: string
+          metric_name: string
+          metric_type: string | null
+          organization_id: string
+          recorded_at: string | null
+          target_value: number | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          metric_name: string
+          metric_type?: string | null
+          organization_id: string
+          recorded_at?: string | null
+          target_value?: number | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          metric_name?: string
+          metric_type?: string | null
+          organization_id?: string
+          recorded_at?: string | null
+          target_value?: number | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_validation_metrics_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
