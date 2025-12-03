@@ -4086,6 +4086,7 @@ export type Database = {
       }
       generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
+      get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
       get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
       has_role: {
@@ -4097,6 +4098,11 @@ export type Database = {
       }
       is_admin_or_leader: { Args: { _user_id: string }; Returns: boolean }
       is_service_role: { Args: never; Returns: boolean }
+      mark_all_notifications_read: { Args: never; Returns: undefined }
+      mark_notification_read: {
+        Args: { notification_id: string }
+        Returns: undefined
+      }
       register_ai_analysis_usage: {
         Args: { _user_id: string }
         Returns: undefined
