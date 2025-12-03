@@ -19,7 +19,8 @@ const Herramientas = () => {
     { path: '/herramientas/lead-scoring', label: 'Lead Scoring' },
     { path: '/herramientas/growth-model', label: 'Growth Model' },
     { path: '/herramientas/buyer-persona', label: 'Buyer Persona' },
-    { path: '/herramientas/customer-journey', label: 'Customer Journey' }
+    { path: '/herramientas/customer-journey', label: 'Customer Journey' },
+    { path: '/herramientas/brand-kit', label: 'Brand Kit' }
   ];
 
   return (

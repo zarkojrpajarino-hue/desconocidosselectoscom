@@ -291,6 +291,125 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_color_palettes: {
+        Row: {
+          accent_color: string
+          created_at: string | null
+          description: string | null
+          id: string
+          industry: string
+          name: string
+          neutral_dark: string
+          neutral_light: string
+          primary_color: string
+          psychology: string | null
+          secondary_color: string
+        }
+        Insert: {
+          accent_color: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry: string
+          name: string
+          neutral_dark: string
+          neutral_light: string
+          primary_color: string
+          psychology?: string | null
+          secondary_color: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string
+          name?: string
+          neutral_dark?: string
+          neutral_light?: string
+          primary_color?: string
+          psychology?: string | null
+          secondary_color?: string
+        }
+        Relationships: []
+      }
+      brand_kits: {
+        Row: {
+          accent_color: string
+          brand_personality: Json | null
+          created_at: string | null
+          font_body: string
+          font_body_url: string | null
+          font_heading: string
+          font_heading_url: string | null
+          id: string
+          industry: string | null
+          logo_concept: string | null
+          logo_url: string | null
+          neutral_dark: string | null
+          neutral_light: string | null
+          organization_id: string
+          primary_color: string
+          secondary_color: string
+          target_audience: string | null
+          tone_description: string | null
+          tone_of_voice: string
+          updated_at: string | null
+        }
+        Insert: {
+          accent_color: string
+          brand_personality?: Json | null
+          created_at?: string | null
+          font_body: string
+          font_body_url?: string | null
+          font_heading: string
+          font_heading_url?: string | null
+          id?: string
+          industry?: string | null
+          logo_concept?: string | null
+          logo_url?: string | null
+          neutral_dark?: string | null
+          neutral_light?: string | null
+          organization_id: string
+          primary_color: string
+          secondary_color: string
+          target_audience?: string | null
+          tone_description?: string | null
+          tone_of_voice: string
+          updated_at?: string | null
+        }
+        Update: {
+          accent_color?: string
+          brand_personality?: Json | null
+          created_at?: string | null
+          font_body?: string
+          font_body_url?: string | null
+          font_heading?: string
+          font_heading_url?: string | null
+          id?: string
+          industry?: string | null
+          logo_concept?: string | null
+          logo_url?: string | null
+          neutral_dark?: string | null
+          neutral_light?: string | null
+          organization_id?: string
+          primary_color?: string
+          secondary_color?: string
+          target_audience?: string | null
+          tone_description?: string | null
+          tone_of_voice?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_kits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_items: {
         Row: {
           actual_amount: number | null
@@ -1403,6 +1522,84 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "kpi_targets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_pages: {
+        Row: {
+          benefits: Json | null
+          brand_kit_id: string | null
+          contact_form_fields: Json | null
+          created_at: string | null
+          css_content: string | null
+          cta_button_text: string | null
+          cta_description: string | null
+          cta_headline: string | null
+          features: Json | null
+          hero_cta_text: string | null
+          hero_headline: string
+          hero_subheadline: string | null
+          html_content: string | null
+          id: string
+          is_published: boolean | null
+          organization_id: string
+          slug: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          benefits?: Json | null
+          brand_kit_id?: string | null
+          contact_form_fields?: Json | null
+          created_at?: string | null
+          css_content?: string | null
+          cta_button_text?: string | null
+          cta_description?: string | null
+          cta_headline?: string | null
+          features?: Json | null
+          hero_cta_text?: string | null
+          hero_headline: string
+          hero_subheadline?: string | null
+          html_content?: string | null
+          id?: string
+          is_published?: boolean | null
+          organization_id: string
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          benefits?: Json | null
+          brand_kit_id?: string | null
+          contact_form_fields?: Json | null
+          created_at?: string | null
+          css_content?: string | null
+          cta_button_text?: string | null
+          cta_description?: string | null
+          cta_headline?: string | null
+          features?: Json | null
+          hero_cta_text?: string | null
+          hero_headline?: string
+          hero_subheadline?: string | null
+          html_content?: string | null
+          id?: string
+          is_published?: boolean | null
+          organization_id?: string
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_brand_kit_id_fkey"
+            columns: ["brand_kit_id"]
+            isOneToOne: false
+            referencedRelation: "brand_kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landing_pages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
