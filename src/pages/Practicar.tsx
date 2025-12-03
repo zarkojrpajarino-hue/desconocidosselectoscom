@@ -18,7 +18,8 @@ const Practicar = () => {
   const tabs = [
     { path: '/practicar/simulador', label: 'Simulador Ventas' },
     { path: '/practicar/playbook', label: 'Sales Playbook' },
-    { path: '/practicar/guia', label: 'Guía Comunicación' }
+    { path: '/practicar/guia', label: 'Guía Comunicación' },
+    { path: '/practicar/guia-interactiva', label: 'Guía Emprendimiento' }
   ];
 
   return (
