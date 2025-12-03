@@ -2395,6 +2395,142 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_guide_achievements: {
+        Row: {
+          achievement_description: string | null
+          achievement_icon: string | null
+          achievement_name: string
+          achievement_type: string
+          earned_at: string | null
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          achievement_description?: string | null
+          achievement_icon?: string | null
+          achievement_name: string
+          achievement_type: string
+          earned_at?: string | null
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          achievement_description?: string | null
+          achievement_icon?: string | null
+          achievement_name?: string
+          achievement_type?: string
+          earned_at?: string | null
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_guide_achievements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_guide_metrics: {
+        Row: {
+          completed_steps: number | null
+          current_category: string | null
+          id: string
+          in_progress_steps: number | null
+          organization_id: string
+          overall_progress_percentage: number | null
+          total_points: number | null
+          total_steps: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_steps?: number | null
+          current_category?: string | null
+          id?: string
+          in_progress_steps?: number | null
+          organization_id: string
+          overall_progress_percentage?: number | null
+          total_points?: number | null
+          total_steps?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_steps?: number | null
+          current_category?: string | null
+          id?: string
+          in_progress_steps?: number | null
+          organization_id?: string
+          overall_progress_percentage?: number | null
+          total_points?: number | null
+          total_steps?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_guide_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_guide_progress: {
+        Row: {
+          completed_at: string | null
+          completion_data: Json | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          started_at: string | null
+          status: string
+          step_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_data?: Json | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          started_at?: string | null
+          status?: string
+          step_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completion_data?: Json | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          started_at?: string | null
+          status?: string
+          step_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_guide_progress_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_guide_progress_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "startup_guide_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invitations: {
         Row: {
           created_at: string | null
@@ -3247,6 +3383,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      startup_guide_steps: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          detailed_guide: string
+          estimated_time_hours: number | null
+          external_links: Json | null
+          id: string
+          points: number | null
+          prerequisite_steps: number[] | null
+          recommended_tools: string[] | null
+          step_number: number
+          success_criteria: string
+          tips: string[] | null
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          detailed_guide: string
+          estimated_time_hours?: number | null
+          external_links?: Json | null
+          id?: string
+          points?: number | null
+          prerequisite_steps?: number[] | null
+          recommended_tools?: string[] | null
+          step_number: number
+          success_criteria: string
+          tips?: string[] | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          detailed_guide?: string
+          estimated_time_hours?: number | null
+          external_links?: Json | null
+          id?: string
+          points?: number | null
+          prerequisite_steps?: number[] | null
+          recommended_tools?: string[] | null
+          step_number?: number
+          success_criteria?: string
+          tips?: string[] | null
+          title?: string
+        }
+        Relationships: []
       }
       startup_onboardings: {
         Row: {

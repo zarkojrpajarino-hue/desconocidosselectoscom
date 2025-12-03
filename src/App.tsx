@@ -85,6 +85,7 @@ const BrandKit = lazy(() => import("./pages/herramientas/BrandKit"));
 const Simulador = lazy(() => import("./pages/practicar/Simulador"));
 const Playbook = lazy(() => import("./pages/practicar/Playbook"));
 const Guia = lazy(() => import("./pages/practicar/Guia"));
+const GuiaInteractiva = lazy(() => import("./pages/practicar/GuiaInteractiva"));
 
 // Lazy loaded pages - Onboarding
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -194,6 +195,7 @@ const AppContent = () => {
           <Route path="simulador" element={<Simulador />} />
           <Route path="playbook" element={<Playbook />} />
           <Route path="guia" element={<Guia />} />
+          <Route path="guia-interactiva" element={<GuiaInteractiva />} />
         </Route>
         
         <Route path="/calculadora" element={
