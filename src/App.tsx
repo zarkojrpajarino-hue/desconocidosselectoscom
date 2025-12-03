@@ -98,6 +98,10 @@ const SelectRole = lazy(() => import("./pages/SelectRole"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Lazy loaded pages - Scalability
+const ScalabilityStart = lazy(() => import("./pages/ScalabilityStart"));
+const ScalabilityDashboard = lazy(() => import("./pages/ScalabilityDashboard"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -293,6 +297,16 @@ const AppContent = () => {
         <Route path="/metrics" element={
           <ProtectedRoute>
             <MetricsHub />
+          </ProtectedRoute>
+        } />
+        <Route path="/scalability" element={
+          <ProtectedRoute>
+            <ScalabilityStart />
+          </ProtectedRoute>
+        } />
+        <Route path="/scalability/:analysisId" element={
+          <ProtectedRoute>
+            <ScalabilityDashboard />
           </ProtectedRoute>
         } />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />

@@ -202,6 +202,59 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_opportunities: {
+        Row: {
+          analysis_id: string
+          automated_time_hours_month: number | null
+          created_at: string | null
+          current_time_hours_month: number | null
+          estimated_cost: string | null
+          id: string
+          implementation_steps: Json | null
+          priority: number | null
+          process_name: string
+          roi_months: number | null
+          time_saved_hours_month: number | null
+          tools_recommended: Json | null
+        }
+        Insert: {
+          analysis_id: string
+          automated_time_hours_month?: number | null
+          created_at?: string | null
+          current_time_hours_month?: number | null
+          estimated_cost?: string | null
+          id?: string
+          implementation_steps?: Json | null
+          priority?: number | null
+          process_name: string
+          roi_months?: number | null
+          time_saved_hours_month?: number | null
+          tools_recommended?: Json | null
+        }
+        Update: {
+          analysis_id?: string
+          automated_time_hours_month?: number | null
+          created_at?: string | null
+          current_time_hours_month?: number | null
+          estimated_cost?: string | null
+          id?: string
+          implementation_steps?: Json | null
+          priority?: number | null
+          process_name?: string
+          roi_months?: number | null
+          time_saved_hours_month?: number | null
+          tools_recommended?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_opportunities_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "scalability_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string | null
@@ -2405,6 +2458,182 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scalability_analyses: {
+        Row: {
+          analysis_date: string | null
+          created_at: string | null
+          data_snapshot: Json | null
+          financial_score: number | null
+          id: string
+          organization_id: string
+          overall_score: number | null
+          people_score: number | null
+          process_score: number | null
+          product_score: number | null
+          score_reasoning: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis_date?: string | null
+          created_at?: string | null
+          data_snapshot?: Json | null
+          financial_score?: number | null
+          id?: string
+          organization_id: string
+          overall_score?: number | null
+          people_score?: number | null
+          process_score?: number | null
+          product_score?: number | null
+          score_reasoning?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis_date?: string | null
+          created_at?: string | null
+          data_snapshot?: Json | null
+          financial_score?: number | null
+          id?: string
+          organization_id?: string
+          overall_score?: number | null
+          people_score?: number | null
+          process_score?: number | null
+          product_score?: number | null
+          score_reasoning?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scalability_analyses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scalability_bottlenecks: {
+        Row: {
+          analysis_id: string
+          created_at: string | null
+          description: string
+          estimated_cost_range: string | null
+          estimated_impact: string | null
+          id: string
+          impact_description: string | null
+          implementation_effort: string | null
+          priority_score: number | null
+          recommendation_description: string
+          recommendation_title: string
+          severity: string
+          title: string
+          tools_recommended: Json | null
+          type: string
+        }
+        Insert: {
+          analysis_id: string
+          created_at?: string | null
+          description: string
+          estimated_cost_range?: string | null
+          estimated_impact?: string | null
+          id?: string
+          impact_description?: string | null
+          implementation_effort?: string | null
+          priority_score?: number | null
+          recommendation_description: string
+          recommendation_title: string
+          severity: string
+          title: string
+          tools_recommended?: Json | null
+          type: string
+        }
+        Update: {
+          analysis_id?: string
+          created_at?: string | null
+          description?: string
+          estimated_cost_range?: string | null
+          estimated_impact?: string | null
+          id?: string
+          impact_description?: string | null
+          implementation_effort?: string | null
+          priority_score?: number | null
+          recommendation_description?: string
+          recommendation_title?: string
+          severity?: string
+          title?: string
+          tools_recommended?: Json | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scalability_bottlenecks_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "scalability_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scalability_dependencies: {
+        Row: {
+          analysis_id: string
+          created_at: string | null
+          dependent_processes: Json | null
+          dependent_tasks: Json | null
+          id: string
+          mitigation_recommendations: Json | null
+          person_id: string | null
+          person_name: string
+          risk_description: string | null
+          risk_level: string
+        }
+        Insert: {
+          analysis_id: string
+          created_at?: string | null
+          dependent_processes?: Json | null
+          dependent_tasks?: Json | null
+          id?: string
+          mitigation_recommendations?: Json | null
+          person_id?: string | null
+          person_name: string
+          risk_description?: string | null
+          risk_level: string
+        }
+        Update: {
+          analysis_id?: string
+          created_at?: string | null
+          dependent_processes?: Json | null
+          dependent_tasks?: Json | null
+          id?: string
+          mitigation_recommendations?: Json | null
+          person_id?: string | null
+          person_name?: string
+          risk_description?: string | null
+          risk_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scalability_dependencies_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "scalability_analyses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scalability_dependencies_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "scalability_dependencies_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
