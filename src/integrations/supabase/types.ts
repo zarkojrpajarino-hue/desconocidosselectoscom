@@ -4876,10 +4876,12 @@ export type Database = {
         Returns: number
       }
       calculate_lead_score: { Args: { p_lead_id: string }; Returns: string }
-      calculate_lead_score_enterprise: {
-        Args: { p_lead_id: string }
-        Returns: number
-      }
+      calculate_lead_score_enterprise:
+        | {
+            Args: { p_lead_id: string; p_organization_id: string }
+            Returns: number
+          }
+        | { Args: { p_lead_id: string }; Returns: number }
       calculate_monthly_metrics: {
         Args: { target_month: string }
         Returns: {
@@ -4925,17 +4927,28 @@ export type Database = {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
       }
-      detect_stalled_deals: {
-        Args: { org_id: string }
-        Returns: {
-          average_for_stage: number
-          current_stage: string
-          days_in_stage: number
-          deal_name: string
-          excess_days: number
-          lead_id: string
-        }[]
-      }
+      detect_stalled_deals:
+        | {
+            Args: { org_id: string }
+            Returns: {
+              average_for_stage: number
+              current_stage: string
+              days_in_stage: number
+              deal_name: string
+              excess_days: number
+              lead_id: string
+            }[]
+          }
+        | {
+            Args: { org_id: string; threshold_days?: number }
+            Returns: {
+              assigned_to: string
+              days_stalled: number
+              lead_id: string
+              lead_name: string
+              stage: string
+            }[]
+          }
       generate_all_smart_alerts: { Args: never; Returns: number }
       get_next_week_start: { Args: never; Returns: string }
       get_unread_notification_count: { Args: never; Returns: number }
