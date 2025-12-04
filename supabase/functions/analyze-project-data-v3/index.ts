@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withRateLimit, rateLimitResponse } from "../_shared/rateLimiter.ts";
+import { createLogger, extractRequestInfo } from "../_shared/structuredLogger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,25 +9,46 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  const logger = createLogger('analyze-project-data-v3');
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { organizationId, includeCompetitors = false } = await req.json();
+    
+    // Set logger context
+    logger.setContext({ organizationId });
+    logger.info('analysis_started', { 
+      includeCompetitors,
+      ...extractRequestInfo(req)
+    });
 
     if (!organizationId) {
+      logger.warn('missing_organization_id');
       return new Response(
         JSON.stringify({ error: 'organizationId is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Rate limiting: 5 requests per minute per organization
+    const rateLimit = withRateLimit(organizationId, 'analyze-project-data-v3', {
+      maxRequests: 5,
+      windowMs: 60000
+    });
+    
+    if (!rateLimit.allowed) {
+      logger.warn('rate_limit_exceeded', { remaining: rateLimit.remaining });
+      return rateLimitResponse(rateLimit, corsHeaders);
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log(`Starting v3 analysis for organization: ${organizationId}, includeCompetitors: ${includeCompetitors}`);
+    logger.info('fetching_organization_data');
 
     // Fetch organization data
     const { data: organization, error: orgError } = await supabase
@@ -35,7 +58,7 @@ serve(async (req) => {
       .single();
 
     if (orgError || !organization) {
-      console.error('Error fetching organization:', orgError);
+      logger.error('organization_not_found', orgError);
       return new Response(
         JSON.stringify({ error: 'Organization not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -118,7 +141,7 @@ serve(async (req) => {
       includeCompetitors
     });
 
-    console.log('Calling Lovable AI Gateway...');
+    logger.info('calling_ai_gateway');
 
     // Call Lovable AI Gateway
     const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
@@ -146,14 +169,14 @@ serve(async (req) => {
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('AI Gateway error:', errorText);
+      logger.error('ai_gateway_error', new Error(errorText), { status: aiResponse.status });
       throw new Error(`AI Gateway error: ${aiResponse.status}`);
     }
 
     const aiResult = await aiResponse.json();
     const aiContent = aiResult.choices?.[0]?.message?.content || '';
 
-    console.log('AI response received, parsing...');
+    logger.info('ai_response_received', { contentLength: aiContent.length });
 
     // Parse AI response
     let analysisData;
@@ -165,8 +188,7 @@ serve(async (req) => {
         .trim();
       analysisData = JSON.parse(cleanedContent);
     } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      console.log('Raw AI content:', aiContent);
+      logger.error('ai_response_parse_error', parseError, { rawContentPreview: aiContent.slice(0, 200) });
       // Return a structured fallback
       analysisData = generateFallbackAnalysis(organization, revenueData || [], expenseData || [], leads || [], competitors || []);
     }
@@ -183,7 +205,7 @@ serve(async (req) => {
       .single();
 
     if (saveError) {
-      console.error('Error saving analysis:', saveError);
+      logger.error('save_analysis_error', saveError);
       // Still return the analysis even if save fails
     }
 
@@ -196,7 +218,7 @@ serve(async (req) => {
       })
       .eq('id', organizationId);
 
-    console.log('Analysis completed and saved');
+    logger.info('analysis_completed', { savedId: savedAnalysis?.id });
 
     return new Response(
       JSON.stringify({
@@ -208,7 +230,7 @@ serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    console.error('Error in analyze-project-data-v3:', error);
+    logger.error('analysis_failed', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
