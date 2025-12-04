@@ -24,6 +24,49 @@ serve(async (req) => {
       throw new Error('Missing planName or organizationId');
     }
 
+    // Security: Verify user is authenticated and belongs to the organization
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header provided');
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
+    
+    if (userError || !user) {
+      throw new Error('Invalid authentication token');
+    }
+
+    // Verify user has admin role in this organization
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: membership, error: membershipError } = await supabaseService
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('organization_id', organizationId)
+      .single();
+
+    if (membershipError || !membership) {
+      console.error('[create-checkout] ❌ User not a member of organization:', user.id, organizationId);
+      throw new Error('You are not a member of this organization');
+    }
+
+    if (membership.role !== 'admin') {
+      console.error('[create-checkout] ❌ User is not admin:', user.id, membership.role);
+      throw new Error('Only organization admins can manage billing');
+    }
+
+    console.log(`[create-checkout] ✅ Auth verified: user ${user.id} is admin of org ${organizationId}`);
+
     // Map plan name to actual Stripe price ID
     const planMap: Record<string, string> = {
       'starter': Deno.env.get('STRIPE_PRICE_STARTER') || '',
@@ -47,13 +90,8 @@ serve(async (req) => {
 
     console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}, priceId: ${priceId}`);
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // Get organization
-    const { data: org, error: orgError } = await supabase
+    // Get organization (reuse supabaseService from auth check)
+    const { data: org, error: orgError } = await supabaseService
       .from('organizations')
       .select('*')
       .eq('id', organizationId)
@@ -80,7 +118,7 @@ serve(async (req) => {
       customerId = customer.id;
 
       // Save customer ID
-      await supabase
+      await supabaseService
         .from('organizations')
         .update({ stripe_customer_id: customerId })
         .eq('id', organizationId);
