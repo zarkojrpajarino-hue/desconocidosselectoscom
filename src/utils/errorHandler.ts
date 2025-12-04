@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import * as Sentry from "@sentry/react";
 import { logger } from '@/lib/logger';
 
 type ErrorSeverity = 'error' | 'warning' | 'info';
@@ -26,6 +27,13 @@ export function handleError(error: unknown, userMessage?: string, options: Error
   
   // Log para debugging (solo en desarrollo)
   logger.error('Error:', error);
+  
+  // Send to Sentry in production
+  if (error instanceof Error) {
+    Sentry.captureException(error, {
+      extra: { userMessage, severity: opts.severity }
+    });
+  }
   
   // Extraer mensaje del error
   let errorMessage = 'Ha ocurrido un error inesperado';
