@@ -56,6 +56,17 @@ serve(async (req) => {
   }
 
   try {
+    // Validate CRON_SECRET for automated triggers
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const providedSecret = req.headers.get('x-cron-secret');
+    
+    if (!providedSecret || providedSecret !== cronSecret) {
+      console.error('Unauthorized: Missing or invalid CRON_SECRET');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     console.log('🚀 Iniciando generación de agendas semanales...');
