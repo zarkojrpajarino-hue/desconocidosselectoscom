@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 
 interface AIAnalysisDashboardProps {
   onAnalysisComplete?: () => void;
@@ -424,7 +425,7 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div dangerouslySetInnerHTML={{ __html: data.money_section.ai_analysis }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.money_section.ai_analysis) }} />
               </div>
             </CardContent>
           </Card>
@@ -536,7 +537,7 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div dangerouslySetInnerHTML={{ __html: data.efficiency_section.ai_analysis }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.efficiency_section.ai_analysis) }} />
               </div>
             </CardContent>
           </Card>
@@ -550,7 +551,7 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div dangerouslySetInnerHTML={{ __html: data.focus_section.executive_summary }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.focus_section.executive_summary) }} />
               </div>
             </CardContent>
           </Card>
@@ -745,7 +746,7 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div dangerouslySetInnerHTML={{ __html: data.future_section.ai_analysis }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.future_section.ai_analysis) }} />
               </div>
             </CardContent>
           </Card>
@@ -938,7 +939,7 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div dangerouslySetInnerHTML={{ __html: data.tough_decisions.ai_raw_feedback }} />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.tough_decisions.ai_raw_feedback) }} />
               </div>
             </CardContent>
           </Card>
