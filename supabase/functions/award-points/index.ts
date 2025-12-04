@@ -15,6 +15,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface Achievement {
+  total_points: number;
+  tasks_completed_total: number;
+  tasks_validated_total: number;
+  current_streak: number;
+}
+
+interface Badge {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  icon_emoji: string;
+  rarity: string;
+}
+
+interface UserBadge {
+  badge_id: string;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,12 +45,62 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   try {
-    const { user_id, action, task_id, metadata } = await req.json();
-    
-    console.log('Award points:', { user_id, action, task_id });
+    // Extract and validate the authenticated user from JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    if (!user_id || !action) {
-      throw new Error('user_id and action are required');
+    // Create a client with the user's JWT to get their identity
+    const supabaseAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { action, task_id, target_user_id } = await req.json();
+    
+    // Determine which user to award points to
+    // By default, award to the authenticated user (caller)
+    // Only allow awarding to others if caller has permission (admin/leader)
+    let userId = user.id;
+    
+    if (target_user_id && target_user_id !== user.id) {
+      // Verify caller has permission to award points to others
+      const { data: callerRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .in('role', ['admin', 'leader'])
+        .single();
+      
+      if (!callerRole) {
+        return new Response(
+          JSON.stringify({ error: 'Permission denied: cannot award points to other users' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      userId = target_user_id;
+    }
+    
+    console.log('Award points:', { userId, action, task_id, calledBy: user.id });
+
+    if (!action) {
+      return new Response(
+        JSON.stringify({ error: 'action is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
     let points = 0;
@@ -62,26 +132,31 @@ serve(async (req) => {
         reason = 'Racha semanal';
         break;
       default:
-        throw new Error(`Unknown action: ${action}`);
+        return new Response(
+          JSON.stringify({ error: `Unknown action: ${action}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
     }
     
     // Registrar puntos en historial
     await supabase.from('points_history').insert({
-      user_id,
+      user_id: userId,
       points,
       reason,
       task_id,
     });
     
     // Actualizar o crear achievements del usuario
-    const { data: achievement } = await supabase
+    const { data: achievementData } = await supabase
       .from('user_achievements')
       .select('*')
-      .eq('user_id', user_id)
+      .eq('user_id', userId)
       .single();
     
+    const achievement = achievementData as Achievement | null;
+    
     if (achievement) {
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         total_points: achievement.total_points + points,
         updated_at: new Date().toISOString()
       };
@@ -97,11 +172,11 @@ serve(async (req) => {
       await supabase
         .from('user_achievements')
         .update(updates)
-        .eq('user_id', user_id);
+        .eq('user_id', userId);
     } else {
       // Crear registro inicial
       await supabase.from('user_achievements').insert({
-        user_id,
+        user_id: userId,
         total_points: points,
         tasks_completed_total: action.includes('task_completed') ? 1 : 0,
         tasks_validated_total: action === 'task_validated' ? 1 : 0
@@ -109,40 +184,45 @@ serve(async (req) => {
     }
     
     // Verificar y otorgar badges
-    await checkAndAwardBadges(supabase, user_id);
+    await checkAndAwardBadges(supabase, userId);
     
     return new Response(
       JSON.stringify({ success: true, points, reason }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error: any) {
-    console.error('Error in award-points:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in award-points:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
+// deno-lint-ignore no-explicit-any
 async function checkAndAwardBadges(supabase: any, userId: string) {
-  const { data: achievement } = await supabase
+  const { data: achievementData } = await supabase
     .from('user_achievements')
     .select('*')
     .eq('user_id', userId)
     .single();
   
+  const achievement = achievementData as Achievement | null;
   if (!achievement) return;
   
-  const { data: badges } = await supabase
+  const { data: badgesData } = await supabase
     .from('badges')
     .select('*');
   
-  const { data: userBadges } = await supabase
+  const { data: userBadgesData } = await supabase
     .from('user_badges')
     .select('badge_id')
     .eq('user_id', userId);
   
-  const earnedBadgeIds = new Set(userBadges?.map((ub: any) => ub.badge_id) || []);
+  const badges = badgesData as Badge[] | null;
+  const userBadges = userBadgesData as UserBadge[] | null;
+  const earnedBadgeIds = new Set(userBadges?.map((ub) => ub.badge_id) || []);
   
   for (const badge of badges || []) {
     if (earnedBadgeIds.has(badge.id)) continue;

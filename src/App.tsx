@@ -31,9 +31,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
-// Lazy loaded pages - Admin & Setup
+// Lazy loaded pages - Admin
 const Admin = lazy(() => import("./pages/Admin"));
-const Setup = lazy(() => import("./pages/Setup"));
 const Profile = lazy(() => import("./pages/Profile"));
 
 // Lazy loaded pages - Features
@@ -171,7 +170,6 @@ const AppContent = () => {
             <Admin />
           </ProtectedRoute>
         } />
-        <Route path="/setup" element={<Setup />} />
         
         {/* Herramientas con sub-rutas */}
         <Route path="/herramientas" element={
