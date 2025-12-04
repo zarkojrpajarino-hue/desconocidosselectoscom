@@ -18,6 +18,47 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Validate CRON_SECRET for automated triggers
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const authHeader = req.headers.get('Authorization');
+    
+    // Check if it's a cron/internal call with secret
+    const providedSecret = req.headers.get('x-cron-secret');
+    const isCronCall = providedSecret && cronSecret && providedSecret === cronSecret;
+    
+    // Check if it's an authenticated admin call
+    let isAdminCall = false;
+    if (authHeader && !isCronCall) {
+      const supabaseAuth = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+          global: { headers: { Authorization: authHeader } }
+        }
+      );
+      
+      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+      if (!authError && user) {
+        // Check if user is admin
+        const { data: roleData } = await supabaseAuth
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        isAdminCall = !!roleData;
+      }
+    }
+    
+    if (!isCronCall && !isAdminCall) {
+      console.error('Unauthorized: Missing valid CRON_SECRET or admin authentication');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
     const { userId }: WelcomeEmailRequest = await req.json();
 
     const supabaseAdmin = createClient(
@@ -104,10 +145,11 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
-    console.error('Error enviando email de bienvenida:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error enviando email de bienvenida:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
