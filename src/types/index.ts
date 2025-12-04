@@ -1,7 +1,71 @@
 /**
- * FASE 3: TypeScript types centralizados
- * Elimina any types y mejora type safety
+ * Central Type Exports
+ * Importa desde aquí para acceder a todos los tipos del proyecto
+ * 
+ * NOTA: Algunos módulos tienen tipos con nombres similares.
+ * Para evitar conflictos, importa directamente del archivo específico cuando sea necesario:
+ * - import { AIAnalysisResult } from '@/types/ai-analysis-dashboard'; // Para dashboard
+ * - import { AIAnalysisData } from '@/types/ai-analysis.types'; // Para el hook original
  */
+
+// ============================================
+// NEW TYPE MODULES (sin conflictos)
+// ============================================
+
+// Practicar Types (Simulador, Playbook, Guia, Calculadora)
+export * from './practicar';
+
+// Herramientas Types (LeadScoring, CustomerJourney, GrowthModel, BuyerPersona)
+export * from './herramientas';
+
+// Export Types (ExportButton.tsx)
+export * from './export';
+
+// Extended Task Types (TaskList.tsx)
+export * from './tasks-extended';
+
+// ============================================
+// MODULES WITH POTENTIAL CONFLICTS
+// Import directly from specific files when needed:
+// ============================================
+
+// Enterprise Data Types - import from '@/types/enterprise'
+// export * from './enterprise';
+
+// AI Analysis Dashboard Types - import from '@/types/ai-analysis-dashboard'
+// export * from './ai-analysis-dashboard';
+
+// OKR Types - import from '@/types/okrs'
+// export * from './okrs';
+
+// ============================================
+// EXISTING TYPE MODULES
+// ============================================
+
+// Auth Types
+export * from './auth';
+
+// Roles Types  
+export * from './roles';
+
+// Startup Onboarding Types
+export * from './startup-onboarding';
+
+// AI Resources Types
+export * from './ai-resources.types';
+
+// Original AI Analysis Types
+export * from './ai-analysis.types';
+
+// Original Tasks Types
+export * from './tasks';
+
+// KPI Advanced Types
+export * from './kpi-advanced.types';
+
+// ============================================
+// CORE APPLICATION TYPES
+// ============================================
 
 export interface User {
   id: string;
@@ -138,13 +202,28 @@ export interface Badge {
   created_at: string | null;
 }
 
+export interface BadgeMetadata {
+  trigger?: string;
+  context?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface UserBadge {
   id: string;
   user_id: string;
   badge_id: string;
   earned_at: string | null;
-  metadata: Record<string, any> | null;
+  metadata: BadgeMetadata | null;
   badges: Badge;
+}
+
+export interface AlertContext {
+  entity_type?: string;
+  entity_id?: string;
+  metric_name?: string;
+  metric_value?: number;
+  threshold?: number;
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface Alert {
@@ -160,7 +239,7 @@ export interface Alert {
   actionable: boolean | null;
   action_label: string | null;
   action_url: string | null;
-  context: Record<string, any> | null;
+  context: AlertContext | null;
   dismissed: boolean | null;
   dismissed_at: string | null;
   dismissed_by: string | null;
@@ -197,7 +276,7 @@ export interface Lead {
   lead_type: LeadType;
   lead_score: LeadScore;
   stage: LeadStatus;
-  pipeline_stage: string | null; // Ahora acepta cualquier nombre de etapa personalizada
+  pipeline_stage: string | null;
   source: LeadSource;
   estimated_value: number;
   probability: number;
