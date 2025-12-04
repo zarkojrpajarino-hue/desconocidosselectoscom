@@ -1,8 +1,5 @@
 project_id = "nrsrzfqtzjrxrvqyypdn"
 
-[functions.seed-tasks]
-verify_jwt = false
-
 [functions.generate-task-alternatives]
 verify_jwt = true
 
