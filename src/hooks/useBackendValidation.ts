@@ -15,6 +15,8 @@ interface ValidationResult {
 /**
  * Hook para validar límites de plan en el backend
  * Usar para operaciones críticas donde la validación frontend no es suficiente
+ * 
+ * IMPORTANTE: Implementa FAIL CLOSED - si hay error, se BLOQUEA la acción
  */
 export function useBackendValidation() {
   const { organizationId } = useCurrentOrganization();
@@ -22,7 +24,7 @@ export function useBackendValidation() {
 
   const validateLimit = useCallback(async (limitType: LimitType): Promise<ValidationResult> => {
     if (!organizationId) {
-      return { allowed: false, message: 'No organization selected' };
+      return { allowed: false, message: 'No hay organización seleccionada' };
     }
 
     setValidating(true);
@@ -34,25 +36,21 @@ export function useBackendValidation() {
 
       if (error) {
         logger.error('Backend validation error:', error);
-        // Reintentar una vez antes de fallar
-        try {
-          const retryResult = await supabase.functions.invoke('validate-plan-limits', {
-            body: { organizationId, limitType }
-          });
-          if (retryResult.error) {
-            logger.warn('Backend validation retry failed, allowing action');
-            return { allowed: true, message: 'Validation service unavailable' };
-          }
-          return retryResult.data as ValidationResult;
-        } catch {
-          return { allowed: true, message: 'Validation service unavailable' };
-        }
+        // FAIL CLOSED: Si hay error, NO permitir la acción
+        return { 
+          allowed: false, 
+          message: 'Error de validación. Por favor, inténtalo de nuevo.' 
+        };
       }
 
       return data as ValidationResult;
     } catch (err) {
       logger.error('Backend validation exception:', err);
-      return { allowed: true, message: 'Validation service unavailable' };
+      // FAIL CLOSED: Si hay excepción, NO permitir la acción
+      return { 
+        allowed: false, 
+        message: 'Error de conexión. Por favor, verifica tu internet e inténtalo de nuevo.' 
+      };
     } finally {
       setValidating(false);
     }
