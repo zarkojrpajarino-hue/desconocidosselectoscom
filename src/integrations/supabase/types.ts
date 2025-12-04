@@ -2173,6 +2173,7 @@ export type Database = {
           file_url: string
           id: string
           okr_update_id: string
+          organization_id: string | null
           uploaded_by: string | null
         }
         Insert: {
@@ -2182,6 +2183,7 @@ export type Database = {
           file_url: string
           id?: string
           okr_update_id: string
+          organization_id?: string | null
           uploaded_by?: string | null
         }
         Update: {
@@ -2191,6 +2193,7 @@ export type Database = {
           file_url?: string
           id?: string
           okr_update_id?: string
+          organization_id?: string | null
           uploaded_by?: string | null
         }
         Relationships: [
@@ -2199,6 +2202,13 @@ export type Database = {
             columns: ["okr_update_id"]
             isOneToOne: false
             referencedRelation: "okr_updates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_evidences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
