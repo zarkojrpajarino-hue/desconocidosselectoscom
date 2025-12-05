@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   CheckCircle2, 
   Zap, 
@@ -15,12 +17,18 @@ import {
   Building2,
   Rocket,
   Sparkles,
-  Check
+  Check,
+  LogIn,
+  User,
+  Menu,
+  X
 } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
     {
@@ -103,8 +111,135 @@ const Landing = () => {
     }
   ];
 
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* ===== HEADER PROFESIONAL CON LOGIN ===== */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* Logo */}
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">O</span>
+            </div>
+            <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              OPTIMUS-K
+            </span>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => scrollToSection('features')}
+            >
+              Características
+            </Button>
+            <Button 
+              variant="ghost"
+              onClick={() => scrollToSection('how-it-works')}
+            >
+              Cómo Funciona
+            </Button>
+            <Button 
+              variant="ghost"
+              onClick={() => scrollToSection('pricing')}
+            >
+              Precios
+            </Button>
+          </nav>
+
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              // Usuario YA logueado
+              <Button 
+                onClick={() => navigate('/home')}
+              >
+                <User className="w-4 h-4 mr-2" />
+                Ir a Dashboard
+              </Button>
+            ) : (
+              // Usuario NO logueado
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate('/login')}
+                  className="hidden sm:flex"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Iniciar Sesión
+                </Button>
+                <Button 
+                  onClick={() => navigate('/signup')}
+                >
+                  Empezar Gratis
+                </Button>
+              </>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur">
+            <nav className="container py-4 flex flex-col gap-2 px-4">
+              <Button 
+                variant="ghost" 
+                className="justify-start"
+                onClick={() => scrollToSection('features')}
+              >
+                Características
+              </Button>
+              <Button 
+                variant="ghost"
+                className="justify-start"
+                onClick={() => scrollToSection('how-it-works')}
+              >
+                Cómo Funciona
+              </Button>
+              <Button 
+                variant="ghost"
+                className="justify-start"
+                onClick={() => scrollToSection('pricing')}
+              >
+                Precios
+              </Button>
+              {!user && (
+                <Button 
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => {
+                    navigate('/login');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Iniciar Sesión
+                </Button>
+              )}
+            </nav>
+          </div>
+        )}
+      </header>
+
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-12 text-center">
         <Badge className="mb-4 text-sm px-4 py-1">
@@ -121,12 +256,12 @@ const Landing = () => {
         
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
           ¿Tienes una empresa o una idea? Sea cual sea tu situación, 
-          en <strong>15 segundos</strong> tendrás tu workspace completo.
+          en <strong className="text-foreground">15 segundos</strong> tendrás tu workspace completo.
         </p>
       </div>
 
       {/* SELECTOR EMPRESA vs STARTUP */}
-      <div className="container mx-auto px-4 pb-16">
+      <div id="how-it-works" className="container mx-auto px-4 pb-16">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold mb-3">
             Empieza Ahora - Elige tu camino
@@ -155,15 +290,15 @@ const Landing = () => {
               </p>
               <ul className="text-sm text-left space-y-2 mb-6">
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                   <span>Genera OKRs basados en tu situación real</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                   <span>Pipeline CRM adaptado a tu proceso</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                   <span>Herramientas marketing personalizadas</span>
                 </li>
               </ul>
@@ -192,15 +327,15 @@ const Landing = () => {
               </p>
               <ul className="text-sm text-left space-y-2 mb-6">
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                   <span>Roadmap de validación de hipótesis</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                   <span>Plan de go-to-market estructurado</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                   <span>Timeline de milestones pre-launch</span>
                 </li>
               </ul>
@@ -223,22 +358,22 @@ const Landing = () => {
       <div className="container mx-auto px-4 pb-12">
         <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground flex-wrap">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-primary" />
             <span>Sin permanencia</span>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-green-500" />
+            <Shield className="h-4 w-4 text-primary" />
             <span>Pago seguro</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-green-500" />
+            <Clock className="h-4 w-4 text-primary" />
             <span>Setup instantáneo</span>
           </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div id="features" className="container mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
           ¿Qué Incluye tu App?
         </h2>
@@ -334,7 +469,7 @@ const Landing = () => {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}
