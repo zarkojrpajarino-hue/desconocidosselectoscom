@@ -31,6 +31,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
+// Layout component
+const AppLayout = lazy(() => import("./components/layout/AppLayout"));
+
 // Lazy loaded pages - Admin
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -147,11 +150,11 @@ const AppContent = () => {
             <AdminOnboardings />
           </ProtectedRoute>
         } />
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
+        
+        {/* Rutas con nuevo layout (AppLayout) - FASE 2 PRUEBA */}
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/home" element={<Home />} />
+        </Route>
         
         {/* Dashboard con sub-rutas */}
         <Route path="/dashboard" element={

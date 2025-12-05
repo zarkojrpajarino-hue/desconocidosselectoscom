@@ -406,4 +406,29 @@ code, pre, .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* ============================================
+   SIDEBAR & LAYOUT STYLES - FASE 2
+   ============================================ */
+
+.sidebar {
+  @apply bg-sidebar border-r border-sidebar-border;
+}
+
+.sidebar-nav-item {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium;
+  @apply text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/10;
+  @apply transition-all duration-200 cursor-pointer;
+}
+
+.sidebar-nav-item.active {
+  @apply bg-sidebar-accent/15 text-sidebar-accent;
+}
+
+.sidebar-nav-item-icon {
+  @apply w-5 h-5 flex-shrink-0;
+}
+
+.page-container {
+  @apply px-4 py-6 lg:px-6 lg:py-8 max-w-7xl mx-auto w-full;
+}
 
