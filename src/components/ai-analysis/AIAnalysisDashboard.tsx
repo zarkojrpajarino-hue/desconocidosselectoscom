@@ -309,13 +309,27 @@ function getHealthStatusText(status: HealthStatus): string {
 // SECCIONES PRINCIPALES (stubs - se crearán después)
 // ============================================
 
-function FinancialHealthSection({ data }: any) {
+// Las secciones usan los tipos específicos de ai-analysis.types.ts
+import type { 
+  FinancialHealth, 
+  GrowthAnalysis, 
+  TeamPerformance, 
+  StrategicPriorities, 
+  StrategicQuestions,
+  FutureRoadmap,
+  Projections,
+  HonestFeedback as HonestFeedbackType,
+  Alert as AlertType,
+  Benchmarking
+} from '@/types/ai-analysis.types';
+
+function FinancialHealthSection({ data }: { data: FinancialHealth }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           💰 Salud Financiera
-          <Badge variant="outline">{data.score}/100</Badge>
+          <Badge variant="outline">{data.score ?? 0}/100</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -325,7 +339,7 @@ function FinancialHealthSection({ data }: any) {
   );
 }
 
-function GrowthAnalysisSection({ data }: any) {
+function GrowthAnalysisSection({ data }: { data: GrowthAnalysis }) {
   return (
     <Card>
       <CardHeader>
@@ -338,7 +352,7 @@ function GrowthAnalysisSection({ data }: any) {
   );
 }
 
-function TeamPerformanceSection({ data }: any) {
+function TeamPerformanceSection({ data }: { data: TeamPerformance }) {
   return (
     <Card>
       <CardHeader>
@@ -351,7 +365,7 @@ function TeamPerformanceSection({ data }: any) {
   );
 }
 
-function StrategySection({ priorities, questions }: any) {
+function StrategySection({ priorities, questions }: { priorities: StrategicPriorities; questions: StrategicQuestions }) {
   return (
     <Card>
       <CardHeader>
@@ -364,7 +378,7 @@ function StrategySection({ priorities, questions }: any) {
   );
 }
 
-function FutureSection({ roadmap, projections }: any) {
+function FutureSection({ roadmap, projections }: { roadmap: FutureRoadmap; projections: Projections }) {
   return (
     <Card>
       <CardHeader>
@@ -377,7 +391,7 @@ function FutureSection({ roadmap, projections }: any) {
   );
 }
 
-function HonestFeedbackSection({ data }: any) {
+function HonestFeedbackSection({ data }: { data: HonestFeedbackType }) {
   return (
     <Card className="border-2 border-destructive">
       <CardHeader>
@@ -396,7 +410,7 @@ function HonestFeedbackSection({ data }: any) {
   );
 }
 
-function CriticalAlertsSection({ alerts }: any) {
+function CriticalAlertsSection({ alerts }: { alerts: AlertType[] }) {
   return (
     <Card className="border-2 border-destructive shadow-lg">
       <CardHeader>
@@ -413,7 +427,7 @@ function CriticalAlertsSection({ alerts }: any) {
   );
 }
 
-function BenchmarkingSection({ data }: any) {
+function BenchmarkingSection({ data }: { data: Benchmarking }) {
   return (
     <Card>
       <CardHeader>

@@ -17,6 +17,41 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AIResourcesPanel } from "./tasks/ai-resources";
 import type { AIResourceType } from "@/types/ai-resources.types";
 
+// Tipos locales para evitar any
+interface TaskData {
+  id: string;
+  title: string;
+  description: string;
+  area: string;
+  phase: number;
+  user_id: string;
+  leader_id: string | null;
+  order_index: number;
+  is_collaborative?: boolean;
+  [key: string]: unknown;
+}
+
+interface TaskCompletionData {
+  id: string;
+  task_id: string;
+  user_id: string;
+  completed_by_user?: boolean;
+  validated_by_leader?: boolean;
+  leader_feedback?: Record<string, unknown>;
+  collaborator_feedback?: Record<string, unknown>;
+  impact_measurement?: Record<string, unknown>;
+  ai_questions?: Record<string, unknown>;
+  organization_id?: string;
+  [key: string]: unknown;
+}
+
+interface BadgeData {
+  name: string;
+  description: string;
+  icon_emoji: string;
+  rarity: string;
+}
+
 interface TaskListProps {
   userId: string | undefined;
   currentPhase: number | undefined;
@@ -26,19 +61,19 @@ interface TaskListProps {
 }
 
 const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", taskLimit }: TaskListProps) => {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [sharedTasks, setSharedTasks] = useState<any[]>([]);
-  const [completions, setCompletions] = useState<Map<string, any>>(new Map());
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [tasks, setTasks] = useState<TaskData[]>([]);
+  const [sharedTasks, setSharedTasks] = useState<TaskData[]>([]);
+  const [completions, setCompletions] = useState<Map<string, TaskCompletionData>>(new Map());
+  const [selectedTask, setSelectedTask] = useState<TaskData | null>(null);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
-  const [taskToSwap, setTaskToSwap] = useState<any>(null);
+  const [taskToSwap, setTaskToSwap] = useState<TaskData | null>(null);
   const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || "", mode);
   const [leadersById, setLeadersById] = useState<Record<string, string>>({});
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [impactMeasurementModalOpen, setImpactMeasurementModalOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
   const [showConfetti, setShowConfetti] = useState(false);
-  const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
+  const [unlockedBadge, setUnlockedBadge] = useState<BadgeData | null>(null);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiPanelTask, setAiPanelTask] = useState<{ id: string; title: string; description: string; resourceType: AIResourceType } | null>(null);
 
@@ -66,7 +101,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           filter: `target_user_id=eq.${userId}`,
         },
         (payload) => {
-          const alert = payload.new as any;
+          const alert = payload.new as { alert_type?: string; context?: { badge_data?: BadgeData } };
           if (alert.alert_type === 'badge_earned' && alert.context?.badge_data) {
             setUnlockedBadge(alert.context.badge_data);
           }
