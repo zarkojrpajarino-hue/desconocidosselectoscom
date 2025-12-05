@@ -119,202 +119,109 @@ const AppContent = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Landing y Onboarding (público) */}
+        {/* ===== RUTAS PÚBLICAS (sin layout) ===== */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
+        <Route path="/onboarding/success" element={<OnboardingSuccess />} />
+        <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+        
+        {/* ===== RUTAS PROTEGIDAS SIN LAYOUT (flujos especiales) ===== */}
         <Route path="/select-organization" element={
           <ProtectedRoute>
             <SelectOrganization />
           </ProtectedRoute>
         } />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/startup" element={
           <ProtectedRoute>
             <OnboardingStartup />
           </ProtectedRoute>
         } />
-        <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
-        <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         <Route path="/join/:token" element={
           <ProtectedRoute>
             <SelectRole />
           </ProtectedRoute>
         } />
-        <Route path="/admin/onboardings" element={
-          <ProtectedRoute>
-            <AdminOnboardings />
-          </ProtectedRoute>
-        } />
         
-        {/* Rutas con nuevo layout (AppLayout) - FASE 2 PRUEBA */}
+        {/* ===== RUTAS PROTEGIDAS CON NUEVO AppLayout ===== */}
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          {/* Home */}
           <Route path="/home" element={<Home />} />
+          
+          {/* Dashboard con sub-rutas */}
+          <Route path="/dashboard" element={<Dashboard />}>
+            <Route path="home" element={<DashboardHome />} />
+            <Route path="agenda" element={<AgendaSemanal />} />
+            <Route path="gamification" element={<DashboardGamification />} />
+            <Route path="notifications" element={<DashboardNotifications />} />
+          </Route>
+          
+          {/* Admin */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/onboardings" element={<AdminOnboardings />} />
+          
+          {/* Herramientas con sub-rutas */}
+          <Route path="/herramientas" element={<Herramientas />}>
+            <Route path="lead-scoring" element={<LeadScoring />} />
+            <Route path="growth-model" element={<GrowthModel />} />
+            <Route path="buyer-persona" element={<BuyerPersona />} />
+            <Route path="customer-journey" element={<CustomerJourney />} />
+            <Route path="brand-kit" element={<BrandKit />} />
+          </Route>
+          
+          {/* Practicar con sub-rutas */}
+          <Route path="/practicar" element={<Practicar />}>
+            <Route path="simulador" element={<Simulador />} />
+            <Route path="playbook" element={<Playbook />} />
+            <Route path="guia" element={<Guia />} />
+            <Route path="guia-interactiva" element={<GuiaInteractiva />} />
+          </Route>
+          
+          {/* Páginas individuales */}
+          <Route path="/calculadora" element={<Calculadora />} />
+          <Route path="/gamification" element={<Gamification />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/ai-analysis" element={<AIAnalysis />} />
+          <Route path="/alerts" element={<AlertsPage />} />
+          
+          {/* Business Metrics */}
+          <Route path="/business-metrics" element={<BusinessMetrics />} />
+          <Route path="/business-metrics/user/:userId" element={<UserMetricsHistory />} />
+          <Route path="/metrics" element={<MetricsHub />} />
+          
+          {/* OKRs */}
+          <Route path="/okrs" element={<OKRsPage />} />
+          <Route path="/okrs/history" element={<OKRsHistory />} />
+          <Route path="/okrs/history/:userId" element={<UserOKRHistory />} />
+          <Route path="/okrs/organization" element={<OrganizationOKRs />} />
+          <Route path="/okrs/organization/history" element={<OrganizationOKRHistory />} />
+          
+          {/* Financial */}
+          <Route path="/financial" element={<FinancialPage />} />
+          <Route path="/financial/transactions" element={<TransactionsHistory />} />
+          <Route path="/financial/transactions/user/:userId" element={<UserTransactionsHistory />} />
+          
+          {/* CRM */}
+          <Route path="/crm" element={<CRMPage />} />
+          <Route path="/crm/hub" element={<CRMHub />} />
+          <Route path="/crm/pipeline" element={<Pipeline />} />
+          <Route path="/crm/user/:userId" element={<UserLeadsPage />} />
+          
+          {/* Herramientas Hub */}
+          <Route path="/herramientas-hub" element={<HerramientasHub />} />
+          
+          {/* Scalability */}
+          <Route path="/scalability" element={<ScalabilityStart />} />
+          <Route path="/scalability/:analysisId" element={<ScalabilityDashboard />} />
         </Route>
         
-        {/* Dashboard con sub-rutas */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }>
-          <Route path="home" element={<DashboardHome />} />
-          <Route path="agenda" element={<AgendaSemanal />} />
-          <Route path="gamification" element={<DashboardGamification />} />
-          <Route path="notifications" element={<DashboardNotifications />} />
-        </Route>
-        
-        <Route path="/admin" element={
-          <ProtectedRoute>
-            <Admin />
-          </ProtectedRoute>
-        } />
-        
-        {/* Herramientas con sub-rutas */}
-        <Route path="/herramientas" element={
-          <ProtectedRoute>
-            <Herramientas />
-          </ProtectedRoute>
-        }>
-          <Route path="lead-scoring" element={<LeadScoring />} />
-          <Route path="growth-model" element={<GrowthModel />} />
-          <Route path="buyer-persona" element={<BuyerPersona />} />
-          <Route path="customer-journey" element={<CustomerJourney />} />
-          <Route path="brand-kit" element={<BrandKit />} />
-        </Route>
-        
-        {/* Practicar con sub-rutas */}
-        <Route path="/practicar" element={
-          <ProtectedRoute>
-            <Practicar />
-          </ProtectedRoute>
-        }>
-          <Route path="simulador" element={<Simulador />} />
-          <Route path="playbook" element={<Playbook />} />
-          <Route path="guia" element={<Guia />} />
-          <Route path="guia-interactiva" element={<GuiaInteractiva />} />
-        </Route>
-        
-        <Route path="/calculadora" element={
-          <ProtectedRoute>
-            <Calculadora />
-          </ProtectedRoute>
-        } />
-        <Route path="/gamification" element={
-          <ProtectedRoute>
-            <Gamification />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
-        <Route path="/ai-analysis" element={
-          <ProtectedRoute>
-            <AIAnalysis />
-          </ProtectedRoute>
-        } />
-        <Route path="/business-metrics" element={
-          <ProtectedRoute>
-            <BusinessMetrics />
-          </ProtectedRoute>
-        } />
-        <Route path="/business-metrics/user/:userId" element={
-          <ProtectedRoute>
-            <UserMetricsHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/okrs" element={
-          <ProtectedRoute>
-            <OKRsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/okrs/history" element={
-          <ProtectedRoute>
-            <OKRsHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/okrs/history/:userId" element={
-          <ProtectedRoute>
-            <UserOKRHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/okrs/organization" element={
-          <ProtectedRoute>
-            <OrganizationOKRs />
-          </ProtectedRoute>
-        } />
-        <Route path="/okrs/organization/history" element={
-          <ProtectedRoute>
-            <OrganizationOKRHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/financial" element={
-          <ProtectedRoute>
-            <FinancialPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/financial/transactions" element={
-          <ProtectedRoute>
-            <TransactionsHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/financial/transactions/user/:userId" element={
-          <ProtectedRoute>
-            <UserTransactionsHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/alerts" element={
-          <ProtectedRoute>
-            <AlertsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/crm" element={
-          <ProtectedRoute>
-            <CRMPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/crm/hub" element={
-          <ProtectedRoute>
-            <CRMHub />
-          </ProtectedRoute>
-        } />
-        <Route path="/crm/pipeline" element={
-          <ProtectedRoute>
-            <Pipeline />
-          </ProtectedRoute>
-        } />
-        <Route path="/crm/user/:userId" element={
-          <ProtectedRoute>
-            <UserLeadsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/herramientas-hub" element={
-          <ProtectedRoute>
-            <HerramientasHub />
-          </ProtectedRoute>
-        } />
-        <Route path="/metrics" element={
-          <ProtectedRoute>
-            <MetricsHub />
-          </ProtectedRoute>
-        } />
-        <Route path="/scalability" element={
-          <ProtectedRoute>
-            <ScalabilityStart />
-          </ProtectedRoute>
-        } />
-        <Route path="/scalability/:analysisId" element={
-          <ProtectedRoute>
-            <ScalabilityDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+        {/* ===== 404 ===== */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
