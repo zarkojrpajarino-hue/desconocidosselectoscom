@@ -4,130 +4,73 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  CheckCircle2, 
-  Zap, 
-  TrendingUp, 
-  Users, 
-  Target, 
-  BarChart3,
-  ArrowRight,
-  Clock,
-  Shield,
-  Building2,
-  Rocket,
-  Sparkles,
-  Check,
-  LogIn,
-  User,
-  Menu,
-  X
-} from "lucide-react";
+import { CheckCircle2, Zap, TrendingUp, Users, Target, BarChart3, ArrowRight, Clock, Shield, Building2, Rocket, Sparkles, Check, LogIn, User, Menu, X } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
-
 const Landing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const features = [
-    {
-      icon: <Target className="h-8 w-8" />,
-      title: "Dashboard de Tareas",
-      description: "Sistema semanal con tareas personalizadas por fase"
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
-      title: "OKRs Inteligentes",
-      description: "Objetivos y Key Results alineados a tu negocio"
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: "CRM Completo",
-      description: "Pipeline de ventas adaptado a tu proceso comercial"
-    },
-    {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: "Métricas KPI",
-      description: "Dashboard con las métricas que realmente importan"
-    },
-    {
-      icon: <Zap className="h-8 w-8" />,
-      title: "Gamificación",
-      description: "Sistema de puntos, rachas y badges para motivar al equipo"
-    },
-    {
-      icon: <Clock className="h-8 w-8" />,
-      title: "Alertas Inteligentes",
-      description: "Notificaciones automáticas para no perder oportunidades"
-    }
-  ];
-
-  const plans = [
-    {
-      name: "Starter",
-      price: `€${PLAN_PRICES.starter}`,
-      period: "/mes",
-      features: [
-        "10 usuarios",
-        "1,000 leads/mes",
-        "OKRs básicos",
-        "CRM completo",
-        "Dashboard de tareas",
-        "Gamificación",
-        "Soporte email (48h)"
-      ]
-    },
-    {
-      name: "Professional",
-      price: `€${PLAN_PRICES.professional}`,
-      period: "/mes",
-      featured: true,
-      features: [
-        "25 usuarios",
-        "5,000 leads/mes",
-        "OKRs avanzados",
-        "CRM + Automatizaciones",
-        "Análisis competitivo IA",
-        "Google Calendar sync",
-        "Integraciones (Zapier)",
-        "Soporte prioritario (24h)"
-      ]
-    },
-    {
-      name: "Enterprise",
-      price: `€${PLAN_PRICES.enterprise}`,
-      period: "/mes",
-      features: [
-        "Usuarios ilimitados",
-        "Leads ilimitados",
-        "Todo de Professional +",
-        "White-label",
-        "API access completo",
-        "Soporte dedicado 24/7",
-        "Account manager",
-        "SLA 99.9%"
-      ]
-    }
-  ];
-
+  const features = [{
+    icon: <Target className="h-8 w-8" />,
+    title: "Dashboard de Tareas",
+    description: "Sistema semanal con tareas personalizadas por fase"
+  }, {
+    icon: <BarChart3 className="h-8 w-8" />,
+    title: "OKRs Inteligentes",
+    description: "Objetivos y Key Results alineados a tu negocio"
+  }, {
+    icon: <Users className="h-8 w-8" />,
+    title: "CRM Completo",
+    description: "Pipeline de ventas adaptado a tu proceso comercial"
+  }, {
+    icon: <TrendingUp className="h-8 w-8" />,
+    title: "Métricas KPI",
+    description: "Dashboard con las métricas que realmente importan"
+  }, {
+    icon: <Zap className="h-8 w-8" />,
+    title: "Gamificación",
+    description: "Sistema de puntos, rachas y badges para motivar al equipo"
+  }, {
+    icon: <Clock className="h-8 w-8" />,
+    title: "Alertas Inteligentes",
+    description: "Notificaciones automáticas para no perder oportunidades"
+  }];
+  const plans = [{
+    name: "Starter",
+    price: `€${PLAN_PRICES.starter}`,
+    period: "/mes",
+    features: ["10 usuarios", "1,000 leads/mes", "OKRs básicos", "CRM completo", "Dashboard de tareas", "Gamificación", "Soporte email (48h)"]
+  }, {
+    name: "Professional",
+    price: `€${PLAN_PRICES.professional}`,
+    period: "/mes",
+    featured: true,
+    features: ["25 usuarios", "5,000 leads/mes", "OKRs avanzados", "CRM + Automatizaciones", "Análisis competitivo IA", "Google Calendar sync", "Integraciones (Zapier)", "Soporte prioritario (24h)"]
+  }, {
+    name: "Enterprise",
+    price: `€${PLAN_PRICES.enterprise}`,
+    period: "/mes",
+    features: ["Usuarios ilimitados", "Leads ilimitados", "Todo de Professional +", "White-label", "API access completo", "Soporte dedicado 24/7", "Account manager", "SLA 99.9%"]
+  }];
   const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth'
+    });
     setMobileMenuOpen(false);
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* ===== HEADER PROFESIONAL CON LOGIN ===== */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           {/* Logo */}
-          <div 
-            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
+          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        })}>
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">O</span>
+              
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               OPTIMUS-K
@@ -136,108 +79,64 @@ const Landing = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => scrollToSection('features')}
-            >
+            <Button variant="ghost" onClick={() => scrollToSection('features')}>
               Características
             </Button>
-            <Button 
-              variant="ghost"
-              onClick={() => scrollToSection('how-it-works')}
-            >
+            <Button variant="ghost" onClick={() => scrollToSection('how-it-works')}>
               Cómo Funciona
             </Button>
-            <Button 
-              variant="ghost"
-              onClick={() => scrollToSection('pricing')}
-            >
+            <Button variant="ghost" onClick={() => scrollToSection('pricing')}>
               Precios
             </Button>
           </nav>
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            {user ? (
-              // Usuario YA logueado
-              <Button 
-                onClick={() => navigate('/home')}
-              >
+            {user ?
+          // Usuario YA logueado
+          <Button onClick={() => navigate('/home')}>
                 <User className="w-4 h-4 mr-2" />
                 Ir a Dashboard
-              </Button>
-            ) : (
-              // Usuario NO logueado
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => navigate('/login')}
-                  className="hidden sm:flex"
-                >
+              </Button> :
+          // Usuario NO logueado
+          <>
+                <Button variant="ghost" onClick={() => navigate('/login')} className="hidden sm:flex">
                   <LogIn className="w-4 h-4 mr-2" />
                   Iniciar Sesión
                 </Button>
-                <Button 
-                  onClick={() => navigate('/signup')}
-                >
+                <Button onClick={() => navigate('/signup')}>
                   Empezar Gratis
                 </Button>
-              </>
-            )}
+              </>}
 
             {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
+            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t bg-background/95 backdrop-blur">
+        {mobileMenuOpen && <div className="md:hidden border-t bg-background/95 backdrop-blur">
             <nav className="container py-4 flex flex-col gap-2 px-4">
-              <Button 
-                variant="ghost" 
-                className="justify-start"
-                onClick={() => scrollToSection('features')}
-              >
+              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('features')}>
                 Características
               </Button>
-              <Button 
-                variant="ghost"
-                className="justify-start"
-                onClick={() => scrollToSection('how-it-works')}
-              >
+              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('how-it-works')}>
                 Cómo Funciona
               </Button>
-              <Button 
-                variant="ghost"
-                className="justify-start"
-                onClick={() => scrollToSection('pricing')}
-              >
+              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('pricing')}>
                 Precios
               </Button>
-              {!user && (
-                <Button 
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    navigate('/login');
-                    setMobileMenuOpen(false);
-                  }}
-                >
+              {!user && <Button variant="ghost" className="justify-start" onClick={() => {
+            navigate('/login');
+            setMobileMenuOpen(false);
+          }}>
                   <LogIn className="w-4 h-4 mr-2" />
                   Iniciar Sesión
-                </Button>
-              )}
+                </Button>}
             </nav>
-          </div>
-        )}
+          </div>}
       </header>
 
       {/* Hero Section */}
@@ -273,10 +172,7 @@ const Landing = () => {
 
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
           {/* Opción 1: Empresa Existente */}
-          <Card 
-            className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group"
-            onClick={() => navigate('/onboarding')}
-          >
+          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group" onClick={() => navigate('/onboarding')}>
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
                 <Building2 className="w-8 h-8 text-primary" />
@@ -310,10 +206,7 @@ const Landing = () => {
           </Card>
 
           {/* Opción 2: Idea/Startup */}
-          <Card 
-            className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group"
-            onClick={() => navigate('/onboarding/startup')}
-          >
+          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group" onClick={() => navigate('/onboarding/startup')}>
             <div className="text-center">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
                 <Rocket className="w-8 h-8 text-accent" />
@@ -382,13 +275,11 @@ const Landing = () => {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+          {features.map((feature, index) => <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
               <div className="text-primary mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
 
@@ -450,14 +341,8 @@ const Landing = () => {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
-            <Card 
-              key={index} 
-              className={`p-8 ${plan.featured ? 'border-primary border-2 shadow-xl' : ''}`}
-            >
-              {plan.featured && (
-                <Badge className="mb-4">Más Popular</Badge>
-              )}
+          {plans.map((plan, index) => <Card key={index} className={`p-8 ${plan.featured ? 'border-primary border-2 shadow-xl' : ''}`}>
+              {plan.featured && <Badge className="mb-4">Más Popular</Badge>}
               
               <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
               
@@ -467,23 +352,16 @@ const Landing = () => {
               </div>
 
               <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2">
+                {plan.features.map((feature, i) => <li key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
 
-              <Button 
-                className="w-full" 
-                variant={plan.featured ? "default" : "outline"}
-                onClick={() => navigate('/onboarding')}
-              >
+              <Button className="w-full" variant={plan.featured ? "default" : "outline"} onClick={() => navigate('/onboarding')}>
                 Empezar Prueba Gratis
               </Button>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
 
@@ -497,20 +375,11 @@ const Landing = () => {
             Ya sea que tengas una empresa o una idea, OPTIMUS-K te ayuda a gestionar mejor
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/onboarding')}
-              className="text-lg px-8 py-6"
-            >
+            <Button size="lg" onClick={() => navigate('/onboarding')} className="text-lg px-8 py-6">
               <Building2 className="mr-2 h-5 w-5" />
               Soy Empresa
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/onboarding/startup')}
-              className="text-lg px-8 py-6"
-            >
+            <Button size="lg" variant="outline" onClick={() => navigate('/onboarding/startup')} className="text-lg px-8 py-6">
               <Rocket className="mr-2 h-5 w-5" />
               Soy Startup
             </Button>
@@ -525,8 +394,6 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground border-t">
         <p>© 2024 OPTIMUS-K · soporte@optimus-k.com</p>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
