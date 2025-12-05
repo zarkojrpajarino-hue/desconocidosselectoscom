@@ -11,8 +11,13 @@ import {
   BarChart3,
   ArrowRight,
   Clock,
-  Shield
+  Shield,
+  Building2,
+  Rocket,
+  Sparkles,
+  Check
 } from "lucide-react";
+import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -52,49 +57,48 @@ const Landing = () => {
 
   const plans = [
     {
-      name: "Essential",
-      price: "€99",
+      name: "Starter",
+      price: `€${PLAN_PRICES.starter}`,
       period: "/mes",
       features: [
         "10 usuarios",
-        "500 leads",
+        "1,000 leads/mes",
         "OKRs básicos",
         "CRM completo",
         "Dashboard de tareas",
         "Gamificación",
-        "Soporte email"
+        "Soporte email (48h)"
       ]
     },
     {
       name: "Professional",
-      price: "€249",
+      price: `€${PLAN_PRICES.professional}`,
       period: "/mes",
       featured: true,
       features: [
-        "30 usuarios",
-        "Leads ilimitados",
+        "25 usuarios",
+        "5,000 leads/mes",
         "OKRs avanzados",
-        "CRM completo + Automatizaciones",
-        "Dashboard de tareas",
-        "Gamificación avanzada",
-        "Reportes personalizados",
-        "Integraciones (Zapier, etc.)",
-        "Soporte prioritario"
+        "CRM + Automatizaciones",
+        "Análisis competitivo IA",
+        "Google Calendar sync",
+        "Integraciones (Zapier)",
+        "Soporte prioritario (24h)"
       ]
     },
     {
       name: "Enterprise",
-      price: "€449",
+      price: `€${PLAN_PRICES.enterprise}`,
       period: "/mes",
       features: [
         "Usuarios ilimitados",
         "Leads ilimitados",
         "Todo de Professional +",
         "White-label",
-        "API access",
-        "Soporte dedicado",
-        "Customizaciones",
-        "SLA garantizado"
+        "API access completo",
+        "Soporte dedicado 24/7",
+        "Account manager",
+        "SLA 99.9%"
       ]
     }
   ];
@@ -102,7 +106,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-20 pb-16 text-center">
+      <div className="container mx-auto px-4 pt-20 pb-12 text-center">
         <Badge className="mb-4 text-sm px-4 py-1">
           🎁 14 días GRATIS
         </Badge>
@@ -111,36 +115,113 @@ const Landing = () => {
           OPTIMUS-K
         </h1>
         
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-          Generador de Apps de Gestión Empresarial
+        <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
+          Generador de Apps de Gestión Empresarial con IA
         </p>
         
-        <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-          En <strong>2-3 horas</strong> tendrás una app completa adaptada a tu empresa:
-          Tareas, OKRs, CRM, Métricas y Gamificación
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          ¿Tienes una empresa o una idea? Sea cual sea tu situación, 
+          en <strong>15 segundos</strong> tendrás tu workspace completo.
         </p>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <Button 
-            size="lg" 
-            onClick={() => navigate('/onboarding')}
-            className="text-lg px-8 py-6"
-          >
-            Empezar Ahora
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          
-          <Button 
-            size="lg" 
-            variant="outline"
-            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-lg px-8 py-6"
-          >
-            Ver Precios
-          </Button>
+      {/* SELECTOR EMPRESA vs STARTUP */}
+      <div className="container mx-auto px-4 pb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+            Empieza Ahora - Elige tu camino
+          </h2>
+          <p className="text-muted-foreground">
+            Selecciona la opción que mejor describe tu situación
+          </p>
         </div>
 
-        <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
+          {/* Opción 1: Empresa Existente */}
+          <Card 
+            className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group"
+            onClick={() => navigate('/onboarding')}
+          >
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <Building2 className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">
+                Tengo una Empresa
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Ya tengo clientes, revenue, y operaciones activas.
+                Quiero optimizar y crecer.
+              </p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Genera OKRs basados en tu situación real</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Pipeline CRM adaptado a tu proceso</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Herramientas marketing personalizadas</span>
+                </li>
+              </ul>
+              <Button className="w-full" size="lg">
+                Empezar Onboarding Empresa
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+
+          {/* Opción 2: Idea/Startup */}
+          <Card 
+            className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group"
+            onClick={() => navigate('/onboarding/startup')}
+          >
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                <Rocket className="w-8 h-8 text-accent" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">
+                Tengo una Idea 🚀
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Quiero validar mi idea y construir mi MVP.
+                Necesito un plan de acción estructurado.
+              </p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Roadmap de validación de hipótesis</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Plan de go-to-market estructurado</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Timeline de milestones pre-launch</span>
+                </li>
+              </ul>
+              <Button className="w-full" size="lg" variant="outline">
+                Empezar Onboarding Startup
+                <Sparkles className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Disclaimer */}
+        <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
+          💡 Ambos tipos obtienen acceso completo a la plataforma.
+          La diferencia es el enfoque del onboarding y el contenido inicial generado por IA.
+        </p>
+      </div>
+
+      {/* Trust badges */}
+      <div className="container mx-auto px-4 pb-12">
+        <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground flex-wrap">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
             <span>Sin permanencia</span>
@@ -151,7 +232,7 @@ const Landing = () => {
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-green-500" />
-            <span>Setup en 2-3h</span>
+            <span>Setup instantáneo</span>
           </div>
         </div>
       </div>
@@ -188,9 +269,9 @@ const Landing = () => {
               1
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-2">Completas el Onboarding (30 preguntas)</h3>
+              <h3 className="text-xl font-semibold mb-2">Eliges tu tipo de negocio</h3>
               <p className="text-muted-foreground">
-                Nos cuentas sobre tu empresa, proceso comercial, productos, equipo y objetivos
+                Empresa existente (9 pasos) o Startup/Idea (8 pasos) - cada uno con preguntas específicas
               </p>
             </div>
           </div>
@@ -200,9 +281,9 @@ const Landing = () => {
               2
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-2">Generamos tu App Personalizada</h3>
+              <h3 className="text-xl font-semibold mb-2">Generamos tu Workspace con IA</h3>
               <p className="text-muted-foreground">
-                Nuestro sistema crea una app adaptada a tu negocio con tareas, métricas y procesos específicos
+                Nuestro sistema crea una app personalizada con tareas, OKRs, métricas y herramientas adaptadas
               </p>
             </div>
           </div>
@@ -212,9 +293,9 @@ const Landing = () => {
               3
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-2">Empiezas a Usar tu App (2-3h después)</h3>
+              <h3 className="text-xl font-semibold mb-2">Empiezas a trabajar inmediatamente</h3>
               <p className="text-muted-foreground">
-                Recibes credenciales y ya puedes gestionar tu empresa de forma profesional
+                En segundos tienes tu dashboard listo con todo configurado para tu negocio específico
               </p>
             </div>
           </div>
@@ -224,10 +305,13 @@ const Landing = () => {
       {/* Pricing Section */}
       <div id="pricing" className="container mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-          Precios Transparentes
+          Precios Simples y Transparentes
         </h2>
-        <p className="text-center text-muted-foreground mb-12">
+        <p className="text-center text-muted-foreground mb-4">
           14 días GRATIS · Sin permanencia · Cancela cuando quieras
+        </p>
+        <p className="text-center text-sm text-muted-foreground mb-12">
+          <strong>Mismo precio para empresas y startups</strong> - El valor que obtienes es equivalente
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -272,19 +356,30 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-16 text-center">
         <Card className="p-12 bg-gradient-to-br from-primary/10 to-primary/5">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ¿Listo para Optimizar tu Empresa?
+            ¿Listo para Empezar?
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Únete a empresas que ya están gestionando mejor con OPTIMUS-K
+            Ya sea que tengas una empresa o una idea, OPTIMUS-K te ayuda a gestionar mejor
           </p>
-          <Button 
-            size="lg" 
-            onClick={() => navigate('/onboarding')}
-            className="text-lg px-8 py-6"
-          >
-            Empezar Ahora Gratis
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/onboarding')}
+              className="text-lg px-8 py-6"
+            >
+              <Building2 className="mr-2 h-5 w-5" />
+              Soy Empresa
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => navigate('/onboarding/startup')}
+              className="text-lg px-8 py-6"
+            >
+              <Rocket className="mr-2 h-5 w-5" />
+              Soy Startup
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground mt-4">
             No se requiere tarjeta de crédito para la prueba
           </p>

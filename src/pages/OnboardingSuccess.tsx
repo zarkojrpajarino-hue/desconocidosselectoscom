@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Clock, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 
 const OnboardingSuccess = () => {
   const navigate = useNavigate();
@@ -48,9 +49,9 @@ const OnboardingSuccess = () => {
                   <strong>14 días GRATIS.</strong> Luego podrás elegir tu plan:
                 </p>
                 <ul className="text-sm text-yellow-800 dark:text-yellow-200 mt-2 space-y-1">
-                  <li>• <strong>Essential:</strong> €99/mes - 10 usuarios</li>
-                  <li>• <strong>Professional:</strong> €249/mes - 30 usuarios + automatizaciones</li>
-                  <li>• <strong>Enterprise:</strong> €449/mes - Ilimitado + soporte dedicado</li>
+                  <li>• <strong>Starter:</strong> €{PLAN_PRICES.starter}/mes - 10 usuarios</li>
+                  <li>• <strong>Professional:</strong> €{PLAN_PRICES.professional}/mes - 25 usuarios + automatizaciones</li>
+                  <li>• <strong>Enterprise:</strong> €{PLAN_PRICES.enterprise}/mes - Ilimitado + soporte dedicado</li>
                 </ul>
               </div>
             </div>
