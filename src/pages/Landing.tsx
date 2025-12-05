@@ -69,9 +69,7 @@ const Landing = () => {
           top: 0,
           behavior: 'smooth'
         })}>
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-              
-            </div>
+            
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               OPTIMUS-K
             </span>
