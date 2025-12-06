@@ -4,3 +4,4 @@ export { SwipeableCard } from './SwipeableCard';
 export { FloatingActionButton } from './FloatingActionButton';
 export { PullToRefresh } from './PullToRefresh';
 export { PWAInstallBanner } from './PWAInstallBanner';
+export { NotificationSettings } from './NotificationSettings';
