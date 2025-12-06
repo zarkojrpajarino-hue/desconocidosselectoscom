@@ -302,7 +302,7 @@ const Landing = () => {
           Todas las herramientas que necesitas para gestionar tu empresa en un solo lugar
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
           {features.map((feature, index) => (
             <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
               <div className="text-primary mb-4">{feature.icon}</div>
