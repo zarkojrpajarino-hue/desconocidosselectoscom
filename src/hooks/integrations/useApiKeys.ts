@@ -1,3 +1,23 @@
+/**
+ * @fileoverview useApiKeys - Hook para gestión de API Keys
+ * 
+ * Proporciona funcionalidades CRUD para las API keys de la organización,
+ * incluyendo creación con hash seguro, activación/desactivación y eliminación.
+ * 
+ * @module hooks/integrations/useApiKeys
+ * 
+ * @example
+ * ```tsx
+ * const { apiKeys, createApiKey, deleteApiKey, loading } = useApiKeys(organizationId);
+ * 
+ * // Crear nueva API Key
+ * const key = await createApiKey('Mi integración');
+ * 
+ * // Eliminar API Key
+ * await deleteApiKey(keyId);
+ * ```
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
