@@ -1,25 +1,55 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#8b5cf6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Selecta" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     
     <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <title>Experiencia Selecta - Task Management System</title>
-    <meta name="description" content="Sistema de gestión de tareas para el equipo de Experiencia Selecta. Gestiona tus objetivos semanales y monitorea el progreso del equipo." />
+    
+    <title>Experiencia Selecta - Business Platform</title>
+    <meta name="description" content="Plataforma de gestión empresarial con IA. Gestiona tareas, CRM, métricas y OKRs de tu negocio." />
     <meta name="author" content="Experiencia Selecta" />
 
-    <meta property="og:title" content="Experiencia Selecta - Task Management System" />
-    <meta property="og:description" content="Sistema de gestión de tareas para el equipo de Experiencia Selecta" />
+    <meta property="og:title" content="Experiencia Selecta - Business Platform" />
+    <meta property="og:description" content="Plataforma de gestión empresarial con IA" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@ExperienciaSelecta" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Splash Screens for iOS -->
+    <style>
+      /* Prevent pull-to-refresh on iOS */
+      html, body {
+        overscroll-behavior-y: contain;
+      }
+      
+      /* Safe area padding helper */
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+        --sar: env(safe-area-inset-right);
+      }
+    </style>
   </head>
 
   <body>
