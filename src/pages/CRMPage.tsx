@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Target, User, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
 import { toast } from 'sonner';
 import { Lead, UserLeadStats, CRMGlobalStats } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
@@ -244,56 +245,55 @@ const CRMPage = () => {
       </div>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-        {/* KPIs Globales */}
+        {/* KPIs Globales con StatCards */}
         {globalStats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{globalStats.total_leads}</span>
-                  <Users className="h-8 w-8 text-primary opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Pipeline Total</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{globalStats.total_pipeline_value.toFixed(0)}€</span>
-                  <DollarSign className="h-8 w-8 text-emerald-500 opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Leads Calientes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{globalStats.hot_leads}</span>
-                  <span className="text-4xl">🔥</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Ganados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{globalStats.won_leads}</span>
-                  <Target className="h-8 w-8 text-success opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              variant="primary"
+              size="md"
+              value={globalStats.total_leads}
+              label="Total Leads"
+              change="este mes"
+              trend="neutral"
+              icon={<Users className="w-5 h-5 text-primary" />}
+              className="animate-fade-in"
+            />
+            
+            <StatCard
+              variant="success"
+              size="md"
+              value={`€${globalStats.total_pipeline_value.toLocaleString()}`}
+              label="Pipeline Total"
+              change="valor acumulado"
+              trend="up"
+              icon={<DollarSign className="w-5 h-5 text-success" />}
+              className="animate-fade-in"
+              style={{ animationDelay: '100ms' }}
+            />
+            
+            <StatCard
+              variant="warning"
+              size="md"
+              value={globalStats.hot_leads}
+              label="Leads Calientes"
+              change="alta prioridad"
+              trend={globalStats.hot_leads > 5 ? "up" : "neutral"}
+              icon={<span className="text-lg">🔥</span>}
+              className="animate-fade-in"
+              style={{ animationDelay: '200ms' }}
+            />
+            
+            <StatCard
+              variant="success"
+              size="md"
+              value={globalStats.won_leads}
+              label="Ganados"
+              change={`${globalStats.total_leads > 0 ? Math.round((globalStats.won_leads / globalStats.total_leads) * 100) : 0}% conversión`}
+              trend="up"
+              icon={<Target className="w-5 h-5 text-success" />}
+              className="animate-fade-in"
+              style={{ animationDelay: '300ms' }}
+            />
           </div>
         )}
 

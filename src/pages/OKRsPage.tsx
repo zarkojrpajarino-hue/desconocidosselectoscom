@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw, CheckCircle2, AlertTriangle, TrendingUp } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
@@ -21,6 +23,55 @@ const OKRsPage = () => {
   const navigate = useNavigate();
   const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('weekly');
+  const [objectives, setObjectives] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchObjectives();
+    }
+  }, [user]);
+
+  const fetchObjectives = async () => {
+    if (!user?.id) return;
+    try {
+      // @ts-ignore - Supabase types issue with nested selects
+      const { data } = await supabase
+        .from('objectives')
+        .select('id, title, status, key_results(id, title, current_value, target_value)')
+        .eq('user_id', user.id) as { data: any[] | null };
+      setObjectives(data || []);
+    } catch (error) {
+      console.error('Error fetching objectives:', error);
+    }
+  };
+
+  // Calcular estadísticas de OKRs
+  const okrStats = useMemo(() => {
+    const totalOKRs = objectives.length;
+    const completedOKRs = objectives.filter(o => 
+      o.key_results?.length > 0 && o.key_results.every((kr: any) => (kr.current_value || 0) >= (kr.target_value || 1))
+    ).length;
+    const inProgressOKRs = objectives.filter(o => 
+      o.key_results?.some((kr: any) => (kr.current_value || 0) > 0 && (kr.current_value || 0) < (kr.target_value || 1))
+    ).length;
+    const atRiskOKRs = objectives.filter(o => {
+      if (!o.key_results?.length) return false;
+      const avgProgress = o.key_results.reduce((sum: number, kr: any) => 
+        sum + ((kr.current_value || 0) / (kr.target_value || 1)), 0) / o.key_results.length;
+      return avgProgress < 0.3;
+    }).length;
+    const overallProgress = totalOKRs > 0
+      ? Math.round((objectives.reduce((sum, o) => {
+          if (!o.key_results?.length) return sum;
+          const okrProgress = o.key_results.reduce((krSum: number, kr: any) => 
+            krSum + Math.min((kr.current_value || 0) / (kr.target_value || 1), 1), 0
+          ) / o.key_results.length;
+          return sum + okrProgress;
+        }, 0) / totalOKRs) * 100)
+      : 0;
+
+    return { totalOKRs, completedOKRs, inProgressOKRs, atRiskOKRs, overallProgress };
+  }, [objectives]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -70,6 +121,56 @@ const OKRsPage = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* OKR Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            variant="primary"
+            size="md"
+            value={okrStats.totalOKRs}
+            label="OKRs Activos"
+            change={`Q${Math.ceil((new Date().getMonth() + 1) / 3)}`}
+            trend="neutral"
+            icon={<Target className="w-5 h-5 text-primary" />}
+            className="animate-fade-in"
+          />
+          
+          <StatCard
+            variant="success"
+            size="md"
+            value={okrStats.completedOKRs}
+            label="Completados"
+            change={okrStats.totalOKRs > 0 ? `${Math.round((okrStats.completedOKRs / okrStats.totalOKRs) * 100)}%` : '0%'}
+            trend="up"
+            icon={<CheckCircle2 className="w-5 h-5 text-success" />}
+            className="animate-fade-in"
+            style={{ animationDelay: '100ms' }}
+          />
+          
+          <StatCard
+            variant="info"
+            size="md"
+            value={okrStats.inProgressOKRs}
+            label="En Progreso"
+            change={`${okrStats.overallProgress}% promedio`}
+            trend={okrStats.overallProgress > 50 ? "up" : "neutral"}
+            icon={<TrendingUp className="w-5 h-5 text-info" />}
+            className="animate-fade-in"
+            style={{ animationDelay: '200ms' }}
+          />
+          
+          <StatCard
+            variant={okrStats.atRiskOKRs > 0 ? "warning" : "success"}
+            size="md"
+            value={okrStats.atRiskOKRs}
+            label="En Riesgo"
+            change={okrStats.atRiskOKRs > 0 ? "Requieren atención" : "Todo OK"}
+            trend={okrStats.atRiskOKRs > 0 ? "down" : "up"}
+            icon={okrStats.atRiskOKRs > 0 ? <AlertTriangle className="w-5 h-5 text-warning" /> : <CheckCircle2 className="w-5 h-5 text-success" />}
+            className="animate-fade-in"
+            style={{ animationDelay: '300ms' }}
+          />
+        </div>
+
         {/* Explicación */}
         <Collapsible open={isOkrInfoOpen} onOpenChange={setIsOkrInfoOpen} className="mb-6">
           <Card>
