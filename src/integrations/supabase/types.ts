@@ -3363,6 +3363,200 @@ export type Database = {
           },
         ]
       }
+      slack_channels: {
+        Row: {
+          channel_id: string
+          channel_name: string
+          created_at: string | null
+          id: string
+          is_archived: boolean | null
+          is_private: boolean | null
+          slack_workspace_id: string
+        }
+        Insert: {
+          channel_id: string
+          channel_name: string
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_private?: boolean | null
+          slack_workspace_id: string
+        }
+        Update: {
+          channel_id?: string
+          channel_name?: string
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_private?: boolean | null
+          slack_workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_channels_slack_workspace_id_fkey"
+            columns: ["slack_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "slack_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slack_event_mappings: {
+        Row: {
+          channel_id: string
+          channel_name: string
+          created_at: string | null
+          enabled: boolean | null
+          event_type: string
+          id: string
+          mention_users: string[] | null
+          slack_workspace_id: string
+          template: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel_id: string
+          channel_name: string
+          created_at?: string | null
+          enabled?: boolean | null
+          event_type: string
+          id?: string
+          mention_users?: string[] | null
+          slack_workspace_id: string
+          template?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel_id?: string
+          channel_name?: string
+          created_at?: string | null
+          enabled?: boolean | null
+          event_type?: string
+          id?: string
+          mention_users?: string[] | null
+          slack_workspace_id?: string
+          template?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_event_mappings_slack_workspace_id_fkey"
+            columns: ["slack_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "slack_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slack_messages: {
+        Row: {
+          channel_id: string
+          created_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          message_blocks: Json | null
+          message_text: string
+          slack_timestamp: string | null
+          slack_workspace_id: string
+          status: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          message_blocks?: Json | null
+          message_text: string
+          slack_timestamp?: string | null
+          slack_workspace_id: string
+          status?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          message_blocks?: Json | null
+          message_text?: string
+          slack_timestamp?: string | null
+          slack_workspace_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_messages_slack_workspace_id_fkey"
+            columns: ["slack_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "slack_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slack_workspaces: {
+        Row: {
+          access_token: string
+          bot_user_id: string
+          created_at: string | null
+          default_channel_id: string | null
+          default_channel_name: string | null
+          enabled: boolean | null
+          event_filters: Json | null
+          id: string
+          last_message_at: string | null
+          organization_id: string
+          scope: string
+          team_id: string
+          team_name: string
+          total_messages_sent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          bot_user_id: string
+          created_at?: string | null
+          default_channel_id?: string | null
+          default_channel_name?: string | null
+          enabled?: boolean | null
+          event_filters?: Json | null
+          id?: string
+          last_message_at?: string | null
+          organization_id: string
+          scope: string
+          team_id: string
+          team_name: string
+          total_messages_sent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          bot_user_id?: string
+          created_at?: string | null
+          default_channel_id?: string | null
+          default_channel_name?: string | null
+          enabled?: boolean | null
+          event_filters?: Json | null
+          id?: string
+          last_message_at?: string | null
+          organization_id?: string
+          scope?: string
+          team_id?: string
+          team_name?: string
+          total_messages_sent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_workspaces_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_alerts: {
         Row: {
           action_label: string | null

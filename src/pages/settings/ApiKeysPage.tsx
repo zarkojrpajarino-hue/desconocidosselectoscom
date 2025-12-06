@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Dialog, 
@@ -16,6 +17,13 @@ import {
   DialogTitle,
   DialogTrigger 
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   Copy, 
   Key, 
@@ -26,7 +34,10 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  MessageSquare,
+  Check,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -65,6 +76,38 @@ interface WebhookDelivery {
   created_at: string;
 }
 
+interface SlackWorkspace {
+  id: string;
+  team_id: string;
+  team_name: string;
+  enabled: boolean;
+  total_messages_sent: number;
+  last_message_at: string | null;
+  created_at: string;
+}
+
+interface SlackChannel {
+  id: string;
+  channel_id: string;
+  channel_name: string;
+  is_private: boolean;
+}
+
+interface SlackEventMapping {
+  id: string;
+  event_type: string;
+  channel_id: string;
+  channel_name: string;
+  enabled: boolean;
+}
+
+const SLACK_EVENT_TYPES = [
+  { value: 'lead.created', label: 'Nuevo Lead Creado', icon: '🎯' },
+  { value: 'lead.won', label: 'Lead Ganado', icon: '🎉' },
+  { value: 'task.completed', label: 'Tarea Completada', icon: '✅' },
+  { value: 'okr.at_risk', label: 'OKR en Riesgo', icon: '⚠️' },
+];
+
 export default function ApiKeysPage() {
   const { user } = useAuth();
   const [currentOrganizationId, setCurrentOrganizationId] = useState<string | null>(null);
@@ -83,6 +126,13 @@ export default function ApiKeysPage() {
     url: '',
     events: ['lead.created', 'lead.updated', 'task.completed']
   });
+  
+  // Slack state
+  const [slackWorkspace, setSlackWorkspace] = useState<SlackWorkspace | null>(null);
+  const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
+  const [slackMappings, setSlackMappings] = useState<SlackEventMapping[]>([]);
+  const [slackLoading, setSlackLoading] = useState(true);
+  const [connectingSlack, setConnectingSlack] = useState(false);
 
   useEffect(() => {
     loadOrganization();
@@ -92,8 +142,23 @@ export default function ApiKeysPage() {
     if (currentOrganizationId) {
       loadApiKeys();
       loadWebhooks();
+      loadSlackData();
     }
   }, [currentOrganizationId]);
+
+  // Check for Slack OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const slackStatus = urlParams.get('slack');
+    if (slackStatus === 'connected') {
+      toast.success('¡Slack conectado correctamente!');
+      window.history.replaceState({}, '', window.location.pathname);
+      loadSlackData();
+    } else if (slackStatus === 'error') {
+      toast.error('Error al conectar Slack: ' + (urlParams.get('message') || 'desconocido'));
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const loadOrganization = async () => {
     if (!user) return;
@@ -139,6 +204,124 @@ export default function ApiKeysPage() {
         .limit(20);
 
       setDeliveries((deliveriesData as WebhookDelivery[]) || []);
+    }
+  };
+
+  const loadSlackData = async () => {
+    if (!currentOrganizationId) return;
+    setSlackLoading(true);
+    try {
+      // Load workspace
+      const { data: workspaceData } = await supabase
+        .from('slack_workspaces')
+        .select('*')
+        .eq('organization_id', currentOrganizationId)
+        .maybeSingle();
+
+      setSlackWorkspace(workspaceData as SlackWorkspace | null);
+
+      if (workspaceData) {
+        // Load channels
+        const { data: channelsData } = await supabase
+          .from('slack_channels')
+          .select('*')
+          .eq('slack_workspace_id', workspaceData.id)
+          .eq('is_archived', false)
+          .order('channel_name');
+
+        setSlackChannels((channelsData as SlackChannel[]) || []);
+
+        // Load event mappings
+        const { data: mappingsData } = await supabase
+          .from('slack_event_mappings')
+          .select('*')
+          .eq('slack_workspace_id', workspaceData.id);
+
+        setSlackMappings((mappingsData as SlackEventMapping[]) || []);
+      }
+    } catch (error) {
+      console.error('Error loading Slack data:', error);
+    } finally {
+      setSlackLoading(false);
+    }
+  };
+
+  const connectSlack = async () => {
+    if (!currentOrganizationId) return;
+    setConnectingSlack(true);
+    // Build OAuth URL with query params
+    const baseUrl = `https://nrsrzfqtzjrxrvqyypdn.supabase.co/functions/v1/slack-oauth?action=authorize&organization_id=${currentOrganizationId}`;
+    // Redirect to Slack OAuth
+    window.location.href = baseUrl;
+  };
+
+  const disconnectSlack = async () => {
+    if (!slackWorkspace || !confirm('¿Desconectar Slack? Se perderán todas las configuraciones.')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('slack_workspaces')
+      .delete()
+      .eq('id', slackWorkspace.id);
+
+    if (error) {
+      toast.error('Error al desconectar Slack');
+    } else {
+      toast.success('Slack desconectado');
+      setSlackWorkspace(null);
+      setSlackChannels([]);
+      setSlackMappings([]);
+    }
+  };
+
+  const toggleSlackWorkspace = async (enabled: boolean) => {
+    if (!slackWorkspace) return;
+
+    const { error } = await supabase
+      .from('slack_workspaces')
+      .update({ enabled })
+      .eq('id', slackWorkspace.id);
+
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      setSlackWorkspace({ ...slackWorkspace, enabled });
+      toast.success(enabled ? 'Notificaciones activadas' : 'Notificaciones desactivadas');
+    }
+  };
+
+  const updateSlackMapping = async (eventType: string, channelId: string, channelName: string) => {
+    if (!slackWorkspace) return;
+
+    const { error } = await supabase
+      .from('slack_event_mappings')
+      .upsert({
+        slack_workspace_id: slackWorkspace.id,
+        event_type: eventType,
+        channel_id: channelId,
+        channel_name: channelName,
+        enabled: true,
+      }, { onConflict: 'slack_workspace_id,event_type' });
+
+    if (error) {
+      toast.error('Error al actualizar canal');
+    } else {
+      loadSlackData();
+      toast.success('Canal actualizado');
+    }
+  };
+
+  const toggleSlackMapping = async (mappingId: string, enabled: boolean) => {
+    const { error } = await supabase
+      .from('slack_event_mappings')
+      .update({ enabled })
+      .eq('id', mappingId);
+
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      loadSlackData();
     }
   };
 
@@ -310,6 +493,10 @@ export default function ApiKeysPage() {
             <TabsTrigger value="webhooks" className="flex items-center gap-2">
               <Webhook className="w-4 h-4" />
               Webhooks
+            </TabsTrigger>
+            <TabsTrigger value="slack" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Slack
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
@@ -643,6 +830,93 @@ export default function ApiKeysPage() {
                 </Card>
               )}
             </div>
+          </TabsContent>
+
+          {/* SLACK TAB */}
+          <TabsContent value="slack" className="space-y-4">
+            {slackLoading ? (
+              <Card><CardContent className="py-12 text-center"><p>Cargando...</p></CardContent></Card>
+            ) : !slackWorkspace ? (
+              <Card>
+                <CardContent className="py-12 text-center space-y-6">
+                  <MessageSquare className="w-16 h-16 mx-auto text-muted-foreground" />
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Conecta tu workspace de Slack</h3>
+                    <p className="text-muted-foreground mb-4">Recibe notificaciones en tiempo real sobre leads, tareas y OKRs</p>
+                  </div>
+                  <Button onClick={connectSlack} disabled={connectingSlack} size="lg">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    {connectingSlack ? 'Conectando...' : 'Conectar con Slack'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <MessageSquare className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{slackWorkspace.team_name}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant={slackWorkspace.enabled ? "default" : "secondary"} className={slackWorkspace.enabled ? "bg-green-500" : ""}>
+                              {slackWorkspace.enabled ? <><Check className="w-3 h-3 mr-1" />Activo</> : <><X className="w-3 h-3 mr-1" />Inactivo</>}
+                            </Badge>
+                            <span>·</span>
+                            <span>{slackWorkspace.total_messages_sent} mensajes enviados</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Switch checked={slackWorkspace.enabled} onCheckedChange={toggleSlackWorkspace} />
+                        <Button variant="outline" size="sm" onClick={disconnectSlack}>Desconectar</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configuración de Notificaciones</CardTitle>
+                    <CardDescription>Elige qué eventos enviar y a qué canal</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {SLACK_EVENT_TYPES.map((eventType) => {
+                        const mapping = slackMappings.find(m => m.event_type === eventType.value);
+                        return (
+                          <div key={eventType.value} className="flex items-center gap-4 p-4 border rounded-lg">
+                            <span className="text-2xl">{eventType.icon}</span>
+                            <div className="flex-1">
+                              <p className="font-medium">{eventType.label}</p>
+                              <p className="text-sm text-muted-foreground">{eventType.value}</p>
+                            </div>
+                            <Select
+                              value={mapping?.channel_id || ''}
+                              onValueChange={(channelId) => {
+                                const channel = slackChannels.find(c => c.channel_id === channelId);
+                                if (channel) updateSlackMapping(eventType.value, channel.channel_id, channel.channel_name);
+                              }}
+                            >
+                              <SelectTrigger className="w-48"><SelectValue placeholder="Seleccionar canal" /></SelectTrigger>
+                              <SelectContent>
+                                {slackChannels.map((channel) => (
+                                  <SelectItem key={channel.id} value={channel.channel_id}>#{channel.channel_name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {mapping && <Switch checked={mapping.enabled} onCheckedChange={(enabled) => toggleSlackMapping(mapping.id, enabled)} />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
 
           {/* ACTIVITY TAB */}
