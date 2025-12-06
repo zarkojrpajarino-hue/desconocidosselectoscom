@@ -24,7 +24,7 @@ import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
 
-interface KeyResult {
+interface KeyResultDB {
   id: string;
   title: string;
   description: string;
@@ -33,8 +33,12 @@ interface KeyResult {
   target_value: number;
   current_value: number;
   unit: string;
-  status: 'on_track' | 'at_risk' | 'behind' | 'achieved';
+  status: string;
   weight: number;
+}
+
+interface KeyResult extends KeyResultDB {
+  status: 'on_track' | 'at_risk' | 'behind' | 'achieved';
   progress: number;
 }
 
@@ -179,7 +183,7 @@ const OKRsDashboard = () => {
     }
   };
 
-  const calculateKRProgress = (kr: any) => {
+  const calculateKRProgress = (kr: KeyResultDB) => {
     if (kr.target_value === kr.start_value) return 0;
     const progress = ((kr.current_value - kr.start_value) / (kr.target_value - kr.start_value)) * 100;
     return Math.max(0, Math.min(100, progress));

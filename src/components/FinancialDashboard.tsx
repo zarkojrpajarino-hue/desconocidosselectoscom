@@ -56,6 +56,7 @@ interface ExpenseByCategory {
   category: string;
   total_amount: number;
   percentage_of_total: number;
+  [key: string]: string | number;
 }
 
 interface MarketingROI {
@@ -123,29 +124,26 @@ const FinancialDashboard = () => {
       }
 
       // 2. Ingresos por producto (vista agregada - no filtrar por org_id)
-      const revenueQuery = (supabase as any)
+      const { data: revenueData, error: revenueError } = await supabase
         .from('revenue_by_product_current_month')
         .select('product_category, total_revenue, total_quantity, percentage_of_total');
       
-      const { data: revenueData, error: revenueError } = await revenueQuery;
       if (revenueError) throw revenueError;
       setRevenueByProduct((revenueData as RevenueByProduct[]) || []);
 
       // 3. Gastos por categoría (vista agregada - no filtrar por org_id)
-      const expensesQuery = (supabase as any)
+      const { data: expensesData, error: expensesError } = await supabase
         .from('expenses_by_category_current_month')
         .select('category, total_amount, percentage_of_total');
       
-      const { data: expensesData, error: expensesError } = await expensesQuery;
       if (expensesError) throw expensesError;
       setExpensesByCategory((expensesData as ExpenseByCategory[]) || []);
 
       // 4. ROI de marketing (vista agregada - no filtrar por org_id)
-      const marketingQuery = (supabase as any)
+      const { data: marketingData, error: marketingError } = await supabase
         .from('marketing_roi_by_channel')
         .select('channel, total_spend, total_leads, total_conversions, total_revenue, roi_ratio, cac, conversion_rate');
       
-      const { data: marketingData, error: marketingError } = await marketingQuery;
       if (marketingError) throw marketingError;
       setMarketingROI((marketingData as MarketingROI[]) || []);
 
@@ -161,9 +159,10 @@ const FinancialDashboard = () => {
       if (balanceError && balanceError.code !== 'PGRST116') throw balanceError;
       setCashBalance(balanceData?.balance || 0);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching financial data:', error);
-      toast.error(error.message || 'Error al cargar datos financieros');
+      const errorMessage = error instanceof Error ? error.message : 'Error al cargar datos financieros';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -419,7 +418,7 @@ const FinancialDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
                 <Pie
-                  data={expensesByCategory as any}
+                  data={expensesByCategory}
                   dataKey="total_amount"
                   nameKey="category"
                   cx="50%"

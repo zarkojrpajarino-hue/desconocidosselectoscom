@@ -1,73 +1,174 @@
-# Welcome to your Lovable project
+# OPTIMUS-K
 
-## Project info
+**Plataforma integral para gestión y crecimiento de startups**
 
-**URL**: https://lovable.dev/projects/7601fa16-c666-4f01-b370-6cee93c40cc0
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0-purple.svg)](https://vitejs.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-Cloud-green.svg)](https://supabase.com/)
 
-## How can I edit this code?
+## 🚀 Características
 
-There are several ways of editing your application.
+### CRM & Ventas
+- **Pipeline Visual**: Gestión de leads con drag & drop
+- **Lead Scoring**: Puntuación automática de leads
+- **Integraciones**: HubSpot, Slack, Calendar
 
-**Use Lovable**
+### OKRs & Objetivos
+- **OKRs Semanales**: Generación con IA personalizada
+- **Key Results**: Tracking de métricas con progreso visual
+- **Alertas**: Notificaciones de objetivos en riesgo
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7601fa16-c666-4f01-b370-6cee93c40cc0) and start prompting.
+### Finanzas
+- **Dashboard Financiero**: Ingresos, gastos, márgenes
+- **Cash Flow**: Proyecciones y runway
+- **ROI Marketing**: Análisis por canal
 
-Changes made via Lovable will be committed automatically to this repo.
+### Integraciones Enterprise
+- **Slack**: Notificaciones en tiempo real
+- **HubSpot**: Sincronización bidireccional de contactos
+- **Google Calendar**: Sincronización de tareas
+- **Asana/Trello**: Sincronización de proyectos
+- **Zapier**: 5000+ conexiones de apps
+- **API REST**: Webhooks y API Keys
 
-**Use your preferred IDE**
+### IA & Analytics
+- **10+ Herramientas IA**: Buyer personas, growth models, etc.
+- **Análisis Competitivo**: Inteligencia de mercado
+- **Gamificación**: Badges, puntos y rankings
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📁 Estructura del Proyecto
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```
+src/
+├── components/           # Componentes React reutilizables
+│   ├── ui/              # Componentes shadcn/ui base
+│   ├── enterprise/      # Componentes enterprise (métricas avanzadas)
+│   ├── layout/          # Layout components (AppLayout, Sidebar)
+│   ├── mobile/          # Componentes móviles (BottomNav, PWA)
+│   └── tasks/           # Componentes de tareas
+├── pages/               # Páginas de rutas
+├── hooks/               # Custom React hooks
+│   └── integrations/    # Hooks de integraciones (API, Slack, etc.)
+├── types/               # Definiciones TypeScript
+├── contexts/            # React Context providers
+├── lib/                 # Utilidades y helpers
+├── constants/           # Constantes de la aplicación
+└── integrations/        # Configuración Supabase
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+supabase/
+├── functions/           # Edge Functions (40+ funciones)
+└── migrations/          # Migraciones de base de datos
 ```
 
-**Edit a file directly in GitHub**
+## 🛠️ Tech Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Categoría | Tecnología |
+|-----------|------------|
+| **Frontend** | React 18, TypeScript, Vite |
+| **UI** | Tailwind CSS, shadcn/ui, Lucide Icons |
+| **Backend** | Supabase (Auth, Database, Edge Functions) |
+| **State** | TanStack Query, React Context |
+| **Testing** | Vitest, Testing Library |
+| **Payments** | Stripe |
+| **Monitoring** | Sentry |
 
-**Use GitHub Codespaces**
+## 🚀 Quick Start
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+# Clonar repositorio
+git clone <repo-url>
+cd optimus-k
 
-## What technologies are used for this project?
+# Instalar dependencias
+npm install
 
-This project is built with:
+# Configurar variables de entorno
+cp .env.example .env
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Iniciar servidor de desarrollo
+npm run dev
 
-## How can I deploy this project?
+# Ejecutar tests
+npm test
 
-Simply open [Lovable](https://lovable.dev/projects/7601fa16-c666-4f01-b370-6cee93c40cc0) and click on Share -> Publish.
+# Build para producción
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+## 📊 Testing
 
-Yes, you can!
+```bash
+# Ejecutar todos los tests
+npm test
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Tests con UI interactiva
+npm run test:ui
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Coverage report
+npm run test:coverage
+```
+
+## 🏗️ Arquitectura
+
+### Integraciones
+
+Las integraciones se manejan a través del componente `IntegrationButton`:
+
+```tsx
+import { IntegrationButton } from '@/components/IntegrationButton';
+
+<IntegrationButton
+  type="slack"
+  action="notify"
+  data={{ message: "¡Nuevo lead ganado!" }}
+  onSuccess={() => console.log('Enviado')}
+/>
+```
+
+### Límites de Suscripción
+
+El acceso a features se controla via `useSubscriptionLimits`:
+
+```tsx
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+
+const { limits, hasFeature } = useSubscriptionLimits();
+
+if (hasFeature('integrations_slack')) {
+  // Mostrar integración Slack
+}
+```
+
+### State Management
+
+| Tipo | Herramienta |
+|------|-------------|
+| **Global** | React Context (Auth, Demo Mode) |
+| **Server State** | TanStack Query |
+| **Local** | useState, useReducer |
+
+## 🔐 Seguridad
+
+- **RLS Policies**: Todas las tablas tienen Row Level Security
+- **JWT Auth**: Autenticación via Supabase Auth
+- **CORS**: Configuración correcta en Edge Functions
+- **Rate Limiting**: Límites en endpoints de IA
+
+## 📝 Planes de Suscripción
+
+| Plan | Usuarios | Leads/mes | Features |
+|------|----------|-----------|----------|
+| **Free** | 10 | 2,000 | Básico |
+| **Starter** | 15 | 5,000 | + IA básica |
+| **Professional** | 25 | Ilimitado | + Integraciones |
+| **Enterprise** | Ilimitado | Ilimitado | + Todo |
+
+## 🔗 Links
+
+- **Lovable Project**: https://lovable.dev/projects/7601fa16-c666-4f01-b370-6cee93c40cc0
+- **Documentación**: [docs.lovable.dev](https://docs.lovable.dev/)
+
+## 📄 Licencia
+
+MIT License

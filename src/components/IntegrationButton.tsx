@@ -1,5 +1,14 @@
-// src/components/IntegrationButton.tsx
+/**
+ * @fileoverview IntegrationButton - Componente reutilizable para integraciones externas
+ * 
+ * Este componente maneja todas las integraciones con servicios externos como Slack,
+ * HubSpot, Google Calendar, Asana, Trello y Zapier. Incluye validación automática
+ * de plan de suscripción y manejo unificado de errores.
+ * 
+ * @module components/IntegrationButton
+ */
 
+// src/components/IntegrationButton.tsx
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 

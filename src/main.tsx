@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
+import { initAnalytics } from "./lib/analytics";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -39,5 +40,8 @@ if (SENTRY_DSN && import.meta.env.PROD) {
 } else if (import.meta.env.DEV) {
   console.log("[Sentry] Skipped initialization (dev mode or no DSN)");
 }
+
+// Initialize PostHog analytics
+initAnalytics();
 
 createRoot(document.getElementById("root")!).render(<App />);
