@@ -502,50 +502,51 @@ const Landing = () => {
           Empieza gratis · Sin permanencia · Cancela cuando quieras
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
-              className={`p-6 ${
+              className={`p-5 flex flex-col ${
                 plan.featured 
-                  ? 'border-primary border-2 shadow-2xl relative lg:scale-105' 
+                  ? 'border-primary border-2 shadow-2xl relative' 
                   : 'hover:shadow-lg transition-shadow'
               }`}
             >
               {plan.featured && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-xs">
                   ⭐ Más Popular
                 </Badge>
               )}
               
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="text-primary">{plan.icon}</div>
                 <div>
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
+                  <h3 className="text-lg font-bold">{plan.name}</h3>
                   <p className="text-xs text-muted-foreground">{plan.description}</p>
                 </div>
               </div>
               
-              <div className="mb-4">
-                <span className="text-3xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground text-sm">{plan.period}</span>
+              <div className="mb-3">
+                <span className="text-2xl font-bold">{plan.price}</span>
+                <span className="text-muted-foreground text-xs">{plan.period}</span>
               </div>
 
-              <p className="text-xs text-muted-foreground mb-6 border-b pb-4">
+              <p className="text-xs text-muted-foreground mb-4 border-b pb-3">
                 {plan.limits}
               </p>
 
-              <ul className="space-y-2 mb-6 text-sm">
+              <ul className="space-y-1.5 mb-4 text-xs flex-1">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <li key={i} className="flex items-start gap-1.5">
+                    <Check className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <Button 
-                className="w-full" 
+                className="w-full mt-auto" 
+                size="sm"
                 variant={plan.featured ? "default" : "outline"}
                 onClick={() => navigate('/signup')}
               >
