@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -17,49 +17,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AIResourcesPanel } from "./tasks/ai-resources";
 import type { AIResourceType } from "@/types/ai-resources.types";
 import { IntegrationButton } from "./IntegrationButton";
-
-// Tipos locales para evitar any
-interface TaskData {
-  id: string;
-  title: string;
-  description: string;
-  area: string;
-  phase: number;
-  user_id: string;
-  leader_id: string | null;
-  order_index: number;
-  is_collaborative?: boolean;
-  [key: string]: unknown;
-}
-
-interface TaskCompletionData {
-  id: string;
-  task_id: string;
-  user_id: string;
-  completed_by_user?: boolean;
-  validated_by_leader?: boolean;
-  leader_feedback?: Record<string, unknown>;
-  collaborator_feedback?: Record<string, unknown>;
-  impact_measurement?: Record<string, unknown>;
-  ai_questions?: Record<string, unknown>;
-  organization_id?: string;
-  [key: string]: unknown;
-}
-
-interface BadgeData {
-  name: string;
-  description: string;
-  icon_emoji: string;
-  rarity: string;
-}
-
-interface TaskListProps {
-  userId: string | undefined;
-  currentPhase: number | undefined;
-  isLocked?: boolean;
-  mode?: "conservador" | "moderado" | "agresivo";
-  taskLimit?: number;
-}
+import type {
+  TaskData,
+  TaskCompletionData,
+  TaskCompletionStatus,
+  BadgeData,
+  SmartAlertPayload,
+  UserBasicInfo,
+  AIPanelTaskData,
+  TaskListProps,
+  FeedbackData,
+  ImpactMeasurementData,
+  FeedbackType,
+} from "@/types/tasks-complete";
 
 const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", taskLimit }: TaskListProps) => {
   const [tasks, setTasks] = useState<TaskData[]>([]);
@@ -72,11 +42,11 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [leadersById, setLeadersById] = useState<Record<string, string>>({});
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [impactMeasurementModalOpen, setImpactMeasurementModalOpen] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<'to_leader' | 'to_collaborator'>('to_leader');
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>('to_leader');
   const [showConfetti, setShowConfetti] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<BadgeData | null>(null);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [aiPanelTask, setAiPanelTask] = useState<{ id: string; title: string; description: string; resourceType: AIResourceType } | null>(null);
+  const [aiPanelTask, setAiPanelTask] = useState<AIPanelTaskData | null>(null);
 
   // Get current organization for multi-tenancy
   const { currentOrganizationId } = useAuth();
@@ -143,24 +113,27 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     const { data: completionData } = await supabase.from("task_completions").select("*").eq("user_id", userId);
 
     if (taskData) {
-      setTasks(taskData);
+      setTasks(taskData as TaskData[]);
 
       // Obtener IDs de todos los líderes y usuarios involucrados
-      const allTasks = [...taskData, ...(sharedTaskData || [])];
+      const allTasks = [...taskData, ...(sharedTaskData || [])] as TaskData[];
       const userIds = Array.from(
         new Set([
-          ...allTasks.map((t: any) => t.leader_id).filter(Boolean),
-          ...allTasks.map((t: any) => t.user_id).filter(Boolean),
+          ...allTasks.map((t) => t.leader_id).filter((id): id is string => id !== null),
+          ...allTasks.map((t) => t.user_id).filter(Boolean),
         ]),
-      ) as string[];
+      );
 
       if (userIds.length > 0) {
-        const { data: users } = await supabase.from("users").select("id, full_name, username").in("id", userIds);
+        const { data: users } = await supabase
+          .from("users")
+          .select("id, full_name, username")
+          .in("id", userIds);
 
         if (users) {
           const map: Record<string, string> = {};
-          users.forEach((user: any) => {
-            map[user.id] = user.full_name || user.username;
+          (users as UserBasicInfo[]).forEach((user) => {
+            map[user.id] = user.full_name || user.username || 'Usuario';
           });
           setLeadersById(map);
         }
@@ -180,7 +153,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     }
   };
 
-  const handleToggleTask = async (task: any, completion: any, isCompleted: boolean) => {
+  const handleToggleTask = useCallback(async (task: TaskData, completion: TaskCompletionData | undefined, isCompleted: boolean) => {
     if (!userId) return;
 
     try {
@@ -220,7 +193,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
       console.error('Error al actualizar tarea:', error);
       toast.error("Error al actualizar tarea. Por favor intenta nuevamente.");
     }
-  };
+  }, [userId, setCompletions, setSelectedTask, setFeedbackType, setFeedbackModalOpen, setImpactMeasurementModalOpen]);
 
   const handleSubmitFeedback = async (feedback: {
     whatWentWell: string;
@@ -444,10 +417,10 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     }
   };
 
-  const handleOpenSwapModal = (task: any) => {
+  const handleOpenSwapModal = useCallback((task: TaskData) => {
     setTaskToSwap(task);
     setSwapModalOpen(true);
-  };
+  }, []);
 
   const handleSwapComplete = async () => {
     setSwapModalOpen(false);
@@ -457,7 +430,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     toast.success("Tarea actualizada correctamente");
   };
 
-  const getTaskCompletionStatus = (task: any, completion: any) => {
+  const getTaskCompletionStatus = useCallback((task: TaskData, completion: TaskCompletionData | undefined): TaskCompletionStatus => {
     if (!completion) {
       return {
         percentage: 0,
@@ -578,7 +551,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
       needsImpactMeasurement: false,
       buttonText: ""
     };
-  };
+  }, [userId, completions, leadersById]);
 
   // Mapear área de tarea a tipo de recurso IA
   const getResourceTypeFromArea = (area: string): AIResourceType => {
@@ -603,7 +576,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
     );
   }
 
-  const renderTask = (task: any, canSwapOverride?: boolean) => {
+  const renderTask = (task: TaskData, canSwapOverride?: boolean) => {
     const completion = completions.get(task.id);
     const isCompleted = completion?.validated_by_leader || false;
     const { percentage, message, needsFeedback, needsImpactMeasurement, buttonText } = getTaskCompletionStatus(task, completion);
