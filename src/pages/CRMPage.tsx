@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,9 +38,6 @@ const CRMPage = () => {
   } = useLeads(user?.id, currentOrganizationId);
 
   // State
-  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
-
-  // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -56,22 +54,22 @@ const CRMPage = () => {
   const [leadsTableOpen, setLeadsTableOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
 
+  // Virtual scrolling ref
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [leads, debouncedSearch, filterStatus, filterType, filterCreatedBy]);
-
-  const applyFilters = () => {
+  // Memoized filtered leads for performance
+  const filteredLeads = useMemo(() => {
     let filtered = [...leads];
 
     // Búsqueda por texto
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
+    if (debouncedSearch) {
+      const search = debouncedSearch.toLowerCase();
       filtered = filtered.filter(lead =>
         lead.name.toLowerCase().includes(search) ||
         lead.company?.toLowerCase().includes(search) ||
@@ -95,20 +93,28 @@ const CRMPage = () => {
       filtered = filtered.filter(lead => lead.created_by === filterCreatedBy);
     }
 
-    setFilteredLeads(filtered);
-  };
+    return filtered;
+  }, [leads, debouncedSearch, filterStatus, filterType, filterCreatedBy]);
 
-  const handleLeadClick = (lead: Lead) => {
+  // Virtual scrolling setup
+  const rowVirtualizer = useVirtualizer({
+    count: filteredLeads.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 60,
+    overscan: 5,
+  });
+
+  const handleLeadClick = useCallback((lead: Lead) => {
     setSelectedLead(lead);
     setDetailModalOpen(true);
-  };
+  }, []);
 
-  const handleEditLead = (lead: Lead) => {
+  const handleEditLead = useCallback((lead: Lead) => {
     setEditLead(lead);
     setCreateModalOpen(true);
-  };
+  }, []);
 
-  const handleMoveStage = async (leadId: string, newStage: string) => {
+  const handleMoveStage = useCallback(async (leadId: string, newStage: string) => {
     try {
       const { error } = await supabase
         .from('leads')
@@ -126,19 +132,19 @@ const CRMPage = () => {
       console.error('Error updating stage:', error);
       toast.error('Error al actualizar etapa');
     }
-  };
+  }, [refetch]);
 
-  const handleExportLeads = () => {
+  const handleExportLeads = useCallback(() => {
     exportLeadsToExcel(filteredLeads, 'crm_leads');
     toast.success('Leads exportados a Excel');
-  };
+  }, [filteredLeads]);
 
-  const handleExportStats = () => {
+  const handleExportStats = useCallback(() => {
     exportUserStatsToExcel(userStats, 'crm_user_stats');
     toast.success('Estadísticas exportadas a Excel');
-  };
+  }, [userStats]);
 
-  const getLeadTypeIcon = (type: string) => {
+  const getLeadTypeIcon = useCallback((type: string) => {
     switch (type) {
       case 'hot': return '🔥';
       case 'warm': return '🌡️';
@@ -147,25 +153,33 @@ const CRMPage = () => {
       case 'sql': return '💼';
       default: return '📌';
     }
-  };
+  }, []);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'won': return 'bg-success text-success-foreground';
       case 'lost': return 'bg-destructive text-destructive-foreground';
       case 'negotiation': return 'bg-warning text-warning-foreground';
-      case 'proposal': return 'bg-blue-500 text-white';
-      case 'qualified': return 'bg-purple-500 text-white';
-      case 'contacted': return 'bg-cyan-500 text-white';
+      case 'proposal': return 'bg-primary/80 text-primary-foreground';
+      case 'qualified': return 'bg-accent/80 text-accent-foreground';
+      case 'contacted': return 'bg-secondary text-secondary-foreground';
       case 'new': return 'bg-muted text-muted-foreground';
       case 'lead': return 'bg-muted text-muted-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
-  };
+  }, []);
 
-  // Encontrar stats del usuario actual
-  const currentUserStats = userStats.find(s => s.user_id === user?.id);
-  const otherUsersStats = userStats.filter(s => s.user_id !== user?.id);
+  // Memoized user stats
+  const currentUserStats = useMemo(() => 
+    userStats.find(s => s.user_id === user?.id), 
+    [userStats, user?.id]
+  );
+  
+  const otherUsersStats = useMemo(() => 
+    userStats.filter(s => s.user_id !== user?.id), 
+    [userStats, user?.id]
+  );
+
 
   if (authLoading || loading) {
     return (
@@ -431,68 +445,80 @@ const CRMPage = () => {
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="overflow-x-auto mt-4">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-left text-sm text-muted-foreground">
-                        <th className="pb-3 font-medium">Nombre</th>
-                        <th className="pb-3 font-medium">Empresa</th>
-                        <th className="pb-3 font-medium">Tipo</th>
-                        <th className="pb-3 font-medium">Estado</th>
-                        <th className="pb-3 font-medium">Valor</th>
-                        <th className="pb-3 font-medium">Prob.</th>
-                        <th className="pb-3 font-medium">Creado por</th>
-                        <th className="pb-3 font-medium">Fecha</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredLeads.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="py-8 text-center text-muted-foreground">
-                            No se encontraron leads
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredLeads.map((lead) => (
-                          <tr
-                            key={lead.id}
-                            className="border-b hover:bg-muted/50 cursor-pointer transition-colors"
-                            onClick={() => handleLeadClick(lead)}
-                          >
-                            <td className="py-3">
-                              <div>
-                                <p className="font-medium">{lead.name}</p>
-                                {lead.email && <p className="text-xs text-muted-foreground">{lead.email}</p>}
+                <div className="mt-4">
+                  {/* Header row */}
+                  <div className="grid grid-cols-8 gap-4 border-b pb-3 text-sm text-muted-foreground font-medium">
+                    <div>Nombre</div>
+                    <div>Empresa</div>
+                    <div>Tipo</div>
+                    <div>Estado</div>
+                    <div>Valor</div>
+                    <div>Prob.</div>
+                    <div>Creado por</div>
+                    <div>Fecha</div>
+                  </div>
+                  
+                  {filteredLeads.length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground">
+                      No se encontraron leads
+                    </div>
+                  ) : (
+                    <div
+                      ref={tableContainerRef}
+                      className="h-[400px] overflow-auto"
+                    >
+                      <div
+                        style={{
+                          height: `${rowVirtualizer.getTotalSize()}px`,
+                          width: '100%',
+                          position: 'relative',
+                        }}
+                      >
+                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                          const lead = filteredLeads[virtualRow.index];
+                          return (
+                            <div
+                              key={lead.id}
+                              className="grid grid-cols-8 gap-4 items-center border-b hover:bg-muted/50 cursor-pointer transition-colors absolute top-0 left-0 w-full"
+                              style={{
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                              }}
+                              onClick={() => handleLeadClick(lead)}
+                            >
+                              <div className="py-3">
+                                <p className="font-medium truncate">{lead.name}</p>
+                                {lead.email && <p className="text-xs text-muted-foreground truncate">{lead.email}</p>}
                               </div>
-                            </td>
-                            <td className="py-3">{lead.company || '-'}</td>
-                            <td className="py-3">
-                              <span className="text-xl" title={lead.lead_type}>
-                                {getLeadTypeIcon(lead.lead_type)}
-                              </span>
-                            </td>
-                            <td className="py-3">
-                              <Badge className={getStatusColor(lead.stage)} variant="secondary">
-                                {lead.stage}
-                              </Badge>
-                            </td>
-                            <td className="py-3 font-medium">
-                              {lead.estimated_value ? `€${lead.estimated_value.toFixed(0)}` : '-'}
-                            </td>
-                            <td className="py-3">
-                              <span className="text-sm">{lead.probability}%</span>
-                            </td>
-                            <td className="py-3">
-                              <span className="text-sm">{lead.creator?.full_name || 'N/A'}</span>
-                            </td>
-                            <td className="py-3 text-sm text-muted-foreground">
-                              {formatDate(lead.created_at)}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                              <div className="py-3 truncate">{lead.company || '-'}</div>
+                              <div className="py-3">
+                                <span className="text-xl" title={lead.lead_type}>
+                                  {getLeadTypeIcon(lead.lead_type)}
+                                </span>
+                              </div>
+                              <div className="py-3">
+                                <Badge className={getStatusColor(lead.stage)} variant="secondary">
+                                  {lead.stage}
+                                </Badge>
+                              </div>
+                              <div className="py-3 font-medium">
+                                {lead.estimated_value ? `€${lead.estimated_value.toFixed(0)}` : '-'}
+                              </div>
+                              <div className="py-3">
+                                <span className="text-sm">{lead.probability}%</span>
+                              </div>
+                              <div className="py-3">
+                                <span className="text-sm truncate">{lead.creator?.full_name || 'N/A'}</span>
+                              </div>
+                              <div className="py-3 text-sm text-muted-foreground">
+                                {formatDate(lead.created_at)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CollapsibleContent>
             </Collapsible>
