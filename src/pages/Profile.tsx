@@ -3,16 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, User, MapPin, Building2, Users } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Building2, Users, Bell } from 'lucide-react';
 import UserProfile from '@/components/UserProfile';
 import UserOrganizations from '@/components/UserOrganizations';
 import OrganizationUsers from '@/components/OrganizationUsers';
+import { NotificationSettings } from '@/components/mobile/NotificationSettings';
 import { useOnboardingTour } from '@/hooks/useOnboardingTour';
+import { useIsMobileDevice } from '@/hooks/useDeviceType';
 
 const Profile = () => {
   const { user, loading, userOrganizations, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
   const { restartTour } = useOnboardingTour();
+  const isMobile = useIsMobileDevice();
 
   const isAdmin = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
@@ -65,19 +68,33 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+          <TabsList className={`grid w-full max-w-xl ${isMobile ? 'grid-cols-2' : isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
-              Mi Perfil
+              <span className="hidden sm:inline">Mi Perfil</span>
+              <span className="sm:hidden">Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="organizations" className="gap-2">
               <Building2 className="w-4 h-4" />
-              Organizaciones
+              <span className="hidden sm:inline">Organizaciones</span>
+              <span className="sm:hidden">Orgs</span>
             </TabsTrigger>
-            {isAdmin && (
+            {isAdmin && !isMobile && (
               <TabsTrigger value="team" className="gap-2">
                 <Users className="w-4 h-4" />
                 Equipo
+              </TabsTrigger>
+            )}
+            {isMobile && (
+              <TabsTrigger value="notifications" className="gap-2">
+                <Bell className="w-4 h-4" />
+                Notif.
+              </TabsTrigger>
+            )}
+            {!isMobile && (
+              <TabsTrigger value="notifications" className="gap-2">
+                <Bell className="w-4 h-4" />
+                Notificaciones
               </TabsTrigger>
             )}
           </TabsList>
@@ -95,6 +112,10 @@ const Profile = () => {
               <OrganizationUsers />
             </TabsContent>
           )}
+
+          <TabsContent value="notifications">
+            <NotificationSettings />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
