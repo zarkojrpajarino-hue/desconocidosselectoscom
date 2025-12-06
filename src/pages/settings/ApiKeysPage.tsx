@@ -40,7 +40,8 @@ import {
   X,
   Zap,
   Calendar,
-  RefreshCw
+  RefreshCw,
+  Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -122,6 +123,19 @@ interface OutlookAccount {
   created_at: string;
 }
 
+interface HubSpotAccount {
+  id: string;
+  portal_id: string;
+  hub_domain: string;
+  sync_enabled: boolean;
+  sync_direction: string;
+  total_contacts_synced: number;
+  total_deals_synced: number;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  created_at: string;
+}
+
 const SLACK_EVENT_TYPES = [
   { value: 'lead.created', label: 'Nuevo Lead Creado', icon: '🎯' },
   { value: 'lead.won', label: 'Lead Ganado', icon: '🎉' },
@@ -175,6 +189,12 @@ export default function ApiKeysPage() {
   const [connectingOutlook, setConnectingOutlook] = useState(false);
   const [syncingOutlook, setSyncingOutlook] = useState(false);
 
+  // HubSpot state
+  const [hubspotAccount, setHubspotAccount] = useState<HubSpotAccount | null>(null);
+  const [hubspotLoading, setHubspotLoading] = useState(true);
+  const [connectingHubspot, setConnectingHubspot] = useState(false);
+  const [syncingHubspot, setSyncingHubspot] = useState(false);
+
   useEffect(() => {
     loadOrganization();
   }, [user]);
@@ -185,6 +205,7 @@ export default function ApiKeysPage() {
       loadWebhooks();
       loadSlackData();
       loadZapierSubs();
+      loadHubspotAccount();
     }
   }, [currentOrganizationId]);
 
@@ -199,6 +220,7 @@ export default function ApiKeysPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const slackStatus = urlParams.get('slack');
     const outlookStatus = urlParams.get('outlook');
+    const hubspotStatus = urlParams.get('hubspot');
     
     if (slackStatus === 'connected') {
       toast.success('¡Slack conectado correctamente!');
@@ -215,6 +237,15 @@ export default function ApiKeysPage() {
       loadOutlookAccount();
     } else if (outlookStatus === 'error') {
       toast.error('Error al conectar Outlook: ' + (urlParams.get('message') || 'desconocido'));
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    if (hubspotStatus === 'connected') {
+      toast.success('¡HubSpot CRM conectado correctamente!');
+      window.history.replaceState({}, '', window.location.pathname);
+      loadHubspotAccount();
+    } else if (hubspotStatus === 'error') {
+      toast.error('Error al conectar HubSpot: ' + (urlParams.get('message') || 'desconocido'));
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -516,6 +547,82 @@ export default function ApiKeysPage() {
     }
   };
 
+  // HubSpot functions
+  const loadHubspotAccount = async () => {
+    if (!currentOrganizationId) return;
+    setHubspotLoading(true);
+    try {
+      const { data } = await supabase
+        .from('hubspot_accounts')
+        .select('*')
+        .eq('organization_id', currentOrganizationId)
+        .maybeSingle();
+      setHubspotAccount(data as HubSpotAccount | null);
+    } catch (error) {
+      console.error('Error loading HubSpot account:', error);
+    } finally {
+      setHubspotLoading(false);
+    }
+  };
+
+  const connectHubspot = async () => {
+    if (!currentOrganizationId) return;
+    setConnectingHubspot(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('hubspot-auth-url', {
+        body: { organization_id: currentOrganizationId }
+      });
+      if (error) throw error;
+      if (data?.auth_url) {
+        window.location.href = data.auth_url;
+      }
+    } catch (error) {
+      console.error('Error connecting HubSpot:', error);
+      toast.error('Error al conectar con HubSpot');
+      setConnectingHubspot(false);
+    }
+  };
+
+  const disconnectHubspot = async () => {
+    if (!hubspotAccount || !confirm('¿Desconectar HubSpot CRM? Se perderán todas las sincronizaciones.')) return;
+    const { error } = await supabase.from('hubspot_accounts').delete().eq('id', hubspotAccount.id);
+    if (error) {
+      toast.error('Error al desconectar');
+    } else {
+      toast.success('HubSpot desconectado');
+      setHubspotAccount(null);
+    }
+  };
+
+  const toggleHubspotSync = async (enabled: boolean) => {
+    if (!hubspotAccount) return;
+    const { error } = await supabase.from('hubspot_accounts').update({ sync_enabled: enabled }).eq('id', hubspotAccount.id);
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      setHubspotAccount({ ...hubspotAccount, sync_enabled: enabled });
+      toast.success(enabled ? 'Sincronización activada' : 'Sincronización desactivada');
+    }
+  };
+
+  const syncHubspotNow = async () => {
+    if (!currentOrganizationId) return;
+    setSyncingHubspot(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-to-hubspot', {
+        body: { organization_id: currentOrganizationId }
+      });
+      if (error) throw error;
+      toast.success(`Sincronización completada: ${data?.synced || 0} contactos`);
+      loadHubspotAccount();
+    } catch (error) {
+      console.error('Error syncing HubSpot:', error);
+      toast.error('Error al sincronizar');
+    } finally {
+      setSyncingHubspot(false);
+    }
+  };
+
   const createApiKey = async () => {
     if (!newKeyName.trim()) {
       toast.error('Por favor, introduce un nombre para la API Key');
@@ -696,6 +803,10 @@ export default function ApiKeysPage() {
             <TabsTrigger value="outlook" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Outlook
+            </TabsTrigger>
+            <TabsTrigger value="hubspot" className="flex items-center gap-2">
+              <Link2 className="w-4 h-4" />
+              HubSpot
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
@@ -1225,6 +1336,94 @@ export default function ApiKeysPage() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+          </TabsContent>
+
+          {/* HUBSPOT TAB */}
+          <TabsContent value="hubspot" className="space-y-4">
+            {hubspotLoading ? (
+              <Card><CardContent className="py-12 text-center"><p>Cargando...</p></CardContent></Card>
+            ) : !hubspotAccount ? (
+              <Card>
+                <CardContent className="py-12 text-center space-y-6">
+                  <Link2 className="w-16 h-16 mx-auto text-orange-500" />
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Conecta tu HubSpot CRM</h3>
+                    <p className="text-muted-foreground mb-4">Sincroniza leads bidireccional con HubSpot</p>
+                  </div>
+                  <Button onClick={connectHubspot} disabled={connectingHubspot} size="lg" className="bg-orange-500 hover:bg-orange-600">
+                    <Link2 className="w-5 h-5 mr-2" />
+                    {connectingHubspot ? 'Conectando...' : 'Conectar con HubSpot'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                          <Link2 className="w-6 h-6 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{hubspotAccount.hub_domain}</p>
+                          <p className="text-sm text-muted-foreground">Portal ID: {hubspotAccount.portal_id}</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                            <span>{hubspotAccount.total_contacts_synced} contactos</span>
+                            <span>{hubspotAccount.total_deals_synced} deals</span>
+                            {hubspotAccount.last_sync_at && <span>Última sync: {new Date(hubspotAccount.last_sync_at).toLocaleString()}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Button variant="outline" size="sm" onClick={syncHubspotNow} disabled={syncingHubspot}>
+                          <RefreshCw className={`w-4 h-4 mr-2 ${syncingHubspot ? 'animate-spin' : ''}`} />
+                          {syncingHubspot ? 'Sincronizando...' : 'Sincronizar'}
+                        </Button>
+                        <Switch checked={hubspotAccount.sync_enabled} onCheckedChange={toggleHubspotSync} />
+                        <Button variant="outline" size="sm" onClick={disconnectHubspot}>Desconectar</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configuración de Sincronización</CardTitle>
+                    <CardDescription>Mapeo de campos entre OPTIMUS-K y HubSpot</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="font-medium">Lead.name</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Contact.firstname + lastname</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="font-medium">Lead.email</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Contact.email</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="font-medium">Lead.company</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Contact.company</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="font-medium">Lead.estimated_value</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Deal.amount</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="font-medium">Lead.stage</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm text-muted-foreground">Deal.dealstage</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
             )}
           </TabsContent>
 

@@ -173,3 +173,12 @@ verify_jwt = false
 
 [functions.sync-outlook-events]
 verify_jwt = true
+
+[functions.hubspot-auth-url]
+verify_jwt = true
+
+[functions.hubspot-auth-callback]
+verify_jwt = false
+
+[functions.sync-to-hubspot]
+verify_jwt = true

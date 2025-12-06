@@ -1462,6 +1462,178 @@ export type Database = {
           },
         ]
       }
+      hubspot_accounts: {
+        Row: {
+          access_token: string
+          auto_sync_interval_minutes: number | null
+          created_at: string | null
+          field_mappings: Json | null
+          hub_domain: string
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          organization_id: string
+          portal_id: string
+          refresh_token: string
+          sync_direction: string | null
+          sync_enabled: boolean | null
+          token_expires_at: string
+          total_contacts_synced: number | null
+          total_deals_synced: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          auto_sync_interval_minutes?: number | null
+          created_at?: string | null
+          field_mappings?: Json | null
+          hub_domain: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          organization_id: string
+          portal_id: string
+          refresh_token: string
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          token_expires_at: string
+          total_contacts_synced?: number | null
+          total_deals_synced?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          auto_sync_interval_minutes?: number | null
+          created_at?: string | null
+          field_mappings?: Json | null
+          hub_domain?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          organization_id?: string
+          portal_id?: string
+          refresh_token?: string
+          sync_direction?: string | null
+          sync_enabled?: boolean | null
+          token_expires_at?: string
+          total_contacts_synced?: number | null
+          total_deals_synced?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hubspot_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hubspot_contact_mappings: {
+        Row: {
+          hubspot_account_id: string
+          hubspot_contact_id: string
+          hubspot_deal_id: string | null
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          last_synced_direction: string | null
+          lead_id: string
+          sync_status: string | null
+        }
+        Insert: {
+          hubspot_account_id: string
+          hubspot_contact_id: string
+          hubspot_deal_id?: string | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          last_synced_direction?: string | null
+          lead_id: string
+          sync_status?: string | null
+        }
+        Update: {
+          hubspot_account_id?: string
+          hubspot_contact_id?: string
+          hubspot_deal_id?: string | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          last_synced_direction?: string | null
+          lead_id?: string
+          sync_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hubspot_contact_mappings_hubspot_account_id_fkey"
+            columns: ["hubspot_account_id"]
+            isOneToOne: false
+            referencedRelation: "hubspot_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hubspot_contact_mappings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hubspot_sync_queue: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          data: Json
+          entity_id: string
+          entity_type: string
+          error_message: string | null
+          hubspot_account_id: string
+          id: string
+          max_attempts: number | null
+          operation: string
+          processed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          data: Json
+          entity_id: string
+          entity_type: string
+          error_message?: string | null
+          hubspot_account_id: string
+          id?: string
+          max_attempts?: number | null
+          operation: string
+          processed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          data?: Json
+          entity_id?: string
+          entity_type?: string
+          error_message?: string | null
+          hubspot_account_id?: string
+          id?: string
+          max_attempts?: number | null
+          operation?: string
+          processed_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hubspot_sync_queue_hubspot_account_id_fkey"
+            columns: ["hubspot_account_id"]
+            isOneToOne: false
+            referencedRelation: "hubspot_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       key_results: {
         Row: {
           auto_update: boolean | null
