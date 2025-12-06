@@ -57,27 +57,14 @@ const Landing = () => {
       period: "14 días",
       description: "Prueba sin compromiso",
       icon: <Gift className="h-6 w-6" />,
-      limits: "3 usuarios · 500 leads/mes · 3 OKRs · 2 IA análisis/mes",
+      limits: "3 usuarios · 500 leads · 3 OKRs",
       features: [
-        "Dashboard personalizado básico",
-        "Hasta 3 tareas semanales",
+        "Dashboard personalizado",
+        "CRM con pipeline básico",
         "3 OKRs con Key Results",
-        "10 métricas KPI básicas",
-        "Pipeline simple (3 stages)",
-        "Lead scoring básico",
-        "Import CSV (hasta 100 leads)",
         "Sistema de puntos y badges",
-        "Leaderboard del equipo",
         "2 análisis IA/mes",
-        "Generación de tareas IA",
-        "Smart alerts básicas",
         "Exportación CSV",
-        "Notificaciones in-app",
-        "Email de bienvenida",
-        "Login Google",
-        "Onboarding guiado (30 preguntas)",
-        "Workspace generado automáticamente",
-        "Knowledge base",
         "Email support (72h)"
       ],
       cta: "Empezar Gratis",
@@ -89,67 +76,16 @@ const Landing = () => {
       period: "/mes",
       description: "Para equipos pequeños",
       icon: <Rocket className="h-6 w-6" />,
-      limits: "10 usuarios · 1,000 leads/mes · 10 OKRs · 4 IA análisis/mes",
+      limits: "10 usuarios · 1,000 leads · 10 OKRs",
       features: [
-        "🚀 Todo de Free Trial +",
-        "━━━━━━━━━━━",
-        "📊 Core ampliado:",
-        "→ 10 usuarios incluidos",
-        "→ Tareas semanales ilimitadas",
-        "→ Hasta 10 OKRs",
-        "→ 20+ métricas KPI",
-        "━━━━━━━━━━━",
-        "📧 CRM completo:",
-        "→ Pipeline personalizable",
-        "→ 1,000 leads/mes",
-        "→ Scoring automático",
-        "→ Lead activities tracking",
-        "→ Asignación por usuario",
-        "→ Import CSV ilimitado",
-        "━━━━━━━━━━━",
-        "🎮 Gamificación:",
-        "→ 20+ badges",
-        "→ Sistema de niveles",
-        "→ Rachas de productividad",
-        "→ Award points automático",
-        "━━━━━━━━━━━",
-        "🤖 IA avanzada:",
-        "→ 4 análisis IA/mes",
-        "→ Tareas IA ilimitadas",
-        "→ Smart alerts avanzadas",
-        "→ Alternativas sugeridas",
-        "━━━━━━━━━━━",
-        "📈 Dashboards:",
-        "→ Dashboard personalizado",
-        "→ Financial dashboard",
-        "→ Progress tracking visual",
-        "━━━━━━━━━━━",
-        "📄 Exportación:",
-        "→ Excel con fórmulas",
-        "→ PDF profesionales",
-        "→ CSV export",
-        "━━━━━━━━━━━",
-        "🔌 Integraciones:",
-        "→ Google Calendar sync",
-        "→ API REST (500 calls/mes)",
-        "→ 5 webhooks activos",
-        "━━━━━━━━━━━",
-        "🔔 Notificaciones:",
-        "→ Centro de notificaciones",
-        "→ Email notifications",
-        "→ Resumen semanal",
-        "━━━━━━━━━━━",
-        "👥 Colaboración:",
-        "→ Roles (admin/manager/member)",
-        "→ Asignación de tareas",
-        "→ Work mode selector",
-        "━━━━━━━━━━━",
-        "⚙️ Automatizaciones:",
-        "→ Workspace automático",
-        "→ Schedules semanales",
-        "→ Emails automáticos",
-        "━━━━━━━━━━━",
-        "📧 Soporte email 48h"
+        "Todo de Free Trial +",
+        "Tareas semanales ilimitadas",
+        "Pipeline personalizable",
+        "Scoring automático",
+        "Gamificación completa",
+        "Google Calendar sync",
+        "Excel y PDF export",
+        "Soporte email (48h)"
       ],
       cta: "Empezar con Starter",
       popular: false
@@ -161,78 +97,15 @@ const Landing = () => {
       description: "Para empresas en crecimiento",
       icon: <Star className="h-6 w-6" />,
       featured: true,
-      limits: "25 usuarios · 5,000 leads/mes · OKRs ilimitados · 8 IA análisis/mes",
+      limits: "25 usuarios · 5,000 leads · OKRs ilimitados",
       features: [
-        "🚀 Todo de Starter +",
-        "━━━━━━━━━━━",
-        "📊 Core PRO:",
-        "→ 25 usuarios incluidos",
-        "→ 5,000 leads/mes",
-        "→ OKRs ilimitados",
-        "→ Todas las fases",
-        "━━━━━━━━━━━",
-        "🤖 IA Generativa:",
-        "→ 8 análisis IA/mes",
-        "→ Buyer personas",
-        "→ Brand kits",
-        "→ Análisis competitivo (5 max)",
-        "━━━━━━━━━━━",
-        "🎨 Recursos IA:",
-        "→ Email sequences",
-        "→ Social media posts",
-        "→ Ad campaigns",
-        "→ Video scripts",
-        "→ Design briefs",
-        "→ Influencer lists",
-        "→ Outreach templates",
-        "━━━━━━━━━━━",
-        "📊 BI Dashboards:",
-        "→ Executive Summary",
-        "→ Revenue Analytics",
-        "→ Sales Performance",
-        "→ Customer Insights",
-        "→ Operational Metrics",
-        "━━━━━━━━━━━",
-        "🧠 AI Analysis:",
-        "→ Team performance",
-        "→ Financial health",
-        "→ Honest feedback IA",
-        "━━━━━━━━━━━",
-        "📈 Análisis avanzado:",
-        "→ Scalability dashboard",
-        "→ Proyecciones",
-        "→ User metrics history",
-        "→ Financial analytics",
-        "━━━━━━━━━━━",
-        "🔌 Integraciones Premium:",
-        "→ Google Calendar",
-        "→ Slack notifications",
-        "→ HubSpot CRM sync",
-        "→ Outlook Calendar",
-        "→ Asana tasks sync",
-        "→ Trello cards sync",
-        "→ Zapier ilimitado",
-        "→ API 5,000 calls/mes",
-        "━━━━━━━━━━━",
-        "🛠️ Herramientas:",
-        "→ Calculadora de valor",
-        "→ Hub de herramientas",
-        "→ Herramientas práctica",
-        "━━━━━━━━━━━",
-        "🎓 Onboarding avanzado:",
-        "→ Tradicional (30 preguntas)",
-        "→ Startup (6 pasos)",
-        "→ Vista previa personalizada",
-        "━━━━━━━━━━━",
-        "📄 Exportación avanzada:",
-        "→ Excel avanzado",
-        "→ PDF profesionales",
-        "→ Reportes personalizados",
-        "→ Bulk export",
-        "━━━━━━━━━━━",
-        "📧 Soporte prioritario 24h",
-        "💬 Live chat incluido",
-        "🎥 Video onboarding"
+        "Todo de Starter +",
+        "IA generativa (buyer personas, brand kit)",
+        "Análisis competitivo",
+        "5 BI Dashboards",
+        "Slack, HubSpot, Outlook, Zapier",
+        "Onboarding startup",
+        "Soporte prioritario 24h"
       ],
       cta: "Probar Professional",
       popular: true
@@ -243,73 +116,15 @@ const Landing = () => {
       period: "/mes",
       description: "Para grandes organizaciones",
       icon: <Crown className="h-6 w-6" />,
-      limits: "♾️ TODO ILIMITADO",
+      limits: "Todo ilimitado",
       features: [
-        "🚀 Todo de Professional +",
-        "━━━━━━━━━━━",
-        "♾️ ILIMITADO:",
-        "→ Usuarios ilimitados",
-        "→ Leads ilimitados",
-        "→ OKRs ilimitados",
-        "→ IA análisis ilimitados",
-        "→ API calls ilimitadas",
-        "━━━━━━━━━━━",
-        "🏢 Enterprise:",
-        "→ White-label completo",
-        "→ SSO/SAML",
-        "→ Multi-organización",
-        "→ IP whitelisting",
-        "→ Pipelines custom",
-        "━━━━━━━━━━━",
-        "🤖 IA Enterprise:",
-        "→ Análisis datos v3",
-        "→ Competitivo ilimitado",
-        "→ Modelos personalizados",
-        "→ Fine-tuning prompts",
-        "→ ML forecasting",
-        "━━━━━━━━━━━",
-        "📊 Analytics Enterprise:",
-        "→ Dashboards custom ilimitados",
-        "→ Reportes personalizados",
-        "→ Data warehouse access",
-        "→ Real-time analytics",
-        "━━━━━━━━━━━",
-        "🔌 Integraciones:",
-        "→ Todas disponibles",
-        "→ Custom development",
-        "→ SAP/Oracle/Dynamics",
-        "→ EDI connectors",
-        "→ API sin límites",
-        "━━━━━━━━━━━",
-        "🛡️ Seguridad:",
-        "→ SLA 99.9% uptime",
-        "→ Backups diarios",
-        "→ Disaster recovery",
-        "→ GDPR compliant",
-        "→ SOC 2 (en proceso)",
-        "→ Audit logs",
-        "→ Encryption avanzado",
-        "━━━━━━━━━━━",
-        "👨‍💼 Soporte dedicado:",
-        "→ Account manager",
-        "→ Technical AM",
-        "→ 24/7 support <1h",
-        "→ Slack directo",
-        "→ Onboarding presencial",
-        "→ Training trimestral",
-        "━━━━━━━━━━━",
-        "🔧 Customizaciones:",
-        "→ Custom workflows",
-        "→ Custom fields ilimitados",
-        "→ Custom automations",
-        "→ Custom reports",
-        "→ Code-level custom",
-        "━━━━━━━━━━━",
-        "📈 Escalabilidad:",
-        "→ Infra dedicada",
-        "→ Load balancing",
-        "→ CDN global",
-        "→ Performance optimization"
+        "Todo de Professional +",
+        "White-label completo",
+        "SSO/SAML",
+        "SAP, Oracle, Dynamics",
+        "SLA 99.9% uptime",
+        "Account manager dedicado",
+        "Soporte 24/7 (<1h)"
       ],
       cta: "Contactar Ventas",
       popular: false
@@ -509,24 +324,81 @@ const Landing = () => {
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto mb-8">
-          {[
-            { name: "Slack", color: "#36C5F0" },
-            { name: "HubSpot", color: "#FF7A59" },
-            { name: "Outlook", color: "#0078D4" },
-            { name: "Trello", color: "#0079BF" },
-            { name: "Asana", color: "#F95858" },
-            { name: "Zapier", color: "#FF4A00" }
-          ].map((integration) => (
-            <div key={integration.name} className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-              <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                <div 
-                  className="w-10 h-10 rounded-lg" 
-                  style={{ backgroundColor: integration.color }}
-                />
-              </div>
-              <span className="text-sm font-medium text-center">{integration.name}</span>
+          {/* Slack */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" fillRule="evenodd">
+                  <path d="M19.712.133a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386h5.376V5.52A5.381 5.381 0 0 0 19.712.133m0 14.365H5.376A5.381 5.381 0 0 0 0 19.884a5.381 5.381 0 0 0 5.376 5.387h14.336a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386" fill="#36C5F0"/>
+                  <path d="M53.76 19.884a5.381 5.381 0 0 0-5.376-5.386 5.381 5.381 0 0 0-5.376 5.386v5.387h5.376a5.381 5.381 0 0 0 5.376-5.387m-14.336 0V5.52A5.381 5.381 0 0 0 34.048.133a5.381 5.381 0 0 0-5.376 5.387v14.364a5.381 5.381 0 0 0 5.376 5.387 5.381 5.381 0 0 0 5.376-5.387" fill="#2EB67D"/>
+                  <path d="M34.048 54a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386h-5.376v5.386A5.381 5.381 0 0 0 34.048 54m0-14.365h14.336a5.381 5.381 0 0 0 5.376-5.386 5.381 5.381 0 0 0-5.376-5.387H34.048a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386" fill="#ECB22E"/>
+                  <path d="M0 34.249a5.381 5.381 0 0 0 5.376 5.386 5.381 5.381 0 0 0 5.376-5.386v-5.387H5.376A5.381 5.381 0 0 0 0 34.25m14.336-.001v14.364A5.381 5.381 0 0 0 19.712 54a5.381 5.381 0 0 0 5.376-5.387V34.25a5.381 5.381 0 0 0-5.376-5.387 5.381 5.381 0 0 0-5.376 5.387" fill="#E01E5A"/>
+                </g>
+              </svg>
             </div>
-          ))}
+            <span className="text-sm font-medium text-center">Slack</span>
+          </div>
+
+          {/* HubSpot */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FF7A59" d="M267.4 211.6c-25.1 23.7-40.8 57.3-40.8 94.6 0 37.3 15.7 70.9 40.8 94.6l81.7-94.6-81.7-94.6z"/>
+                <path fill="#FF7A59" d="M404.5 127.4V93.6c10.8-5.6 18.1-16.9 18.1-29.9 0-18.6-15.1-33.7-33.7-33.7-18.6 0-33.7 15.1-33.7 33.7 0 13 7.4 24.3 18.1 29.9v33.8c-20.1 5.2-38.5 14.7-54.1 27.8l-142-110.4c2.5-6.1 3.9-12.8 3.9-19.8C181.1 11.2 169.9 0 156.3 0 142.7 0 131.5 11.2 131.5 24.8c0 9 4.8 16.8 12 21.1L25.5 241.8c-10.4-7.1-23-11.3-36.5-11.3C-49.6 230.5-81 262-81 300.6c0 38.5 31.4 69.9 70 69.9 17.5 0 33.5-6.4 45.8-17l115.3 89.7c-1.5 5-2.3 10.3-2.3 15.8 0 29.5 23.9 53.5 53.5 53.5 29.5 0 53.5-23.9 53.5-53.5 0-5.5-.8-10.8-2.3-15.8L368.8 354c12.3 10.6 28.3 17 45.8 17 38.5 0 70-31.4 70-69.9 0-38.5-31.4-69.9-70-69.9-17.5 0-33.5 6.4-45.8 17l-115.3-89.7c1.5-5 2.3-10.3 2.3-15.8 0-6.3-1.1-12.3-3-17.9 15.8-13.1 34.5-22.7 55.1-27.8z"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">HubSpot</span>
+          </div>
+
+          {/* Outlook */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#1976D2" d="M28 13h14v24H28z"/>
+                <path fill="#1E88E5" d="M42 43H28V29h14z"/>
+                <path fill="#1565C0" d="M42 19H28V5h14z"/>
+                <path fill="#0D47A1" d="M28 5h-4v38h4z"/>
+                <path fill="#1976D2" d="M2 11.5v25c0 1.9 1.6 3.5 3.5 3.5h15c1.9 0 3.5-1.6 3.5-3.5v-25c0-1.9-1.6-3.5-3.5-3.5h-15C3.6 8 2 9.6 2 11.5z"/>
+                <path fill="#FFF" d="M13 17c-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 13c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Outlook</span>
+          </div>
+
+          {/* Trello */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                <rect width="256" height="256" fill="#0079BF" rx="25"/>
+                <rect width="83.2" height="154.6" x="33.3" y="33.3" fill="#FFF" rx="12"/>
+                <rect width="83.2" height="99.7" x="139.5" y="33.3" fill="#FFF" rx="12"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Trello</span>
+          </div>
+
+          {/* Asana */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="36" r="8" fill="#F06A6A"/>
+                <circle cx="10" cy="20" r="8" fill="#F06A6A"/>
+                <circle cx="38" cy="20" r="8" fill="#F06A6A"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Asana</span>
+          </div>
+
+          {/* Zapier */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FF4A00" d="M24 4L4 24l20 20 20-20L24 4zm0 6.5L37.5 24 24 37.5 10.5 24 24 10.5z"/>
+                <circle cx="24" cy="24" r="6" fill="#FF4A00"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Zapier</span>
+          </div>
         </div>
 
         <div className="text-center">
@@ -664,25 +536,11 @@ const Landing = () => {
                 {plan.limits}
               </p>
 
-              <ul className="space-y-1.5 mb-6 max-h-[400px] overflow-y-auto text-sm">
+              <ul className="space-y-2 mb-6 text-sm">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    {feature.startsWith("━") || feature.startsWith("🚀") || feature.startsWith("📊") || feature.startsWith("📧") || feature.startsWith("🎮") || feature.startsWith("🤖") || feature.startsWith("🎨") || feature.startsWith("🧠") || feature.startsWith("📈") || feature.startsWith("🔌") || feature.startsWith("🛠️") || feature.startsWith("🎓") || feature.startsWith("📄") || feature.startsWith("♾️") || feature.startsWith("🏢") || feature.startsWith("🛡️") || feature.startsWith("👨‍💼") || feature.startsWith("🔧") || feature.startsWith("🔔") || feature.startsWith("👥") || feature.startsWith("⚙️") || feature.startsWith("💬") || feature.startsWith("🎥") ? (
-                      <span className={`${feature.startsWith("━") ? 'text-muted-foreground' : 'font-semibold text-primary'} w-full text-xs`}>
-                        {feature}
-                      </span>
-                    ) : (
-                      <>
-                        {feature.startsWith("→") ? (
-                          <span className="text-muted-foreground ml-4 text-xs">{feature}</span>
-                        ) : (
-                          <>
-                            <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-xs">{feature}</span>
-                          </>
-                        )}
-                      </>
-                    )}
+                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
