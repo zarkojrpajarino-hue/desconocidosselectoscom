@@ -281,6 +281,94 @@ const Landing = () => {
         </div>
       </div>
 
+      {/* Integrations Section */}
+      <div className="container mx-auto px-4 py-16 bg-muted/20">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          Se Integra con tus Herramientas Favoritas
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          Conecta OPTIMUS-K con las aplicaciones que ya usas y centraliza tu trabajo
+        </p>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto mb-8">
+          {/* Slack */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" fillRule="evenodd">
+                  <path d="M19.712.133a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386h5.376V5.52A5.381 5.381 0 0 0 19.712.133m0 14.365H5.376A5.381 5.381 0 0 0 0 19.884a5.381 5.381 0 0 0 5.376 5.387h14.336a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386" fill="#36C5F0"/>
+                  <path d="M53.76 19.884a5.381 5.381 0 0 0-5.376-5.386 5.381 5.381 0 0 0-5.376 5.386v5.387h5.376a5.381 5.381 0 0 0 5.376-5.387m-14.336 0V5.52A5.381 5.381 0 0 0 34.048.133a5.381 5.381 0 0 0-5.376 5.387v14.364a5.381 5.381 0 0 0 5.376 5.387 5.381 5.381 0 0 0 5.376-5.387" fill="#2EB67D"/>
+                  <path d="M34.048 54a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386h-5.376v5.386A5.381 5.381 0 0 0 34.048 54m0-14.365h14.336a5.381 5.381 0 0 0 5.376-5.386 5.381 5.381 0 0 0-5.376-5.387H34.048a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386" fill="#ECB22E"/>
+                  <path d="M0 34.249a5.381 5.381 0 0 0 5.376 5.386 5.381 5.381 0 0 0 5.376-5.386v-5.387H5.376A5.381 5.381 0 0 0 0 34.25m14.336-.001v14.364A5.381 5.381 0 0 0 19.712 54a5.381 5.381 0 0 0 5.376-5.387V34.25a5.381 5.381 0 0 0-5.376-5.387 5.381 5.381 0 0 0-5.376 5.387" fill="#E01E5A"/>
+                </g>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Slack</span>
+          </div>
+
+          {/* HubSpot */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FF7A59" d="M39.5,30.1c-1.3,0-2.5,0.4-3.5,1.1l-6.7-5.6c0.7-1.4,1.1-3,1.1-4.6c0-0.4,0-0.8-0.1-1.2l5.9-2.5 c1.1,1.1,2.6,1.8,4.3,1.8c3.3,0,6-2.7,6-6s-2.7-6-6-6s-6,2.7-6,6c0,0.4,0,0.8,0.1,1.2l-5.9,2.5c-1.1-1.1-2.6-1.8-4.3-1.8 c-1.7,0-3.2,0.7-4.3,1.8l-5.9-2.5c0.1-0.4,0.1-0.8,0.1-1.2c0-3.3-2.7-6-6-6s-6,2.7-6,6s2.7,6,6,6c1.7,0,3.2-0.7,4.3-1.8l5.9,2.5 c-0.1,0.4-0.1,0.8-0.1,1.2c0,1.7,0.4,3.2,1.1,4.6l-6.7,5.6c-1-0.7-2.2-1.1-3.5-1.1c-3.3,0-6,2.7-6,6s2.7,6,6,6s6-2.7,6-6 c0-1.3-0.4-2.5-1.1-3.5l6.7-5.6c1.4,0.7,3,1.1,4.6,1.1c1.7,0,3.2-0.4,4.6-1.1l6.7,5.6c-0.7,1-1.1,2.2-1.1,3.5c0,3.3,2.7,6,6,6 s6-2.7,6-6S42.8,30.1,39.5,30.1z"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">HubSpot</span>
+          </div>
+
+          {/* Microsoft Outlook */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#0078D4" d="M24,4L6,10v13c0,9.9,6.8,19.2,18,22c11.2-2.8,18-12.1,18-22V10L24,4z"/>
+                <path fill="#FFF" d="M24,13c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S29,13,24,13z M24,27c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5 S26.8,27,24,27z"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Outlook</span>
+          </div>
+
+          {/* Trello */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                <rect width="256" height="256" fill="#0079BF" rx="25"/>
+                <rect width="83.2" height="154.6" x="33.3" y="33.3" fill="#FFF" rx="12"/>
+                <rect width="83.2" height="99.7" x="139.5" y="33.3" fill="#FFF" rx="12"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Trello</span>
+          </div>
+
+          {/* Asana */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="24" r="8" fill="#F95858"/>
+                <circle cx="32" cy="24" r="8" fill="#F95858"/>
+                <circle cx="24" cy="12" r="8" fill="#F95858"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Asana</span>
+          </div>
+
+          {/* Zapier */}
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
+              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#FF4A00" d="M24,8l-6,6l6,6l6-6L24,8z M14,18l-6,6l6,6l6-6L14,18z M34,18l-6,6l6,6l6-6L34,18z M24,28l-6,6l6,6l6-6 L24,28z"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-center">Zapier</span>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground mb-4">
+            ¿Tu herramienta favorita no está? Tenemos API abierta para conectar cualquier sistema
+          </p>
+        </div>
+      </div>
+
       {/* How It Works */}
       <div className="container mx-auto px-4 py-16 bg-muted/30">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
