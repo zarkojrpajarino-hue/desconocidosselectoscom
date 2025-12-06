@@ -182,3 +182,9 @@ verify_jwt = false
 
 [functions.sync-to-hubspot]
 verify_jwt = true
+
+[functions.sync-to-asana]
+verify_jwt = true
+
+[functions.sync-to-trello]
+verify_jwt = true

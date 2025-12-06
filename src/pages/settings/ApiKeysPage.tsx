@@ -41,7 +41,9 @@ import {
   Zap,
   Calendar,
   RefreshCw,
-  Link2
+  Link2,
+  ListTodo,
+  LayoutDashboard
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -136,6 +138,28 @@ interface HubSpotAccount {
   created_at: string;
 }
 
+interface AsanaAccount {
+  id: string;
+  workspace_id: string | null;
+  workspace_name: string | null;
+  project_id: string | null;
+  project_name: string | null;
+  sync_enabled: boolean;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  created_at: string;
+}
+
+interface TrelloAccount {
+  id: string;
+  board_id: string | null;
+  board_name: string | null;
+  sync_enabled: boolean;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  created_at: string;
+}
+
 const SLACK_EVENT_TYPES = [
   { value: 'lead.created', label: 'Nuevo Lead Creado', icon: '🎯' },
   { value: 'lead.won', label: 'Lead Ganado', icon: '🎉' },
@@ -195,6 +219,18 @@ export default function ApiKeysPage() {
   const [connectingHubspot, setConnectingHubspot] = useState(false);
   const [syncingHubspot, setSyncingHubspot] = useState(false);
 
+  // Asana state
+  const [asanaAccount, setAsanaAccount] = useState<AsanaAccount | null>(null);
+  const [asanaLoading, setAsanaLoading] = useState(true);
+  const [asanaApiKey, setAsanaApiKey] = useState('');
+  const [savingAsana, setSavingAsana] = useState(false);
+
+  // Trello state
+  const [trelloAccount, setTrelloAccount] = useState<TrelloAccount | null>(null);
+  const [trelloLoading, setTrelloLoading] = useState(true);
+  const [trelloCredentials, setTrelloCredentials] = useState({ apiKey: '', apiToken: '' });
+  const [savingTrello, setSavingTrello] = useState(false);
+
   useEffect(() => {
     loadOrganization();
   }, [user]);
@@ -206,6 +242,8 @@ export default function ApiKeysPage() {
       loadSlackData();
       loadZapierSubs();
       loadHubspotAccount();
+      loadAsanaAccount();
+      loadTrelloAccount();
     }
   }, [currentOrganizationId]);
 
@@ -623,6 +661,161 @@ export default function ApiKeysPage() {
     }
   };
 
+  // Asana functions
+  const loadAsanaAccount = async () => {
+    if (!currentOrganizationId) return;
+    setAsanaLoading(true);
+    try {
+      const { data } = await supabase
+        .from('asana_accounts')
+        .select('*')
+        .eq('organization_id', currentOrganizationId)
+        .maybeSingle();
+      setAsanaAccount(data as AsanaAccount | null);
+    } catch (error) {
+      console.error('Error loading Asana account:', error);
+    } finally {
+      setAsanaLoading(false);
+    }
+  };
+
+  const connectAsana = async () => {
+    if (!currentOrganizationId || !asanaApiKey.trim()) {
+      toast.error('Por favor, introduce tu Personal Access Token de Asana');
+      return;
+    }
+    setSavingAsana(true);
+    try {
+      // Verify token by getting user workspaces
+      const response = await fetch('https://app.asana.com/api/1.0/workspaces', {
+        headers: { 'Authorization': `Bearer ${asanaApiKey}` }
+      });
+      const workspacesData = await response.json();
+      
+      if (workspacesData.errors) {
+        throw new Error('Token inválido');
+      }
+
+      const workspace = workspacesData.data?.[0];
+      
+      const { error } = await supabase.from('asana_accounts').upsert({
+        organization_id: currentOrganizationId,
+        access_token: asanaApiKey,
+        workspace_id: workspace?.gid || null,
+        workspace_name: workspace?.name || null,
+        sync_enabled: true
+      }, { onConflict: 'organization_id' });
+
+      if (error) throw error;
+      toast.success('Asana conectado correctamente');
+      setAsanaApiKey('');
+      loadAsanaAccount();
+    } catch (error) {
+      console.error('Error connecting Asana:', error);
+      toast.error('Error al conectar con Asana. Verifica tu token.');
+    } finally {
+      setSavingAsana(false);
+    }
+  };
+
+  const disconnectAsana = async () => {
+    if (!asanaAccount || !confirm('¿Desconectar Asana?')) return;
+    const { error } = await supabase.from('asana_accounts').delete().eq('id', asanaAccount.id);
+    if (error) {
+      toast.error('Error al desconectar');
+    } else {
+      toast.success('Asana desconectado');
+      setAsanaAccount(null);
+    }
+  };
+
+  const toggleAsanaSync = async (enabled: boolean) => {
+    if (!asanaAccount) return;
+    const { error } = await supabase.from('asana_accounts').update({ sync_enabled: enabled }).eq('id', asanaAccount.id);
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      setAsanaAccount({ ...asanaAccount, sync_enabled: enabled });
+      toast.success(enabled ? 'Sincronización activada' : 'Sincronización desactivada');
+    }
+  };
+
+  // Trello functions
+  const loadTrelloAccount = async () => {
+    if (!currentOrganizationId) return;
+    setTrelloLoading(true);
+    try {
+      const { data } = await supabase
+        .from('trello_accounts')
+        .select('*')
+        .eq('organization_id', currentOrganizationId)
+        .maybeSingle();
+      setTrelloAccount(data as TrelloAccount | null);
+    } catch (error) {
+      console.error('Error loading Trello account:', error);
+    } finally {
+      setTrelloLoading(false);
+    }
+  };
+
+  const connectTrello = async () => {
+    if (!currentOrganizationId || !trelloCredentials.apiKey.trim() || !trelloCredentials.apiToken.trim()) {
+      toast.error('Por favor, introduce tu API Key y Token de Trello');
+      return;
+    }
+    setSavingTrello(true);
+    try {
+      // Verify credentials by getting boards
+      const response = await fetch(
+        `https://api.trello.com/1/members/me/boards?key=${trelloCredentials.apiKey}&token=${trelloCredentials.apiToken}`
+      );
+      const boards = await response.json();
+      
+      if (!Array.isArray(boards)) {
+        throw new Error('Credenciales inválidas');
+      }
+
+      const { error } = await supabase.from('trello_accounts').upsert({
+        organization_id: currentOrganizationId,
+        api_key: trelloCredentials.apiKey,
+        api_token: trelloCredentials.apiToken,
+        sync_enabled: true
+      }, { onConflict: 'organization_id' });
+
+      if (error) throw error;
+      toast.success('Trello conectado correctamente');
+      setTrelloCredentials({ apiKey: '', apiToken: '' });
+      loadTrelloAccount();
+    } catch (error) {
+      console.error('Error connecting Trello:', error);
+      toast.error('Error al conectar con Trello. Verifica tus credenciales.');
+    } finally {
+      setSavingTrello(false);
+    }
+  };
+
+  const disconnectTrello = async () => {
+    if (!trelloAccount || !confirm('¿Desconectar Trello?')) return;
+    const { error } = await supabase.from('trello_accounts').delete().eq('id', trelloAccount.id);
+    if (error) {
+      toast.error('Error al desconectar');
+    } else {
+      toast.success('Trello desconectado');
+      setTrelloAccount(null);
+    }
+  };
+
+  const toggleTrelloSync = async (enabled: boolean) => {
+    if (!trelloAccount) return;
+    const { error } = await supabase.from('trello_accounts').update({ sync_enabled: enabled }).eq('id', trelloAccount.id);
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      setTrelloAccount({ ...trelloAccount, sync_enabled: enabled });
+      toast.success(enabled ? 'Sincronización activada' : 'Sincronización desactivada');
+    }
+  };
+
   const createApiKey = async () => {
     if (!newKeyName.trim()) {
       toast.error('Por favor, introduce un nombre para la API Key');
@@ -807,6 +1000,14 @@ export default function ApiKeysPage() {
             <TabsTrigger value="hubspot" className="flex items-center gap-2">
               <Link2 className="w-4 h-4" />
               HubSpot
+            </TabsTrigger>
+            <TabsTrigger value="asana" className="flex items-center gap-2">
+              <ListTodo className="w-4 h-4" />
+              Asana
+            </TabsTrigger>
+            <TabsTrigger value="trello" className="flex items-center gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              Trello
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
@@ -1424,6 +1625,126 @@ export default function ApiKeysPage() {
                   </CardContent>
                 </Card>
               </>
+            )}
+          </TabsContent>
+
+          {/* ASANA TAB */}
+          <TabsContent value="asana" className="space-y-4">
+            {asanaLoading ? (
+              <Card><CardContent className="py-12 text-center"><p>Cargando...</p></CardContent></Card>
+            ) : !asanaAccount ? (
+              <Card>
+                <CardContent className="py-12 space-y-6">
+                  <div className="text-center">
+                    <ListTodo className="w-16 h-16 mx-auto text-pink-500 mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Conecta con Asana</h3>
+                    <p className="text-muted-foreground mb-6">Sincroniza tus tareas con Asana</p>
+                  </div>
+                  <div className="max-w-md mx-auto space-y-4">
+                    <div>
+                      <Label>Personal Access Token</Label>
+                      <Input
+                        type="password"
+                        placeholder="Pega tu token de Asana"
+                        value={asanaApiKey}
+                        onChange={(e) => setAsanaApiKey(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Obtén tu token en: app.asana.com → My Settings → Apps → Developer Apps
+                      </p>
+                    </div>
+                    <Button onClick={connectAsana} disabled={savingAsana} className="w-full bg-pink-500 hover:bg-pink-600">
+                      <ListTodo className="w-5 h-5 mr-2" />
+                      {savingAsana ? 'Conectando...' : 'Conectar con Asana'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center">
+                        <ListTodo className="w-6 h-6 text-pink-500" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{asanaAccount.workspace_name || 'Asana Workspace'}</p>
+                        <p className="text-sm text-muted-foreground">Workspace ID: {asanaAccount.workspace_id}</p>
+                        {asanaAccount.last_sync_at && <p className="text-xs text-muted-foreground">Última sync: {new Date(asanaAccount.last_sync_at).toLocaleString()}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Switch checked={asanaAccount.sync_enabled} onCheckedChange={toggleAsanaSync} />
+                      <Button variant="outline" size="sm" onClick={disconnectAsana}>Desconectar</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* TRELLO TAB */}
+          <TabsContent value="trello" className="space-y-4">
+            {trelloLoading ? (
+              <Card><CardContent className="py-12 text-center"><p>Cargando...</p></CardContent></Card>
+            ) : !trelloAccount ? (
+              <Card>
+                <CardContent className="py-12 space-y-6">
+                  <div className="text-center">
+                    <LayoutDashboard className="w-16 h-16 mx-auto text-blue-400 mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Conecta con Trello</h3>
+                    <p className="text-muted-foreground mb-6">Sincroniza tus tareas con tableros de Trello</p>
+                  </div>
+                  <div className="max-w-md mx-auto space-y-4">
+                    <div>
+                      <Label>API Key</Label>
+                      <Input
+                        placeholder="Tu API Key de Trello"
+                        value={trelloCredentials.apiKey}
+                        onChange={(e) => setTrelloCredentials(prev => ({ ...prev, apiKey: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Token</Label>
+                      <Input
+                        type="password"
+                        placeholder="Tu Token de Trello"
+                        value={trelloCredentials.apiToken}
+                        onChange={(e) => setTrelloCredentials(prev => ({ ...prev, apiToken: e.target.value }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Obtén tus credenciales en: trello.com/power-ups/admin
+                      </p>
+                    </div>
+                    <Button onClick={connectTrello} disabled={savingTrello} className="w-full bg-blue-400 hover:bg-blue-500">
+                      <LayoutDashboard className="w-5 h-5 mr-2" />
+                      {savingTrello ? 'Conectando...' : 'Conectar con Trello'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-400/10 rounded-lg flex items-center justify-center">
+                        <LayoutDashboard className="w-6 h-6 text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{trelloAccount.board_name || 'Trello Board'}</p>
+                        {trelloAccount.board_id && <p className="text-sm text-muted-foreground">Board ID: {trelloAccount.board_id}</p>}
+                        {trelloAccount.last_sync_at && <p className="text-xs text-muted-foreground">Última sync: {new Date(trelloAccount.last_sync_at).toLocaleString()}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Switch checked={trelloAccount.sync_enabled} onCheckedChange={toggleTrelloSync} />
+                      <Button variant="outline" size="sm" onClick={disconnectTrello}>Desconectar</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
