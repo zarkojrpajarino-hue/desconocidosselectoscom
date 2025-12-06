@@ -164,3 +164,12 @@ verify_jwt = false
 
 [functions.trigger-webhook]
 verify_jwt = false
+
+[functions.outlook-auth-url]
+verify_jwt = true
+
+[functions.outlook-auth-callback]
+verify_jwt = false
+
+[functions.sync-outlook-events]
+verify_jwt = true

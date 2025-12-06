@@ -37,7 +37,10 @@ import {
   ExternalLink,
   MessageSquare,
   Check,
-  X
+  X,
+  Zap,
+  Calendar,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -101,11 +104,37 @@ interface SlackEventMapping {
   enabled: boolean;
 }
 
+interface ZapierSubscription {
+  id: string;
+  target_url: string;
+  event_type: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface OutlookAccount {
+  id: string;
+  email: string;
+  display_name: string | null;
+  sync_enabled: boolean;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  created_at: string;
+}
+
 const SLACK_EVENT_TYPES = [
   { value: 'lead.created', label: 'Nuevo Lead Creado', icon: '🎯' },
   { value: 'lead.won', label: 'Lead Ganado', icon: '🎉' },
   { value: 'task.completed', label: 'Tarea Completada', icon: '✅' },
   { value: 'okr.at_risk', label: 'OKR en Riesgo', icon: '⚠️' },
+];
+
+const ZAPIER_EVENT_TYPES = [
+  { value: 'lead.created', label: 'Nuevo Lead' },
+  { value: 'lead.updated', label: 'Lead Actualizado' },
+  { value: 'task.completed', label: 'Tarea Completada' },
+  { value: 'okr.updated', label: 'OKR Actualizado' },
+  { value: 'metric.created', label: 'Métrica Registrada' },
 ];
 
 export default function ApiKeysPage() {
@@ -134,6 +163,18 @@ export default function ApiKeysPage() {
   const [slackLoading, setSlackLoading] = useState(true);
   const [connectingSlack, setConnectingSlack] = useState(false);
 
+  // Zapier state
+  const [zapierSubs, setZapierSubs] = useState<ZapierSubscription[]>([]);
+  const [zapierDialogOpen, setZapierDialogOpen] = useState(false);
+  const [newZapierData, setNewZapierData] = useState({ target_url: '', event_type: 'lead.created' });
+  const [isCreatingZapier, setIsCreatingZapier] = useState(false);
+
+  // Outlook state
+  const [outlookAccount, setOutlookAccount] = useState<OutlookAccount | null>(null);
+  const [outlookLoading, setOutlookLoading] = useState(true);
+  const [connectingOutlook, setConnectingOutlook] = useState(false);
+  const [syncingOutlook, setSyncingOutlook] = useState(false);
+
   useEffect(() => {
     loadOrganization();
   }, [user]);
@@ -143,19 +184,37 @@ export default function ApiKeysPage() {
       loadApiKeys();
       loadWebhooks();
       loadSlackData();
+      loadZapierSubs();
     }
   }, [currentOrganizationId]);
 
-  // Check for Slack OAuth callback
+  useEffect(() => {
+    if (user) {
+      loadOutlookAccount();
+    }
+  }, [user]);
+
+  // Check for OAuth callbacks
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const slackStatus = urlParams.get('slack');
+    const outlookStatus = urlParams.get('outlook');
+    
     if (slackStatus === 'connected') {
       toast.success('¡Slack conectado correctamente!');
       window.history.replaceState({}, '', window.location.pathname);
       loadSlackData();
     } else if (slackStatus === 'error') {
       toast.error('Error al conectar Slack: ' + (urlParams.get('message') || 'desconocido'));
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    if (outlookStatus === 'connected') {
+      toast.success('¡Outlook Calendar conectado correctamente!');
+      window.history.replaceState({}, '', window.location.pathname);
+      loadOutlookAccount();
+    } else if (outlookStatus === 'error') {
+      toast.error('Error al conectar Outlook: ' + (urlParams.get('message') || 'desconocido'));
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -322,6 +381,138 @@ export default function ApiKeysPage() {
       toast.error('Error al actualizar');
     } else {
       loadSlackData();
+    }
+  };
+
+  // Zapier functions
+  const loadZapierSubs = async () => {
+    if (!currentOrganizationId) return;
+    const { data } = await supabase
+      .from('zapier_subscriptions')
+      .select('*')
+      .eq('organization_id', currentOrganizationId)
+      .order('created_at', { ascending: false });
+    setZapierSubs((data as ZapierSubscription[]) || []);
+  };
+
+  const createZapierSub = async () => {
+    if (!newZapierData.target_url.trim()) {
+      toast.error('Por favor, introduce la URL del webhook de Zapier');
+      return;
+    }
+    setIsCreatingZapier(true);
+    try {
+      const { error } = await supabase
+        .from('zapier_subscriptions')
+        .insert({
+          organization_id: currentOrganizationId,
+          target_url: newZapierData.target_url,
+          event_type: newZapierData.event_type,
+          is_active: true
+        });
+      if (error) throw error;
+      setZapierDialogOpen(false);
+      setNewZapierData({ target_url: '', event_type: 'lead.created' });
+      loadZapierSubs();
+      toast.success('Conexión Zapier creada');
+    } catch (error) {
+      console.error('Error creating Zapier subscription:', error);
+      toast.error('Error al crear la conexión');
+    } finally {
+      setIsCreatingZapier(false);
+    }
+  };
+
+  const deleteZapierSub = async (id: string) => {
+    if (!confirm('¿Eliminar esta conexión de Zapier?')) return;
+    const { error } = await supabase.from('zapier_subscriptions').delete().eq('id', id);
+    if (error) {
+      toast.error('Error al eliminar');
+    } else {
+      toast.success('Conexión eliminada');
+      loadZapierSubs();
+    }
+  };
+
+  const toggleZapierSub = async (id: string, isActive: boolean) => {
+    const { error } = await supabase.from('zapier_subscriptions').update({ is_active: !isActive }).eq('id', id);
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      loadZapierSubs();
+    }
+  };
+
+  // Outlook functions
+  const loadOutlookAccount = async () => {
+    if (!user) return;
+    setOutlookLoading(true);
+    try {
+      const { data } = await supabase
+        .from('outlook_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setOutlookAccount(data as OutlookAccount | null);
+    } catch (error) {
+      console.error('Error loading Outlook account:', error);
+    } finally {
+      setOutlookLoading(false);
+    }
+  };
+
+  const connectOutlook = async () => {
+    if (!user) return;
+    setConnectingOutlook(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('outlook-auth-url', {
+        body: { user_id: user.id }
+      });
+      if (error) throw error;
+      if (data?.auth_url) {
+        window.location.href = data.auth_url;
+      }
+    } catch (error) {
+      console.error('Error connecting Outlook:', error);
+      toast.error('Error al conectar con Outlook');
+      setConnectingOutlook(false);
+    }
+  };
+
+  const disconnectOutlook = async () => {
+    if (!outlookAccount || !confirm('¿Desconectar Outlook Calendar?')) return;
+    const { error } = await supabase.from('outlook_accounts').delete().eq('id', outlookAccount.id);
+    if (error) {
+      toast.error('Error al desconectar');
+    } else {
+      toast.success('Outlook desconectado');
+      setOutlookAccount(null);
+    }
+  };
+
+  const toggleOutlookSync = async (enabled: boolean) => {
+    if (!outlookAccount) return;
+    const { error } = await supabase.from('outlook_accounts').update({ sync_enabled: enabled }).eq('id', outlookAccount.id);
+    if (error) {
+      toast.error('Error al actualizar');
+    } else {
+      setOutlookAccount({ ...outlookAccount, sync_enabled: enabled });
+      toast.success(enabled ? 'Sincronización activada' : 'Sincronización desactivada');
+    }
+  };
+
+  const syncOutlookNow = async () => {
+    setSyncingOutlook(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-outlook-events');
+      if (error) throw error;
+      toast.success(`Sincronización completada: ${data?.synced || 0} eventos`);
+      loadOutlookAccount();
+    } catch (error) {
+      console.error('Error syncing Outlook:', error);
+      toast.error('Error al sincronizar');
+    } finally {
+      setSyncingOutlook(false);
     }
   };
 
@@ -497,6 +688,14 @@ export default function ApiKeysPage() {
             <TabsTrigger value="slack" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               Slack
+            </TabsTrigger>
+            <TabsTrigger value="zapier" className="flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Zapier
+            </TabsTrigger>
+            <TabsTrigger value="outlook" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Outlook
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
@@ -916,6 +1115,116 @@ export default function ApiKeysPage() {
                   </CardContent>
                 </Card>
               </>
+            )}
+          </TabsContent>
+
+          {/* ZAPIER TAB */}
+          <TabsContent value="zapier" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Conecta OPTIMUS-K con 5000+ apps a través de Zapier
+              </p>
+              <Dialog open={zapierDialogOpen} onOpenChange={setZapierDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button><Plus className="w-4 h-4 mr-2" />Añadir Webhook</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Conectar con Zapier</DialogTitle>
+                    <DialogDescription>Pega la URL del webhook de tu Zap</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>URL del Webhook</Label>
+                      <Input placeholder="https://hooks.zapier.com/..." value={newZapierData.target_url} onChange={(e) => setNewZapierData(prev => ({ ...prev, target_url: e.target.value }))} />
+                    </div>
+                    <div>
+                      <Label>Evento</Label>
+                      <Select value={newZapierData.event_type} onValueChange={(v) => setNewZapierData(prev => ({ ...prev, event_type: v }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {ZAPIER_EVENT_TYPES.map(e => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setZapierDialogOpen(false)}>Cancelar</Button>
+                    <Button onClick={createZapierSub} disabled={isCreatingZapier}>{isCreatingZapier ? 'Creando...' : 'Crear'}</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="grid gap-4">
+              {zapierSubs.map(sub => (
+                <Card key={sub.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium">{ZAPIER_EVENT_TYPES.find(e => e.value === sub.event_type)?.label || sub.event_type}</span>
+                          <Badge variant={sub.is_active ? "default" : "secondary"} className={sub.is_active ? "bg-green-500" : ""}>{sub.is_active ? 'Activo' : 'Pausado'}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-mono truncate max-w-md">{sub.target_url}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => toggleZapierSub(sub.id, sub.is_active)}>{sub.is_active ? 'Pausar' : 'Activar'}</Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteZapierSub(sub.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {zapierSubs.length === 0 && (
+                <Card><CardContent className="py-12 text-center"><Zap className="w-12 h-12 mx-auto text-muted-foreground mb-4" /><p className="text-muted-foreground">No hay conexiones de Zapier. Crea una para empezar.</p></CardContent></Card>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* OUTLOOK TAB */}
+          <TabsContent value="outlook" className="space-y-4">
+            {outlookLoading ? (
+              <Card><CardContent className="py-12 text-center"><p>Cargando...</p></CardContent></Card>
+            ) : !outlookAccount ? (
+              <Card>
+                <CardContent className="py-12 text-center space-y-6">
+                  <Calendar className="w-16 h-16 mx-auto text-muted-foreground" />
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Conecta tu Outlook Calendar</h3>
+                    <p className="text-muted-foreground mb-4">Sincroniza tus tareas con Microsoft Outlook</p>
+                  </div>
+                  <Button onClick={connectOutlook} disabled={connectingOutlook} size="lg">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    {connectingOutlook ? 'Conectando...' : 'Conectar con Outlook'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <Calendar className="w-6 h-6 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{outlookAccount.display_name || outlookAccount.email}</p>
+                        <p className="text-sm text-muted-foreground">{outlookAccount.email}</p>
+                        {outlookAccount.last_sync_at && <p className="text-xs text-muted-foreground">Última sync: {new Date(outlookAccount.last_sync_at).toLocaleString()}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Button variant="outline" size="sm" onClick={syncOutlookNow} disabled={syncingOutlook}>
+                        <RefreshCw className={`w-4 h-4 mr-2 ${syncingOutlook ? 'animate-spin' : ''}`} />
+                        {syncingOutlook ? 'Sincronizando...' : 'Sincronizar'}
+                      </Button>
+                      <Switch checked={outlookAccount.sync_enabled} onCheckedChange={toggleOutlookSync} />
+                      <Button variant="outline" size="sm" onClick={disconnectOutlook}>Desconectar</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 

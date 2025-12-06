@@ -172,6 +172,36 @@ serve(async (req) => {
       console.error('Slack notification error:', slackError)
     }
 
+    // Send to Zapier subscriptions
+    try {
+      const { data: zapierSubs } = await supabase
+        .from('zapier_subscriptions')
+        .select('*')
+        .eq('organization_id', organization_id)
+        .eq('event_type', event)
+        .eq('is_active', true)
+
+      if (zapierSubs && zapierSubs.length > 0) {
+        for (const sub of zapierSubs) {
+          try {
+            await fetch(sub.target_url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                event,
+                ...data,
+                timestamp: new Date().toISOString()
+              })
+            })
+          } catch (zapierError) {
+            console.error('Zapier webhook failed:', zapierError)
+          }
+        }
+      }
+    } catch (zapierFetchError) {
+      console.error('Zapier subscriptions error:', zapierFetchError)
+    }
+
     return new Response(
       JSON.stringify({ 
         message: 'Webhooks processed', 

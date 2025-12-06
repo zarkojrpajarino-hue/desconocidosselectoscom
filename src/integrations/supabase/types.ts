@@ -2922,6 +2922,93 @@ export type Database = {
         }
         Relationships: []
       }
+      outlook_accounts: {
+        Row: {
+          access_token: string
+          calendar_id: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          refresh_token: string
+          sync_enabled: boolean | null
+          token_expires_at: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          refresh_token: string
+          sync_enabled?: boolean | null
+          token_expires_at: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          refresh_token?: string
+          sync_enabled?: boolean | null
+          token_expires_at?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      outlook_event_mappings: {
+        Row: {
+          id: string
+          last_synced_at: string | null
+          outlook_account_id: string
+          outlook_event_id: string
+          task_schedule_id: string
+        }
+        Insert: {
+          id?: string
+          last_synced_at?: string | null
+          outlook_account_id: string
+          outlook_event_id: string
+          task_schedule_id: string
+        }
+        Update: {
+          id?: string
+          last_synced_at?: string | null
+          outlook_account_id?: string
+          outlook_event_id?: string
+          task_schedule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlook_event_mappings_outlook_account_id_fkey"
+            columns: ["outlook_account_id"]
+            isOneToOne: false
+            referencedRelation: "outlook_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outlook_event_mappings_task_schedule_id_fkey"
+            columns: ["task_schedule_id"]
+            isOneToOne: true
+            referencedRelation: "task_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_stages: {
         Row: {
           created_at: string
@@ -5141,6 +5228,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zapier_subscriptions: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          filters: Json | null
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          target_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          target_url: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          target_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zapier_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
