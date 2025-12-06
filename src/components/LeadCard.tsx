@@ -8,9 +8,11 @@ import {
   Euro,
   TrendingUp,
   User,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { useUserRoleName, formatUserWithRole } from '@/hooks/useUserRoles';
+import { IntegrationButton } from '@/components/IntegrationButton';
 
 interface LeadCardProps {
   lead: {
@@ -29,6 +31,7 @@ interface LeadCardProps {
     interested_products?: string[];
     assigned_to_name?: string;
     assigned_to?: string;
+    hubspot_synced?: boolean;
   };
   onClick: () => void;
 }
@@ -174,6 +177,53 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
               </span>
             </div>
           )}
+
+          {/* Integraciones */}
+          <div 
+            className="flex items-center gap-2 pt-2 border-t"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Badge de sincronización */}
+            {lead.hubspot_synced && (
+              <Badge variant="outline" className="text-xs gap-1 text-success border-success/30 bg-success/10">
+                <CheckCircle2 className="w-3 h-3" />
+                HubSpot
+              </Badge>
+            )}
+            
+            {/* Botones de integración */}
+            <div className="flex gap-1 ml-auto">
+              <IntegrationButton
+                type="hubspot"
+                action="export"
+                data={{
+                  lead: {
+                    id: lead.id,
+                    name: lead.name,
+                    company: lead.company,
+                    email: lead.email,
+                    phone: lead.phone,
+                    estimated_value: lead.estimated_value,
+                    probability: lead.probability
+                  }
+                }}
+                size="sm"
+                onSuccess={() => {}}
+              />
+              <IntegrationButton
+                type="slack"
+                action="notify"
+                data={{
+                  message: `🎯 *Nuevo lead: ${lead.name}*\n` +
+                    `${lead.company ? `Empresa: ${lead.company}\n` : ''}` +
+                    `Valor: €${lead.estimated_value.toLocaleString()}\n` +
+                    `Probabilidad: ${lead.probability}%`,
+                  channel: '#ventas'
+                }}
+                size="sm"
+              />
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
