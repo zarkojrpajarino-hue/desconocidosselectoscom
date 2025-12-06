@@ -502,7 +502,7 @@ const Landing = () => {
           Empieza gratis · Sin permanencia · Cancela cuando quieras
         </p>
 
-        <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto">
+        <div className="flex flex-row gap-4 max-w-7xl mx-auto overflow-x-auto">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
