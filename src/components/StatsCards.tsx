@@ -1,16 +1,19 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, Circle, ListTodo, TrendingUp } from 'lucide-react';
+import { CheckCircle2, ListTodo, Target, Flame } from 'lucide-react';
 import { useTasks, useTaskCompletions } from '@/hooks/useTasks';
 import { calculatePercentage } from '@/lib/dateUtils';
+import { StatCard } from '@/components/ui/stat-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatsCardsProps {
   userId: string | undefined;
   currentPhase: number | undefined;
   organizationId: string | undefined;
   taskLimit: number | undefined;
+  remainingSwaps?: number;
+  swapLimit?: number;
 }
 
-const StatsCards = ({ userId, currentPhase, organizationId, taskLimit }: StatsCardsProps) => {
+const StatsCards = ({ userId, currentPhase, organizationId, taskLimit, remainingSwaps = 0, swapLimit = 3 }: StatsCardsProps) => {
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(userId, currentPhase, organizationId, taskLimit);
   const { data: completions = new Map(), isLoading: completionsLoading } = useTaskCompletions(userId, organizationId);
 
@@ -19,48 +22,70 @@ const StatsCards = ({ userId, currentPhase, organizationId, taskLimit }: StatsCa
   const pending = total - completed;
   const progress = calculatePercentage(completed, total);
 
+  // Calcular completadas hoy
+  const today = new Date().toDateString();
+  const completedToday = Array.from(completions.values()).filter(c => 
+    c.validated_by_leader && new Date(c.completed_at).toDateString() === today
+  ).length;
+
   if (tasksLoading || completionsLoading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="shadow-card">
-            <CardContent className="pt-4 md:pt-6">
-              <div className="animate-pulse space-y-3">
-                <div className="h-10 w-10 bg-muted rounded-full mx-auto"></div>
-                <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-                <div className="h-8 bg-muted rounded w-3/4 mx-auto"></div>
-              </div>
-            </CardContent>
-          </Card>
+          <Skeleton key={i} className="h-28 w-full rounded-lg" />
         ))}
       </div>
     );
   }
 
-  const statCards = [
-    { label: 'Total Tareas', value: total, icon: ListTodo, color: 'text-primary' },
-    { label: 'Completadas', value: completed, icon: CheckCircle2, color: 'text-success' },
-    { label: 'Pendientes', value: pending, icon: Circle, color: 'text-warning' },
-    { label: 'Progreso', value: `${progress}%`, icon: TrendingUp, color: 'text-accent' },
-  ];
-
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-      {statCards.map((stat, index) => (
-        <Card key={index} className="shadow-card hover:shadow-premium transition-shadow">
-          <CardContent className="pt-4 md:pt-6">
-            <div className="flex flex-col items-center gap-2">
-              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full bg-muted/50 flex items-center justify-center ${stat.color}`}>
-                <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
-              </div>
-              <div className="text-center">
-                <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.label}</p>
-                <p className="text-xl md:text-3xl font-bold">{stat.value}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <StatCard
+        variant="success"
+        size="md"
+        value={completedToday}
+        label="Tareas Hoy"
+        change={`${completed} esta semana`}
+        trend={completedToday > 0 ? "up" : "neutral"}
+        icon={<CheckCircle2 className="w-5 h-5 text-success" />}
+        className="animate-fade-in"
+      />
+      
+      <StatCard
+        variant="primary"
+        size="md"
+        value={`${progress}%`}
+        label="Progreso Semanal"
+        change={`${completed}/${total} tareas`}
+        trend={progress > 50 ? "up" : progress > 25 ? "neutral" : "down"}
+        icon={<Target className="w-5 h-5 text-primary" />}
+        className="animate-fade-in"
+        style={{ animationDelay: '100ms' }}
+      />
+      
+      <StatCard
+        variant="info"
+        size="md"
+        value={pending}
+        label="Pendientes"
+        change={`Fase ${currentPhase || 1}`}
+        trend="neutral"
+        icon={<ListTodo className="w-5 h-5 text-info" />}
+        className="animate-fade-in"
+        style={{ animationDelay: '200ms' }}
+      />
+      
+      <StatCard
+        variant="warning"
+        size="md"
+        value={remainingSwaps}
+        label="Swaps Restantes"
+        change={`de ${swapLimit} totales`}
+        trend={remainingSwaps > 2 ? "up" : remainingSwaps > 0 ? "neutral" : "down"}
+        icon={<Flame className="w-5 h-5 text-warning" />}
+        className="animate-fade-in"
+        style={{ animationDelay: '300ms' }}
+      />
     </div>
   );
 };

@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, PieChart, BarChart3, Package } from 'lucide-react';
+import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, TrendingDown, PieChart, BarChart3, Package, PiggyBank } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FinancialDashboard from '@/components/FinancialDashboard';
 import RevenueFormModal from '@/components/financial/RevenueFormModal';
@@ -119,6 +120,69 @@ const FinancialPage = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 mt-6">
+            {/* Financial Stats Cards */}
+            {transactions && transactions.length > 0 && (() => {
+              const income = transactions
+                .filter(t => t.type === 'revenue')
+                .reduce((sum, t) => sum + (t.amount || 0), 0);
+              const expenses = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + (t.amount || 0), 0);
+              const profit = income - expenses;
+              const profitMargin = income > 0 ? Math.round((profit / income) * 100) : 0;
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard
+                    variant="success"
+                    size="lg"
+                    value={`€${income.toLocaleString()}`}
+                    label="Ingresos"
+                    change="este período"
+                    trend="up"
+                    icon={<TrendingUp className="w-6 h-6 text-success" />}
+                    className="animate-fade-in"
+                  />
+                  
+                  <StatCard
+                    variant="danger"
+                    size="lg"
+                    value={`€${expenses.toLocaleString()}`}
+                    label="Gastos"
+                    change="este período"
+                    trend="down"
+                    icon={<TrendingDown className="w-6 h-6 text-destructive" />}
+                    className="animate-fade-in"
+                    style={{ animationDelay: '100ms' }}
+                  />
+                  
+                  <StatCard
+                    variant={profit > 0 ? "success" : "danger"}
+                    size="lg"
+                    value={`€${profit.toLocaleString()}`}
+                    label="Beneficio Neto"
+                    change={`${profitMargin}% margen`}
+                    trend={profit > 0 ? "up" : "down"}
+                    icon={<DollarSign className="w-6 h-6" />}
+                    className="animate-fade-in"
+                    style={{ animationDelay: '200ms' }}
+                  />
+                  
+                  <StatCard
+                    variant={profitMargin > 20 ? "success" : profitMargin > 0 ? "warning" : "danger"}
+                    size="lg"
+                    value={`${profitMargin}%`}
+                    label="Margen de Beneficio"
+                    change={profitMargin > 20 ? "Saludable" : profitMargin > 0 ? "Mejorable" : "En pérdidas"}
+                    trend={profitMargin > 20 ? "up" : profitMargin > 0 ? "neutral" : "down"}
+                    icon={<PiggyBank className="w-6 h-6" />}
+                    className="animate-fade-in"
+                    style={{ animationDelay: '300ms' }}
+                  />
+                </div>
+              );
+            })()}
+
             {/* Explicación */}
             <Collapsible open={isFinancialInfoOpen} onOpenChange={setIsFinancialInfoOpen}>
               <Card>

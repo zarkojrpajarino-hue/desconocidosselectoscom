@@ -289,7 +289,9 @@ const DashboardHome = () => {
                 userId={user?.id} 
                 currentPhase={systemConfig?.current_phase} 
                 organizationId={userProfile?.organization_id}
-                taskLimit={userWeeklyData?.task_limit} 
+                taskLimit={userWeeklyData?.task_limit}
+                remainingSwaps={remainingSwaps}
+                swapLimit={limit}
               />
             </div>
 
