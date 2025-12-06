@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw, Download } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw, Download, MessageSquare } from 'lucide-react';
+import { IntegrationButton } from '@/components/IntegrationButton';
 
 interface BusinessMetrics {
   revenue?: number;
@@ -159,12 +160,32 @@ const BusinessMetricsDashboard = () => {
             </p>
           )}
         </div>
-        <Button onClick={handleExport} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" />
-          Exportar
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Compartir métricas en Slack */}
+          <IntegrationButton
+            type="slack"
+            action="notify"
+            data={{
+              message: `📊 *Métricas del Negocio*\n\n` +
+                `💰 Ingresos: €${metrics.revenue?.toLocaleString() || 0}\n` +
+                `🛒 Pedidos: ${metrics.orders_count || 0}\n` +
+                `🎫 Ticket medio: €${metrics.avg_ticket?.toLocaleString() || 0}\n` +
+                `📈 Leads: ${metrics.leads_generated || 0}\n` +
+                `🔄 Conversión: ${metrics.conversion_rate || 0}%\n` +
+                `⭐ NPS: ${metrics.nps_score || 'N/A'}\n\n` +
+                `_Actualizado: ${lastUpdate || 'ahora'}_`,
+              channel: '#metrics'
+            }}
+            label="Compartir en Slack"
+            size="sm"
+            variant="outline"
+          />
+          <Button onClick={handleExport} variant="outline" className="gap-2">
+            <Download className="w-4 h-4" />
+            Exportar
+          </Button>
+        </div>
       </div>
-
       <Tabs defaultValue="sales" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="sales">

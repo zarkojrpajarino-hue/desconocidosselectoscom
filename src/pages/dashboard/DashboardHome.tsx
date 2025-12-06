@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap } from 'lucide-react';
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
@@ -23,6 +23,7 @@ import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { IntegrationButton } from '@/components/IntegrationButton';
 
 const DashboardHome = () => {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -306,6 +307,63 @@ const DashboardHome = () => {
 
             {/* Google Calendar Connect */}
             {user && <GoogleCalendarConnect userId={user.id} />}
+
+            {/* Sync All Card */}
+            <Card className="shadow-card border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Sincronización Rápida
+                </CardTitle>
+                <CardDescription>
+                  Sincroniza tu trabajo con todas tus herramientas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  <IntegrationButton
+                    type="slack"
+                    action="notify"
+                    data={{
+                      message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` +
+                        `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` +
+                        `🔄 Cambios restantes: ${remainingSwaps}/${limit}\n` +
+                        `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` +
+                        `_¡Seguimos avanzando! 💪_`,
+                      channel: '#daily-updates'
+                    }}
+                    label="Resumen a Slack"
+                    size="sm"
+                  />
+                  
+                  <IntegrationButton
+                    type="calendar"
+                    action="sync"
+                    data={{
+                      title: 'Sincronizar tareas pendientes',
+                      description: `${tasks.length - completions.length} tareas por completar`,
+                      start_time: new Date().toISOString(),
+                      end_time: getCurrentWeekDeadline().toISOString()
+                    }}
+                    label="Sync Calendario"
+                    size="sm"
+                    variant="outline"
+                  />
+                  
+                  <IntegrationButton
+                    type="asana"
+                    action="export"
+                    data={{
+                      name: 'Tareas semanales',
+                      notes: `${tasks.length} tareas de la semana`
+                    }}
+                    label="Exportar Asana"
+                    size="sm"
+                    variant="outline"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Team Progress */}
             <TeamProgress 
