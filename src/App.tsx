@@ -106,6 +106,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ScalabilityStart = lazy(() => import("./pages/ScalabilityStart"));
 const ScalabilityDashboard = lazy(() => import("./pages/ScalabilityDashboard"));
 
+// Lazy loaded pages - Settings
+const ApiKeysPage = lazy(() => import("./pages/settings/ApiKeysPage"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -219,6 +222,9 @@ const AppContent = () => {
           {/* Scalability */}
           <Route path="/scalability" element={<ScalabilityStart />} />
           <Route path="/scalability/:analysisId" element={<ScalabilityDashboard />} />
+          
+          {/* Settings */}
+          <Route path="/settings/api-keys" element={<ApiKeysPage />} />
         </Route>
         
         {/* ===== 404 ===== */}
