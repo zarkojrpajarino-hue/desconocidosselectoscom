@@ -67,7 +67,19 @@ export interface HubSpotExportData {
   name?: string;
   email?: string;
   company?: string;
+  phone?: string;
+  estimated_value?: number;
+  probability?: number;
   action?: 'single' | 'bulk_export';
+  lead?: {
+    id: string;
+    name: string;
+    company?: string;
+    email?: string;
+    phone?: string;
+    estimated_value?: number;
+    probability?: number;
+  };
 }
 
 export interface CalendarSyncData {

@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, User, Calendar } from 'lucide-react';
+import { DollarSign, User, Calendar, CheckCircle2 } from 'lucide-react';
 import { Lead } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
 import { useUserRoleName, formatUserWithRole } from '@/hooks/useUserRoles';
+import { IntegrationButton } from '@/components/IntegrationButton';
 
 interface PipelineLeadCardProps {
   lead: Lead;
@@ -123,6 +124,54 @@ const PipelineLeadCard = ({ lead, onDragStart, onClick, isDragging }: PipelineLe
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
           <span>{formatDate(lead.created_at, 'd MMM')}</span>
+        </div>
+
+        {/* Integraciones */}
+        <div 
+          className="flex items-center gap-1 pt-2 border-t mt-2"
+          onClick={(e) => e.stopPropagation()}
+          onDragStart={(e) => e.stopPropagation()}
+        >
+          {/* Badge de sincronización */}
+          {(lead as Lead & { hubspot_synced?: boolean }).hubspot_synced && (
+            <Badge variant="outline" className="text-xs gap-1 text-success border-success/30 bg-success/10 px-1">
+              <CheckCircle2 className="w-2.5 h-2.5" />
+              Sync
+            </Badge>
+          )}
+          
+          {/* Botones compactos */}
+          <div className="flex gap-1 ml-auto">
+            <IntegrationButton
+              type="hubspot"
+              action="export"
+              data={{
+                lead: {
+                  id: lead.id,
+                  name: lead.name,
+                  company: lead.company,
+                  email: lead.email,
+                  phone: lead.phone,
+                  estimated_value: lead.estimated_value,
+                  probability: lead.probability
+                }
+              }}
+              size="sm"
+              onSuccess={() => {}}
+            />
+            <IntegrationButton
+              type="slack"
+              action="notify"
+              data={{
+                message: `🎯 *Lead: ${lead.name}*\n` +
+                  `${lead.company ? `Empresa: ${lead.company}\n` : ''}` +
+                  `Valor: €${lead.estimated_value?.toLocaleString() || 0}\n` +
+                  `Etapa: ${lead.stage}`,
+                channel: '#ventas'
+              }}
+              size="sm"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
