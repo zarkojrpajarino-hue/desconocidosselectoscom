@@ -157,94 +157,6 @@ const Landing = () => {
         </p>
       </div>
 
-      {/* SELECTOR EMPRESA vs STARTUP */}
-      <div id="how-it-works" className="container mx-auto px-4 pb-16">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
-            Empieza Ahora - Elige tu camino
-          </h2>
-          <p className="text-muted-foreground">
-            Selecciona la opción que mejor describe tu situación
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
-          {/* Opción 1: Empresa Existente */}
-          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group" onClick={() => navigate('/onboarding')}>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                <Building2 className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">
-                Tengo una Empresa
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Ya tengo clientes, revenue, y operaciones activas.
-                Quiero optimizar y crecer.
-              </p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Genera OKRs basados en tu situación real</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Pipeline CRM adaptado a tu proceso</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Herramientas marketing personalizadas</span>
-                </li>
-              </ul>
-              <Button className="w-full" size="lg">
-                Empezar Onboarding Empresa
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
-
-          {/* Opción 2: Idea/Startup */}
-          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group" onClick={() => navigate('/onboarding/startup')}>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
-                <Rocket className="w-8 h-8 text-accent" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">
-                Tengo una Idea 🚀
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Quiero validar mi idea y construir mi MVP.
-                Necesito un plan de acción estructurado.
-              </p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Roadmap de validación de hipótesis</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Plan de go-to-market estructurado</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Timeline de milestones pre-launch</span>
-                </li>
-              </ul>
-              <Button className="w-full" size="lg" variant="outline">
-                Empezar Onboarding Startup
-                <Sparkles className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
-        </div>
-
-        {/* Disclaimer */}
-        <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          💡 Ambos tipos obtienen acceso completo a la plataforma.
-          La diferencia es el enfoque del onboarding y el contenido inicial generado por IA.
-        </p>
-      </div>
-
       {/* Trust badges */}
       <div className="container mx-auto px-4 pb-12">
         <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground flex-wrap">
@@ -367,6 +279,94 @@ const Landing = () => {
             ¿Tu herramienta favorita no está? Tenemos API abierta para conectar cualquier sistema
           </p>
         </div>
+      </div>
+
+      {/* SELECTOR EMPRESA vs STARTUP */}
+      <div id="how-it-works" className="container mx-auto px-4 py-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+            Empieza Ahora - Elige tu camino
+          </h2>
+          <p className="text-muted-foreground">
+            Selecciona la opción que mejor describe tu situación
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
+          {/* Opción 1: Empresa Existente */}
+          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group" onClick={() => navigate('/onboarding')}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <Building2 className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">
+                Tengo una Empresa
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Ya tengo clientes, revenue, y operaciones activas.
+                Quiero optimizar y crecer.
+              </p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Genera OKRs basados en tu situación real</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Pipeline CRM adaptado a tu proceso</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span>Herramientas marketing personalizadas</span>
+                </li>
+              </ul>
+              <Button className="w-full" size="lg">
+                Empezar Onboarding Empresa
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+
+          {/* Opción 2: Idea/Startup */}
+          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group" onClick={() => navigate('/onboarding/startup')}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
+                <Rocket className="w-8 h-8 text-accent" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">
+                Tengo una Idea 🚀
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Quiero validar mi idea y construir mi MVP.
+                Necesito un plan de acción estructurado.
+              </p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Roadmap de validación de hipótesis</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Plan de go-to-market estructurado</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Timeline de milestones pre-launch</span>
+                </li>
+              </ul>
+              <Button className="w-full" size="lg" variant="outline">
+                Empezar Onboarding Startup
+                <Sparkles className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Disclaimer */}
+        <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
+          💡 Ambos tipos obtienen acceso completo a la plataforma.
+          La diferencia es el enfoque del onboarding y el contenido inicial generado por IA.
+        </p>
       </div>
 
       {/* How It Works */}

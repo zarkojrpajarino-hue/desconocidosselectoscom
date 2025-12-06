@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin } from 'lucide-react';
+import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb } from 'lucide-react';
+import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
 import PhaseSelector from '@/components/PhaseSelector';
@@ -257,6 +258,14 @@ const DashboardHome = () => {
         {/* DASHBOARD NORMAL (solo si no está bloqueado) */}
         {!showAvailabilityBlock && !showQuestionnaire && (
           <>
+            {/* Marketing Message */}
+            <InfoMessage
+              icon={Lightbulb}
+              title="💡 Tu Dashboard Personalizado"
+              message="Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio."
+              className="mb-2"
+            />
+
             {/* Phase Selector - Only for Admins */}
             {userProfile?.role === 'admin' && systemConfig && (
               <PhaseSelector
