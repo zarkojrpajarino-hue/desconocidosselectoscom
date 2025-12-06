@@ -326,6 +326,65 @@ export type Database = {
           },
         ]
       }
+      asana_accounts: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          organization_id: string
+          project_id: string | null
+          project_name: string | null
+          refresh_token: string | null
+          sync_enabled: boolean | null
+          token_expires_at: string | null
+          updated_at: string | null
+          workspace_id: string | null
+          workspace_name: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          organization_id: string
+          project_id?: string | null
+          project_name?: string | null
+          refresh_token?: string | null
+          sync_enabled?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+          workspace_name?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          organization_id?: string
+          project_id?: string | null
+          project_name?: string | null
+          refresh_token?: string | null
+          sync_enabled?: boolean | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+          workspace_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asana_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_opportunities: {
         Row: {
           analysis_id: string
@@ -1209,6 +1268,54 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_task_mappings: {
+        Row: {
+          external_id: string
+          external_url: string | null
+          id: string
+          last_synced_at: string | null
+          organization_id: string
+          platform: string
+          sync_status: string | null
+          task_id: string
+        }
+        Insert: {
+          external_id: string
+          external_url?: string | null
+          id?: string
+          last_synced_at?: string | null
+          organization_id: string
+          platform: string
+          sync_status?: string | null
+          task_id: string
+        }
+        Update: {
+          external_id?: string
+          external_url?: string | null
+          id?: string
+          last_synced_at?: string | null
+          organization_id?: string
+          platform?: string
+          sync_status?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_task_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_task_mappings_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -4812,6 +4919,59 @@ export type Database = {
             foreignKeyName: "tool_contents_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trello_accounts: {
+        Row: {
+          api_key: string
+          api_token: string
+          board_id: string | null
+          board_name: string | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          list_mapping: Json | null
+          organization_id: string
+          sync_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_key: string
+          api_token: string
+          board_id?: string | null
+          board_name?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          list_mapping?: Json | null
+          organization_id: string
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_key?: string
+          api_token?: string
+          board_id?: string | null
+          board_name?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          list_mapping?: Json | null
+          organization_id?: string
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trello_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
