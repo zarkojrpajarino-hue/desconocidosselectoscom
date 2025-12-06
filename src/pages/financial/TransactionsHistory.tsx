@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -210,40 +211,50 @@ const TransactionsHistory = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  // Virtual scrolling ref
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: transactions.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 56,
+    overscan: 10,
+  });
+
+  const formatCurrency = useCallback((amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
-  };
+  }, []);
 
-  const formatDate = (date: string) => {
+  const formatDate = useCallback((date: string) => {
     return new Date(date).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
     });
-  };
+  }, []);
 
-  const getTypeLabel = (type: string) => {
+  const getTypeLabel = useCallback((type: string) => {
     const labels = {
       revenue: 'Ingreso',
       expense: 'Gasto',
       marketing: 'Marketing'
     };
     return labels[type as keyof typeof labels];
-  };
+  }, []);
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = useCallback((type: string) => {
     const colors = {
       revenue: 'default',
       expense: 'destructive',
       marketing: 'secondary'
     };
     return colors[type as keyof typeof colors] as 'default' | 'destructive' | 'secondary';
-  };
+  }, []);
 
   if (loading || loadingData) {
     return (
@@ -330,51 +341,72 @@ const TransactionsHistory = () => {
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="overflow-x-auto mt-4">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4">Fecha</th>
-                        <th className="text-left py-3 px-4">Tipo</th>
-                        <th className="text-left py-3 px-4">Descripción</th>
-                        <th className="text-left py-3 px-4">Categoría</th>
-                        <th className="text-right py-3 px-4">Monto</th>
-                        <th className="text-left py-3 px-4">Registrado por</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                            No hay transacciones registradas
-                          </td>
-                        </tr>
-                      ) : (
-                        transactions.map((transaction) => (
-                          <tr key={transaction.id} className="border-b hover:bg-muted/50">
-                            <td className="py-3 px-4 text-sm">{formatDate(transaction.date)}</td>
-                            <td className="py-3 px-4">
-                              <Badge variant={getTypeColor(transaction.type)}>
-                                {getTypeLabel(transaction.type)}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-4 font-medium">{transaction.description}</td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground capitalize">
-                              {transaction.category}
-                            </td>
-                            <td className={`text-right py-3 px-4 font-semibold ${
-                              transaction.type === 'revenue' ? 'text-success' : 'text-destructive'
-                            }`}>
-                              {transaction.type === 'revenue' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">
-                              {transaction.created_by_name}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <div className="mt-4">
+                  {/* Header fijo */}
+                  <div className="grid grid-cols-6 gap-2 border-b py-3 px-4 font-medium text-sm">
+                    <span>Fecha</span>
+                    <span>Tipo</span>
+                    <span>Descripción</span>
+                    <span>Categoría</span>
+                    <span className="text-right">Monto</span>
+                    <span>Registrado por</span>
+                  </div>
+                  
+                  {transactions.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No hay transacciones registradas
+                    </div>
+                  ) : (
+                    <div
+                      ref={parentRef}
+                      className="overflow-auto max-h-[500px]"
+                    >
+                      <div
+                        style={{
+                          height: `${rowVirtualizer.getTotalSize()}px`,
+                          width: '100%',
+                          position: 'relative',
+                        }}
+                      >
+                        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                          const transaction = transactions[virtualRow.index];
+                          return (
+                            <div
+                              key={transaction.id}
+                              className="grid grid-cols-6 gap-2 items-center border-b hover:bg-muted/50 px-4"
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                              }}
+                            >
+                              <span className="text-sm">{formatDate(transaction.date)}</span>
+                              <span>
+                                <Badge variant={getTypeColor(transaction.type)}>
+                                  {getTypeLabel(transaction.type)}
+                                </Badge>
+                              </span>
+                              <span className="font-medium truncate">{transaction.description}</span>
+                              <span className="text-sm text-muted-foreground capitalize truncate">
+                                {transaction.category}
+                              </span>
+                              <span className={`text-right font-semibold ${
+                                transaction.type === 'revenue' ? 'text-success' : 'text-destructive'
+                              }`}>
+                                {transaction.type === 'revenue' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                              </span>
+                              <span className="text-sm text-muted-foreground truncate">
+                                {transaction.created_by_name}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CollapsibleContent>
             </Collapsible>
