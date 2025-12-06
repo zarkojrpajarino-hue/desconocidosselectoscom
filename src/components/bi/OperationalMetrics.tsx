@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Activity, CheckCircle, Clock, AlertTriangle, Users } from 'lucide-react';
 
 interface OperationalMetricsProps {
@@ -35,12 +35,14 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        // Fetch task completions
-        const { data: tasksData } = await supabase
+        // Fetch task completions with explicit typing to avoid deep inference
+        const taskCompletionsResult = await supabase
           .from('task_completions')
-          .select('*, tasks(*), users:user_id(name)')
+          .select('id, completed_at, user_id')
           .eq('organization_id', organizationId)
           .gte('completed_at', startDate.toISOString());
+
+        const tasksData = taskCompletionsResult.data as Array<{ id: string; completed_at: string; user_id: string }> | null;
 
         // Group task completions by date
         const dateMap = new Map<string, { completed: number; total: number }>();
@@ -63,7 +65,7 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         // Team productivity
         const teamMap = new Map<string, { name: string; completed: number; pending: number }>();
         tasksData?.forEach(tc => {
-          const userName = (tc.users as { name?: string } | null)?.name || 'Sin asignar';
+          const userName = tc.user_id || 'Sin asignar';
           const existing = teamMap.get(userName) || { name: userName, completed: 0, pending: 0 };
           existing.completed += 1;
           teamMap.set(userName, existing);
@@ -72,24 +74,28 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         const teamProductivity = Array.from(teamMap.values())
           .map(t => ({
             ...t,
-            efficiency: t.completed + t.pending > 0 ? (t.completed / (t.completed + t.pending)) * 100 : 0,
+            efficiency: t.completed + t.pending > 0 ? (t.completed / (t.completed + t.pending)) * 100 : 100,
           }))
           .sort((a, b) => b.completed - a.completed)
           .slice(0, 6);
 
-        // Fetch OKRs
-        const { data: okrsData } = await supabase
+        // Fetch OKRs with explicit typing
+        const objectivesResult = await supabase
           .from('objectives')
           .select('id, title, status')
           .eq('organization_id', organizationId)
           .eq('status', 'active');
 
-        // Fetch key results separately
+        const okrsData = objectivesResult.data as Array<{ id: string; title: string; status: string }> | null;
         const objectiveIds = okrsData?.map(o => o.id) || [];
-        const { data: keyResultsData } = await supabase
+
+        // Fetch key results
+        const keyResultsResult = await supabase
           .from('key_results')
           .select('objective_id, current_value, target_value')
           .in('objective_id', objectiveIds.length > 0 ? objectiveIds : ['none']);
+
+        const keyResultsData = keyResultsResult.data as Array<{ objective_id: string; current_value: number | null; target_value: number | null }> | null;
 
         const okrProgress = okrsData?.map(obj => {
           const keyResults = keyResultsData?.filter(kr => kr.objective_id === obj.id) || [];
@@ -109,22 +115,23 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
           };
         }).slice(0, 5) || [];
 
-        // Fetch alerts data
-        const { data: overdueTasks } = await supabase
+        // Fetch alerts data with count only
+        const { count: overdueCount } = await supabase
           .from('tasks')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('organization_id', organizationId)
-          .lt('end_date', new Date().toISOString())
-          .neq('status', 'completed');
+          .lt('end_date', new Date().toISOString().split('T')[0]);
 
-        const { data: stalledDeals } = await supabase
+        const stalledResult = await supabase
           .from('stalled_deals')
           .select('id')
           .eq('organization_id', organizationId);
 
+        const stalledDeals = stalledResult.data?.length || 0;
+
         const alerts = {
-          overdueTasks: overdueTasks?.length || 0,
-          stalledDeals: stalledDeals?.length || 0,
+          overdueTasks: overdueCount || 0,
+          stalledDeals,
           lowPerformers: teamProductivity.filter(t => t.efficiency < 50).length,
           pendingApprovals: 0,
         };
@@ -165,15 +172,6 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
       case 'at_risk': return 'text-amber-600';
       case 'behind': return 'text-red-600';
       default: return 'text-muted-foreground';
-    }
-  };
-
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case 'on_track': return 'bg-emerald-500';
-      case 'at_risk': return 'bg-amber-500';
-      case 'behind': return 'bg-red-500';
-      default: return 'bg-muted';
     }
   };
 
@@ -273,10 +271,7 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
                       {okr.progress.toFixed(0)}%
                     </span>
                   </div>
-                  <Progress 
-                    value={okr.progress} 
-                    className={`h-2 ${getStatusBg(okr.status)}`}
-                  />
+                  <Progress value={okr.progress} className="h-2" />
                 </div>
               ))
             ) : (

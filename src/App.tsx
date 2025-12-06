@@ -109,6 +109,9 @@ const ScalabilityDashboard = lazy(() => import("./pages/ScalabilityDashboard"));
 // Lazy loaded pages - Settings
 const ApiKeysPage = lazy(() => import("./pages/settings/ApiKeysPage"));
 
+// Lazy loaded pages - BI Dashboard
+const BIDashboard = lazy(() => import("./pages/BIDashboard"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -225,6 +228,9 @@ const AppContent = () => {
           
           {/* Settings */}
           <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+          
+          {/* BI Dashboard */}
+          <Route path="/bi" element={<BIDashboard />} />
         </Route>
         
         {/* ===== 404 ===== */}
