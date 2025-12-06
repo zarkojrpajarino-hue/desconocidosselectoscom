@@ -432,3 +432,68 @@ code, pre, .font-mono {
   @apply px-4 py-6 lg:px-6 lg:py-8 max-w-7xl mx-auto w-full;
 }
 
+/* ============================================
+   MOBILE STYLES - SAFE AREAS & GESTURES
+   ============================================ */
+
+/* Safe area insets for iOS notch/home indicator */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Touch optimizations */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+/* Mobile-specific padding for bottom nav */
+.has-bottom-nav {
+  padding-bottom: 5rem; /* 80px = bottom nav height + safe area */
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .has-bottom-nav {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Disable text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Hide scrollbar on mobile but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile card styles */
+.mobile-card {
+  @apply rounded-xl border border-border bg-card p-4 shadow-sm;
+  @apply active:scale-[0.98] transition-transform duration-150;
+}
+
+/* Pull to refresh indicator */
+.pull-indicator {
+  @apply flex items-center justify-center;
+  @apply text-primary transition-transform;
+}
+

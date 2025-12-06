@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="40" fill="#8b5cf6"/>
+  <path d="M96 40L136 80L96 120L56 80L96 40Z" fill="white" opacity="0.9"/>
+  <path d="M96 72L120 96L96 120L72 96L96 72Z" fill="white"/>
+  <text x="96" y="160" text-anchor="middle" font-family="system-ui" font-size="24" font-weight="bold" fill="white">ES</text>
+</svg>

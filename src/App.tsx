@@ -112,6 +112,9 @@ const ApiKeysPage = lazy(() => import("./pages/settings/ApiKeysPage"));
 // Lazy loaded pages - BI Dashboard
 const BIDashboard = lazy(() => import("./pages/BIDashboard"));
 
+// Lazy loaded pages - PWA Install
+const InstallPage = lazy(() => import("./pages/InstallPage"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -133,6 +136,7 @@ const AppContent = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/install" element={<InstallPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
