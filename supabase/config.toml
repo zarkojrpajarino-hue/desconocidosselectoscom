@@ -152,3 +152,6 @@ verify_jwt = true
 
 [functions.generate-brand-kit]
 verify_jwt = true
+
+[functions.api-v1]
+verify_jwt = false

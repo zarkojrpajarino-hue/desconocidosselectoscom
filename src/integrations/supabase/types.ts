@@ -202,6 +202,130 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          metadata: Json | null
+          name: string
+          organization_id: string
+          rate_limit: number | null
+          scopes: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          name: string
+          organization_id: string
+          rate_limit?: number | null
+          scopes?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          name?: string
+          organization_id?: string
+          rate_limit?: number | null
+          scopes?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_lead_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "api_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_usage: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          endpoint: string
+          id: string
+          ip_address: string | null
+          method: string
+          organization_id: string | null
+          response_time_ms: number | null
+          status_code: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          ip_address?: string | null
+          method: string
+          organization_id?: string | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          ip_address?: string | null
+          method?: string
+          organization_id?: string | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_opportunities: {
         Row: {
           analysis_id: string
@@ -4616,6 +4740,127 @@ export type Database = {
           },
         ]
       }
+      webhook_deliveries: {
+        Row: {
+          attempt_number: number | null
+          created_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          event_type: string
+          http_status_code: number | null
+          id: string
+          next_retry_at: string | null
+          payload: Json
+          response_body: string | null
+          response_time_ms: number | null
+          status: string
+          webhook_id: string
+        }
+        Insert: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type: string
+          http_status_code?: number | null
+          id?: string
+          next_retry_at?: string | null
+          payload: Json
+          response_body?: string | null
+          response_time_ms?: number | null
+          status?: string
+          webhook_id: string
+        }
+        Update: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          http_status_code?: number | null
+          id?: string
+          next_retry_at?: string | null
+          payload?: Json
+          response_body?: string | null
+          response_time_ms?: number | null
+          status?: string
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          failed_deliveries: number | null
+          id: string
+          is_active: boolean | null
+          last_delivery_at: string | null
+          last_delivery_status: string | null
+          max_retries: number | null
+          name: string
+          organization_id: string
+          retry_enabled: boolean | null
+          secret: string
+          successful_deliveries: number | null
+          total_deliveries: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[]
+          failed_deliveries?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_delivery_at?: string | null
+          last_delivery_status?: string | null
+          max_retries?: number | null
+          name: string
+          organization_id: string
+          retry_enabled?: boolean | null
+          secret: string
+          successful_deliveries?: number | null
+          total_deliveries?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          failed_deliveries?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_delivery_at?: string | null
+          last_delivery_status?: string | null
+          max_retries?: number | null
+          name?: string
+          organization_id?: string
+          retry_enabled?: boolean | null
+          secret?: string
+          successful_deliveries?: number | null
+          total_deliveries?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       week_config: {
         Row: {
           agendas_generated: boolean | null
@@ -4960,6 +5205,7 @@ export type Database = {
             }[]
           }
       generate_all_smart_alerts: { Args: never; Returns: number }
+      generate_webhook_secret: { Args: never; Returns: string }
       get_next_week_start: { Args: never; Returns: string }
       get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
