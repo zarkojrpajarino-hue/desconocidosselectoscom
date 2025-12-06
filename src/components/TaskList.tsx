@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, Users, AlertCircle, Sparkles } from "lucide-react";
+import { RefreshCw, Users, AlertCircle, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import TaskFeedbackModal from "./TaskFeedbackModal";
 import TaskImpactMeasurementModal from "./TaskImpactMeasurementModal";
@@ -16,6 +16,7 @@ import BadgeUnlockAnimation from "./BadgeUnlockAnimation";
 import { useAuth } from "@/contexts/AuthContext";
 import { AIResourcesPanel } from "./tasks/ai-resources";
 import type { AIResourceType } from "@/types/ai-resources.types";
+import { IntegrationButton } from "./IntegrationButton";
 
 // Tipos locales para evitar any
 interface TaskData {
@@ -744,6 +745,63 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
               <Sparkles className="w-4 h-4 mr-2" />
               Generar Recursos con IA
             </Button>
+          )}
+
+          {/* Botones de Integración */}
+          {!isCompleted && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {/* Sync con Google Calendar */}
+              <IntegrationButton
+                type="calendar"
+                action="sync"
+                data={{
+                  title: task.title,
+                  description: task.description || '',
+                  start_time: new Date().toISOString(),
+                  end_time: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+                }}
+                label="Calendario"
+                size="sm"
+                variant="outline"
+              />
+
+              {/* Exportar a Asana */}
+              <IntegrationButton
+                type="asana"
+                action="export"
+                data={{
+                  name: task.title,
+                  notes: task.description || '',
+                  due_on: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                }}
+                label="Asana"
+                size="sm"
+                variant="outline"
+              />
+
+              {/* Exportar a Trello */}
+              <IntegrationButton
+                type="trello"
+                action="export"
+                data={{
+                  name: task.title,
+                  desc: task.description || ''
+                }}
+                label="Trello"
+                size="sm"
+                variant="outline"
+              />
+            </div>
+          )}
+
+          {/* Badge de sincronizado */}
+          {isCompleted && (
+            <div className="flex items-center gap-1 mt-2">
+              <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Completada
+              </Badge>
+            </div>
           )}
         </div>
         {!isCompleted && !isLocked && canSwap && (
