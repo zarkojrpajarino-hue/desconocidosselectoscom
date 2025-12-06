@@ -4,173 +4,476 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckCircle2, Zap, TrendingUp, Users, Target, BarChart3, ArrowRight, Clock, Shield, Building2, Rocket, Sparkles, Check, LogIn, User, Menu, X } from "lucide-react";
+import { 
+  CheckCircle2, Zap, TrendingUp, Users, Target, BarChart3, 
+  ArrowRight, Clock, Shield, Building2, Rocket, Sparkles, 
+  Check, LogIn, User, Menu, X, Lightbulb, Bot, Link as LinkIcon,
+  Gauge, Crown, Star, Gift
+} from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
+
 const Landing = () => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const features = [{
-    icon: <Target className="h-8 w-8" />,
-    title: "Dashboard de Tareas",
-    description: "Sistema semanal con tareas personalizadas por fase"
-  }, {
-    icon: <BarChart3 className="h-8 w-8" />,
-    title: "OKRs Inteligentes",
-    description: "Objetivos y Key Results alineados a tu negocio"
-  }, {
-    icon: <Users className="h-8 w-8" />,
-    title: "CRM Completo",
-    description: "Pipeline de ventas adaptado a tu proceso comercial"
-  }, {
-    icon: <TrendingUp className="h-8 w-8" />,
-    title: "Métricas KPI",
-    description: "Dashboard con las métricas que realmente importan"
-  }, {
-    icon: <Zap className="h-8 w-8" />,
-    title: "Gamificación",
-    description: "Sistema de puntos, rachas y badges para motivar al equipo"
-  }, {
-    icon: <Clock className="h-8 w-8" />,
-    title: "Alertas Inteligentes",
-    description: "Notificaciones automáticas para no perder oportunidades"
-  }];
-  const plans = [{
-    name: "Starter",
-    price: `€${PLAN_PRICES.starter}`,
-    period: "/mes",
-    features: ["10 usuarios", "1,000 leads/mes", "OKRs básicos", "CRM completo", "Dashboard de tareas", "Gamificación", "Soporte email (48h)"]
-  }, {
-    name: "Professional",
-    price: `€${PLAN_PRICES.professional}`,
-    period: "/mes",
-    featured: true,
-    features: ["25 usuarios", "5,000 leads/mes", "OKRs avanzados", "CRM + Automatizaciones", "Análisis competitivo IA", "Google Calendar sync", "Integraciones (Zapier)", "Soporte prioritario (24h)"]
-  }, {
-    name: "Enterprise",
-    price: `€${PLAN_PRICES.enterprise}`,
-    period: "/mes",
-    features: ["Usuarios ilimitados", "Leads ilimitados", "Todo de Professional +", "White-label", "API access completo", "Soporte dedicado 24/7", "Account manager", "SLA 99.9%"]
-  }];
+
+  const features = [
+    {
+      icon: <Target className="h-8 w-8" />,
+      title: "Dashboard Personalizado",
+      description: "Dashboard adaptado a TU negocio con métricas que importan"
+    },
+    {
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: "OKRs Inteligentes",
+      description: "Objetivos generados por IA alineados a tu industria"
+    },
+    {
+      icon: <Users className="h-8 w-8" />,
+      title: "CRM Completo",
+      description: "Pipeline de ventas con scoring y seguimiento automático"
+    },
+    {
+      icon: <Bot className="h-8 w-8" />,
+      title: "IA Generativa",
+      description: "Crea buyer personas, contenido, emails y campañas con IA"
+    },
+    {
+      icon: <Zap className="h-8 w-8" />,
+      title: "Gamificación Real",
+      description: "Puntos, rachas y logros que motivan al equipo de verdad"
+    },
+    {
+      icon: <LinkIcon className="h-8 w-8" />,
+      title: "Integraciones",
+      description: "Slack, HubSpot, Outlook, Trello, Asana, Zapier y más"
+    }
+  ];
+
+  const plans = [
+    {
+      name: "Free Trial",
+      price: "Gratis",
+      period: "14 días",
+      description: "Prueba sin compromiso",
+      icon: <Gift className="h-6 w-6" />,
+      limits: "3 usuarios · 500 leads/mes · 3 OKRs · 2 IA análisis/mes",
+      features: [
+        "Dashboard personalizado básico",
+        "Hasta 3 tareas semanales",
+        "3 OKRs con Key Results",
+        "10 métricas KPI básicas",
+        "Pipeline simple (3 stages)",
+        "Lead scoring básico",
+        "Import CSV (hasta 100 leads)",
+        "Sistema de puntos y badges",
+        "Leaderboard del equipo",
+        "2 análisis IA/mes",
+        "Generación de tareas IA",
+        "Smart alerts básicas",
+        "Exportación CSV",
+        "Notificaciones in-app",
+        "Email de bienvenida",
+        "Login Google",
+        "Onboarding guiado (30 preguntas)",
+        "Workspace generado automáticamente",
+        "Knowledge base",
+        "Email support (72h)"
+      ],
+      cta: "Empezar Gratis",
+      popular: false
+    },
+    {
+      name: "Starter",
+      price: `€${PLAN_PRICES.starter}`,
+      period: "/mes",
+      description: "Para equipos pequeños",
+      icon: <Rocket className="h-6 w-6" />,
+      limits: "10 usuarios · 1,000 leads/mes · 10 OKRs · 4 IA análisis/mes",
+      features: [
+        "🚀 Todo de Free Trial +",
+        "━━━━━━━━━━━",
+        "📊 Core ampliado:",
+        "→ 10 usuarios incluidos",
+        "→ Tareas semanales ilimitadas",
+        "→ Hasta 10 OKRs",
+        "→ 20+ métricas KPI",
+        "━━━━━━━━━━━",
+        "📧 CRM completo:",
+        "→ Pipeline personalizable",
+        "→ 1,000 leads/mes",
+        "→ Scoring automático",
+        "→ Lead activities tracking",
+        "→ Asignación por usuario",
+        "→ Import CSV ilimitado",
+        "━━━━━━━━━━━",
+        "🎮 Gamificación:",
+        "→ 20+ badges",
+        "→ Sistema de niveles",
+        "→ Rachas de productividad",
+        "→ Award points automático",
+        "━━━━━━━━━━━",
+        "🤖 IA avanzada:",
+        "→ 4 análisis IA/mes",
+        "→ Tareas IA ilimitadas",
+        "→ Smart alerts avanzadas",
+        "→ Alternativas sugeridas",
+        "━━━━━━━━━━━",
+        "📈 Dashboards:",
+        "→ Dashboard personalizado",
+        "→ Financial dashboard",
+        "→ Progress tracking visual",
+        "━━━━━━━━━━━",
+        "📄 Exportación:",
+        "→ Excel con fórmulas",
+        "→ PDF profesionales",
+        "→ CSV export",
+        "━━━━━━━━━━━",
+        "🔌 Integraciones:",
+        "→ Google Calendar sync",
+        "→ API REST (500 calls/mes)",
+        "→ 5 webhooks activos",
+        "━━━━━━━━━━━",
+        "🔔 Notificaciones:",
+        "→ Centro de notificaciones",
+        "→ Email notifications",
+        "→ Resumen semanal",
+        "━━━━━━━━━━━",
+        "👥 Colaboración:",
+        "→ Roles (admin/manager/member)",
+        "→ Asignación de tareas",
+        "→ Work mode selector",
+        "━━━━━━━━━━━",
+        "⚙️ Automatizaciones:",
+        "→ Workspace automático",
+        "→ Schedules semanales",
+        "→ Emails automáticos",
+        "━━━━━━━━━━━",
+        "📧 Soporte email 48h"
+      ],
+      cta: "Empezar con Starter",
+      popular: false
+    },
+    {
+      name: "Professional",
+      price: `€${PLAN_PRICES.professional}`,
+      period: "/mes",
+      description: "Para empresas en crecimiento",
+      icon: <Star className="h-6 w-6" />,
+      featured: true,
+      limits: "25 usuarios · 5,000 leads/mes · OKRs ilimitados · 8 IA análisis/mes",
+      features: [
+        "🚀 Todo de Starter +",
+        "━━━━━━━━━━━",
+        "📊 Core PRO:",
+        "→ 25 usuarios incluidos",
+        "→ 5,000 leads/mes",
+        "→ OKRs ilimitados",
+        "→ Todas las fases",
+        "━━━━━━━━━━━",
+        "🤖 IA Generativa:",
+        "→ 8 análisis IA/mes",
+        "→ Buyer personas",
+        "→ Brand kits",
+        "→ Análisis competitivo (5 max)",
+        "━━━━━━━━━━━",
+        "🎨 Recursos IA:",
+        "→ Email sequences",
+        "→ Social media posts",
+        "→ Ad campaigns",
+        "→ Video scripts",
+        "→ Design briefs",
+        "→ Influencer lists",
+        "→ Outreach templates",
+        "━━━━━━━━━━━",
+        "📊 BI Dashboards:",
+        "→ Executive Summary",
+        "→ Revenue Analytics",
+        "→ Sales Performance",
+        "→ Customer Insights",
+        "→ Operational Metrics",
+        "━━━━━━━━━━━",
+        "🧠 AI Analysis:",
+        "→ Team performance",
+        "→ Financial health",
+        "→ Honest feedback IA",
+        "━━━━━━━━━━━",
+        "📈 Análisis avanzado:",
+        "→ Scalability dashboard",
+        "→ Proyecciones",
+        "→ User metrics history",
+        "→ Financial analytics",
+        "━━━━━━━━━━━",
+        "🔌 Integraciones Premium:",
+        "→ Google Calendar",
+        "→ Slack notifications",
+        "→ HubSpot CRM sync",
+        "→ Outlook Calendar",
+        "→ Asana tasks sync",
+        "→ Trello cards sync",
+        "→ Zapier ilimitado",
+        "→ API 5,000 calls/mes",
+        "━━━━━━━━━━━",
+        "🛠️ Herramientas:",
+        "→ Calculadora de valor",
+        "→ Hub de herramientas",
+        "→ Herramientas práctica",
+        "━━━━━━━━━━━",
+        "🎓 Onboarding avanzado:",
+        "→ Tradicional (30 preguntas)",
+        "→ Startup (6 pasos)",
+        "→ Vista previa personalizada",
+        "━━━━━━━━━━━",
+        "📄 Exportación avanzada:",
+        "→ Excel avanzado",
+        "→ PDF profesionales",
+        "→ Reportes personalizados",
+        "→ Bulk export",
+        "━━━━━━━━━━━",
+        "📧 Soporte prioritario 24h",
+        "💬 Live chat incluido",
+        "🎥 Video onboarding"
+      ],
+      cta: "Probar Professional",
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: `€${PLAN_PRICES.enterprise}`,
+      period: "/mes",
+      description: "Para grandes organizaciones",
+      icon: <Crown className="h-6 w-6" />,
+      limits: "♾️ TODO ILIMITADO",
+      features: [
+        "🚀 Todo de Professional +",
+        "━━━━━━━━━━━",
+        "♾️ ILIMITADO:",
+        "→ Usuarios ilimitados",
+        "→ Leads ilimitados",
+        "→ OKRs ilimitados",
+        "→ IA análisis ilimitados",
+        "→ API calls ilimitadas",
+        "━━━━━━━━━━━",
+        "🏢 Enterprise:",
+        "→ White-label completo",
+        "→ SSO/SAML",
+        "→ Multi-organización",
+        "→ IP whitelisting",
+        "→ Pipelines custom",
+        "━━━━━━━━━━━",
+        "🤖 IA Enterprise:",
+        "→ Análisis datos v3",
+        "→ Competitivo ilimitado",
+        "→ Modelos personalizados",
+        "→ Fine-tuning prompts",
+        "→ ML forecasting",
+        "━━━━━━━━━━━",
+        "📊 Analytics Enterprise:",
+        "→ Dashboards custom ilimitados",
+        "→ Reportes personalizados",
+        "→ Data warehouse access",
+        "→ Real-time analytics",
+        "━━━━━━━━━━━",
+        "🔌 Integraciones:",
+        "→ Todas disponibles",
+        "→ Custom development",
+        "→ SAP/Oracle/Dynamics",
+        "→ EDI connectors",
+        "→ API sin límites",
+        "━━━━━━━━━━━",
+        "🛡️ Seguridad:",
+        "→ SLA 99.9% uptime",
+        "→ Backups diarios",
+        "→ Disaster recovery",
+        "→ GDPR compliant",
+        "→ SOC 2 (en proceso)",
+        "→ Audit logs",
+        "→ Encryption avanzado",
+        "━━━━━━━━━━━",
+        "👨‍💼 Soporte dedicado:",
+        "→ Account manager",
+        "→ Technical AM",
+        "→ 24/7 support <1h",
+        "→ Slack directo",
+        "→ Onboarding presencial",
+        "→ Training trimestral",
+        "━━━━━━━━━━━",
+        "🔧 Customizaciones:",
+        "→ Custom workflows",
+        "→ Custom fields ilimitados",
+        "→ Custom automations",
+        "→ Custom reports",
+        "→ Code-level custom",
+        "━━━━━━━━━━━",
+        "📈 Escalabilidad:",
+        "→ Infra dedicada",
+        "→ Load balancing",
+        "→ CDN global",
+        "→ Performance optimization"
+      ],
+      cta: "Contactar Ventas",
+      popular: false
+    }
+  ];
+
   const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({
-      behavior: 'smooth'
-    });
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMobileMenuOpen(false);
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* ===== HEADER PROFESIONAL CON LOGIN ===== */}
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        })}>
-            
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               OPTIMUS-K
             </span>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Button variant="ghost" onClick={() => scrollToSection('features')}>
               Características
             </Button>
-            <Button variant="ghost" onClick={() => scrollToSection('how-it-works')}>
-              Cómo Funciona
+            <Button variant="ghost" onClick={() => scrollToSection('integrations')}>
+              Integraciones
             </Button>
             <Button variant="ghost" onClick={() => scrollToSection('pricing')}>
               Precios
             </Button>
           </nav>
 
-          {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            {user ?
-          // Usuario YA logueado
-          <Button onClick={() => navigate('/home')}>
+            {user ? (
+              <Button onClick={() => navigate('/home')}>
                 <User className="w-4 h-4 mr-2" />
                 Ir a Dashboard
-              </Button> :
-          // Usuario NO logueado
-          <>
-                <Button variant="ghost" onClick={() => navigate('/login')} className="hidden sm:flex">
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate('/login')} 
+                  className="hidden sm:flex"
+                >
                   <LogIn className="w-4 h-4 mr-2" />
                   Iniciar Sesión
                 </Button>
                 <Button onClick={() => navigate('/signup')}>
                   Empezar Gratis
                 </Button>
-              </>}
+              </>
+            )}
 
-            {/* Mobile Menu Toggle */}
-            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="md:hidden" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && <div className="md:hidden border-t bg-background/95 backdrop-blur">
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur">
             <nav className="container py-4 flex flex-col gap-2 px-4">
-              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('features')}>
+              <Button 
+                variant="ghost" 
+                className="justify-start" 
+                onClick={() => scrollToSection('features')}
+              >
                 Características
               </Button>
-              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('how-it-works')}>
-                Cómo Funciona
+              <Button 
+                variant="ghost" 
+                className="justify-start" 
+                onClick={() => scrollToSection('integrations')}
+              >
+                Integraciones
               </Button>
-              <Button variant="ghost" className="justify-start" onClick={() => scrollToSection('pricing')}>
+              <Button 
+                variant="ghost" 
+                className="justify-start" 
+                onClick={() => scrollToSection('pricing')}
+              >
                 Precios
               </Button>
-              {!user && <Button variant="ghost" className="justify-start" onClick={() => {
-            navigate('/login');
-            setMobileMenuOpen(false);
-          }}>
+              {!user && (
+                <Button 
+                  variant="ghost" 
+                  className="justify-start" 
+                  onClick={() => {
+                    navigate('/login');
+                    setMobileMenuOpen(false);
+                  }}
+                >
                   <LogIn className="w-4 h-4 mr-2" />
                   Iniciar Sesión
-                </Button>}
+                </Button>
+              )}
             </nav>
-          </div>}
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-12 text-center">
         <Badge className="mb-4 text-sm px-4 py-1">
-          🎁 14 días GRATIS
+          🎁 14 días GRATIS · Sin tarjeta
         </Badge>
         
         <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
           OPTIMUS-K
         </h1>
         
-        <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
-          Generador de Apps de Gestión Empresarial con IA
+        <p className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto">
+          Tu empresa merece una app de gestión{" "}
+          <strong className="text-primary">tan única como tu negocio</strong>
         </p>
-        
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          ¿Tienes una empresa o una idea? Sea cual sea tu situación, 
-          en <strong className="text-foreground">15 segundos</strong> tendrás tu workspace completo.
-        </p>
-      </div>
 
-      {/* Trust badges */}
-      <div className="container mx-auto px-4 pb-12">
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          En <strong>2-3 horas</strong> tendrás una app completa que habla tu lenguaje:
+          con TUS procesos, TUS métricas y TU forma de trabajar.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <Button 
+            size="lg" 
+            onClick={() => navigate('/signup')}
+            className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            Empezar Ahora
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          
+          <Button 
+            size="lg" 
+            variant="outline"
+            onClick={() => scrollToSection('pricing')}
+            className="text-lg px-8 py-6"
+          >
+            Ver Precios
+          </Button>
+        </div>
+
         <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground flex-wrap">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
             <span>Sin permanencia</span>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
+            <Shield className="h-4 w-4 text-green-500" />
             <span>Pago seguro</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            <span>Setup instantáneo</span>
+            <Clock className="h-4 w-4 text-green-500" />
+            <span>Setup en 2-3h</span>
           </div>
         </div>
       </div>
@@ -185,301 +488,263 @@ const Landing = () => {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+          {features.map((feature, index) => (
+            <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
               <div className="text-primary mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
-            </Card>)}
+            </Card>
+          ))}
         </div>
       </div>
 
       {/* Integrations Section */}
-      <div className="container mx-auto px-4 py-16 bg-muted/20">
+      <div id="integrations" className="container mx-auto px-4 py-16 bg-muted/20">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
           Se Integra con tus Herramientas Favoritas
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Conecta OPTIMUS-K con las aplicaciones que ya usas y centraliza tu trabajo
+          <strong>OPTIMUS-K se adapta a tu forma de trabajar.</strong> Si tu equipo usa Slack, 
+          recibirán notificaciones ahí. Si tienes HubSpot, todo se sincroniza automáticamente.
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto mb-8">
-          {/* Slack */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
-                <g fill="none" fillRule="evenodd">
-                  <path d="M19.712.133a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386h5.376V5.52A5.381 5.381 0 0 0 19.712.133m0 14.365H5.376A5.381 5.381 0 0 0 0 19.884a5.381 5.381 0 0 0 5.376 5.387h14.336a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386" fill="#36C5F0"/>
-                  <path d="M53.76 19.884a5.381 5.381 0 0 0-5.376-5.386 5.381 5.381 0 0 0-5.376 5.386v5.387h5.376a5.381 5.381 0 0 0 5.376-5.387m-14.336 0V5.52A5.381 5.381 0 0 0 34.048.133a5.381 5.381 0 0 0-5.376 5.387v14.364a5.381 5.381 0 0 0 5.376 5.387 5.381 5.381 0 0 0 5.376-5.387" fill="#2EB67D"/>
-                  <path d="M34.048 54a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386h-5.376v5.386A5.381 5.381 0 0 0 34.048 54m0-14.365h14.336a5.381 5.381 0 0 0 5.376-5.386 5.381 5.381 0 0 0-5.376-5.387H34.048a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386" fill="#ECB22E"/>
-                  <path d="M0 34.249a5.381 5.381 0 0 0 5.376 5.386 5.381 5.381 0 0 0 5.376-5.386v-5.387H5.376A5.381 5.381 0 0 0 0 34.25m14.336-.001v14.364A5.381 5.381 0 0 0 19.712 54a5.381 5.381 0 0 0 5.376-5.387V34.25a5.381 5.381 0 0 0-5.376-5.387 5.381 5.381 0 0 0-5.376 5.387" fill="#E01E5A"/>
-                </g>
-              </svg>
+          {[
+            { name: "Slack", color: "#36C5F0" },
+            { name: "HubSpot", color: "#FF7A59" },
+            { name: "Outlook", color: "#0078D4" },
+            { name: "Trello", color: "#0079BF" },
+            { name: "Asana", color: "#F95858" },
+            { name: "Zapier", color: "#FF4A00" }
+          ].map((integration) => (
+            <div key={integration.name} className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+              <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div 
+                  className="w-10 h-10 rounded-lg" 
+                  style={{ backgroundColor: integration.color }}
+                />
+              </div>
+              <span className="text-sm font-medium text-center">{integration.name}</span>
             </div>
-            <span className="text-sm font-medium text-center">Slack</span>
-          </div>
-
-          {/* HubSpot */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#FF7A59" d="M39.5,30.1c-1.3,0-2.5,0.4-3.5,1.1l-6.7-5.6c0.7-1.4,1.1-3,1.1-4.6c0-0.4,0-0.8-0.1-1.2l5.9-2.5 c1.1,1.1,2.6,1.8,4.3,1.8c3.3,0,6-2.7,6-6s-2.7-6-6-6s-6,2.7-6,6c0,0.4,0,0.8,0.1,1.2l-5.9,2.5c-1.1-1.1-2.6-1.8-4.3-1.8 c-1.7,0-3.2,0.7-4.3,1.8l-5.9-2.5c0.1-0.4,0.1-0.8,0.1-1.2c0-3.3-2.7-6-6-6s-6,2.7-6,6s2.7,6,6,6c1.7,0,3.2-0.7,4.3-1.8l5.9,2.5 c-0.1,0.4-0.1,0.8-0.1,1.2c0,1.7,0.4,3.2,1.1,4.6l-6.7,5.6c-1-0.7-2.2-1.1-3.5-1.1c-3.3,0-6,2.7-6,6s2.7,6,6,6s6-2.7,6-6 c0-1.3-0.4-2.5-1.1-3.5l6.7-5.6c1.4,0.7,3,1.1,4.6,1.1c1.7,0,3.2-0.4,4.6-1.1l6.7,5.6c-0.7,1-1.1,2.2-1.1,3.5c0,3.3,2.7,6,6,6 s6-2.7,6-6S42.8,30.1,39.5,30.1z"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-center">HubSpot</span>
-          </div>
-
-          {/* Microsoft Outlook */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#0078D4" d="M24,4L6,10v13c0,9.9,6.8,19.2,18,22c11.2-2.8,18-12.1,18-22V10L24,4z"/>
-                <path fill="#FFF" d="M24,13c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S29,13,24,13z M24,27c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5 S26.8,27,24,27z"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-center">Outlook</span>
-          </div>
-
-          {/* Trello */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-                <rect width="256" height="256" fill="#0079BF" rx="25"/>
-                <rect width="83.2" height="154.6" x="33.3" y="33.3" fill="#FFF" rx="12"/>
-                <rect width="83.2" height="99.7" x="139.5" y="33.3" fill="#FFF" rx="12"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-center">Trello</span>
-          </div>
-
-          {/* Asana */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="24" r="8" fill="#F95858"/>
-                <circle cx="32" cy="24" r="8" fill="#F95858"/>
-                <circle cx="24" cy="12" r="8" fill="#F95858"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-center">Asana</span>
-          </div>
-
-          {/* Zapier */}
-          <div className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-            <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-              <svg className="w-10 h-10" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path fill="#FF4A00" d="M24,8l-6,6l6,6l6-6L24,8z M14,18l-6,6l6,6l6-6L14,18z M34,18l-6,6l6,6l6-6L34,18z M24,28l-6,6l6,6l6-6 L24,28z"/>
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-center">Zapier</span>
-          </div>
+          ))}
         </div>
 
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-4">
             ¿Tu herramienta favorita no está? Tenemos API abierta para conectar cualquier sistema
           </p>
+          <Button variant="outline" onClick={() => navigate('/settings/api-keys')}>
+            Ver Todas las Integraciones
+          </Button>
         </div>
       </div>
 
-      {/* SELECTOR EMPRESA vs STARTUP */}
+      {/* How it Works Section - Elige tu camino */}
       <div id="how-it-works" className="container mx-auto px-4 py-16">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
-            Empieza Ahora - Elige tu camino
-          </h2>
-          <p className="text-muted-foreground">
-            Selecciona la opción que mejor describe tu situación
-          </p>
-        </div>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          Empieza Ahora - Elige tu Camino
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          OPTIMUS-K se adapta a tu situación. ¿Ya tienes un negocio funcionando o estás empezando con una idea?
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
-          {/* Opción 1: Empresa Existente */}
-          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary group" onClick={() => navigate('/onboarding')}>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                <Building2 className="w-8 h-8 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Opción 1: Tengo una Empresa */}
+          <Card 
+            className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary"
+            onClick={() => navigate('/onboarding')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Building2 className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">
-                Tengo una Empresa
-              </h3>
+              <h3 className="text-2xl font-bold mb-3">Tengo una Empresa</h3>
               <p className="text-muted-foreground mb-6">
-                Ya tengo clientes, revenue, y operaciones activas.
-                Quiero optimizar y crecer.
+                Ya tengo clientes, ventas y un equipo. Quiero optimizar mi gestión con IA y métricas personalizadas.
               </p>
               <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Genera OKRs basados en tu situación real</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>30 preguntas sobre tu negocio</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Pipeline CRM adaptado a tu proceso</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Workspace generado en 2-3h</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>Herramientas marketing personalizadas</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>CRM, OKRs, KPIs adaptados</span>
                 </li>
               </ul>
-              <Button className="w-full" size="lg">
+              <Button className="w-full group-hover:bg-primary/90">
                 Empezar Onboarding Empresa
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </Card>
 
-          {/* Opción 2: Idea/Startup */}
-          <Card className="p-8 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-accent group" onClick={() => navigate('/onboarding/startup')}>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
-                <Rocket className="w-8 h-8 text-accent" />
+          {/* Opción 2: Tengo una Idea */}
+          <Card 
+            className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent"
+            onClick={() => navigate('/onboarding/startup')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Rocket className="h-10 w-10 text-accent" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">
-                Tengo una Idea 🚀
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-2xl font-bold">Tengo una Idea</h3>
+                <Sparkles className="h-5 w-5 text-accent" />
+              </div>
               <p className="text-muted-foreground mb-6">
-                Quiero validar mi idea y construir mi MVP.
-                Necesito un plan de acción estructurado.
+                Estoy empezando un proyecto o startup. Necesito validar mi idea y estructurar mi lanzamiento.
               </p>
               <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Roadmap de validación de hipótesis</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>6 pasos de validación</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Plan de go-to-market estructurado</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Lean Canvas automático</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                  <span>Timeline de milestones pre-launch</span>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span>Roadmap y métricas de startup</span>
                 </li>
               </ul>
-              <Button className="w-full" size="lg" variant="outline">
+              <Button variant="outline" className="w-full group-hover:border-accent group-hover:text-accent">
                 Empezar Onboarding Startup
-                <Sparkles className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </Card>
-        </div>
-
-        {/* Disclaimer */}
-        <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          💡 Ambos tipos obtienen acceso completo a la plataforma.
-          La diferencia es el enfoque del onboarding y el contenido inicial generado por IA.
-        </p>
-      </div>
-
-      {/* How It Works */}
-      <div className="container mx-auto px-4 py-16 bg-muted/30">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-          ¿Cómo Funciona?
-        </h2>
-
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="flex gap-6">
-            <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold">
-              1
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Eliges tu tipo de negocio</h3>
-              <p className="text-muted-foreground">
-                Empresa existente (9 pasos) o Startup/Idea (8 pasos) - cada uno con preguntas específicas
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-6">
-            <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold">
-              2
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Generamos tu Workspace con IA</h3>
-              <p className="text-muted-foreground">
-                Nuestro sistema crea una app personalizada con tareas, OKRs, métricas y herramientas adaptadas
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-6">
-            <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold">
-              3
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Empiezas a trabajar inmediatamente</h3>
-              <p className="text-muted-foreground">
-                En segundos tienes tu dashboard listo con todo configurado para tu negocio específico
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Pricing Section */}
       <div id="pricing" className="container mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-          Precios Simples y Transparentes
+          Precios Transparentes
         </h2>
-        <p className="text-center text-muted-foreground mb-4">
-          14 días GRATIS · Sin permanencia · Cancela cuando quieras
-        </p>
-        <p className="text-center text-sm text-muted-foreground mb-12">
-          <strong>Mismo precio para empresas y startups</strong> - El valor que obtienes es equivalente
+        <p className="text-center text-muted-foreground mb-12">
+          Empieza gratis · Sin permanencia · Cancela cuando quieras
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => <Card key={index} className={`p-8 ${plan.featured ? 'border-primary border-2 shadow-xl' : ''}`}>
-              {plan.featured && <Badge className="mb-4">Más Popular</Badge>}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {plans.map((plan, index) => (
+            <Card 
+              key={index} 
+              className={`p-6 ${
+                plan.featured 
+                  ? 'border-primary border-2 shadow-2xl relative lg:scale-105' 
+                  : 'hover:shadow-lg transition-shadow'
+              }`}
+            >
+              {plan.featured && (
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
+                  ⭐ Más Popular
+                </Badge>
+              )}
               
-              <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-primary">{plan.icon}</div>
+                <div>
+                  <h3 className="text-xl font-bold">{plan.name}</h3>
+                  <p className="text-xs text-muted-foreground">{plan.description}</p>
+                </div>
+              </div>
               
-              <div className="mb-6">
-                <span className="text-4xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">{plan.period}</span>
+              <div className="mb-4">
+                <span className="text-3xl font-bold">{plan.price}</span>
+                <span className="text-muted-foreground text-sm">{plan.period}</span>
               </div>
 
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </li>)}
+              <p className="text-xs text-muted-foreground mb-6 border-b pb-4">
+                {plan.limits}
+              </p>
+
+              <ul className="space-y-1.5 mb-6 max-h-[400px] overflow-y-auto text-sm">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    {feature.startsWith("━") || feature.startsWith("🚀") || feature.startsWith("📊") || feature.startsWith("📧") || feature.startsWith("🎮") || feature.startsWith("🤖") || feature.startsWith("🎨") || feature.startsWith("🧠") || feature.startsWith("📈") || feature.startsWith("🔌") || feature.startsWith("🛠️") || feature.startsWith("🎓") || feature.startsWith("📄") || feature.startsWith("♾️") || feature.startsWith("🏢") || feature.startsWith("🛡️") || feature.startsWith("👨‍💼") || feature.startsWith("🔧") || feature.startsWith("🔔") || feature.startsWith("👥") || feature.startsWith("⚙️") || feature.startsWith("💬") || feature.startsWith("🎥") ? (
+                      <span className={`${feature.startsWith("━") ? 'text-muted-foreground' : 'font-semibold text-primary'} w-full text-xs`}>
+                        {feature}
+                      </span>
+                    ) : (
+                      <>
+                        {feature.startsWith("→") ? (
+                          <span className="text-muted-foreground ml-4 text-xs">{feature}</span>
+                        ) : (
+                          <>
+                            <Check className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-xs">{feature}</span>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </li>
+                ))}
               </ul>
 
-              <Button className="w-full" variant={plan.featured ? "default" : "outline"} onClick={() => navigate('/onboarding')}>
-                Empezar Prueba Gratis
+              <Button 
+                className="w-full" 
+                variant={plan.featured ? "default" : "outline"}
+                onClick={() => navigate('/signup')}
+              >
+                {plan.cta}
               </Button>
-            </Card>)}
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-muted-foreground mb-4">
+            ¿Necesitas algo más específico? ¿Más de 25 usuarios?
+          </p>
+          <Button 
+            variant="link" 
+            onClick={() => window.location.href = 'mailto:sales@optimus-k.com'}
+          >
+            Contáctanos para un plan personalizado →
+          </Button>
         </div>
       </div>
 
       {/* CTA Final */}
-      <div className="container mx-auto px-4 py-16 text-center">
-        <Card className="p-12 bg-gradient-to-br from-primary/10 to-primary/5">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ¿Listo para Empezar?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Ya sea que tengas una empresa o una idea, OPTIMUS-K te ayuda a gestionar mejor
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/onboarding')} className="text-lg px-8 py-6">
-              <Building2 className="mr-2 h-5 w-5" />
-              Soy Empresa
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/onboarding/startup')} className="text-lg px-8 py-6">
-              <Rocket className="mr-2 h-5 w-5" />
-              Soy Startup
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-4">
-            No se requiere tarjeta de crédito para la prueba
-          </p>
-        </Card>
+      <div className="container mx-auto px-4 py-16 text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-3xl mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          ¿Listo para Gestionar Como un Pro?
+        </h2>
+        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Únete a cientos de empresas que ya gestionan su negocio con OPTIMUS-K
+        </p>
+        <Button 
+          size="lg" 
+          onClick={() => navigate('/signup')}
+          className="text-lg px-12 py-6"
+        >
+          Empezar Gratis 14 Días
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+        <p className="text-sm text-muted-foreground mt-4">
+          No se requiere tarjeta de crédito
+        </p>
       </div>
 
       {/* Footer */}
-      <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground border-t">
-        <p>© 2024 OPTIMUS-K · soporte@optimus-k.com</p>
-      </div>
-    </div>;
+      <footer className="border-t py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>© 2025 OPTIMUS-K. Todos los derechos reservados.</p>
+          <div className="flex justify-center gap-4 mt-4">
+            <Button variant="link" size="sm">Términos</Button>
+            <Button variant="link" size="sm">Privacidad</Button>
+            <Button variant="link" size="sm">Contacto</Button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 };
+
 export default Landing;
