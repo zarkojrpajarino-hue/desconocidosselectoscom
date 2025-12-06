@@ -5,12 +5,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw, CheckCircle2, AlertTriangle, TrendingUp } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { IntegrationButton } from '@/components/IntegrationButton';
 import {
   OKRQuarterlyView,
   OKRCheckInForm,
@@ -170,6 +172,32 @@ const OKRsPage = () => {
             style={{ animationDelay: '300ms' }}
           />
         </div>
+
+        {/* Alerta OKRs en Riesgo + Integración Slack */}
+        {okrStats.atRiskOKRs > 0 && (
+          <Alert variant="destructive" className="animate-fade-in">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>⚠️ {okrStats.atRiskOKRs} OKR{okrStats.atRiskOKRs > 1 ? 's' : ''} en riesgo</AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              <span>Progreso menor al 30%. Requieren atención inmediata.</span>
+              <IntegrationButton
+                type="slack"
+                action="notify"
+                data={{
+                  message: `⚠️ *ALERTA: OKRs en Riesgo*\n\n` +
+                    `📊 OKRs en riesgo: ${okrStats.atRiskOKRs}\n` +
+                    `📈 Progreso promedio: ${okrStats.overallProgress}%\n` +
+                    `✅ Completados: ${okrStats.completedOKRs}/${okrStats.totalOKRs}\n\n` +
+                    `@channel - Se requiere atención inmediata`,
+                  channel: '#okrs-alerts'
+                }}
+                label="Alertar equipo"
+                size="sm"
+                variant="outline"
+              />
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Explicación */}
         <Collapsible open={isOkrInfoOpen} onOpenChange={setIsOkrInfoOpen} className="mb-6">

@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, TrendingDown, PieChart, BarChart3, Package, PiggyBank } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, TrendingDown, PieChart, BarChart3, Package, PiggyBank, AlertTriangle } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FinancialDashboard from '@/components/FinancialDashboard';
@@ -15,6 +16,7 @@ import { useFinancialData } from '@/hooks/useFinancialData';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { toast } from 'sonner';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { IntegrationButton } from '@/components/IntegrationButton';
 import { 
   FinancialFromKPIs, 
   CashFlowForecast, 
@@ -181,6 +183,43 @@ const FinancialPage = () => {
                   />
                 </div>
               );
+            })()}
+
+            {/* Alerta Runway Crítico */}
+            {transactions && (() => {
+              const income = transactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + (t.amount || 0), 0);
+              const expenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
+              const monthlyBurn = expenses / 3; // Estimación burn mensual
+              const estimatedRunway = monthlyBurn > 0 ? Math.round(income / monthlyBurn) : 999;
+              
+              if (estimatedRunway < 6) {
+                return (
+                  <Alert variant="destructive" className="animate-fade-in">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>⚠️ Runway crítico: ~{estimatedRunway} meses</AlertTitle>
+                    <AlertDescription className="flex items-center justify-between">
+                      <span>Burn rate: €{monthlyBurn.toLocaleString()}/mes. Acción requerida.</span>
+                      <IntegrationButton
+                        type="slack"
+                        action="notify"
+                        data={{
+                          message: `🚨 *ALERTA RUNWAY CRÍTICO*\n\n` +
+                            `📉 Runway estimado: ${estimatedRunway} meses\n` +
+                            `🔥 Burn rate: €${monthlyBurn.toLocaleString()}/mes\n` +
+                            `💰 Ingresos: €${income.toLocaleString()}\n` +
+                            `💸 Gastos: €${expenses.toLocaleString()}\n\n` +
+                            `@channel - Acción financiera requerida`,
+                          channel: '#finance-alerts'
+                        }}
+                        label="Alertar finanzas"
+                        size="sm"
+                        variant="outline"
+                      />
+                    </AlertDescription>
+                  </Alert>
+                );
+              }
+              return null;
             })()}
 
             {/* Explicación */}

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Target, User, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Search, TrendingUp, Users, DollarSign, Target, User, ExternalLink, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import { toast } from 'sonner';
 import { Lead, UserLeadStats, CRMGlobalStats } from '@/types';
@@ -21,6 +21,7 @@ import { LoadingTable, LoadingSkeleton } from '@/components/ui/loading-skeleton'
 import CreateLeadModal from '@/components/CreateLeadModal';
 import LeadDetailModal from '@/components/LeadDetailModal';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { IntegrationButton } from '@/components/IntegrationButton';
 
 const CRMPage = () => {
   const { user, userProfile, currentOrganizationId, loading: authLoading } = useAuth();
@@ -191,6 +192,24 @@ const CRMPage = () => {
           </div>
           <div className="flex items-center gap-3">
             <SectionTourButton sectionId="crm-hub" />
+            
+            {/* Notificar en Slack */}
+            <IntegrationButton
+              type="slack"
+              action="notify"
+              data={{
+                message: `📊 *Resumen CRM*\n\n` +
+                  `👥 Total leads: ${globalStats?.total_leads || 0}\n` +
+                  `💰 Pipeline: €${globalStats?.total_pipeline_value?.toLocaleString() || 0}\n` +
+                  `🔥 Leads calientes: ${globalStats?.hot_leads || 0}\n` +
+                  `✅ Ganados: ${globalStats?.won_leads || 0}`,
+                channel: '#sales'
+              }}
+              label="Slack"
+              size="sm"
+              variant="outline"
+            />
+            
             <Button
               variant="outline"
               onClick={handleExportLeads}
@@ -198,7 +217,7 @@ const CRMPage = () => {
               disabled={filteredLeads.length === 0}
             >
               <Download className="h-4 w-4" />
-              <span className="hidden md:inline">Exportar Leads</span>
+              <span className="hidden md:inline">Exportar CSV</span>
             </Button>
             <Button
               variant="outline"
@@ -206,7 +225,7 @@ const CRMPage = () => {
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline">Volver a Métricas</span>
+              <span className="hidden md:inline">Volver</span>
             </Button>
           </div>
         </div>
