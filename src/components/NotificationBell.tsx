@@ -15,10 +15,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+interface UrgentAlert {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  viewed: boolean;
+  created_at: string;
+}
+
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [urgentAlerts, setUrgentAlerts] = useState<any[]>([]);
+  const [urgentAlerts, setUrgentAlerts] = useState<UrgentAlert[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {

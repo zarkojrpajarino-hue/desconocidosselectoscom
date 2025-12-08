@@ -154,7 +154,7 @@ const TaskFeedbackModal = ({
                   key={option.value}
                   type="button"
                   variant={metDeadlines === option.value ? 'default' : 'outline'}
-                  onClick={() => setMetDeadlines(option.value as any)}
+                  onClick={() => setMetDeadlines(option.value as TaskFeedbackData['metDeadlines'])}
                   className={`h-auto py-3 flex flex-col gap-1 ${
                     metDeadlines === option.value ? 'bg-gradient-primary' : ''
                   }`}
@@ -193,7 +193,7 @@ const TaskFeedbackModal = ({
                   key={option.value}
                   type="button"
                   variant={wouldRecommend === option.value ? 'default' : 'outline'}
-                  onClick={() => setWouldRecommend(option.value as any)}
+                  onClick={() => setWouldRecommend(option.value as TaskFeedbackData['wouldRecommend'])}
                   className={`h-auto py-3 flex flex-col gap-1 ${
                     wouldRecommend === option.value ? 'bg-gradient-primary' : ''
                   }`}

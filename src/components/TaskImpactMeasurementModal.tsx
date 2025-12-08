@@ -508,7 +508,7 @@ const TaskImpactMeasurementModal = ({
                     key={option.value}
                     type="button"
                     variant={impactRating === option.value ? 'default' : 'outline'}
-                    onClick={() => setImpactRating(option.value as any)}
+                    onClick={() => setImpactRating(option.value as ImpactMeasurementData['impact_rating'])}
                     className={`h-auto py-4 flex flex-col gap-1 ${
                       impactRating === option.value ? 'bg-gradient-primary' : ''
                     }`}
@@ -591,7 +591,7 @@ const TaskImpactMeasurementModal = ({
                 {['tools', 'time', 'training', 'staff', 'none'].map((key) => (
                   <label key={key} className="flex items-center gap-2">
                     <Checkbox
-                      checked={!!(investmentsNeeded as any)[key]}
+                      checked={!!investmentsNeeded[key as keyof typeof investmentsNeeded]}
                       onCheckedChange={(checked) => {
                         setInvestmentsNeeded({ ...investmentsNeeded, [key]: checked });
                       }}
