@@ -39,11 +39,12 @@ const OKRsPage = () => {
   const fetchObjectives = async () => {
     if (!user?.id) return;
     try {
-      const { data } = await supabase
-        .from('objectives')
-        .select('id, title, status, key_results(id, title, current_value, target_value)')
-        .eq('user_id', user.id);
-      setObjectives((data as unknown as ObjectiveData[]) || []);
+      // Bypass deep type instantiation by breaking the chain
+      const table = supabase.from('objectives');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const query = (table as any).select('id, title, status, key_results(id, title, current_value, target_value)');
+      const response = await query.eq('user_id', user.id);
+      setObjectives((response.data as ObjectiveData[]) || []);
     } catch (error) {
       console.error('Error fetching objectives:', error);
     }
