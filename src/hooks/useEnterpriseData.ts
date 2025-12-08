@@ -14,6 +14,13 @@ import {
   PipelineRevenueForcast,
   KPITarget
 } from '@/types/kpi-advanced.types';
+import { 
+  DealVelocityStage, 
+  StalledDeal,
+  ForecastStage,
+  LostReason,
+  CachedForecast
+} from '@/types/enterprise-rpc.types';
 
 // ============================================
 // 1. HOOK: Deal Velocity
@@ -43,7 +50,7 @@ export function useDealVelocity(organizationId: string | null) {
       if (stalledError) throw stalledError;
 
       // 3. Calcular total sales cycle
-      const totalCycleDays = velocityData?.reduce((sum: number, stage: any) => 
+      const totalCycleDays = (velocityData as DealVelocityStage[] | null)?.reduce((sum: number, stage) => 
         sum + (stage.average_days || 0), 0
       ) || 0;
 
@@ -56,9 +63,9 @@ export function useDealVelocity(organizationId: string | null) {
         closing: 6,
       };
 
-      const bottlenecks = velocityData
-        ?.filter((stage: any) => stage.average_days > (targetDays[stage.stage] || 7))
-        .map((stage: any) => ({
+      const bottlenecks = (velocityData as DealVelocityStage[] | null)
+        ?.filter((stage) => stage.average_days > (targetDays[stage.stage] || 7))
+        .map((stage) => ({
           stage: stage.stage,
           average_days: stage.average_days,
           target_days: targetDays[stage.stage] || 7,
@@ -68,18 +75,20 @@ export function useDealVelocity(organizationId: string | null) {
 
       // 5. Formatear datos
       const average_days_in_stage: Record<string, number> = {};
-      velocityData?.forEach((stage: any) => {
+      interface VelocityRow { stage: string; average_days: number }
+      (velocityData as VelocityRow[] | null)?.forEach((stage) => {
         average_days_in_stage[stage.stage] = stage.average_days;
       });
 
-      const formattedStalledDeals = stalledData?.map((deal: any) => ({
+      interface StalledRow { lead_id: string; lead_name: string; stage: string; days_stalled: number; assigned_to?: string }
+      const formattedStalledDeals = (stalledData as StalledRow[] | null)?.map((deal) => ({
         deal_id: deal.lead_id,
-        deal_name: deal.deal_name || 'Sin nombre',
-        current_stage: deal.current_stage,
-        days_in_stage: deal.days_in_stage,
-        average_for_stage: deal.average_for_stage,
-        excess_days: deal.excess_days,
-        recommended_action: generateRecommendedAction(deal),
+        deal_name: deal.lead_name || 'Sin nombre',
+        current_stage: deal.stage,
+        days_in_stage: deal.days_stalled,
+        average_for_stage: deal.days_stalled,
+        excess_days: deal.days_stalled,
+        recommended_action: generateRecommendedActionFromDays(deal.days_stalled),
       })) || [];
 
       setData({
@@ -105,10 +114,10 @@ export function useDealVelocity(organizationId: string | null) {
   return { data, loading, error, refetch: fetchDealVelocity };
 }
 
-function generateRecommendedAction(deal: any): string {
-  if (deal.excess_days > 15) {
-    return `URGENTE: Contactar HOY. Deal estancado ${deal.excess_days} días más de lo normal.`;
-  } else if (deal.excess_days > 7) {
+function generateRecommendedActionFromDays(days: number): string {
+  if (days > 15) {
+    return `URGENTE: Contactar HOY. Deal estancado ${days} días más de lo normal.`;
+  } else if (days > 7) {
     return `Programar reunión esta semana. Posibles objeciones sin resolver.`;
   }
   return `Hacer follow-up. Deal necesita atención.`;
@@ -430,13 +439,14 @@ export function usePipelineForecast(organizationId: string | null) {
         const optimisticRevenue = totalExpected * 1.3;
 
         // Breakdown por etapa
-        const breakdownByStage = forecastData?.map((stage: any) => ({
+        interface ForecastRow { stage: string; deal_count: number; avg_deal_size: number; total_value: number; expected_revenue: number }
+        const breakdownByStage = (forecastData as ForecastRow[] | null)?.map((stage) => ({
           stage: stage.stage,
-          deal_count: Number(stage.deal_count || 0),
-          avg_deal_size: Number(stage.avg_deal_size || 0),
-          total_value: Number(stage.total_value || 0),
+          deal_count: stage.deal_count || 0,
+          avg_deal_size: stage.avg_deal_size || (stage.total_value / Math.max(stage.deal_count, 1)),
+          total_value: stage.total_value || 0,
           probability: getProbabilityForStage(stage.stage),
-          expected_revenue: Number(stage.expected_revenue || 0),
+          expected_revenue: stage.expected_revenue || 0,
         })) || [];
 
         // Obtener target de revenue
@@ -520,15 +530,27 @@ export function useCashFlowForecast(organizationId: string | null, months: 6 | 1
           .limit(months);
 
         if (!cacheError && cachedForecast && cachedForecast.length > 0) {
-          const formattedData = cachedForecast.map((cf: any) => ({
-            month: cf.month,
+          const formattedData: CashFlowForecastType[] = cachedForecast.map((cf) => ({
+            month: cf.month || '',
             opening_balance: Number(cf.opening_balance || 0),
             projected_inflows: Number(cf.projected_inflows || 0),
             projected_outflows: Number(cf.projected_outflows || 0),
             net_cash_flow: Number(cf.net_cash_flow || 0),
             closing_balance: Number(cf.closing_balance || 0),
-            inflows_breakdown: cf.inflows_breakdown || {},
-            outflows_breakdown: cf.outflows_breakdown || {},
+            inflows_breakdown: {
+              sales_revenue: 0,
+              recurring_revenue: 0,
+              other_income: 0,
+              ...((cf.inflows_breakdown as Record<string, number>) || {}),
+            },
+            outflows_breakdown: {
+              salaries: 0,
+              marketing: 0,
+              operations: 0,
+              infrastructure: 0,
+              other: 0,
+              ...((cf.outflows_breakdown as Record<string, number>) || {}),
+            },
           }));
           setData(formattedData);
           setLoading(false);
@@ -645,12 +667,12 @@ export function useLostReasonsAnalysis(organizationId: string | null) {
         const totalLostDeals = reasonsData?.reduce((sum, r) => sum + Number(r.count || 0), 0) || 0;
         const totalLostValue = reasonsData?.reduce((sum, r) => sum + Number(r.total_value || 0), 0) || 0;
 
-        const formattedReasons = reasonsData?.map((r: any) => ({
+        const formattedReasons = (reasonsData as LostReason[] | null)?.map((r) => ({
           reason: r.reason,
-          count: Number(r.count || 0),
-          percentage: Number(r.percentage || 0),
-          total_value: Number(r.total_value || 0),
-          average_deal_size: Number(r.avg_deal_size || 0),
+          count: r.count || 0,
+          percentage: r.percentage || 0,
+          total_value: r.total_value || 0,
+          average_deal_size: r.total_value / Math.max(r.count, 1),
         })) || [];
 
         // Generar insights
