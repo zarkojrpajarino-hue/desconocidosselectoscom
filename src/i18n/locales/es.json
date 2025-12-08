@@ -1,0 +1,222 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "reset": "Restablecer",
+    "yes": "Sí",
+    "no": "No",
+    "all": "Todos",
+    "none": "Ninguno",
+    "select": "Seleccionar",
+    "viewMore": "Ver más",
+    "viewLess": "Ver menos"
+  },
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "pipeline": "Pipeline",
+    "tasks": "Tareas",
+    "okrs": "OKRs",
+    "metrics": "Métricas",
+    "financial": "Finanzas",
+    "tools": "Herramientas",
+    "integrations": "Integraciones",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetPassword": "Restablecer contraseña",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "createAccount": "Crear cuenta"
+  },
+  "landing": {
+    "hero": {
+      "title": "Impulsa tu negocio con inteligencia",
+      "subtitle": "La plataforma todo-en-uno para gestionar tu empresa",
+      "cta": "Empieza gratis"
+    },
+    "features": {
+      "title": "Características",
+      "crm": "CRM Inteligente",
+      "crmDesc": "Gestiona leads y pipeline de ventas",
+      "okrs": "OKRs & Métricas",
+      "okrsDesc": "Define y mide tus objetivos",
+      "financial": "Finanzas",
+      "financialDesc": "Control de ingresos y gastos",
+      "ai": "Análisis IA",
+      "aiDesc": "Insights automáticos con IA"
+    },
+    "pricing": {
+      "title": "Planes y precios",
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "mostPopular": "Más popular",
+      "selectPlan": "Elegir plan",
+      "freeTrial": "Prueba gratuita de 14 días"
+    },
+    "integrations": {
+      "title": "Se integra con tus herramientas favoritas",
+      "viewAll": "Ver todas las integraciones"
+    },
+    "cta": {
+      "getStarted": "Empieza ahora",
+      "existingBusiness": "Tengo una Empresa",
+      "startup": "Tengo una Idea 🚀"
+    }
+  },
+  "crm": {
+    "title": "CRM",
+    "leads": "Leads",
+    "newLead": "Nuevo Lead",
+    "pipeline": "Pipeline",
+    "totalLeads": "Total Leads",
+    "qualified": "Calificados",
+    "won": "Ganados",
+    "lost": "Perdidos",
+    "pipelineValue": "Valor del Pipeline",
+    "stages": {
+      "discovery": "Descubrimiento",
+      "qualification": "Calificación",
+      "proposal": "Propuesta",
+      "negotiation": "Negociación",
+      "won": "Ganado",
+      "lost": "Perdido"
+    },
+    "lead": {
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "company": "Empresa",
+      "value": "Valor estimado",
+      "probability": "Probabilidad",
+      "source": "Fuente",
+      "notes": "Notas",
+      "assignedTo": "Asignado a",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado"
+    }
+  },
+  "tasks": {
+    "title": "Tareas",
+    "myTasks": "Mis tareas",
+    "today": "Hoy",
+    "thisWeek": "Esta semana",
+    "pending": "Pendientes",
+    "completed": "Completadas",
+    "overdue": "Atrasadas",
+    "markComplete": "Marcar como completada",
+    "newTask": "Nueva tarea",
+    "dueDate": "Fecha límite",
+    "priority": "Prioridad",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  },
+  "okrs": {
+    "title": "OKRs",
+    "objectives": "Objetivos",
+    "keyResults": "Resultados Clave",
+    "newObjective": "Nuevo objetivo",
+    "progress": "Progreso",
+    "onTrack": "En curso",
+    "atRisk": "En riesgo",
+    "behind": "Atrasado",
+    "quarter": "Trimestre"
+  },
+  "financial": {
+    "title": "Finanzas",
+    "revenue": "Ingresos",
+    "expenses": "Gastos",
+    "profit": "Beneficio",
+    "margin": "Margen",
+    "transactions": "Transacciones",
+    "newRevenue": "Nuevo ingreso",
+    "newExpense": "Nuevo gasto",
+    "category": "Categoría",
+    "amount": "Cantidad",
+    "date": "Fecha",
+    "description": "Descripción"
+  },
+  "metrics": {
+    "title": "Métricas",
+    "kpis": "KPIs",
+    "businessMetrics": "Métricas del negocio",
+    "conversionRate": "Tasa de conversión",
+    "avgTicket": "Ticket medio",
+    "cac": "CAC",
+    "ltv": "LTV",
+    "churnRate": "Tasa de abandono",
+    "nps": "NPS"
+  },
+  "integrations": {
+    "title": "Integraciones",
+    "connected": "Conectada",
+    "notConnected": "No conectada",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "configure": "Configurar",
+    "sync": "Sincronizar",
+    "lastSync": "Última sincronización",
+    "suggestTool": "¿Echas en falta alguna herramienta?",
+    "suggestPlaceholder": "Describe la herramienta que necesitas...",
+    "sendSuggestion": "Enviar sugerencia",
+    "plans": {
+      "starter": "Disponible en Starter",
+      "professional": "Disponible en Professional",
+      "enterprise": "Disponible en Enterprise"
+    }
+  },
+  "ai": {
+    "title": "Análisis IA",
+    "generating": "Generando análisis...",
+    "financialHealth": "Salud Financiera",
+    "teamPerformance": "Rendimiento del Equipo",
+    "honestFeedback": "Feedback Honesto",
+    "recommendations": "Recomendaciones",
+    "refresh": "Actualizar análisis"
+  },
+  "trial": {
+    "title": "Versión Gratuita",
+    "daysLeft": "días restantes",
+    "expired": "Tu prueba ha expirado",
+    "upgrade": "Ver Planes",
+    "choosePlan": "Elige tu plan para continuar"
+  },
+  "errors": {
+    "generic": "Ha ocurrido un error",
+    "networkError": "Error de conexión",
+    "unauthorized": "No autorizado",
+    "notFound": "No encontrado",
+    "validation": "Error de validación",
+    "tryAgain": "Intentar de nuevo"
+  }
+}

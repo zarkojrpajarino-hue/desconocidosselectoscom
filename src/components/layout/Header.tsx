@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Search,
@@ -26,6 +26,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -54,6 +55,7 @@ const breadcrumbMap: Record<string, string> = {
 };
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { t } = useTranslation();
   const { userProfile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -124,6 +126,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             />
           </div>
 
+          {/* Language Selector */}
+          <LanguageSelector />
+
           {/* Theme Toggle */}
           <Button
             variant="ghost"
@@ -171,20 +176,20 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <User className="mr-2 h-4 w-4" />
-                Mi Perfil
+                {t('nav.profile')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <Settings className="mr-2 h-4 w-4" />
-                Configuración
+                {t('nav.settings')}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <HelpCircle className="mr-2 h-4 w-4" />
-                Centro de Ayuda
+                {t('common.help', 'Centro de Ayuda')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut()} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesión
+                {t('nav.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -4,6 +4,9 @@ import { initAnalytics } from "./lib/analytics";
 import App from "./App.tsx";
 import "./index.css";
 
+// Initialize i18n
+import "./i18n";
+
 // Initialize Sentry for error monitoring in production
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 
