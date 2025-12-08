@@ -2,8 +2,15 @@ import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+// Types for CustomerJourney
+interface JourneyStage {
+  name?: string; description?: string;
+  touchpoints?: string[]; emotions?: string[]; opportunities?: string[];
+}
+interface JourneyData { stages?: JourneyStage[] }
+
 const CustomerJourney = () => {
-  const renderContent = (journey: any) => {
+  const renderContent = (journey: JourneyData) => {
     if (!journey?.stages) return null;
 
     const stageColors: Record<string, string> = {
@@ -15,7 +22,7 @@ const CustomerJourney = () => {
 
     return (
       <div className="space-y-6">
-        {journey.stages.map((stage: any, idx: number) => (
+        {journey.stages.map((stage: JourneyStage, idx: number) => (
           <Card key={idx} className={`border-2 ${stageColors[stage.name] || ''}`}>
             <CardHeader>
               <div className="flex items-center gap-3">

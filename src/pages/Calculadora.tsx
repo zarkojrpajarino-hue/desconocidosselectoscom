@@ -11,10 +11,59 @@ import {
   ArrowUpRight, ArrowDownRight, Shield, Zap
 } from 'lucide-react';
 
+// Types for Calculadora content
+interface MarketValue { value?: string; calculation?: string }
+interface MarketAnalysis {
+  tam?: MarketValue; sam?: MarketValue; som?: MarketValue;
+  trends?: string[]; growth_rate?: string;
+}
+interface FinancialScenario {
+  year1_revenue?: string; year2_revenue?: string; year3_revenue?: string;
+  assumptions?: string[];
+}
+interface FinancialProjections {
+  scenario_conservative?: FinancialScenario;
+  scenario_realistic?: FinancialScenario;
+  scenario_optimistic?: FinancialScenario;
+}
+interface UnitEconomics {
+  cac?: { value?: string }; ltv?: { value?: string };
+  ltv_cac_ratio?: string; payback_period?: string; gross_margin?: string;
+}
+interface CompetitivePosition {
+  strengths?: string[]; weaknesses?: string[]; opportunities?: string[]; threats?: string[];
+}
+interface GrowthLever {
+  lever?: string; potential_impact?: string; timeline?: string;
+  recommendation?: string; effort_required?: string;
+}
+interface RiskItem { risk?: string; mitigation?: string; probability?: string; impact?: string }
+interface ActionPlan { immediate?: string[]; short_term?: string[]; long_term?: string[] }
+interface OpportunityScore {
+  overall?: number;
+  breakdown?: {
+    market_attractiveness?: string; competitive_position?: string;
+    team_capability?: string; financial_viability?: string;
+    execution_capability?: string;
+  };
+  recommendation?: string;
+  verdict?: string;
+}
+interface CalculadoraData {
+  market_analysis?: MarketAnalysis;
+  financial_projections?: FinancialProjections;
+  unit_economics?: UnitEconomics;
+  competitive_position?: CompetitivePosition;
+  growth_levers?: GrowthLever[];
+  action_plan?: ActionPlan;
+  risk_assessment?: RiskItem[];
+  opportunity_score?: OpportunityScore;
+}
+
 const Calculadora = () => {
   const navigate = useNavigate();
 
-  const getImpactColor = (impact: string) => {
+  const getImpactColor = (impact: string | undefined) => {
     switch (impact?.toLowerCase()) {
       case 'alto': return 'text-green-600 bg-green-500/10';
       case 'medio': return 'text-yellow-600 bg-yellow-500/10';
@@ -23,7 +72,7 @@ const Calculadora = () => {
     }
   };
 
-  const renderContent = (calc: any) => {
+  const renderContent = (calc: CalculadoraData) => {
     if (!calc) return null;
 
     return (
@@ -261,7 +310,7 @@ const Calculadora = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {calc.growth_levers.map((lever: any, idx: number) => (
+                {calc.growth_levers.map((lever: GrowthLever, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-semibold">{lever.lever}</h4>
@@ -343,7 +392,7 @@ const Calculadora = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {calc.risk_assessment.map((risk: any, idx: number) => (
+                {calc.risk_assessment.map((risk: RiskItem, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <h4 className="font-medium">{risk.risk}</h4>

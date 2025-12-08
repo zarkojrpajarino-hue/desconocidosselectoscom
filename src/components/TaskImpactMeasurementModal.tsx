@@ -262,7 +262,7 @@ const TaskImpactMeasurementModal = ({
         key_metrics: keyMetrics.filter((m): m is { metric: string; value: string; unit: string } => 
           Boolean(m.metric && m.value)
         ),
-        impact_rating: impactRating as any,
+        impact_rating: impactRating as ImpactMeasurementData['impact_rating'],
         impact_explanation: impactExplanation,
         future_decisions: futureDecisions,
         investments_needed: investmentsNeeded,
@@ -270,10 +270,11 @@ const TaskImpactMeasurementModal = ({
       });
       
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Intenta de nuevo';
       console.error('Error al guardar medición:', error);
       toast.error('Error al guardar', {
-        description: error.message || 'Intenta de nuevo'
+        description: errorMessage
       });
     } finally {
       setIsSubmitting(false);
@@ -281,8 +282,12 @@ const TaskImpactMeasurementModal = ({
   };
 
   // Extrae métricas estructuradas según área de la tarea
-  const extractMetricsFromData = (metrics: any[], answers: Record<string, any>, area: string) => {
-    const structured: any = {
+  const extractMetricsFromData = (
+    metrics: TaskMetric[], 
+    answers: Record<string, string | number | string[]>, 
+    area: string
+  ): StructuredMetrics => {
+    const structured: StructuredMetrics = {
       area,
       captured_at: new Date().toISOString(),
     };

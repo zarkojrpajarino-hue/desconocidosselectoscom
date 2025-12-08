@@ -2,8 +2,14 @@ import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+// Types for GrowthModel
+interface GrowthMetric {
+  stage?: string; kpis?: string[]; channels?: string[]; tactics?: string[];
+}
+interface GrowthModelData { metrics?: GrowthMetric[] }
+
 const GrowthModel = () => {
-  const renderContent = (model: any) => {
+  const renderContent = (model: GrowthModelData) => {
     if (!model?.metrics) return null;
 
     const stageIcons: Record<string, string> = {
@@ -31,7 +37,7 @@ const GrowthModel = () => {
           </p>
         </div>
 
-        {model.metrics.map((metric: any, idx: number) => (
+        {model.metrics.map((metric: GrowthMetric, idx: number) => (
           <Card key={idx} className={`border-2 ${stageColors[metric.stage] || ''}`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
