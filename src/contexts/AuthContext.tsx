@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '@/types/auth';
@@ -11,13 +11,19 @@ interface UserOrganization {
   organization_name: string;
 }
 
+interface UserRoleQueryResult {
+  organization_id: string;
+  role: string;
+  organizations: { name: string } | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   userProfile: UserProfile | null;
   currentOrganizationId: string | null;
   userOrganizations: UserOrganization[];
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   switchOrganization: (organizationId: string) => void;
   loading: boolean;
@@ -80,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const orgs = data.map((item: any) => ({
+        const orgs = (data as UserRoleQueryResult[]).map((item) => ({
           organization_id: item.organization_id,
           role: item.role,
           organization_name: item.organizations?.name || 'Sin nombre'
@@ -101,8 +107,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setCurrentOrganizationId(null);
         }
       }
-    } catch (error: any) {
-      console.error('Error loading user organizations:', error);
+    } catch (error) {
+      console.error('Error loading user organizations:', error instanceof Error ? error.message : error);
     }
   };
 

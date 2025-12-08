@@ -41,13 +41,14 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
         throw fetchError;
       }
 
-      // Cast seguro - los datos de Supabase coinciden con Lead
-      setLeads((data || []) as any);
-    } catch (err: any) {
-      console.error('Error fetching leads:', err);
-      setError(err);
+      // Los datos de Supabase incluyen relaciones parciales, usar unknown primero
+      setLeads((data || []) as unknown as Lead[]);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      console.error('Error fetching leads:', error.message);
+      setError(error);
       toast.error('Error al cargar leads', {
-        description: err.message || 'Intenta de nuevo más tarde',
+        description: error.message || 'Intenta de nuevo más tarde',
       });
     } finally {
       setLoading(false);
@@ -63,8 +64,8 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
 
       if (statsError) throw statsError;
       setUserStats(data || []);
-    } catch (err: any) {
-      console.error('Error fetching user stats:', err);
+    } catch (err) {
+      console.error('Error fetching user stats:', err instanceof Error ? err.message : err);
       toast.error('Error al cargar estadísticas de usuarios');
     }
   };
@@ -107,8 +108,8 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
       }
 
       setGlobalStats(stats);
-    } catch (err: any) {
-      console.error('Error fetching global stats:', err);
+    } catch (err) {
+      console.error('Error fetching global stats:', err instanceof Error ? err.message : err);
       toast.error('Error al cargar estadísticas globales');
     }
   };
@@ -124,10 +125,11 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
 
       toast.success('Lead eliminado correctamente');
       await fetchLeads();
-    } catch (err: any) {
-      console.error('Error deleting lead:', err);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      console.error('Error deleting lead:', error.message);
       toast.error('Error al eliminar lead', {
-        description: err.message || 'Intenta de nuevo',
+        description: error.message || 'Intenta de nuevo',
       });
     }
   };
@@ -143,10 +145,11 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
 
       toast.success('Etapa actualizada');
       await fetchLeads();
-    } catch (err: any) {
-      console.error('Error updating lead stage:', err);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      console.error('Error updating lead stage:', error.message);
       toast.error('Error al actualizar etapa', {
-        description: err.message,
+        description: error.message,
       });
     }
   };

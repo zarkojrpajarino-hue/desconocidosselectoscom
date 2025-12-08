@@ -111,11 +111,12 @@ export const useFinancialData = () => {
       allTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       setTransactions(allTransactions);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching transactions:', err);
-      setError(err);
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      setError(error);
       toast.error('Error al cargar transacciones', {
-        description: err.message || 'Intenta de nuevo más tarde',
+        description: error.message || 'Intenta de nuevo más tarde',
       });
     } finally {
       setLoading(false);

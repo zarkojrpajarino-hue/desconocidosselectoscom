@@ -29,8 +29,36 @@ interface AIQuestion {
   unit?: string;
 }
 
+interface TaskMetric {
+  metric: string;
+  value: string;
+  unit: string;
+}
+
+interface StructuredMetrics {
+  area: string;
+  captured_at: string;
+  revenue?: number;
+  orders?: number;
+  avg_ticket?: number;
+  margin?: number;
+  leads?: number;
+  conversion_rate?: number;
+  cac?: number;
+  roi?: number;
+  time_hours?: number;
+  capacity?: number;
+  error_rate?: number;
+  cost?: number;
+  nps?: number;
+  repeat_rate?: number;
+  ltv?: number;
+  satisfaction?: number;
+  ai_context?: Record<string, string | number | string[]>;
+}
+
 interface ImpactMeasurementData {
-  ai_questions: Record<string, any>;
+  ai_questions: Record<string, string | number | string[]>;
   key_metrics: Array<{ metric: string; value: string; unit: string }>;
   impact_rating: 'exceeded' | 'met' | 'close' | 'below';
   impact_explanation: string;
@@ -44,7 +72,7 @@ interface ImpactMeasurementData {
     none?: boolean;
     details?: string;
   };
-  task_metrics?: any; // Métricas estructuradas para IA
+  task_metrics?: StructuredMetrics;
 }
 
 const TaskImpactMeasurementModal = ({
@@ -56,7 +84,7 @@ const TaskImpactMeasurementModal = ({
   onSubmit,
 }: TaskImpactMeasurementModalProps) => {
   const [aiQuestions, setAiQuestions] = useState<AIQuestion[]>([]);
-  const [aiAnswers, setAiAnswers] = useState<Record<string, any>>({});
+  const [aiAnswers, setAiAnswers] = useState<Record<string, string | number | string[]>>({});
   const [loadingAI, setLoadingAI] = useState(false);
   
   // Medición de Impacto
@@ -158,13 +186,13 @@ const TaskImpactMeasurementModal = ({
                 className="flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer hover:bg-muted"
               >
                 <Checkbox
-                  checked={aiAnswers[question.id]?.includes(option) || false}
+                  checked={Array.isArray(aiAnswers[question.id]) && (aiAnswers[question.id] as string[]).includes(option)}
                   onCheckedChange={(checked) => {
-                    const current = aiAnswers[question.id] || [];
+                    const current = Array.isArray(aiAnswers[question.id]) ? (aiAnswers[question.id] as string[]) : [];
                     if (checked) {
                       setAiAnswers({ ...aiAnswers, [question.id]: [...current, option] });
                     } else {
-                      setAiAnswers({ ...aiAnswers, [question.id]: current.filter((o: string) => o !== option) });
+                      setAiAnswers({ ...aiAnswers, [question.id]: current.filter((o) => o !== option) });
                     }
                   }}
                 />

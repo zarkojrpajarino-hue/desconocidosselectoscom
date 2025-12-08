@@ -86,8 +86,15 @@ export function KPIBenchmarking() {
           .limit(1)
           .single();
 
+        interface RawBenchmark {
+          kpi_metric: string;
+          average_value: number | null;
+          top_25_percentile: number | null;
+          top_10_percentile: number | null;
+        }
+
         // Construir comparación
-        const comparisonData: Benchmark[] = (benchmarks || []).map((bench: any) => {
+        const comparisonData: Benchmark[] = ((benchmarks || []) as RawBenchmark[]).map((bench) => {
           const yourValue = getMetricValue(currentMetrics, bench.kpi_metric);
           const avg = bench.average_value || 0;
           const top25 = bench.top_25_percentile || avg * 1.3;
@@ -118,7 +125,15 @@ export function KPIBenchmarking() {
     fetchBenchmarks();
   }, [organizationId]);
 
-  function getMetricValue(metrics: any, kpiMetric: string): number {
+  interface FinancialMetrics {
+    margin_percentage?: number;
+    gross_margin?: number;
+    cac?: number;
+    ltv?: number;
+    ltv_cac_ratio?: number;
+  }
+
+  function getMetricValue(metrics: Record<string, unknown> | null, kpiMetric: string): number {
     if (!metrics) return 0;
     const mapping: Record<string, string> = {
       conversion_rate: 'margin_percentage',
@@ -127,7 +142,8 @@ export function KPIBenchmarking() {
       ltv: 'ltv',
       ltv_cac_ratio: 'ltv_cac_ratio',
     };
-    return metrics[mapping[kpiMetric]] || 0;
+    const value = metrics[mapping[kpiMetric]];
+    return typeof value === 'number' ? value : 0;
   }
 
   if (loading) {

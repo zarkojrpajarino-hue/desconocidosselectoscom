@@ -64,8 +64,15 @@ export default function OrganizationUsers() {
 
       if (rolesError) throw rolesError;
 
+      interface UserRoleData {
+        user_id: string;
+        role: string;
+        created_at: string;
+        users: { id: string; email: string; full_name: string };
+      }
+
       const usersWithTasks = await Promise.all(
-        (rolesData || []).map(async (roleData: any) => {
+        ((rolesData || []) as unknown as UserRoleData[]).map(async (roleData) => {
           const { count } = await supabase
             .from('task_completions')
             .select('*', { count: 'exact', head: true })
