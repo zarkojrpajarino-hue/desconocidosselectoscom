@@ -11,6 +11,7 @@ import {
   Gauge, Crown, Star, Gift
 } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -163,6 +164,9 @@ const Landing = () => {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            <LanguageSelector />
+
             {user ? (
               <Button onClick={() => navigate('/home')}>
                 <User className="w-4 h-4 mr-2" />
