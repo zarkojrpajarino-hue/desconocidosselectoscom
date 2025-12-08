@@ -40,7 +40,12 @@
     "integrations": "Integraciones",
     "settings": "Configuración",
     "profile": "Perfil",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "features": "Características",
+    "pricing": "Precios",
+    "goToDashboard": "Ir a Dashboard",
+    "login": "Iniciar Sesión",
+    "startFree": "Empezar Gratis"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -56,41 +61,159 @@
     "createAccount": "Crear cuenta"
   },
   "landing": {
+    "badge": "🎁 14 días GRATIS · Sin tarjeta",
     "hero": {
-      "title": "Impulsa tu negocio con inteligencia",
-      "subtitle": "La plataforma todo-en-uno para gestionar tu empresa",
-      "cta": "Empieza gratis"
+      "title": "OPTIMUS-K",
+      "subtitle": "Tu empresa merece una app de gestión",
+      "subtitleHighlight": "tan única como tu negocio",
+      "description": "En <strong>2-3 horas</strong> tendrás una app completa que habla tu lenguaje: con TUS procesos, TUS métricas y TU forma de trabajar.",
+      "cta": "Empezar Ahora",
+      "viewPricing": "Ver Precios"
+    },
+    "trust": {
+      "noCommitment": "Sin permanencia",
+      "securePayment": "Pago seguro",
+      "quickSetup": "Setup en 2-3h"
     },
     "features": {
-      "title": "Características",
-      "crm": "CRM Inteligente",
-      "crmDesc": "Gestiona leads y pipeline de ventas",
-      "okrs": "OKRs & Métricas",
-      "okrsDesc": "Define y mide tus objetivos",
-      "financial": "Finanzas",
-      "financialDesc": "Control de ingresos y gastos",
-      "ai": "Análisis IA",
-      "aiDesc": "Insights automáticos con IA"
-    },
-    "pricing": {
-      "title": "Planes y precios",
-      "monthly": "Mensual",
-      "yearly": "Anual",
-      "starter": "Starter",
-      "professional": "Professional",
-      "enterprise": "Enterprise",
-      "mostPopular": "Más popular",
-      "selectPlan": "Elegir plan",
-      "freeTrial": "Prueba gratuita de 14 días"
+      "title": "¿Qué Incluye tu App?",
+      "subtitle": "Todas las herramientas que necesitas para gestionar tu empresa en un solo lugar",
+      "dashboard": {
+        "title": "Dashboard Personalizado",
+        "description": "Dashboard adaptado a TU negocio con métricas que importan"
+      },
+      "okrs": {
+        "title": "OKRs Inteligentes",
+        "description": "Objetivos generados por IA alineados a tu industria"
+      },
+      "crm": {
+        "title": "CRM Completo",
+        "description": "Pipeline de ventas con scoring y seguimiento automático"
+      },
+      "ai": {
+        "title": "IA Generativa",
+        "description": "Crea buyer personas, contenido, emails y campañas con IA"
+      },
+      "gamification": {
+        "title": "Gamificación Real",
+        "description": "Puntos, rachas y logros que motivan al equipo de verdad"
+      },
+      "integrations": {
+        "title": "Integraciones",
+        "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier y más"
+      }
     },
     "integrations": {
-      "title": "Se integra con tus herramientas favoritas",
-      "viewAll": "Ver todas las integraciones"
+      "title": "Se Integra con tus Herramientas Favoritas",
+      "subtitle": "<strong>OPTIMUS-K se adapta a tu forma de trabajar.</strong> Si tu equipo usa Slack, recibirán notificaciones ahí. Si tienes HubSpot, todo se sincroniza automáticamente.",
+      "viewAll": "Ver Todas las Integraciones",
+      "apiNote": "¿Tu herramienta favorita no está? Tenemos API abierta para conectar cualquier sistema"
+    },
+    "choosePath": {
+      "title": "Empieza Ahora - Elige tu Camino",
+      "subtitle": "OPTIMUS-K se adapta a tu situación. ¿Ya tienes un negocio funcionando o estás empezando con una idea?",
+      "business": {
+        "title": "Tengo una Empresa",
+        "description": "Ya tengo clientes, ventas y un equipo. Quiero optimizar mi gestión con IA y métricas personalizadas.",
+        "feature1": "30 preguntas sobre tu negocio",
+        "feature2": "Workspace generado en 2-3h",
+        "feature3": "CRM, OKRs, KPIs adaptados",
+        "cta": "Empezar Onboarding Empresa"
+      },
+      "startup": {
+        "title": "Tengo una Idea",
+        "description": "Estoy empezando un proyecto o startup. Necesito validar mi idea y estructurar mi lanzamiento.",
+        "feature1": "6 pasos de validación",
+        "feature2": "Lean Canvas automático",
+        "feature3": "Roadmap y métricas de startup",
+        "cta": "Empezar Onboarding Startup"
+      }
+    },
+    "pricing": {
+      "title": "Precios Transparentes",
+      "subtitle": "Empieza gratis · Sin permanencia · Cancela cuando quieras",
+      "mostPopular": "⭐ Más Popular",
+      "perMonth": "/mes",
+      "days": "días",
+      "customPlan": "¿Necesitas algo más específico? ¿Más de 25 usuarios?",
+      "contactUs": "Contáctanos para un plan personalizado →",
+      "plans": {
+        "free": {
+          "name": "Free Trial",
+          "price": "Gratis",
+          "period": "14 días",
+          "description": "Prueba sin compromiso",
+          "limits": "3 usuarios · 500 leads · 3 OKRs",
+          "features": [
+            "Dashboard personalizado",
+            "CRM con pipeline básico",
+            "3 OKRs con Key Results",
+            "Sistema de puntos y badges",
+            "2 análisis IA/mes",
+            "Exportación CSV",
+            "Email support (72h)"
+          ],
+          "cta": "Empezar Gratis"
+        },
+        "starter": {
+          "name": "Starter",
+          "description": "Para equipos pequeños",
+          "limits": "10 usuarios · 1,000 leads · 10 OKRs",
+          "features": [
+            "Todo de Free Trial +",
+            "Tareas semanales ilimitadas",
+            "Pipeline personalizable",
+            "Scoring automático",
+            "Gamificación completa",
+            "Google Calendar sync",
+            "Excel y PDF export",
+            "Soporte email (48h)"
+          ],
+          "cta": "Empezar con Starter"
+        },
+        "professional": {
+          "name": "Professional",
+          "description": "Para empresas en crecimiento",
+          "limits": "25 usuarios · 5,000 leads · OKRs ilimitados",
+          "features": [
+            "Todo de Starter +",
+            "IA generativa (buyer personas, brand kit)",
+            "Análisis competitivo",
+            "5 BI Dashboards",
+            "Slack, HubSpot, Outlook, Zapier",
+            "Onboarding startup",
+            "Soporte prioritario 24h"
+          ],
+          "cta": "Probar Professional"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Para grandes organizaciones",
+          "limits": "Todo ilimitado",
+          "features": [
+            "Todo de Professional +",
+            "White-label completo",
+            "SSO/SAML",
+            "SAP, Oracle, Dynamics",
+            "SLA 99.9% uptime",
+            "Account manager dedicado",
+            "Soporte 24/7 (<1h)"
+          ],
+          "cta": "Contactar Ventas"
+        }
+      }
     },
     "cta": {
-      "getStarted": "Empieza ahora",
-      "existingBusiness": "Tengo una Empresa",
-      "startup": "Tengo una Idea 🚀"
+      "title": "¿Listo para Gestionar Como un Pro?",
+      "subtitle": "Únete a cientos de empresas que ya gestionan su negocio con OPTIMUS-K",
+      "button": "Empezar Gratis 14 Días",
+      "noCreditCard": "No se requiere tarjeta de crédito"
+    },
+    "footer": {
+      "copyright": "© 2025 OPTIMUS-K. Todos los derechos reservados.",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "contact": "Contacto"
     }
   },
   "crm": {

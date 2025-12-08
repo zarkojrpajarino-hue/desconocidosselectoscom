@@ -40,7 +40,12 @@
     "integrations": "Integrations",
     "settings": "Settings",
     "profile": "Profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "features": "Features",
+    "pricing": "Pricing",
+    "goToDashboard": "Go to Dashboard",
+    "login": "Login",
+    "startFree": "Start Free"
   },
   "auth": {
     "login": "Login",
@@ -56,41 +61,159 @@
     "createAccount": "Create account"
   },
   "landing": {
+    "badge": "🎁 14 days FREE · No card required",
     "hero": {
-      "title": "Power your business with intelligence",
-      "subtitle": "The all-in-one platform to manage your company",
-      "cta": "Start for free"
+      "title": "OPTIMUS-K",
+      "subtitle": "Your business deserves a management app",
+      "subtitleHighlight": "as unique as your business",
+      "description": "In <strong>2-3 hours</strong> you'll have a complete app that speaks your language: with YOUR processes, YOUR metrics, and YOUR way of working.",
+      "cta": "Get Started",
+      "viewPricing": "View Pricing"
+    },
+    "trust": {
+      "noCommitment": "No commitment",
+      "securePayment": "Secure payment",
+      "quickSetup": "Setup in 2-3h"
     },
     "features": {
-      "title": "Features",
-      "crm": "Smart CRM",
-      "crmDesc": "Manage leads and sales pipeline",
-      "okrs": "OKRs & Metrics",
-      "okrsDesc": "Define and measure your goals",
-      "financial": "Financial",
-      "financialDesc": "Revenue and expense control",
-      "ai": "AI Analysis",
-      "aiDesc": "Automatic insights with AI"
-    },
-    "pricing": {
-      "title": "Plans & Pricing",
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "starter": "Starter",
-      "professional": "Professional",
-      "enterprise": "Enterprise",
-      "mostPopular": "Most popular",
-      "selectPlan": "Select plan",
-      "freeTrial": "14-day free trial"
+      "title": "What's Included in Your App?",
+      "subtitle": "All the tools you need to manage your company in one place",
+      "dashboard": {
+        "title": "Personalized Dashboard",
+        "description": "Dashboard tailored to YOUR business with metrics that matter"
+      },
+      "okrs": {
+        "title": "Smart OKRs",
+        "description": "AI-generated objectives aligned to your industry"
+      },
+      "crm": {
+        "title": "Complete CRM",
+        "description": "Sales pipeline with automatic scoring and tracking"
+      },
+      "ai": {
+        "title": "Generative AI",
+        "description": "Create buyer personas, content, emails, and campaigns with AI"
+      },
+      "gamification": {
+        "title": "Real Gamification",
+        "description": "Points, streaks, and achievements that truly motivate the team"
+      },
+      "integrations": {
+        "title": "Integrations",
+        "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier and more"
+      }
     },
     "integrations": {
-      "title": "Integrates with your favorite tools",
-      "viewAll": "View all integrations"
+      "title": "Integrates with Your Favorite Tools",
+      "subtitle": "<strong>OPTIMUS-K adapts to your way of working.</strong> If your team uses Slack, they'll receive notifications there. If you have HubSpot, everything syncs automatically.",
+      "viewAll": "View All Integrations",
+      "apiNote": "Your favorite tool not listed? We have an open API to connect any system"
+    },
+    "choosePath": {
+      "title": "Get Started - Choose Your Path",
+      "subtitle": "OPTIMUS-K adapts to your situation. Do you already have a running business or are you starting with an idea?",
+      "business": {
+        "title": "I Have a Business",
+        "description": "I already have customers, sales, and a team. I want to optimize my management with AI and personalized metrics.",
+        "feature1": "30 questions about your business",
+        "feature2": "Workspace generated in 2-3h",
+        "feature3": "CRM, OKRs, KPIs adapted",
+        "cta": "Start Business Onboarding"
+      },
+      "startup": {
+        "title": "I Have an Idea",
+        "description": "I'm starting a project or startup. I need to validate my idea and structure my launch.",
+        "feature1": "6 validation steps",
+        "feature2": "Automatic Lean Canvas",
+        "feature3": "Startup roadmap and metrics",
+        "cta": "Start Startup Onboarding"
+      }
+    },
+    "pricing": {
+      "title": "Transparent Pricing",
+      "subtitle": "Start free · No commitment · Cancel anytime",
+      "mostPopular": "⭐ Most Popular",
+      "perMonth": "/month",
+      "days": "days",
+      "customPlan": "Need something more specific? More than 25 users?",
+      "contactUs": "Contact us for a custom plan →",
+      "plans": {
+        "free": {
+          "name": "Free Trial",
+          "price": "Free",
+          "period": "14 days",
+          "description": "Try without commitment",
+          "limits": "3 users · 500 leads · 3 OKRs",
+          "features": [
+            "Personalized dashboard",
+            "CRM with basic pipeline",
+            "3 OKRs with Key Results",
+            "Points and badges system",
+            "2 AI analyses/month",
+            "CSV export",
+            "Email support (72h)"
+          ],
+          "cta": "Start Free"
+        },
+        "starter": {
+          "name": "Starter",
+          "description": "For small teams",
+          "limits": "10 users · 1,000 leads · 10 OKRs",
+          "features": [
+            "Everything in Free Trial +",
+            "Unlimited weekly tasks",
+            "Customizable pipeline",
+            "Automatic scoring",
+            "Complete gamification",
+            "Google Calendar sync",
+            "Excel and PDF export",
+            "Email support (48h)"
+          ],
+          "cta": "Start with Starter"
+        },
+        "professional": {
+          "name": "Professional",
+          "description": "For growing companies",
+          "limits": "25 users · 5,000 leads · Unlimited OKRs",
+          "features": [
+            "Everything in Starter +",
+            "Generative AI (buyer personas, brand kit)",
+            "Competitive analysis",
+            "5 BI Dashboards",
+            "Slack, HubSpot, Outlook, Zapier",
+            "Startup onboarding",
+            "Priority support 24h"
+          ],
+          "cta": "Try Professional"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For large organizations",
+          "limits": "Everything unlimited",
+          "features": [
+            "Everything in Professional +",
+            "Complete white-label",
+            "SSO/SAML",
+            "SAP, Oracle, Dynamics",
+            "99.9% uptime SLA",
+            "Dedicated account manager",
+            "24/7 support (<1h)"
+          ],
+          "cta": "Contact Sales"
+        }
+      }
     },
     "cta": {
-      "getStarted": "Get started",
-      "existingBusiness": "I Have a Business",
-      "startup": "I Have an Idea 🚀"
+      "title": "Ready to Manage Like a Pro?",
+      "subtitle": "Join hundreds of companies already managing their business with OPTIMUS-K",
+      "button": "Start Free 14 Days",
+      "noCreditCard": "No credit card required"
+    },
+    "footer": {
+      "copyright": "© 2025 OPTIMUS-K. All rights reserved.",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "contact": "Contact"
     }
   },
   "crm": {
