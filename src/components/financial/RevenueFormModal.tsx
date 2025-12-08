@@ -42,10 +42,10 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
       product_category: formData.product_category,
       product_name: formData.product_name || undefined,
       customer_name: formData.customer_name || undefined,
-      customer_type: formData.customer_type as any,
+      customer_type: formData.customer_type as 'individual' | 'empresa' | 'recurrente' | 'nuevo',
       quantity: parseInt(formData.quantity),
       unit_price: formData.unit_price ? parseFloat(formData.unit_price) : undefined,
-      payment_method: formData.payment_method as any,
+      payment_method: formData.payment_method as 'efectivo' | 'stripe' | 'paypal' | 'transferencia' | 'tarjeta',
       notes: formData.notes || undefined
     });
 

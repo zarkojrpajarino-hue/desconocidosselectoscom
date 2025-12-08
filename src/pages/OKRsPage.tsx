@@ -25,7 +25,7 @@ const OKRsPage = () => {
   const navigate = useNavigate();
   const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('weekly');
-  const [objectives, setObjectives] = useState<any[]>([]);
+  const [objectives, setObjectives] = useState<ObjectiveData[]>([]);
 
   useEffect(() => {
     if (user) {

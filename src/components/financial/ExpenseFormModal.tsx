@@ -44,9 +44,9 @@ const ExpenseFormModal = ({ open, onOpenChange, onSuccess }: ExpenseFormModalPro
       subcategory: formData.subcategory || undefined,
       description: formData.description,
       vendor: formData.vendor || undefined,
-      payment_method: formData.payment_method as any,
+      payment_method: formData.payment_method as 'efectivo' | 'transferencia' | 'tarjeta' | 'credito',
       is_recurring: formData.is_recurring,
-      recurring_frequency: formData.is_recurring ? formData.recurring_frequency as any : undefined,
+      recurring_frequency: formData.is_recurring ? formData.recurring_frequency as 'diario' | 'semanal' | 'mensual' | 'anual' : undefined,
       notes: formData.notes || undefined
     });
 

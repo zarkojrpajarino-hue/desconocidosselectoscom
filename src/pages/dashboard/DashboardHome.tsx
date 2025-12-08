@@ -25,13 +25,37 @@ import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 
+interface SystemConfig {
+  week_start: string;
+  current_phase: number;
+  [key: string]: unknown;
+}
+
+interface UserWeeklyData {
+  mode: 'agresivo' | 'conservador' | 'moderado';
+  task_limit: number;
+  [key: string]: unknown;
+}
+
+interface TaskItem {
+  id: string;
+  title: string;
+  [key: string]: unknown;
+}
+
+interface CompletionItem {
+  id: string;
+  task_id: string;
+  [key: string]: unknown;
+}
+
 const DashboardHome = () => {
   const { user, userProfile, signOut, loading } = useAuth();
   const navigate = useNavigate();
-  const [systemConfig, setSystemConfig] = useState<any>(null);
-  const [userWeeklyData, setUserWeeklyData] = useState<any>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [completions, setCompletions] = useState<any[]>([]);
+  const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
+  const [userWeeklyData, setUserWeeklyData] = useState<UserWeeklyData | null>(null);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [completions, setCompletions] = useState<CompletionItem[]>([]);
   const [isWeekLocked, setIsWeekLocked] = useState(false);
   const [showAvailabilityBlock, setShowAvailabilityBlock] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
@@ -83,7 +107,7 @@ const DashboardHome = () => {
       .limit(1)
       .maybeSingle();
     
-    if (data) setUserWeeklyData(data);
+    if (data) setUserWeeklyData(data as UserWeeklyData);
   };
 
   const checkAvailabilityStatus = async () => {
