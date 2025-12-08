@@ -12,10 +12,12 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+type AlertSeverity = 'urgent' | 'important' | 'opportunity' | 'celebration' | 'info';
+
 interface AlertCardProps {
   id: string;
   alert_type: string;
-  severity: 'urgent' | 'important' | 'opportunity' | 'celebration' | 'info';
+  severity: AlertSeverity;
   title: string;
   message: string;
   context?: Record<string, string | number | boolean | null>;
@@ -42,7 +44,7 @@ const AlertCard = ({
 }: AlertCardProps) => {
   const navigate = useNavigate();
 
-  const getSeverityConfig = (sev: string) => {
+  const getSeverityConfig = (sev: AlertSeverity) => {
     switch (sev) {
       case 'urgent':
         return {
@@ -134,7 +136,7 @@ const AlertCard = ({
 
             {context && Object.keys(context).length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
-                {Object.entries(context).slice(0, 3).map(([key, value]: [string, any]) => {
+                {Object.entries(context).slice(0, 3).map(([key, value]) => {
                   if (typeof value === 'number') {
                     return (
                       <Badge key={key} variant="outline" className="text-xs">

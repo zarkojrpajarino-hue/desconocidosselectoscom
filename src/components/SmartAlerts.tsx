@@ -7,14 +7,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import AlertCard from './AlertCard';
+import type { Json } from '@/integrations/supabase/types';
+
+type AlertSeverity = 'urgent' | 'important' | 'opportunity' | 'celebration' | 'info';
 
 interface SmartAlertData {
   id: string;
   alert_type: string;
-  severity: string;
+  severity: AlertSeverity;
   title: string;
   message: string;
-  context?: Record<string, unknown>;
+  context?: Record<string, string | number | boolean | null>;
   source: string;
   actionable: boolean;
   action_label?: string;
@@ -22,6 +25,28 @@ interface SmartAlertData {
   created_at: string;
   dismissed: boolean;
 }
+
+// Helper function to convert Json context to proper typed context
+const parseContext = (context: Json | null | undefined): Record<string, string | number | boolean | null> | undefined => {
+  if (!context) return undefined;
+  if (typeof context === 'object' && !Array.isArray(context) && context !== null) {
+    const result: Record<string, string | number | boolean | null> = {};
+    const entries = Object.entries(context as Record<string, unknown>);
+    for (const [key, value] of entries) {
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+        result[key] = value as string | number | boolean | null;
+      }
+    }
+    return result;
+  }
+  return undefined;
+};
+
+// Helper function to validate severity
+const parseSeverity = (severity: string): AlertSeverity => {
+  const validSeverities: AlertSeverity[] = ['urgent', 'important', 'opportunity', 'celebration', 'info'];
+  return validSeverities.includes(severity as AlertSeverity) ? (severity as AlertSeverity) : 'info';
+};
 
 const SmartAlerts = () => {
   const { user } = useAuth();
@@ -64,7 +89,24 @@ const SmartAlerts = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAlerts(data || []);
+      
+      // Transform database data to SmartAlertData with proper types
+      const transformedAlerts: SmartAlertData[] = (data || []).map(alert => ({
+        id: alert.id,
+        alert_type: alert.alert_type,
+        severity: parseSeverity(alert.severity),
+        title: alert.title,
+        message: alert.message,
+        context: parseContext(alert.context),
+        source: alert.source,
+        actionable: alert.actionable,
+        action_label: alert.action_label ?? undefined,
+        action_url: alert.action_url ?? undefined,
+        created_at: alert.created_at,
+        dismissed: alert.dismissed,
+      }));
+      
+      setAlerts(transformedAlerts);
     } catch (error) {
       console.error('Error fetching alerts:', error);
       toast.error('Error al cargar alertas');
@@ -194,7 +236,17 @@ const SmartAlerts = () => {
                 filteredAlerts.map((alert) => (
                   <AlertCard
                     key={alert.id}
-                    {...alert}
+                    id={alert.id}
+                    alert_type={alert.alert_type}
+                    severity={alert.severity}
+                    title={alert.title}
+                    message={alert.message}
+                    context={alert.context}
+                    source={alert.source}
+                    actionable={alert.actionable}
+                    action_label={alert.action_label}
+                    action_url={alert.action_url}
+                    created_at={alert.created_at}
                     onDismiss={handleDismiss}
                   />
                 ))

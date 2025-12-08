@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Lead } from '@/types';
 import { 
   Building2, Mail, Phone, Calendar, Euro, TrendingUp, User, Edit, 
   MessageSquare, PhoneCall, Video, Send, FileText, Clock
@@ -16,9 +17,19 @@ import {
 import { toast } from 'sonner';
 import CreateLeadModal from '@/components/CreateLeadModal';
 
+interface LeadInteraction {
+  id: string;
+  lead_id: string;
+  interaction_type: string;
+  subject: string;
+  description: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
 interface LeadDetailModalProps {
   isOpen: boolean;
-  lead: Record<string, unknown> | null;
+  lead: Lead | null;
   onClose: () => void;
   onUpdate: () => void;
   onMoveStage: (leadId: string, stage: string) => void;
@@ -26,7 +37,7 @@ interface LeadDetailModalProps {
 
 const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadDetailModalProps) => {
   const { user } = useAuth();
-  const [interactions, setInteractions] = useState<Record<string, unknown>[]>([]);
+  const [interactions, setInteractions] = useState<LeadInteraction[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [newInteraction, setNewInteraction] = useState({
     type: 'call',
@@ -41,16 +52,18 @@ const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadD
   }, [lead]);
 
   const fetchInteractions = async () => {
+    if (!lead) return;
     const { data } = await supabase
       .from('lead_interactions')
       .select('*')
       .eq('lead_id', lead.id)
       .order('created_at', { ascending: false });
     
-    setInteractions(data || []);
+    setInteractions((data as LeadInteraction[]) || []);
   };
 
   const handleAddInteraction = async () => {
+    if (!lead) return;
     if (!newInteraction.subject.trim()) {
       toast.error('El asunto es obligatorio');
       return;
@@ -84,12 +97,12 @@ const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadD
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 0
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   const getInteractionIcon = (type: string) => {
@@ -113,6 +126,8 @@ const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadD
     };
     return labels[type] || type;
   };
+
+  if (!lead) return null;
 
   return (
     <>
@@ -184,7 +199,7 @@ const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadD
                       <TrendingUp className="w-4 h-4 text-primary" />
                       <span className="text-sm text-muted-foreground">Probabilidad</span>
                     </div>
-                    <p className="text-2xl font-bold">{lead.probability}%</p>
+                    <p className="text-2xl font-bold">{lead.probability ?? 0}%</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Esperado: {formatCurrency(lead.expected_revenue)}
                     </p>
@@ -321,7 +336,7 @@ const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadD
         </DialogContent>
       </Dialog>
 
-      {showEditModal && (
+      {showEditModal && lead && (
         <CreateLeadModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}

@@ -82,20 +82,62 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
       const { data, error } = await supabase
         .from('task_schedule')
         .select(`
-          *,
+          id,
+          task_id,
+          scheduled_date,
+          scheduled_start,
+          scheduled_end,
+          status,
+          is_collaborative,
+          collaborator_user_id,
           task:tasks(title, description, area),
           collaborator:users!task_schedule_collaborator_user_id_fkey(full_name, username)
         `)
         .eq('user_id', userId)
         .eq('week_start', weekStart)
-        .order('scheduled_date', { ascending: true })
-        .order('scheduled_start', { ascending: true });
+        .order('scheduled_date')
+        .order('scheduled_start');
 
       if (error) throw error;
 
       // Agrupar por día
-      const grouped = groupByDay(data || [], weekStart);
-      setSchedule(grouped);
+      const weekDays: DaySchedule[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Transform data to proper ScheduledTask type
+        const dayTasks: ScheduledTask[] = (data || [])
+          .filter(t => t.scheduled_date === dateStr)
+          .map(t => ({
+            id: t.id,
+            task_id: t.task_id,
+            scheduled_date: t.scheduled_date || '',
+            scheduled_start: t.scheduled_start || '',
+            scheduled_end: t.scheduled_end || '',
+            status: t.status || 'pending',
+            is_collaborative: t.is_collaborative || false,
+            collaborator_user_id: t.collaborator_user_id,
+            task: {
+              title: (t.task as { title?: string })?.title || 'Sin título',
+              description: (t.task as { description?: string })?.description || '',
+              area: (t.task as { area?: string })?.area || 'general',
+            },
+            collaborator: t.collaborator ? {
+              full_name: (t.collaborator as { full_name?: string })?.full_name || '',
+              username: (t.collaborator as { username?: string })?.username || '',
+            } : undefined,
+          }));
+
+        weekDays.push({
+          date: dateStr,
+          dayName: DAYS_ES[date.getDay()],
+          tasks: dayTasks,
+        });
+      }
+
+      setSchedule(weekDays);
     } catch (error) {
       console.error('Error fetching schedule:', error);
       toast.error('Error al cargar la agenda');
@@ -104,110 +146,70 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
     }
   };
 
-  const groupByDay = (tasks: ScheduledTask[], weekStart: string): DaySchedule[] => {
-    const weekStartDate = new Date(weekStart);
-    const days: DaySchedule[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(weekStartDate);
-      currentDate.setDate(weekStartDate.getDate() + i);
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const dayName = DAYS_ES[currentDate.getDay()];
-
-      const dayTasks = tasks.filter(t => t.scheduled_date === dateStr);
-
-      days.push({
-        date: dateStr,
-        dayName,
-        tasks: dayTasks,
-      });
-    }
-
-    return days;
-  };
-
-  const handleAcceptTask = async (taskScheduleId: string) => {
+  const handleMarkComplete = async (taskScheduleId: string) => {
     try {
       const { error } = await supabase
         .from('task_schedule')
-        .update({
-          status: 'accepted',
-          accepted_at: new Date().toISOString(),
+        .update({ 
+          status: 'completed',
+          updated_at: new Date().toISOString()
         })
         .eq('id', taskScheduleId);
 
       if (error) throw error;
 
-      toast.success('✅ Tarea aceptada');
-
-      // 🔄 Sincronizar con Google Calendar automáticamente
-      try {
-        await supabase.functions.invoke('sync-calendar-events', {
-          body: { user_id: userId },
-        });
-        logger.log('✅ Calendar synced after task acceptance');
-      } catch (syncError) {
-        logger.error('Error syncing calendar:', syncError);
-        toast.info('⚠️ No se pudo sincronizar con Google Calendar. Intenta manualmente.');
-      }
-
-      await fetchSchedule();
+      toast.success('✅ Tarea completada');
+      fetchSchedule();
     } catch (error) {
-      // FASE 1: Error handling mejorado
-      logger.error('Error accepting task:', error);
-      toast.error('Error al aceptar tarea. Por favor intenta nuevamente.');
+      console.error('Error completing task:', error);
+      toast.error('Error al completar tarea');
     }
   };
 
-  const handleSuggestReschedule = (task: ScheduledTask) => {
-    setSelectedTask(task);
-    setRescheduleModalOpen(true);
-  };
-
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'accepted':
-        return <Badge className="bg-success text-success-foreground">✅ Aceptada</Badge>;
+      case 'completed':
+        return 'bg-success text-success-foreground';
+      case 'in_progress':
+        return 'bg-primary text-primary-foreground';
       case 'rescheduling':
-        return <Badge variant="outline" className="border-warning text-warning">🔄 Renegociando</Badge>;
-      case 'locked':
-        return <Badge variant="secondary">🔒 Bloqueada</Badge>;
+        return 'bg-yellow-500 text-white';
       default:
-        return <Badge variant="outline">⏳ Pendiente</Badge>;
+        return 'bg-muted text-muted-foreground';
     }
   };
 
-  // FASE 2: Usar utilidades consolidadas de dateUtils
-  // (funciones eliminadas - ahora se importan)
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'Completada';
+      case 'in_progress':
+        return 'En Progreso';
+      case 'rescheduling':
+        return 'Reprogramando';
+      default:
+        return 'Pendiente';
+    }
+  };
 
   if (loading) {
     return (
       <Card>
-        <CardContent className="py-12 text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Cargando agenda...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (schedule.every(day => day.tasks.length === 0)) {
-    return (
-      <Card>
-        <CardContent className="py-16 text-center space-y-4">
-          <Calendar className="w-20 h-20 mx-auto text-muted-foreground opacity-40" />
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">
-              No tienes tareas programadas para esta semana
-            </h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              La agenda se generará automáticamente el Lunes a las 13:01. Asegúrate de completar tu disponibilidad antes.
-            </p>
+        <CardContent className="py-12">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <RefreshCw className="w-5 h-5 animate-spin" />
+            <span>Cargando agenda...</span>
           </div>
         </CardContent>
       </Card>
     );
   }
+
+  const totalTasks = schedule.reduce((acc, day) => acc + day.tasks.length, 0);
+  const completedTasks = schedule.reduce(
+    (acc, day) => acc + day.tasks.filter(t => t.status === 'completed').length,
+    0
+  );
 
   return (
     <>
@@ -216,131 +218,95 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-6 h-6" />
-                Mi Agenda Semanal
+                <Calendar className="w-5 h-5 text-primary" />
+                Agenda Semanal
               </CardTitle>
               <CardDescription>
-                Semana del {new Date(weekStart).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-                {!isLocked && (
-                  <span className="ml-2 text-warning">
-                    ⚠️ Puedes ajustar hasta el Miércoles 13:29
-                  </span>
-                )}
+                {completedTasks}/{totalTasks} tareas completadas
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchSchedule}
-              className="gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Actualizar
-            </Button>
+            {isLocked && (
+              <Badge variant="secondary" className="gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Semana Activa
+              </Badge>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {schedule.map((day) => (
             <div key={day.date} className="space-y-3">
-              {/* Header del día */}
-              <div className="flex items-center gap-2 pb-2 border-b">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">
-                    📍 {formatShortDate(day.date, day.dayName)}
-                  </h3>
-                  {day.tasks.length > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      {day.tasks.length} tarea{day.tasks.length !== 1 ? 's' : ''} programada{day.tasks.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold">{day.dayName}</h3>
+                <span className="text-sm text-muted-foreground">
+                  {formatShortDate(day.date, day.dayName)}
+                </span>
+                {day.tasks.length > 0 && (
+                  <Badge variant="outline" className="ml-auto">
+                    {day.tasks.length} tarea{day.tasks.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
               </div>
 
-              {/* Tareas del día */}
               {day.tasks.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground bg-muted/30 rounded-lg">
+                <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
                   Sin tareas programadas
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {day.tasks.map((task) => (
                     <div
                       key={task.id}
-                      className={`border rounded-lg p-4 transition-all ${
-                        task.status === 'accepted'
-                          ? 'bg-success/5 border-success/20'
-                          : task.status === 'locked'
-                          ? 'bg-muted/50 border-muted'
-                          : 'bg-card hover:shadow-md'
+                      className={`p-3 rounded-lg border transition-all ${
+                        task.status === 'completed'
+                          ? 'bg-success/5 border-success/30'
+                          : 'bg-card hover:bg-muted/50'
                       }`}
                     >
-                      {/* Título y horario */}
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <span className="font-semibold text-primary">
+                            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm font-medium">
                               {formatTime(task.scheduled_start)} - {formatTime(task.scheduled_end)}
                             </span>
+                            <Badge className={getStatusColor(task.status)} variant="secondary">
+                              {getStatusLabel(task.status)}
+                            </Badge>
                           </div>
-                          <h4 className="font-semibold text-lg">{task.task.title}</h4>
+                          <h4 className="font-medium truncate">{task.task.title}</h4>
+                          {task.is_collaborative && task.collaborator && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                              <Users className="w-3 h-3" />
+                              <span>Con {task.collaborator.full_name}</span>
+                            </div>
+                          )}
                         </div>
-                        {getStatusBadge(task.status)}
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {task.status !== 'completed' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setRescheduleModalOpen(true);
+                                }}
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleMarkComplete(task.id)}
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Badges */}
-                      <div className="flex items-center gap-2 mb-3">
-                        {task.task.area && (
-                          <Badge variant="secondary" className="text-xs">
-                            {task.task.area}
-                          </Badge>
-                        )}
-                        {task.is_collaborative && task.collaborator && (
-                          <Badge variant="outline" className="text-xs flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            Con {task.collaborator.full_name}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Descripción */}
-                      {task.task.description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {task.task.description}
-                        </p>
-                      )}
-
-                      {/* Botones de acción */}
-                      {!isLocked && task.status === 'pending' && (
-                        <div className="flex gap-2 mt-3">
-                          <Button
-                            size="sm"
-                            onClick={() => handleAcceptTask(task.id)}
-                            className="flex-1 bg-success hover:bg-success/90"
-                          >
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            Aceptar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleSuggestReschedule(task)}
-                            className="flex-1"
-                          >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Sugerir otra hora
-                          </Button>
-                        </div>
-                      )}
-
-                      {task.status === 'rescheduling' && (
-                        <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mt-3">
-                          <div className="flex items-center gap-2 text-sm text-warning-foreground">
-                            <AlertCircle className="w-4 h-4" />
-                            <span>Esperando confirmación de nuevo horario...</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
