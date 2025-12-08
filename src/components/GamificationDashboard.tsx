@@ -7,12 +7,53 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
+interface UserAchievement {
+  id: string;
+  user_id: string;
+  total_points: number;
+  current_streak: number;
+  best_streak: number;
+  tasks_completed_total: number;
+}
+
+interface BadgeData {
+  id: string;
+  name: string;
+  description: string;
+  icon_emoji: string;
+  rarity: string;
+}
+
+interface UserBadgeWithDetails {
+  id: string;
+  badges: BadgeData;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  user_id: string;
+  total_points: number;
+  current_streak: number;
+  tasks_completed_total: number;
+  users?: {
+    username?: string;
+    full_name?: string;
+  };
+}
+
+interface PointsHistoryEntry {
+  id: string;
+  reason: string;
+  points: number;
+  created_at: string;
+}
+
 const GamificationDashboard = () => {
   const { user, currentOrganizationId } = useAuth();
-  const [achievement, setAchievement] = useState<any>(null);
-  const [badges, setBadges] = useState<any[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [recentPoints, setRecentPoints] = useState<any[]>([]);
+  const [achievement, setAchievement] = useState<UserAchievement | null>(null);
+  const [badges, setBadges] = useState<UserBadgeWithDetails[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [recentPoints, setRecentPoints] = useState<PointsHistoryEntry[]>([]);
 
   useEffect(() => {
     if (user && currentOrganizationId) {
