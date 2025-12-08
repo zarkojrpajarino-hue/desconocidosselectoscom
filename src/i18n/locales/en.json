@@ -1,0 +1,222 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "submit": "Submit",
+    "reset": "Reset",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "select": "Select",
+    "viewMore": "View more",
+    "viewLess": "View less"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "pipeline": "Pipeline",
+    "tasks": "Tasks",
+    "okrs": "OKRs",
+    "metrics": "Metrics",
+    "financial": "Financial",
+    "tools": "Tools",
+    "integrations": "Integrations",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create account"
+  },
+  "landing": {
+    "hero": {
+      "title": "Power your business with intelligence",
+      "subtitle": "The all-in-one platform to manage your company",
+      "cta": "Start for free"
+    },
+    "features": {
+      "title": "Features",
+      "crm": "Smart CRM",
+      "crmDesc": "Manage leads and sales pipeline",
+      "okrs": "OKRs & Metrics",
+      "okrsDesc": "Define and measure your goals",
+      "financial": "Financial",
+      "financialDesc": "Revenue and expense control",
+      "ai": "AI Analysis",
+      "aiDesc": "Automatic insights with AI"
+    },
+    "pricing": {
+      "title": "Plans & Pricing",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "mostPopular": "Most popular",
+      "selectPlan": "Select plan",
+      "freeTrial": "14-day free trial"
+    },
+    "integrations": {
+      "title": "Integrates with your favorite tools",
+      "viewAll": "View all integrations"
+    },
+    "cta": {
+      "getStarted": "Get started",
+      "existingBusiness": "I Have a Business",
+      "startup": "I Have an Idea 🚀"
+    }
+  },
+  "crm": {
+    "title": "CRM",
+    "leads": "Leads",
+    "newLead": "New Lead",
+    "pipeline": "Pipeline",
+    "totalLeads": "Total Leads",
+    "qualified": "Qualified",
+    "won": "Won",
+    "lost": "Lost",
+    "pipelineValue": "Pipeline Value",
+    "stages": {
+      "discovery": "Discovery",
+      "qualification": "Qualification",
+      "proposal": "Proposal",
+      "negotiation": "Negotiation",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "lead": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "company": "Company",
+      "value": "Estimated value",
+      "probability": "Probability",
+      "source": "Source",
+      "notes": "Notes",
+      "assignedTo": "Assigned to",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "myTasks": "My tasks",
+    "today": "Today",
+    "thisWeek": "This week",
+    "pending": "Pending",
+    "completed": "Completed",
+    "overdue": "Overdue",
+    "markComplete": "Mark as complete",
+    "newTask": "New task",
+    "dueDate": "Due date",
+    "priority": "Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "okrs": {
+    "title": "OKRs",
+    "objectives": "Objectives",
+    "keyResults": "Key Results",
+    "newObjective": "New objective",
+    "progress": "Progress",
+    "onTrack": "On track",
+    "atRisk": "At risk",
+    "behind": "Behind",
+    "quarter": "Quarter"
+  },
+  "financial": {
+    "title": "Financial",
+    "revenue": "Revenue",
+    "expenses": "Expenses",
+    "profit": "Profit",
+    "margin": "Margin",
+    "transactions": "Transactions",
+    "newRevenue": "New revenue",
+    "newExpense": "New expense",
+    "category": "Category",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description"
+  },
+  "metrics": {
+    "title": "Metrics",
+    "kpis": "KPIs",
+    "businessMetrics": "Business Metrics",
+    "conversionRate": "Conversion rate",
+    "avgTicket": "Average ticket",
+    "cac": "CAC",
+    "ltv": "LTV",
+    "churnRate": "Churn rate",
+    "nps": "NPS"
+  },
+  "integrations": {
+    "title": "Integrations",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "configure": "Configure",
+    "sync": "Sync",
+    "lastSync": "Last sync",
+    "suggestTool": "Missing a tool?",
+    "suggestPlaceholder": "Describe the tool you need...",
+    "sendSuggestion": "Send suggestion",
+    "plans": {
+      "starter": "Available on Starter",
+      "professional": "Available on Professional",
+      "enterprise": "Available on Enterprise"
+    }
+  },
+  "ai": {
+    "title": "AI Analysis",
+    "generating": "Generating analysis...",
+    "financialHealth": "Financial Health",
+    "teamPerformance": "Team Performance",
+    "honestFeedback": "Honest Feedback",
+    "recommendations": "Recommendations",
+    "refresh": "Refresh analysis"
+  },
+  "trial": {
+    "title": "Free Version",
+    "daysLeft": "days left",
+    "expired": "Your trial has expired",
+    "upgrade": "View Plans",
+    "choosePlan": "Choose your plan to continue"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "networkError": "Connection error",
+    "unauthorized": "Unauthorized",
+    "notFound": "Not found",
+    "validation": "Validation error",
+    "tryAgain": "Try again"
+  }
+}
