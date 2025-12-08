@@ -33,15 +33,17 @@ const OKRsPage = () => {
     }
   }, [user]);
 
+  interface KeyResultData { id: string; title: string; current_value?: number; target_value?: number }
+  interface ObjectiveData { id: string; title: string; status: string; key_results?: KeyResultData[] }
+
   const fetchObjectives = async () => {
     if (!user?.id) return;
     try {
-      // @ts-ignore - Supabase types issue with nested selects
       const { data } = await supabase
         .from('objectives')
         .select('id, title, status, key_results(id, title, current_value, target_value)')
-        .eq('user_id', user.id) as { data: any[] | null };
-      setObjectives(data || []);
+        .eq('user_id', user.id);
+      setObjectives((data as unknown as ObjectiveData[]) || []);
     } catch (error) {
       console.error('Error fetching objectives:', error);
     }
@@ -50,22 +52,22 @@ const OKRsPage = () => {
   // Calcular estadísticas de OKRs
   const okrStats = useMemo(() => {
     const totalOKRs = objectives.length;
-    const completedOKRs = objectives.filter(o => 
-      o.key_results?.length > 0 && o.key_results.every((kr: any) => (kr.current_value || 0) >= (kr.target_value || 1))
+    const completedOKRs = objectives.filter((o: ObjectiveData) => 
+      o.key_results?.length && o.key_results.every((kr) => (kr.current_value || 0) >= (kr.target_value || 1))
     ).length;
-    const inProgressOKRs = objectives.filter(o => 
-      o.key_results?.some((kr: any) => (kr.current_value || 0) > 0 && (kr.current_value || 0) < (kr.target_value || 1))
+    const inProgressOKRs = objectives.filter((o: ObjectiveData) => 
+      o.key_results?.some((kr) => (kr.current_value || 0) > 0 && (kr.current_value || 0) < (kr.target_value || 1))
     ).length;
-    const atRiskOKRs = objectives.filter(o => {
+    const atRiskOKRs = objectives.filter((o: ObjectiveData) => {
       if (!o.key_results?.length) return false;
-      const avgProgress = o.key_results.reduce((sum: number, kr: any) => 
+      const avgProgress = o.key_results.reduce((sum: number, kr) => 
         sum + ((kr.current_value || 0) / (kr.target_value || 1)), 0) / o.key_results.length;
       return avgProgress < 0.3;
     }).length;
     const overallProgress = totalOKRs > 0
-      ? Math.round((objectives.reduce((sum, o) => {
+      ? Math.round((objectives.reduce((sum, o: ObjectiveData) => {
           if (!o.key_results?.length) return sum;
-          const okrProgress = o.key_results.reduce((krSum: number, kr: any) => 
+          const okrProgress = o.key_results.reduce((krSum: number, kr) => 
             krSum + Math.min((kr.current_value || 0) / (kr.target_value || 1), 1), 0
           ) / o.key_results.length;
           return sum + okrProgress;

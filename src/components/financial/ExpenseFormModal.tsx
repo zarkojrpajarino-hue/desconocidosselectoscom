@@ -95,10 +95,11 @@ const ExpenseFormModal = ({ open, onOpenChange, onSuccess }: ExpenseFormModalPro
         recurring_frequency: 'mensual',
         notes: ''
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating expense entry:', error);
+      const message = error instanceof Error ? error.message : 'Intenta de nuevo';
       toast.error('Error al registrar gasto', {
-        description: error.message || 'Intenta de nuevo'
+        description: message
       });
     } finally {
       setLoading(false);

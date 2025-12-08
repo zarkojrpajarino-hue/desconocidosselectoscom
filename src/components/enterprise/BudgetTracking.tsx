@@ -248,7 +248,7 @@ export function BudgetTracking() {
   );
 }
 
-function CategoryRow({ item }: { item: any }) {
+function CategoryRow({ item }: { item: { category: string; budgeted_amount: number; actual_amount: number; status: string } }) {
   const budgeted = item.budgeted_amount || 0;
   const actual = item.actual_amount || 0;
   const percentage = budgeted > 0 ? (actual / budgeted) * 100 : 0;

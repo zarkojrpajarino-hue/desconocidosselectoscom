@@ -84,10 +84,11 @@ const TaskFeedbackModal = ({
       setWouldRecommend('');
       setRating(0);
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting feedback:', error);
+      const message = error instanceof Error ? error.message : 'Intenta de nuevo';
       toast.error('Error al enviar feedback', {
-        description: error.message || 'Intenta de nuevo'
+        description: message
       });
     } finally {
       setIsSubmitting(false);

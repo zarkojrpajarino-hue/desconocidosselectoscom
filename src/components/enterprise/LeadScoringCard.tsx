@@ -65,17 +65,18 @@ export function LeadScoringCard() {
 
         if (scoresError) throw scoresError;
 
-        const formattedScores: LeadScore[] = (scores || []).map((score: any) => ({
-          lead_id: score.lead_id,
-          lead_name: score.leads?.name || 'Sin nombre',
-          company: score.leads?.company || 'Sin empresa',
-          total_score: score.total_score || 0,
-          fit_score: score.fit_score || 0,
-          behavior_score: score.behavior_score || 0,
-          engagement_score: score.engagement_score || 0,
-          classification: score.classification || 'cold',
-          next_best_action: score.next_best_action || 'Contactar',
-          probability_to_close: score.probability_to_close || 0,
+        const formattedScores: LeadScore[] = (scores || []).map((score: Record<string, unknown>) => ({
+          lead_id: String(score.lead_id || ''),
+          lead_name: (score.leads as Record<string, unknown>)?.name as string || 'Sin nombre',
+          company: (score.leads as Record<string, unknown>)?.company as string || 'Sin empresa',
+          total_score: Number(score.total_score) || 0,
+          fit_score: Number(score.fit_score) || 0,
+          behavior_score: Number(score.behavior_score) || 0,
+          engagement_score: Number(score.engagement_score) || 0,
+          classification: (score.classification === 'hot' || score.classification === 'warm' || score.classification === 'cold' 
+            ? score.classification : 'cold') as 'hot' | 'warm' | 'cold',
+          next_best_action: String(score.next_best_action || 'Contactar'),
+          probability_to_close: Number(score.probability_to_close) || 0,
         }));
 
         setData(formattedScores);

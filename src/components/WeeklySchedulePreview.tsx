@@ -104,7 +104,7 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
       });
 
       fetchPreview();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating preview:', error);
       toast.error('Error al generar preview');
     } finally {

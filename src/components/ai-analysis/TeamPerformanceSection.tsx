@@ -145,8 +145,8 @@ export function TeamPerformanceSection({ data }: TeamPerformanceSectionProps) {
                 }}
               />
               <Bar dataKey="score" name="Score" radius={[0, 8, 8, 0]}>
-                {data.charts.productivity_by_member.map((entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill={getPerformanceColor(entry.score)} />
+                {data.charts.productivity_by_member.map((entry, index: number) => (
+                  <Cell key={`cell-${index}`} fill={getPerformanceColor(typeof entry.score === 'number' ? entry.score : 0)} />
                 ))}
               </Bar>
             </BarChart>
@@ -426,7 +426,7 @@ function IndividualFeedbackCard({ member }: IndividualFeedbackCardProps) {
 // COMPONENTES AUXILIARES
 // ============================================
 
-function TeamMetricCard({ icon, title, value, color }: any) {
+function TeamMetricCard({ icon, title, value, color }: { icon: React.ReactNode; title: string; value: string | number; color: string }) {
   return (
     <Card>
       <CardContent className="p-4">

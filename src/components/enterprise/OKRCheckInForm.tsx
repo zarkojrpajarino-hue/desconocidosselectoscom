@@ -54,8 +54,8 @@ export function OKRCheckInForm() {
         if (objError) throw objError;
 
         const keyResults: KeyResult[] = [];
-        (objectives || []).forEach((obj: any) => {
-          (obj.key_results || []).forEach((kr: any) => {
+        (objectives || []).forEach((obj: { title: string; key_results?: Array<{ id: string; title: string; current_value?: number; target_value?: number }> }) => {
+          (obj.key_results || []).forEach((kr) => {
             keyResults.push({
               id: kr.id,
               title: kr.title,

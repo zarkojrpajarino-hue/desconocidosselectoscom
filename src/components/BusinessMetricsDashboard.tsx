@@ -101,7 +101,7 @@ const BusinessMetricsDashboard = () => {
     }
   };
 
-  const updateMetric = (key: keyof BusinessMetrics, value: any) => {
+  const updateMetric = (key: keyof BusinessMetrics, value: string | number | null) => {
     setMetrics({ ...metrics, [key]: value });
   };
 

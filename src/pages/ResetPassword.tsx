@@ -62,8 +62,9 @@ const ResetPassword = () => {
       setSuccess(true);
       toast.success('¡Contraseña actualizada!');
       setTimeout(() => navigate('/login'), 2000);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al actualizar contraseña');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al actualizar contraseña';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

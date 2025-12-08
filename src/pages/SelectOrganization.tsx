@@ -52,14 +52,19 @@ export default function SelectOrganization() {
       }
 
       // Mapear al formato que necesita ExistingUserOptions
-      const mappedOrgs = data.map((org: any) => ({
+      interface OrgData {
+        organization_id: string;
+        role: string;
+        organization?: { name?: string };
+      }
+      const mappedOrgs = (data as OrgData[]).map((org) => ({
         organization_id: org.organization_id,
         organization_name: org.organization?.name || 'Sin nombre',
         role: org.role
       }));
 
       setOrganizations(mappedOrgs);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading organizations:', error);
       toast.error('Error al cargar organizaciones');
     } finally {

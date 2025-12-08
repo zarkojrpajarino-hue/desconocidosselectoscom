@@ -54,7 +54,7 @@ export function ProductProfitability() {
         // Agrupar por producto
         const productMap = new Map<string, ProductData>();
 
-        (revenues || []).forEach((rev: any) => {
+        (revenues || []).forEach((rev: { product_name?: string; product_category?: string; amount?: number }) => {
           const name = rev.product_name || rev.product_category || 'Sin categoría';
           const current = productMap.get(name) || {
             product_name: name,
