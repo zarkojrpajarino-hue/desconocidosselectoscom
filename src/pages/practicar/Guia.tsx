@@ -3,8 +3,51 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, MessageSquare, Mail, Lightbulb } from 'lucide-react';
 
+interface PreferredTerm {
+  instead_of: string;
+  use: string;
+  reason?: string;
+}
+
+interface ObjectionHandling {
+  objection: string;
+  response: string;
+}
+
+interface Scenario {
+  situation: string;
+  approach: string;
+  example_script?: string;
+}
+
+interface GuiaContent {
+  brand_voice?: {
+    personality?: string[];
+    tone?: string;
+    do?: string[];
+    dont?: string[];
+  };
+  key_messages?: {
+    elevator_pitch?: string;
+    value_proposition?: string;
+    tagline?: string;
+    differentiators?: string[];
+  };
+  vocabulary?: {
+    preferred_terms?: PreferredTerm[];
+    power_words?: string[];
+    words_to_avoid?: string[];
+  };
+  templates?: {
+    email_intro?: string;
+    follow_up?: string;
+    objection_handling?: ObjectionHandling[];
+  };
+  scenarios?: Scenario[];
+}
+
 const Guia = () => {
-  const renderContent = (guia: any) => {
+  const renderContent = (guia: GuiaContent) => {
     if (!guia) return null;
 
     return (
@@ -114,7 +157,7 @@ const Guia = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Términos Preferidos</h4>
                   <div className="space-y-2">
-                    {guia.vocabulary.preferred_terms.map((term: any, idx: number) => (
+                    {guia.vocabulary.preferred_terms.map((term: PreferredTerm, idx: number) => (
                       <div key={idx} className="flex items-center gap-2 text-sm">
                         <span className="text-muted-foreground line-through">{term.instead_of}</span>
                         <span>→</span>
@@ -181,7 +224,7 @@ const Guia = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Manejo de Objeciones</h4>
                   <div className="space-y-3">
-                    {guia.templates.objection_handling.map((obj: any, idx: number) => (
+                    {guia.templates.objection_handling.map((obj: ObjectionHandling, idx: number) => (
                       <div key={idx} className="border rounded-lg p-3">
                         <p className="font-medium text-sm text-destructive">"{obj.objection}"</p>
                         <p className="text-sm mt-2 text-muted-foreground">→ {obj.response}</p>
@@ -202,7 +245,7 @@ const Guia = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {guia.scenarios.map((scenario: any, idx: number) => (
+                {guia.scenarios.map((scenario: Scenario, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <h4 className="font-semibold mb-2">{scenario.situation}</h4>
                     <p className="text-sm text-muted-foreground mb-3">{scenario.approach}</p>

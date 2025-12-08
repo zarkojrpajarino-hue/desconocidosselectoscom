@@ -149,15 +149,16 @@ const OrganizationOKRs = () => {
       );
 
       setObjectives(objectivesWithKRs);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching organization OKRs:', error);
-      toast.error(error.message || 'Error al cargar OKRs organizacionales');
+      const message = error instanceof Error ? error.message : 'Error al cargar OKRs organizacionales';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateKRProgress = (kr: any) => {
+  const calculateKRProgress = (kr: { target_value: number; start_value: number; current_value: number }) => {
     if (kr.target_value === kr.start_value) return 0;
     const progress = ((kr.current_value - kr.start_value) / (kr.target_value - kr.start_value)) * 100;
     return Math.max(0, Math.min(100, progress));

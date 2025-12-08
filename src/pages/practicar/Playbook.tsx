@@ -8,8 +8,61 @@ import {
   Shield, Zap
 } from 'lucide-react';
 
+interface SalesStage {
+  stage: string;
+  objective: string;
+  average_duration: string;
+  activities?: string[];
+  tools?: string[];
+  exit_criteria: string;
+  conversion_rate_target: string;
+}
+
+interface QualificationCriterion {
+  letter: string;
+  meaning: string;
+  questions?: string[];
+  red_flags?: string[];
+}
+
+interface ObjectionItem {
+  objection: string;
+  type: string;
+  response_framework: string;
+  example_response: string;
+  follow_up_question?: string;
+}
+
+interface ClosingTechnique {
+  name: string;
+  when_to_use: string;
+  example: string;
+}
+
+interface KPIItem {
+  name: string;
+  target: string;
+  frequency: string;
+}
+
+interface PlaybookContent {
+  methodology?: {
+    name: string;
+    description: string;
+    key_principles?: string[];
+  };
+  sales_process?: SalesStage[];
+  qualification_framework?: {
+    name: string;
+    criteria?: QualificationCriterion[];
+  };
+  objection_handling?: ObjectionItem[];
+  closing_techniques?: ClosingTechnique[];
+  kpis?: KPIItem[];
+}
+
 const Playbook = () => {
-  const renderContent = (playbook: any) => {
+  const renderContent = (playbook: PlaybookContent) => {
     if (!playbook) return null;
 
     return (
@@ -47,7 +100,7 @@ const Playbook = () => {
               Proceso de Ventas
             </h3>
             <div className="space-y-4">
-              {playbook.sales_process.map((stage: any, idx: number) => (
+              {playbook.sales_process.map((stage: SalesStage, idx: number) => (
                 <Card key={idx}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -124,7 +177,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                {playbook.qualification_framework.criteria?.map((criterion: any, idx: number) => (
+                {playbook.qualification_framework.criteria?.map((criterion: QualificationCriterion, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
@@ -172,7 +225,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {playbook.objection_handling.map((obj: any, idx: number) => (
+                {playbook.objection_handling.map((obj: ObjectionItem, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-semibold text-destructive">"{obj.objection}"</h4>
@@ -212,7 +265,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                {playbook.closing_techniques.map((technique: any, idx: number) => (
+                {playbook.closing_techniques.map((technique: ClosingTechnique, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <h4 className="font-semibold mb-2">{technique.name}</h4>
                     <p className="text-sm text-muted-foreground mb-2">
@@ -239,7 +292,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
-                {playbook.kpis.map((kpi: any, idx: number) => (
+                {playbook.kpis.map((kpi: KPIItem, idx: number) => (
                   <div key={idx} className="text-center p-4 border rounded-lg">
                     <h4 className="font-semibold mb-1">{kpi.name}</h4>
                     <p className="text-2xl font-bold text-primary">{kpi.target}</p>

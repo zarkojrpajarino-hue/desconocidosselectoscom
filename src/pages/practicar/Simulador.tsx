@@ -6,6 +6,45 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, User, Briefcase, ArrowRight, RotateCcw, Trophy, Lightbulb } from 'lucide-react';
 
+interface QuickTip {
+  category: string;
+  tip: string;
+}
+
+interface ResponseOption {
+  response: string;
+  score: number;
+  feedback: string;
+}
+
+interface ConversationStage {
+  stage: string;
+  client_says: string;
+  options?: ResponseOption[];
+}
+
+interface ClientProfile {
+  name: string;
+  role: string;
+  company_type?: string;
+  personality: string;
+  budget_level?: string;
+}
+
+interface Scenario {
+  title: string;
+  difficulty: string;
+  client_profile?: ClientProfile;
+  conversation_flow?: ConversationStage[];
+  ideal_outcome?: string;
+  learning_points?: string[];
+}
+
+interface SimuladorContent {
+  quick_tips?: QuickTip[];
+  scenarios?: Scenario[];
+}
+
 const Simulador = () => {
   const [activeScenario, setActiveScenario] = useState<number | null>(null);
   const [currentStage, setCurrentStage] = useState(0);
@@ -20,9 +59,9 @@ const Simulador = () => {
     setShowFeedback(true);
   };
 
-  const handleNextStage = (scenario: any) => {
+  const handleNextStage = (scenario: Scenario) => {
     setShowFeedback(false);
-    if (currentStage < scenario.conversation_flow.length - 1) {
+    if (scenario.conversation_flow && currentStage < scenario.conversation_flow.length - 1) {
       setCurrentStage(currentStage + 1);
     } else {
       setCompleted(true);
@@ -47,7 +86,7 @@ const Simulador = () => {
     }
   };
 
-  const renderContent = (simulador: any) => {
+  const renderContent = (simulador: SimuladorContent) => {
     if (!simulador?.scenarios) return null;
 
     // Vista de selección de escenarios
@@ -65,7 +104,7 @@ const Simulador = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-3">
-                  {simulador.quick_tips.map((tip: any, idx: number) => (
+                  {simulador.quick_tips.map((tip: QuickTip, idx: number) => (
                     <div key={idx} className="flex items-start gap-2 text-sm">
                       <Badge variant="outline" className="shrink-0">{tip.category}</Badge>
                       <span className="text-muted-foreground">{tip.tip}</span>
@@ -78,7 +117,7 @@ const Simulador = () => {
 
           {/* Scenario Selection */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {simulador.scenarios.map((scenario: any, idx: number) => (
+            {simulador.scenarios.map((scenario: Scenario, idx: number) => (
               <Card 
                 key={idx} 
                 className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
@@ -127,8 +166,8 @@ const Simulador = () => {
     const flow = scenario.conversation_flow || [];
     const currentFlow = flow[currentStage];
     const totalStages = flow.length;
-    const maxPossibleScore = flow.reduce((acc: number, stage: any) => {
-      const maxOption = Math.max(...(stage.options?.map((o: any) => o.score) || [0]));
+    const maxPossibleScore = flow.reduce((acc: number, stage: ConversationStage) => {
+      const maxOption = Math.max(...(stage.options?.map((o: ResponseOption) => o.score) || [0]));
       return acc + maxOption;
     }, 0);
 
@@ -254,7 +293,7 @@ const Simulador = () => {
               {!showFeedback ? (
                 <div className="space-y-3">
                   <p className="text-sm font-medium">¿Cómo respondes?</p>
-                  {currentFlow.options?.map((option: any, idx: number) => (
+                  {currentFlow.options?.map((option: ResponseOption, idx: number) => (
                     <Button
                       key={idx}
                       variant="outline"
@@ -268,9 +307,9 @@ const Simulador = () => {
               ) : (
                 <div className="space-y-4">
                   {/* Selected Response Feedback */}
-                  {currentFlow.options?.map((option: any, idx: number) => {
+                  {currentFlow.options?.map((option: ResponseOption, idx: number) => {
                     const isSelected = selectedResponses[currentStage] === idx;
-                    const isBest = option.score === Math.max(...currentFlow.options.map((o: any) => o.score));
+                    const isBest = option.score === Math.max(...(currentFlow.options?.map((o: ResponseOption) => o.score) || [0]));
                     
                     return (
                       <div 
