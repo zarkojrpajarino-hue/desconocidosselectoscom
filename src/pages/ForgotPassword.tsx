@@ -31,8 +31,9 @@ const ForgotPassword = () => {
       toast.success('Email enviado', {
         description: 'Revisa tu bandeja de entrada',
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Error al enviar email');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al enviar email';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

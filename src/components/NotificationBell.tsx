@@ -121,7 +121,7 @@ const NotificationBell = () => {
           </div>
         ) : (
           <>
-            {urgentAlerts.map((alert: any) => (
+            {urgentAlerts.map((alert: { id: string; title: string; message: string; action_url?: string }) => (
               <DropdownMenuItem 
                 key={alert.id}
                 className="flex-col items-start py-3 cursor-pointer"

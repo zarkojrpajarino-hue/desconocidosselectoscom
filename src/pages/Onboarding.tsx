@@ -645,27 +645,29 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
       // 9. Redirect to generating workspace screen
       navigate(`/generating-workspace?org=${org.id}`);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting onboarding:', error);
       
+      const errorMessage = error instanceof Error ? error.message : '';
+      
       // More descriptive error messages
-      let errorMessage = 'Error al crear tu cuenta';
+      let errorTitle = 'Error al crear tu cuenta';
       let errorDescription = 'Intenta de nuevo o contacta soporte';
       
-      if (error.message.includes('already registered') || error.message.includes('ya está registrado')) {
-        errorMessage = 'Email ya registrado';
+      if (errorMessage.includes('already registered') || errorMessage.includes('ya está registrado')) {
+        errorTitle = 'Email ya registrado';
         errorDescription = 'Este email ya tiene una cuenta. Inicia sesión en su lugar.';
-      } else if (error.message.includes('organización')) {
-        errorMessage = 'Error al crear organización';
-        errorDescription = error.message;
-      } else if (error.message.includes('configurar el usuario')) {
-        errorMessage = 'Error de sincronización';
+      } else if (errorMessage.includes('organización')) {
+        errorTitle = 'Error al crear organización';
+        errorDescription = errorMessage;
+      } else if (errorMessage.includes('configurar el usuario')) {
+        errorTitle = 'Error de sincronización';
         errorDescription = 'Hubo un problema al configurar tu cuenta. Intenta de nuevo.';
-      } else if (error.message) {
-        errorDescription = error.message;
+      } else if (errorMessage) {
+        errorDescription = errorMessage;
       }
       
-      toast.error(errorMessage, { description: errorDescription });
+      toast.error(errorTitle, { description: errorDescription });
     } finally {
       setLoading(false);
     }

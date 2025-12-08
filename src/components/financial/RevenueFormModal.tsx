@@ -94,10 +94,11 @@ const RevenueFormModal = ({ open, onOpenChange, onSuccess }: RevenueFormModalPro
         payment_method: 'stripe',
         notes: ''
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating revenue entry:', error);
+      const message = error instanceof Error ? error.message : 'Intenta de nuevo';
       toast.error('Error al registrar ingreso', {
-        description: error.message || 'Intenta de nuevo'
+        description: message
       });
     } finally {
       setLoading(false);

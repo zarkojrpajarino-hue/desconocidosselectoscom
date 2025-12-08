@@ -83,13 +83,13 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
 
     setIsSubmitting(true);
     try {
-      const data: any = {
+      const data = {
         user_id: userId,
         week_start: weekStart,
         preferred_hours_per_day: hoursPerDay,
         preferred_time_of_day: preferredTime,
         submitted_at: new Date().toISOString(),
-      };
+      } as Record<string, string | number | boolean | null>;
 
       // Agregar disponibilidad por día
       DAYS.forEach(day => {
@@ -103,7 +103,7 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
 
       const { error } = await supabase
         .from('user_weekly_availability')
-        .upsert(data, { onConflict: 'user_id,week_start' });
+        .upsert(data as typeof data & { week_start: string }, { onConflict: 'user_id,week_start' });
 
       if (error) throw error;
 

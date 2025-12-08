@@ -89,7 +89,10 @@ const UserLeadsPage = () => {
 
       if (error) throw error;
 
-      const leadsData = (data || []).map((lead: any) => ({
+      interface RawLeadData extends Record<string, unknown> {
+        assignee?: { full_name?: string };
+      }
+      const leadsData = ((data || []) as RawLeadData[]).map((lead) => ({
         ...lead,
         assigned_user_name: lead.assignee?.full_name || null
       })) as Lead[];

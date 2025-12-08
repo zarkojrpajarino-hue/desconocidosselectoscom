@@ -50,10 +50,11 @@ const GoogleCallbackPage = () => {
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in callback:', error);
+      const message = error instanceof Error ? error.message : 'Error al conectar con Google Calendar';
       setStatus('error');
-      setMessage(error.message || 'Error al conectar con Google Calendar');
+      setMessage(message);
 
       setTimeout(() => {
         navigate('/dashboard');

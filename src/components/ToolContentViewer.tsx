@@ -11,7 +11,7 @@ interface ToolContentViewerProps {
   toolType: ToolType;
   title: string;
   description: string;
-  renderContent: (content: any) => React.ReactNode;
+  renderContent: (content: Record<string, unknown>) => React.ReactNode;
 }
 
 const ToolContentViewer = ({ toolType, title, description, renderContent }: ToolContentViewerProps) => {

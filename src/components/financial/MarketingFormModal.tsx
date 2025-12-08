@@ -82,10 +82,11 @@ const MarketingFormModal = ({ open, onOpenChange, onSuccess }: MarketingFormModa
         revenue_generated: '0',
         notes: ''
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating marketing entry:', error);
+      const message = error instanceof Error ? error.message : 'Intenta de nuevo';
       toast.error('Error al registrar campaña', {
-        description: error.message || 'Intenta de nuevo'
+        description: message
       });
     } finally {
       setLoading(false);

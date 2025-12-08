@@ -67,17 +67,17 @@ export function OKRRetrospective() {
 
         if (objError) throw objError;
 
-        const summaries: ObjectiveSummary[] = (objectivesData || []).map((obj: any) => {
+        const summaries: ObjectiveSummary[] = (objectivesData || []).map((obj: { id: string; title: string; owner?: { full_name?: string }; key_results?: Array<{ current_value?: number; target_value?: number }> }) => {
           const keyResults = obj.key_results || [];
           const totalKRs = keyResults.length;
-          const achievedKRs = keyResults.filter((kr: any) => {
+          const achievedKRs = keyResults.filter((kr) => {
             const current = kr.current_value || 0;
             const target = kr.target_value || 1;
             return current >= target;
           }).length;
 
           const avgProgress = totalKRs > 0
-            ? Math.round(keyResults.reduce((sum: number, kr: any) => {
+            ? Math.round(keyResults.reduce((sum: number, kr) => {
                 const current = kr.current_value || 0;
                 const target = kr.target_value || 1;
                 return sum + Math.min(100, (current / target) * 100);

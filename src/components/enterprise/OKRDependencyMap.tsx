@@ -56,10 +56,18 @@ export function OKRDependencyMap() {
 
         if (objError) throw objError;
 
-        const formattedObjectives: Objective[] = (objectivesData || []).map((obj: any) => {
+        interface RawObjectiveData {
+          id: string;
+          title: string;
+          status: string;
+          owner?: { full_name?: string };
+          key_results?: Array<{ current_value?: number; target_value?: number }>;
+        }
+        
+        const formattedObjectives: Objective[] = ((objectivesData || []) as unknown as RawObjectiveData[]).map((obj) => {
           const keyResults = obj.key_results || [];
           const avgProgress = keyResults.length > 0
-            ? Math.round(keyResults.reduce((sum: number, kr: any) => {
+            ? Math.round(keyResults.reduce((sum: number, kr) => {
                 const current = kr.current_value || 0;
                 const target = kr.target_value || 1;
                 return sum + Math.min(100, (current / target) * 100);

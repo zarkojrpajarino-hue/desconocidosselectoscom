@@ -43,8 +43,9 @@ const VerifyEmail = () => {
 
       setResent(true);
       toast.success('Email reenviado correctamente');
-    } catch (error: any) {
-      toast.error(error.message || 'Error al reenviar email');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al reenviar email';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

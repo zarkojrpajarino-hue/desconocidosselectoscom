@@ -49,7 +49,7 @@ const AdminOnboardings = () => {
 
       if (error) throw error;
       setSubmissions(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching submissions:', error);
       toast.error("Error al cargar submissions");
     } finally {

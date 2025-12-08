@@ -101,13 +101,14 @@ const Signup = () => {
       });
 
       navigate('/verify-email', { state: { email } });
-    } catch (error: any) {
-      if (error.message?.includes('already registered')) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '';
+      if (message.includes('already registered')) {
         toast.error('Este email ya está registrado', {
           description: 'Intenta iniciar sesión o usa otro email',
         });
       } else {
-        toast.error(error.message || 'Error al crear la cuenta');
+        toast.error(message || 'Error al crear la cuenta');
       }
     } finally {
       setLoading(false);

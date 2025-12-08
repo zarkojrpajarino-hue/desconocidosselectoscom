@@ -122,13 +122,14 @@ export const useOnboardingTour = () => {
   // Animar progreso de OKR
   const animateOKRProgress = () => {
     const progressBars = document.querySelectorAll('.okr-progress-bar');
-    progressBars.forEach((bar: any) => {
-      if (bar) {
-        const currentValue = parseInt(bar.style.width || '0');
+    progressBars.forEach((bar: Element) => {
+      const htmlBar = bar as HTMLElement;
+      if (htmlBar) {
+        const currentValue = parseInt(htmlBar.style.width || '0');
         let targetValue = Math.min(currentValue + 15, 75);
         
-        bar.style.transition = 'width 1.5s ease-in-out';
-        bar.style.width = `${targetValue}%`;
+        htmlBar.style.transition = 'width 1.5s ease-in-out';
+        htmlBar.style.width = `${targetValue}%`;
       }
     });
   };
@@ -136,9 +137,10 @@ export const useOnboardingTour = () => {
   // Animar gráficos de métricas
   const animateMetricsCharts = () => {
     const charts = document.querySelectorAll('.recharts-wrapper');
-    charts.forEach((chart: any) => {
-      if (chart) {
-        chart.style.animation = 'pulse 2s ease-in-out';
+    charts.forEach((chart: Element) => {
+      const htmlChart = chart as HTMLElement;
+      if (htmlChart) {
+        htmlChart.style.animation = 'pulse 2s ease-in-out';
       }
     });
   };

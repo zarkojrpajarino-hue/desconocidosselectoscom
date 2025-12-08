@@ -67,10 +67,11 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
       // Reload para actualizar vista
       setTimeout(() => window.location.reload(), 500);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error changing phase:', error);
+      const message = error instanceof Error ? error.message : 'Intenta de nuevo';
       toast.error('Error al cambiar fase', {
-        description: error.message || 'Intenta de nuevo'
+        description: message
       });
     } finally {
       setLoading(false);

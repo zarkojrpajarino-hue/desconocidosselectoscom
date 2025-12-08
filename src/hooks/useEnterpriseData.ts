@@ -735,23 +735,33 @@ export function useKPITargets(organizationId: string | null) {
 
         if (targetsError) throw targetsError;
 
-        const formattedTargets: KPITarget[] = targetsData?.map((t: any) => {
-          const progress = t.current_value && t.target_value 
-            ? (t.current_value / t.target_value) * 100 
-            : 0;
+        interface RawKPITargetData {
+          id: string;
+          organization_id: string;
+          kpi_metric: string;
+          target_value: number | null;
+          current_value: number | null;
+          target_date: string;
+          period_type: string;
+        }
+        
+        const formattedTargets: KPITarget[] = ((targetsData || []) as unknown as RawKPITargetData[]).map((t) => {
+          const currentVal = Number(t.current_value || 0);
+          const targetVal = Number(t.target_value || 0);
+          const progress = targetVal > 0 ? (currentVal / targetVal) * 100 : 0;
           
           return {
             id: t.id,
             organization_id: t.organization_id,
             kpi_metric: t.kpi_metric,
-            target_value: Number(t.target_value || 0),
-            current_value: Number(t.current_value || 0),
+            target_value: targetVal,
+            current_value: currentVal,
             target_date: t.target_date,
-            period_type: t.period_type || 'monthly',
+            period_type: (t.period_type === 'monthly' || t.period_type === 'quarterly' || t.period_type === 'yearly' ? t.period_type : 'monthly') as 'monthly' | 'quarterly' | 'yearly',
             progress_percentage: progress,
             on_track: progress >= 80,
           };
-        }) || [];
+        });
 
         setData(formattedTargets);
       } catch (err) {
@@ -792,14 +802,23 @@ export function useBudgetComparison(organizationId: string | null) {
 
         if (budgetError) throw budgetError;
 
-        const formattedBudget: BudgetComparison[] = budgetData?.map((b: any) => ({
+        interface RawBudgetData {
+          category: string;
+          budgeted_amount: number | null;
+          actual_amount: number | null;
+          variance_amount: number | null;
+          variance_percentage: number | null;
+          status: string;
+        }
+        
+        const formattedBudget: BudgetComparison[] = ((budgetData || []) as unknown as RawBudgetData[]).map((b) => ({
           category: b.category,
           budgeted_amount: Number(b.budgeted_amount || 0),
           actual_amount: Number(b.actual_amount || 0),
           variance_amount: Number(b.variance_amount || 0),
           variance_percentage: Number(b.variance_percentage || 0),
-          status: b.status || 'on_budget',
-        })) || [];
+          status: (b.status === 'on_budget' || b.status === 'over_budget' || b.status === 'under_budget' ? b.status : 'on_budget') as 'on_budget' | 'over_budget' | 'under_budget',
+        }));
 
         setData(formattedBudget);
       } catch (err) {
