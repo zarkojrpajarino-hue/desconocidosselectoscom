@@ -169,13 +169,29 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
   const fetchAnalysis = async (forceRefresh = false) => {
     setLoading(true);
     try {
-      const { data: analysisData, error } = await supabase.functions.invoke('analyze-project-data', {
-        body: { force_refresh: forceRefresh }
+      // Obtener organization_id del usuario actual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { data: userRole } = await supabase
+        .from('user_roles')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!userRole?.organization_id) throw new Error('No organization found');
+
+      const { data: analysisData, error } = await supabase.functions.invoke('analyze-project-data-v3', {
+        body: { 
+          organizationId: userRole.organization_id,
+          includeCompetitors: true
+        }
       });
 
       if (error) throw error;
 
-      setData(analysisData);
+      // v3 devuelve { success, analysis, savedId }
+      setData(analysisData.analysis || analysisData);
       toast.success('Análisis actualizado');
       
       // Notificar que se completó el análisis
