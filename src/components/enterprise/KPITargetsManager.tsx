@@ -66,7 +66,16 @@ export function KPITargetsManager() {
 
       if (targetsError) throw targetsError;
 
-      const formattedTargets: KPITarget[] = (targets || []).map((target: any) => {
+      interface RawKPITarget {
+        id: string;
+        kpi_metric: string;
+        target_value: number;
+        current_value: number | null;
+        period_type: string | null;
+        target_date: string | null;
+      }
+
+      const formattedTargets: KPITarget[] = ((targets || []) as RawKPITarget[]).map((target) => {
         const current = target.current_value || 0;
         const targetVal = target.target_value || 1;
         const progress = Math.min(100, Math.round((current / targetVal) * 100));

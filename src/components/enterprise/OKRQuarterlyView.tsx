@@ -72,8 +72,27 @@ export function OKRQuarterlyView() {
 
         if (objError) throw objError;
 
-        const formattedObjectives: Objective[] = (objectives || []).map((obj: any) => {
-          const keyResults = (obj.key_results || []).map((kr: any) => {
+        interface RawKeyResult {
+          id: string;
+          title: string;
+          current_value: number | null;
+          target_value: number | null;
+          status: string | null;
+        }
+
+        interface RawObjective {
+          id: string;
+          title: string;
+          description: string | null;
+          quarter: string;
+          year: number;
+          status: string | null;
+          owner: { full_name: string } | null;
+          key_results: RawKeyResult[];
+        }
+
+        const formattedObjectives: Objective[] = ((objectives || []) as unknown as RawObjective[]).map((obj) => {
+          const keyResults = (obj.key_results || []).map((kr) => {
             const current = kr.current_value || 0;
             const target = kr.target_value || 1;
             const progress = Math.min(100, Math.round((current / target) * 100));

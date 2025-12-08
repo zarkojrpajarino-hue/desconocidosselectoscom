@@ -73,7 +73,13 @@ export function PipelineForecast() {
           'negociacion': 80,
         };
 
-        (leads || []).forEach((lead: any) => {
+        interface RawLead {
+          stage: string | null;
+          estimated_value: number | null;
+          probability: number | null;
+        }
+
+        ((leads || []) as RawLead[]).forEach((lead) => {
           const stage = lead.stage || 'nuevo';
           const current = stageMap.get(stage) || {
             stage,

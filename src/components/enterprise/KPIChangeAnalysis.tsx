@@ -89,7 +89,17 @@ export function KPIChangeAnalysis() {
 
         if (changesError) throw changesError;
 
-        const formattedChanges: KPIChange[] = (changes || []).map((change: any) => ({
+        interface RawKPIChange {
+          id: string;
+          kpi_metric: string;
+          old_value: number | null;
+          new_value: number | null;
+          change_percentage: number | null;
+          changed_at: string | null;
+          contributing_factors: string[] | null;
+        }
+
+        const formattedChanges: KPIChange[] = ((changes || []) as RawKPIChange[]).map((change) => ({
           id: change.id,
           kpi_metric: change.kpi_metric,
           old_value: change.old_value,

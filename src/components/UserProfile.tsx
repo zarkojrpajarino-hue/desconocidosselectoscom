@@ -35,15 +35,70 @@ import {
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
 
+interface ProfileStats {
+  totalCompleted: number;
+  totalValidated: number;
+  totalCollaborative: number;
+  averageRating: string | number;
+}
+
+interface WeeklyProgressItem {
+  week: string;
+  tareas: number;
+  fecha: string;
+}
+
+interface AreaDataItem {
+  name: string;
+  value: number;
+  [key: string]: string | number;
+}
+
+interface TaskWithCompletions {
+  area: string | null;
+  task_completions: Array<{ validated_by_leader: boolean | null }>;
+}
+
+interface FeedbackData {
+  collaborator_feedback: { rating?: number } | null;
+}
+
+interface AchievementsData {
+  total_points: number | null;
+  current_streak: number | null;
+  tasks_completed_total: number | null;
+  tasks_validated_total: number | null;
+  perfect_weeks: number | null;
+}
+
+interface BadgeData {
+  id: string;
+  earned_at: string | null;
+  badges: {
+    id: string;
+    code: string;
+    name: string;
+    description: string | null;
+    icon_emoji: string | null;
+    rarity: string | null;
+  };
+}
+
+interface RecentTaskData {
+  id: string;
+  completed_at: string | null;
+  tasks: { title: string; area: string | null } | null;
+}
+
 const UserProfile = () => {
   const { user, userProfile, currentOrganizationId, userOrganizations } = useAuth();
   const currentOrganization = userOrganizations.find(org => org.organization_id === currentOrganizationId);
-  const [stats, setStats] = useState<any>(null);
-  const [weeklyProgress, setWeeklyProgress] = useState<any[]>([]);
-  const [tasksByArea, setTasksByArea] = useState<any[]>([]);
-  const [recentTasks, setRecentTasks] = useState<any[]>([]);
-  const [achievements, setAchievements] = useState<any>(null);
-  const [badges, setBadges] = useState<any[]>([]);
+  const [stats, setStats] = useState<ProfileStats | null>(null);
+  const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgressItem[]>([]);
+  const [tasksByArea, setTasksByArea] = useState<AreaDataItem[]>([]);
+  const [recentTasks, setRecentTasks] = useState<RecentTaskData[]>([]);
+  const [achievements, setAchievements] = useState<AchievementsData | null>(null);
+  const [badges, setBadges] = useState<BadgeData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -101,19 +156,27 @@ const UserProfile = () => {
       .eq('user_id', user.id)
       .not('collaborator_feedback', 'is', null);
 
-    const ratings = feedbacks
-      ?.map((f: any) => f.collaborator_feedback?.rating)
-      .filter(Boolean) || [];
+    interface CollaboratorFeedbackData {
+      collaborator_feedback: { rating?: number } | null;
+    }
+
+    const ratings = (feedbacks as CollaboratorFeedbackData[] | null)
+      ?.map((f) => f.collaborator_feedback?.rating)
+      .filter((r): r is number => typeof r === 'number') || [];
     
     const avgRating = ratings.length > 0
-      ? (ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length).toFixed(1)
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
       : 0;
+
+    interface CollaborativeTaskData {
+      task_completions: Array<{ validated_by_leader: boolean | null }>;
+    }
 
     setStats({
       totalCompleted: completedTasks?.length || 0,
       totalValidated: validatedTasks?.length || 0,
-      totalCollaborative: collaborativeTasks?.filter((t: any) => 
-        t.task_completions?.some((c: any) => c.validated_by_leader)
+      totalCollaborative: (collaborativeTasks as CollaborativeTaskData[] | null)?.filter((t) => 
+        t.task_completions?.some((c) => c.validated_by_leader)
       ).length || 0,
       averageRating: avgRating,
     });
@@ -162,8 +225,13 @@ const UserProfile = () => {
 
     const areaCount: Record<string, number> = {};
 
-    tasks?.forEach((task: any) => {
-      if (task.task_completions?.some((c: any) => c.validated_by_leader)) {
+    interface TaskWithAreaCompletions {
+      area: string | null;
+      task_completions: Array<{ validated_by_leader: boolean | null }>;
+    }
+
+    (tasks as TaskWithAreaCompletions[] | null)?.forEach((task) => {
+      if (task.task_completions?.some((c) => c.validated_by_leader)) {
         const area = task.area || 'Sin área';
         areaCount[area] = (areaCount[area] || 0) + 1;
       }
@@ -359,7 +427,7 @@ const UserProfile = () => {
                     <p className="text-sm text-muted-foreground">Rating Promedio</p>
                     <p className="text-3xl font-bold text-primary">{stats?.averageRating || 0}</p>
                     <div className="flex text-yellow-500 text-sm mt-1">
-                      {'⭐'.repeat(Math.round(parseFloat(stats?.averageRating || '0')))}
+                      {'⭐'.repeat(Math.round(parseFloat(String(stats?.averageRating || '0'))))}
                     </div>
                   </div>
                   <Award className="w-10 h-10 text-orange-500" />
