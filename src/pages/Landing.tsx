@@ -404,7 +404,7 @@ const Landing = () => {
           <p className="text-sm text-muted-foreground mb-4">
             ¿Tu herramienta favorita no está? Tenemos API abierta para conectar cualquier sistema
           </p>
-          <Button variant="outline" onClick={() => navigate('/settings/api-keys')}>
+          <Button variant="outline" onClick={() => navigate('/integraciones')}>
             Ver Todas las Integraciones
           </Button>
         </div>

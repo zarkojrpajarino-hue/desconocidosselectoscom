@@ -29,7 +29,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Landing = lazy(() => import("./pages/Landing"));
-const Pricing = lazy(() => import("./pages/Pricing"));
+const Integraciones = lazy(() => import("./pages/Integraciones"));
 
 // Layout component
 const AppLayout = lazy(() => import("./components/layout/AppLayout"));
@@ -135,7 +135,7 @@ const AppContent = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/integraciones" element={<Integraciones />} />
         <Route path="/install" element={<InstallPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
