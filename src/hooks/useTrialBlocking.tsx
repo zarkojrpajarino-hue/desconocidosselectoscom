@@ -19,12 +19,12 @@ export function useTrialBlocking() {
 
   // Rutas que están permitidas incluso con trial expirado
   const allowedRoutes = [
-    '/pricing',
+    '/',
     '/login',
     '/signup',
     '/select-organization',
     '/profile',
-    '/logout',
+    '/integraciones',
   ];
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export function useTrialBlocking() {
               .eq('id', currentOrganizationId);
           }
 
-          // Si no está en una ruta permitida, redirigir a pricing
+          // Si no está en una ruta permitida, redirigir a landing con pricing
           const isAllowedRoute = allowedRoutes.some(route => 
             location.pathname.startsWith(route)
           );
@@ -93,7 +93,7 @@ export function useTrialBlocking() {
 
             // Redirigir después de un breve delay
             setTimeout(() => {
-              navigate('/pricing?expired=true', { replace: true });
+              navigate('/#pricing', { replace: true });
             }, 1000);
           }
         } else {

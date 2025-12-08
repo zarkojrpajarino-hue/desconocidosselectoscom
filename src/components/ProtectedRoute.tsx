@@ -17,9 +17,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     location.pathname.startsWith(route)
   );
   
-  // Rutas que no deben ser bloqueadas por trial (pricing, perfil, etc.)
-  const isTrialExemptRoute = ['/pricing', '/profile', '/select-organization', '/onboarding'].some(
-    route => location.pathname.startsWith(route)
+  // Rutas que no deben ser bloqueadas por trial
+  const isTrialExemptRoute = ['/', '/profile', '/select-organization', '/onboarding', '/integraciones'].some(
+    route => location.pathname === route || location.pathname.startsWith(route + '/')
   );
   
   // 1. Esperar a que cargue completamente
@@ -34,14 +34,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  // 2. Sin usuario → login (guardar ruta actual para redirigir después)
+  // 2. Sin usuario → landing (guardar ruta actual para redirigir después)
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
   
-  // 3. Si el trial expiró y no está en ruta exenta → pricing
+  // 3. Si el trial expiró y no está en ruta exenta → landing con pricing
   if (isBlocked && !isTrialExemptRoute) {
-    return <Navigate to="/pricing?expired=true" replace />;
+    return <Navigate to="/#pricing" replace />;
   }
   
   // 4. Si está en ruta que NO requiere org, permitir acceso
