@@ -279,12 +279,12 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   };
 
   const handleSubmitImpactMeasurement = async (data: {
-    ai_questions: Record<string, any>;
+    ai_questions: Record<string, string | number | string[]>;
     key_metrics: Array<{ metric: string; value: string; unit: string }>;
     impact_rating: 'exceeded' | 'met' | 'close' | 'below';
     impact_explanation: string;
     future_decisions: string;
-    investments_needed: any;
+    investments_needed: Record<string, boolean | number | string | undefined>;
   }) => {
     if (!userId || !selectedTask) return;
 

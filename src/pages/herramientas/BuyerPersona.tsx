@@ -4,10 +4,26 @@ import { Badge } from '@/components/ui/badge';
 import { useCountryData } from '@/hooks/useCountryData';
 import { MapPin, Briefcase, Target, Zap, Heart, MessageCircle, ShoppingCart } from 'lucide-react';
 
+// Types for BuyerPersona
+interface Demographics { education?: string; family_status?: string; housing?: string }
+interface Psychographics { values?: string[]; interests?: string[]; lifestyle?: string }
+interface BuyingBehavior {
+  decision_factors?: string[]; buying_frequency?: string;
+  price_sensitivity?: string; preferred_payment_methods?: string[];
+}
+interface PersonaData {
+  name?: string; age?: number; occupation?: string; location?: string;
+  country_code?: string; income_range?: string; quote?: string;
+  demographics?: Demographics; goals?: string[]; pain_points?: string[];
+  psychographics?: Psychographics; preferred_channels?: string[];
+  buying_behavior?: BuyingBehavior;
+  values?: string[]; challenges?: string[]; channels?: string[];
+}
+
 const BuyerPersona = () => {
   const { getCountryByCode } = useCountryData();
 
-  const renderContent = (persona: any) => {
+  const renderContent = (persona: PersonaData) => {
     if (!persona) return null;
 
     const countryData = persona.country_code ? getCountryByCode(persona.country_code) : null;

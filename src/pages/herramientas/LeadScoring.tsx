@@ -3,8 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
+// Types for LeadScoring
+interface ScoringRange { grade?: string; label?: string; min?: number; max?: number }
+interface ScoringFactor { points?: number; name?: string; description?: string }
+interface ScoringCategory { category?: string; factors?: ScoringFactor[] }
+interface LeadScoringData { scoring_ranges?: ScoringRange[]; criteria?: ScoringCategory[] }
+
 const LeadScoring = () => {
-  const renderContent = (scoring: any) => {
+  const renderContent = (scoring: LeadScoringData) => {
     if (!scoring?.criteria) return null;
 
     const getGradeColor = (grade: string) => {
@@ -26,7 +32,7 @@ const LeadScoring = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {scoring.scoring_ranges.map((range: any, idx: number) => (
+                {scoring.scoring_ranges.map((range: ScoringRange, idx: number) => (
                   <div key={idx} className="flex items-center gap-4">
                     <Badge className={`${getGradeColor(range.grade)} text-white min-w-[40px] justify-center`}>
                       {range.grade}
@@ -48,14 +54,14 @@ const LeadScoring = () => {
         )}
 
         {/* Criterios de evaluación */}
-        {scoring.criteria.map((category: any, idx: number) => (
+        {scoring.criteria.map((category: ScoringCategory, idx: number) => (
           <Card key={idx}>
             <CardHeader>
               <CardTitle className="text-lg">{category.category}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {category.factors?.map((factor: any, fIdx: number) => (
+                {category.factors?.map((factor: ScoringFactor, fIdx: number) => (
                   <div key={fIdx} className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
                     <Badge variant="outline" className="min-w-[60px] justify-center text-primary">
                       +{factor.points}
