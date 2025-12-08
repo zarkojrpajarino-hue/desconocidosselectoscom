@@ -8,10 +8,30 @@ import { Calendar, Clock, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface ScheduledTaskData {
+  id: string;
+  task_id: string;
+  scheduled_date: string;
+  scheduled_start: string;
+  scheduled_end: string;
+  status: string;
+  is_collaborative: boolean;
+  collaborator_user_id: string | null;
+  task: {
+    title: string;
+    description: string;
+    area: string;
+  };
+  collaborator?: {
+    full_name: string;
+    username: string;
+  };
+}
+
 interface RescheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: Record<string, unknown>;
+  task: ScheduledTaskData;
   userId: string;
   weekStart: string;
   onRescheduleComplete: () => void;
@@ -43,7 +63,7 @@ const RescheduleModal = ({
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && task) {
       setSelectedDate(task.scheduled_date);
       setSelectedStart(task.scheduled_start);
       setSelectedEnd(task.scheduled_end);
@@ -74,7 +94,7 @@ const RescheduleModal = ({
 
         // Verificar si hay conflicto
         const hasConflict = data?.some(s => 
-          timesOverlap(selectedStart, selectedEnd, s.scheduled_start, s.scheduled_end)
+          timesOverlap(selectedStart, selectedEnd, s.scheduled_start || '', s.scheduled_end || '')
         );
 
         if (hasConflict) {
