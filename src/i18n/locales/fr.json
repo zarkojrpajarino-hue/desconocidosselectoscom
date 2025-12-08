@@ -1,0 +1,143 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "submit": "Soumettre",
+    "reset": "Réinitialiser",
+    "yes": "Oui",
+    "no": "Non",
+    "all": "Tous",
+    "none": "Aucun",
+    "select": "Sélectionner",
+    "viewMore": "Voir plus",
+    "viewLess": "Voir moins"
+  },
+  "nav": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "crm": "CRM",
+    "pipeline": "Pipeline",
+    "tasks": "Tâches",
+    "okrs": "OKRs",
+    "metrics": "Métriques",
+    "financial": "Finances",
+    "tools": "Outils",
+    "integrations": "Intégrations",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Vous avez déjà un compte?",
+    "createAccount": "Créer un compte"
+  },
+  "landing": {
+    "hero": {
+      "title": "Propulsez votre entreprise avec l'intelligence",
+      "subtitle": "La plateforme tout-en-un pour gérer votre entreprise",
+      "cta": "Commencer gratuitement"
+    },
+    "features": {
+      "title": "Fonctionnalités",
+      "dashboard": {
+        "title": "Tableau de bord personnalisé",
+        "description": "Tableau de bord adapté à VOTRE entreprise avec des métriques importantes"
+      },
+      "okrs": {
+        "title": "OKRs Intelligents",
+        "description": "Objectifs générés par l'IA alignés sur votre industrie"
+      },
+      "crm": {
+        "title": "CRM Complet",
+        "description": "Pipeline de ventes avec scoring et suivi automatique"
+      },
+      "ai": {
+        "title": "IA Générative",
+        "description": "Créez des personas d'acheteurs, du contenu, des emails et des campagnes avec l'IA"
+      },
+      "gamification": {
+        "title": "Gamification Réelle",
+        "description": "Points, séries et badges qui motivent vraiment l'équipe"
+      },
+      "integrations": {
+        "title": "Intégrations",
+        "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier et plus"
+      }
+    },
+    "pricing": {
+      "title": "Plans et tarifs",
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "free": "Essai gratuit",
+      "starter": "Starter",
+      "professional": "Professionnel",
+      "enterprise": "Entreprise",
+      "perMonth": "/mois",
+      "startTrial": "Commencer l'essai",
+      "choosePlan": "Choisir ce plan"
+    }
+  },
+  "crm": {
+    "leads": "Prospects",
+    "newLead": "Nouveau prospect",
+    "editLead": "Modifier le prospect",
+    "deleteLead": "Supprimer le prospect",
+    "leadName": "Nom du prospect",
+    "company": "Entreprise",
+    "email": "Email",
+    "phone": "Téléphone",
+    "status": "Statut",
+    "source": "Source",
+    "value": "Valeur",
+    "probability": "Probabilité",
+    "closeDate": "Date de clôture",
+    "notes": "Notes"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "overview": "Vue d'ensemble",
+    "recentActivity": "Activité récente",
+    "quickActions": "Actions rapides",
+    "metrics": "Métriques",
+    "goals": "Objectifs"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "newTask": "Nouvelle tâche",
+    "editTask": "Modifier la tâche",
+    "deleteTask": "Supprimer la tâche",
+    "taskName": "Nom de la tâche",
+    "description": "Description",
+    "dueDate": "Date d'échéance",
+    "priority": "Priorité",
+    "assignedTo": "Assigné à",
+    "status": "Statut",
+    "completed": "Terminé",
+    "pending": "En attente",
+    "inProgress": "En cours"
+  }
+}
