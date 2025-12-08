@@ -18,7 +18,7 @@ import CreateLeadModal from '@/components/CreateLeadModal';
 
 interface LeadDetailModalProps {
   isOpen: boolean;
-  lead: any;
+  lead: Record<string, unknown> | null;
   onClose: () => void;
   onUpdate: () => void;
   onMoveStage: (leadId: string, stage: string) => void;
@@ -26,7 +26,7 @@ interface LeadDetailModalProps {
 
 const LeadDetailModal = ({ isOpen, lead, onClose, onUpdate, onMoveStage }: LeadDetailModalProps) => {
   const { user } = useAuth();
-  const [interactions, setInteractions] = useState<any[]>([]);
+  const [interactions, setInteractions] = useState<Record<string, unknown>[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [newInteraction, setNewInteraction] = useState({
     type: 'call',

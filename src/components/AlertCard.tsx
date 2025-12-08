@@ -18,7 +18,7 @@ interface AlertCardProps {
   severity: 'urgent' | 'important' | 'opportunity' | 'celebration' | 'info';
   title: string;
   message: string;
-  context?: any;
+  context?: Record<string, string | number | boolean | null>;
   source: string;
   actionable: boolean;
   action_label?: string;

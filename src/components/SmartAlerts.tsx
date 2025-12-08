@@ -8,9 +8,24 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import AlertCard from './AlertCard';
 
+interface SmartAlertData {
+  id: string;
+  alert_type: string;
+  severity: string;
+  title: string;
+  message: string;
+  context?: Record<string, unknown>;
+  source: string;
+  actionable: boolean;
+  action_label?: string;
+  action_url?: string;
+  created_at: string;
+  dismissed: boolean;
+}
+
 const SmartAlerts = () => {
   const { user } = useAuth();
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<SmartAlertData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
 
@@ -85,7 +100,7 @@ const SmartAlerts = () => {
     }
   };
 
-  const filterByTab = (alert: any) => {
+  const filterByTab = (alert: SmartAlertData) => {
     switch (activeTab) {
       case 'urgent':
         return alert.severity === 'urgent';

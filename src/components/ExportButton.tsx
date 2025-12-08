@@ -37,7 +37,7 @@ export type ExportType =
 
 interface ExportButtonProps {
   exportType: ExportType;
-  data: any;
+  data: Record<string, unknown> | Record<string, unknown>[];
   metadata?: {
     title?: string;
     subtitle?: string;
@@ -258,24 +258,26 @@ export function ExportButton({
   // CONVERTIR A CSV (CLIENTE)
   // ============================================
 
-  const convertToCSV = (data: any, type: ExportType): string => {
+  const convertToCSV = (data: Record<string, unknown> | Record<string, unknown>[], type: ExportType): string => {
     if (!data) return '';
+    
+    const dataArray = Array.isArray(data) ? data : [data];
     
     switch (type) {
       case 'metrics':
-        return convertMetricsToCSV(Array.isArray(data) ? data : [data]);
+        return convertMetricsToCSV(dataArray);
       case 'leads':
-        return convertLeadsToCSV(Array.isArray(data) ? data : [data]);
+        return convertLeadsToCSV(dataArray);
       case 'okrs':
-        return convertOKRsToCSV(Array.isArray(data) ? data : [data]);
+        return convertOKRsToCSV(dataArray);
       case 'financial':
-        return convertFinancialToCSV(Array.isArray(data) ? data : [data]);
+        return convertFinancialToCSV(dataArray);
       default:
-        return convertGenericToCSV(Array.isArray(data) ? data : [data]);
+        return convertGenericToCSV(dataArray);
     }
   };
 
-  const convertMetricsToCSV = (metrics: any[]): string => {
+  const convertMetricsToCSV = (metrics: Record<string, unknown>[]): string => {
     const headers = ['Fecha', 'Ingresos', 'Leads', 'Tasa Conversión', 'CAC', 'LTV', 'NPS', 'Notas'];
     const rows = metrics.map(m => [
       m.metric_date || m.date || '',
@@ -293,7 +295,7 @@ export function ExportButton({
       .join('\n');
   };
 
-  const convertLeadsToCSV = (leads: any[]): string => {
+  const convertLeadsToCSV = (leads: Record<string, unknown>[]): string => {
     const headers = [
       'Nombre', 'Empresa', 'Email', 'Teléfono', 'Valor Estimado', 
       'Score', 'Tipo', 'Etapa', 'Fuente', 'Probabilidad', 'Fecha Creación'
@@ -318,7 +320,7 @@ export function ExportButton({
       .join('\n');
   };
 
-  const convertOKRsToCSV = (okrs: any[]): string => {
+  const convertOKRsToCSV = (okrs: Record<string, unknown>[]): string => {
     const headers = [
       'Objetivo', 'Descripción', 'Quarter', 'Año', 'Status',
       'Owner', 'Fecha Objetivo', 'Impacto Financiero'
@@ -340,7 +342,7 @@ export function ExportButton({
       .join('\n');
   };
 
-  const convertFinancialToCSV = (transactions: any[]): string => {
+  const convertFinancialToCSV = (transactions: Record<string, unknown>[]): string => {
     const headers = [
       'Fecha', 'Tipo', 'Categoría', 'Monto', 'Descripción', 
       'Método Pago', 'Recurrente', 'Notas'
@@ -348,9 +350,9 @@ export function ExportButton({
     
     const rows = transactions.map(t => [
       t.date || '',
-      t.type || (t.amount > 0 ? 'Ingreso' : 'Gasto'),
+      t.type || ((t.amount as number) > 0 ? 'Ingreso' : 'Gasto'),
       t.category || t.product_category || '',
-      Math.abs(t.amount || 0),
+      Math.abs((t.amount as number) || 0),
       t.description || t.product_name || '',
       t.payment_method || '',
       t.is_recurring ? 'Sí' : 'No',
@@ -362,7 +364,7 @@ export function ExportButton({
       .join('\n');
   };
 
-  const convertGenericToCSV = (data: any[]): string => {
+  const convertGenericToCSV = (data: Record<string, unknown>[]): string => {
     if (!data || data.length === 0) return '';
     
     const headers = Object.keys(data[0]);

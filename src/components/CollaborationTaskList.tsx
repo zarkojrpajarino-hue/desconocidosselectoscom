@@ -7,16 +7,53 @@ import { Check, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import LeaderValidationModal, { LeaderFeedback } from './LeaderValidationModal';
 
+interface TaskUser {
+  id: string;
+  full_name: string;
+  username?: string;
+}
+
+interface TaskCompletionInfo {
+  id: string;
+  task_id: string;
+  user_id?: string;
+  completed_by_user?: boolean;
+  validated_by_leader?: boolean;
+  leader_evaluation?: {
+    q1?: string;
+    q2?: string;
+    q3?: string;
+    stars?: number;
+  };
+  user_insights?: {
+    learnings?: string;
+    contribution?: string;
+    futureDecisions?: string;
+    suggestions?: string;
+  };
+  leader_feedback?: LeaderFeedback;
+}
+
+interface EnrichedTask {
+  id: string;
+  title: string;
+  description?: string;
+  area?: string;
+  user_id: string;
+  executor?: TaskUser;
+  completion?: TaskCompletionInfo;
+}
+
 interface CollaborationTaskListProps {
   userId: string | undefined;
   currentPhase: number | undefined;
 }
 
 const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListProps) => {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<EnrichedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [validationModalOpen, setValidationModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedTask, setSelectedTask] = useState<EnrichedTask | null>(null);
 
   useEffect(() => {
     if (userId && currentPhase) {
@@ -57,7 +94,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
       if (usersError) throw usersError;
 
       // Crear mapa de usuarios
-      const usersMap: Record<string, any> = {};
+      const usersMap: Record<string, TaskUser> = {};
       users?.forEach(user => {
         usersMap[user.id] = user;
       });
@@ -72,14 +109,18 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
       if (completionsError) throw completionsError;
 
       // Crear mapa de completaciones
-      const completionsMap: Record<string, any> = {};
+      const completionsMap: Record<string, TaskCompletionInfo> = {};
       completions?.forEach(completion => {
-        completionsMap[completion.task_id] = completion;
+        completionsMap[completion.task_id] = completion as unknown as TaskCompletionInfo;
       });
 
       // Combinar datos
-      const enrichedTasks = taskData.map(task => ({
-        ...task,
+      const enrichedTasks: EnrichedTask[] = taskData.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description ?? undefined,
+        area: task.area ?? undefined,
+        user_id: task.user_id,
         executor: usersMap[task.user_id],
         completion: completionsMap[task.id]
       }));
@@ -93,7 +134,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
     }
   };
 
-  const getTaskStatus = (task: any) => {
+  const getTaskStatus = (task: EnrichedTask) => {
     if (!task.completion) {
       return { icon: Clock, label: '⏳ Pendiente', color: 'text-muted-foreground', bgColor: 'bg-muted' };
     }
@@ -109,7 +150,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
     return { icon: Clock, label: '⏳ Pendiente', color: 'text-muted-foreground', bgColor: 'bg-muted' };
   };
 
-  const handleOpenValidationModal = (task: any) => {
+  const handleOpenValidationModal = (task: EnrichedTask) => {
     setSelectedTask(task);
     setValidationModalOpen(true);
   };
@@ -125,7 +166,7 @@ const CollaborationTaskList = ({ userId, currentPhase }: CollaborationTaskListPr
         .from('task_completions')
         .update({ 
           validated_by_leader: true,
-          leader_feedback: feedback as any
+          leader_feedback: JSON.parse(JSON.stringify(feedback))
         })
         .eq('id', selectedTask.completion.id);
 

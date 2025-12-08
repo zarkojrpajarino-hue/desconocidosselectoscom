@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 interface RescheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: any;
+  task: Record<string, unknown>;
   userId: string;
   weekStart: string;
   onRescheduleComplete: () => void;
