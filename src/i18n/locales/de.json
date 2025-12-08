@@ -1,0 +1,143 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "close": "Schließen",
+    "submit": "Absenden",
+    "reset": "Zurücksetzen",
+    "yes": "Ja",
+    "no": "Nein",
+    "all": "Alle",
+    "none": "Keine",
+    "select": "Auswählen",
+    "viewMore": "Mehr anzeigen",
+    "viewLess": "Weniger anzeigen"
+  },
+  "nav": {
+    "home": "Startseite",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "pipeline": "Pipeline",
+    "tasks": "Aufgaben",
+    "okrs": "OKRs",
+    "metrics": "Metriken",
+    "financial": "Finanzen",
+    "tools": "Werkzeuge",
+    "integrations": "Integrationen",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "logout": "Abmelden"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "forgotPassword": "Passwort vergessen?",
+    "resetPassword": "Passwort zurücksetzen",
+    "noAccount": "Kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "createAccount": "Konto erstellen"
+  },
+  "landing": {
+    "hero": {
+      "title": "Steigern Sie Ihr Geschäft mit Intelligenz",
+      "subtitle": "Die All-in-One-Plattform zur Verwaltung Ihres Unternehmens",
+      "cta": "Kostenlos starten"
+    },
+    "features": {
+      "title": "Funktionen",
+      "dashboard": {
+        "title": "Personalisiertes Dashboard",
+        "description": "Dashboard angepasst an IHR Unternehmen mit wichtigen Metriken"
+      },
+      "okrs": {
+        "title": "Intelligente OKRs",
+        "description": "KI-generierte Ziele abgestimmt auf Ihre Branche"
+      },
+      "crm": {
+        "title": "Vollständiges CRM",
+        "description": "Verkaufspipeline mit Bewertung und automatischer Nachverfolgung"
+      },
+      "ai": {
+        "title": "Generative KI",
+        "description": "Erstellen Sie Buyer-Personas, Inhalte, E-Mails und Kampagnen mit KI"
+      },
+      "gamification": {
+        "title": "Echte Gamification",
+        "description": "Punkte, Streaks und Erfolge, die das Team wirklich motivieren"
+      },
+      "integrations": {
+        "title": "Integrationen",
+        "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier und mehr"
+      }
+    },
+    "pricing": {
+      "title": "Pläne und Preise",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      "free": "Kostenlose Testversion",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "perMonth": "/Monat",
+      "startTrial": "Testversion starten",
+      "choosePlan": "Plan wählen"
+    }
+  },
+  "crm": {
+    "leads": "Leads",
+    "newLead": "Neuer Lead",
+    "editLead": "Lead bearbeiten",
+    "deleteLead": "Lead löschen",
+    "leadName": "Lead-Name",
+    "company": "Unternehmen",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "status": "Status",
+    "source": "Quelle",
+    "value": "Wert",
+    "probability": "Wahrscheinlichkeit",
+    "closeDate": "Abschlussdatum",
+    "notes": "Notizen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen",
+    "overview": "Übersicht",
+    "recentActivity": "Letzte Aktivitäten",
+    "quickActions": "Schnellaktionen",
+    "metrics": "Metriken",
+    "goals": "Ziele"
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "newTask": "Neue Aufgabe",
+    "editTask": "Aufgabe bearbeiten",
+    "deleteTask": "Aufgabe löschen",
+    "taskName": "Aufgabenname",
+    "description": "Beschreibung",
+    "dueDate": "Fälligkeitsdatum",
+    "priority": "Priorität",
+    "assignedTo": "Zugewiesen an",
+    "status": "Status",
+    "completed": "Abgeschlossen",
+    "pending": "Ausstehend",
+    "inProgress": "In Bearbeitung"
+  }
+}

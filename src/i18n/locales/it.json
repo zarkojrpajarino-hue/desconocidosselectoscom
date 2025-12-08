@@ -1,0 +1,143 @@
+{
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "export": "Esporta",
+    "import": "Importa",
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "confirm": "Conferma",
+    "back": "Indietro",
+    "next": "Avanti",
+    "previous": "Precedente",
+    "close": "Chiudi",
+    "submit": "Invia",
+    "reset": "Reimposta",
+    "yes": "Sì",
+    "no": "No",
+    "all": "Tutti",
+    "none": "Nessuno",
+    "select": "Seleziona",
+    "viewMore": "Vedi altro",
+    "viewLess": "Vedi meno"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "pipeline": "Pipeline",
+    "tasks": "Attività",
+    "okrs": "OKR",
+    "metrics": "Metriche",
+    "financial": "Finanze",
+    "tools": "Strumenti",
+    "integrations": "Integrazioni",
+    "settings": "Impostazioni",
+    "profile": "Profilo",
+    "logout": "Esci"
+  },
+  "auth": {
+    "login": "Accedi",
+    "signup": "Registrati",
+    "logout": "Esci",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Conferma password",
+    "forgotPassword": "Password dimenticata?",
+    "resetPassword": "Reimposta password",
+    "noAccount": "Non hai un account?",
+    "hasAccount": "Hai già un account?",
+    "createAccount": "Crea account"
+  },
+  "landing": {
+    "hero": {
+      "title": "Potenzia il tuo business con l'intelligenza",
+      "subtitle": "La piattaforma all-in-one per gestire la tua azienda",
+      "cta": "Inizia gratis"
+    },
+    "features": {
+      "title": "Funzionalità",
+      "dashboard": {
+        "title": "Dashboard Personalizzata",
+        "description": "Dashboard adattata alla TUA azienda con metriche importanti"
+      },
+      "okrs": {
+        "title": "OKR Intelligenti",
+        "description": "Obiettivi generati dall'IA allineati al tuo settore"
+      },
+      "crm": {
+        "title": "CRM Completo",
+        "description": "Pipeline di vendita con punteggio e tracciamento automatico"
+      },
+      "ai": {
+        "title": "IA Generativa",
+        "description": "Crea buyer personas, contenuti, email e campagne con l'IA"
+      },
+      "gamification": {
+        "title": "Gamification Reale",
+        "description": "Punti, serie e badge che motivano davvero il team"
+      },
+      "integrations": {
+        "title": "Integrazioni",
+        "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier e altro"
+      }
+    },
+    "pricing": {
+      "title": "Piani e prezzi",
+      "monthly": "Mensile",
+      "yearly": "Annuale",
+      "free": "Prova gratuita",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "perMonth": "/mese",
+      "startTrial": "Inizia prova",
+      "choosePlan": "Scegli piano"
+    }
+  },
+  "crm": {
+    "leads": "Lead",
+    "newLead": "Nuovo lead",
+    "editLead": "Modifica lead",
+    "deleteLead": "Elimina lead",
+    "leadName": "Nome lead",
+    "company": "Azienda",
+    "email": "Email",
+    "phone": "Telefono",
+    "status": "Stato",
+    "source": "Fonte",
+    "value": "Valore",
+    "probability": "Probabilità",
+    "closeDate": "Data di chiusura",
+    "notes": "Note"
+  },
+  "dashboard": {
+    "welcome": "Benvenuto",
+    "overview": "Panoramica",
+    "recentActivity": "Attività recente",
+    "quickActions": "Azioni rapide",
+    "metrics": "Metriche",
+    "goals": "Obiettivi"
+  },
+  "tasks": {
+    "title": "Attività",
+    "newTask": "Nuova attività",
+    "editTask": "Modifica attività",
+    "deleteTask": "Elimina attività",
+    "taskName": "Nome attività",
+    "description": "Descrizione",
+    "dueDate": "Scadenza",
+    "priority": "Priorità",
+    "assignedTo": "Assegnato a",
+    "status": "Stato",
+    "completed": "Completato",
+    "pending": "In sospeso",
+    "inProgress": "In corso"
+  }
+}
