@@ -2,19 +2,22 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, Play } from 'lucide-react';
 import { useSectionTour } from '@/hooks/useSectionTour';
+import { cn } from '@/lib/utils';
 
 interface SectionTourButtonProps {
   sectionId: string;
   variant?: 'default' | 'ghost' | 'outline' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   label?: string;
+  className?: string;
 }
 
 export const SectionTourButton = ({
   sectionId,
   variant = 'outline',
   size = 'sm',
-  label = '¿Cómo funciona?'
+  label = '¿Cómo funciona?',
+  className
 }: SectionTourButtonProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const { startSectionTour } = useSectionTour(sectionId);
@@ -34,17 +37,17 @@ export const SectionTourButton = ({
       size={size}
       onClick={handleClick}
       disabled={isRunning}
-      className="gap-2"
+      className={cn("gap-2", className)}
     >
       {isRunning ? (
         <>
           <Play className="h-4 w-4 animate-pulse" />
-          Tour en proceso...
+          <span className="hidden sm:inline">Tour...</span>
         </>
       ) : (
         <>
           <HelpCircle className="h-4 w-4" />
-          {label}
+          <span className="hidden sm:inline">{label}</span>
         </>
       )}
     </Button>

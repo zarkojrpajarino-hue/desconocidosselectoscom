@@ -63,28 +63,29 @@ const FinancialPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DollarSign className="w-8 h-8 text-success" />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
-                  Panel Financiero
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-success shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent truncate">
+                  Finanzas
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Métricas automáticas desde KPIs, Tareas y OKRs
+                <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+                  Métricas automáticas
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <SectionTourButton sectionId="financial" />
+            <div className="flex items-center gap-1 md:gap-2 shrink-0">
+              <SectionTourButton sectionId="financial" className="hidden md:flex" />
               <Button
                 variant="outline"
                 onClick={() => navigate('/metrics')}
-                className="gap-2"
+                className="gap-1 p-2 md:px-3"
+                size="sm"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Volver a Métricas
+                <span className="hidden md:inline">Métricas</span>
               </Button>
             </div>
           </div>
@@ -94,7 +95,7 @@ const FinancialPage = () => {
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
         {/* Tabs de navegación */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto">
+          <TabsList className="flex w-full overflow-x-auto md:grid md:grid-cols-6 h-auto gap-1 p-1">
             <TabsTrigger value="dashboard" className="gap-2">
               <DollarSign className="h-4 w-4" />
               <span className="hidden md:inline">Dashboard</span>
