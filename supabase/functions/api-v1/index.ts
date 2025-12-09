@@ -278,6 +278,15 @@ serve(async (req) => {
 
       // POST /leads - Create lead
       if (req.method === 'POST' && !resourceId) {
+        // Validate write scope
+        if (!auth.scopes?.includes('write')) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, '/leads', 'POST', 403, responseTime, req);
+          return new Response(
+            JSON.stringify({ error: 'Insufficient scope. Write access required.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         const body = await req.json();
         
         const { data, error } = await supabase
@@ -338,6 +347,15 @@ serve(async (req) => {
 
       // PUT /leads/:id - Update lead
       if (req.method === 'PUT' && resourceId) {
+        // Validate write scope
+        if (!auth.scopes?.includes('write')) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, `/leads/${resourceId}`, 'PUT', 403, responseTime, req);
+          return new Response(
+            JSON.stringify({ error: 'Insufficient scope. Write access required.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         const body = await req.json();
         
         const { data, error } = await supabase
@@ -364,6 +382,15 @@ serve(async (req) => {
 
       // DELETE /leads/:id - Delete lead
       if (req.method === 'DELETE' && resourceId) {
+        // Validate write scope
+        if (!auth.scopes?.includes('write')) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, `/leads/${resourceId}`, 'DELETE', 403, responseTime, req);
+          return new Response(
+            JSON.stringify({ error: 'Insufficient scope. Write access required.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         const { error } = await supabase
           .from('leads')
           .delete()
@@ -434,6 +461,15 @@ serve(async (req) => {
 
       // POST /metrics - Create metric
       if (req.method === 'POST' && !resourceId) {
+        // Validate write scope
+        if (!auth.scopes?.includes('write')) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, '/metrics', 'POST', 403, responseTime, req);
+          return new Response(
+            JSON.stringify({ error: 'Insufficient scope. Write access required.' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         const body = await req.json();
         
         // Get first user from organization for user_id requirement

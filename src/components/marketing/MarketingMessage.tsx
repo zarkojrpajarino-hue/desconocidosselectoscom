@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideIcon } from "lucide-react";
+import DOMPurify from "dompurify";
 
 interface MarketingMessageProps {
   icon: LucideIcon;
@@ -50,7 +51,7 @@ export function MarketingMessage({
       )}
       <AlertDescription className={descriptionStyles[variant]}>
         {typeof message === "string" ? (
-          <span dangerouslySetInnerHTML={{ __html: message }} />
+          <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message) }} />
         ) : (
           message
         )}
