@@ -52,16 +52,16 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-3 md:p-4">
       <Card className="w-full max-w-md shadow-xl border-border/50">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Mail className="w-8 h-8 text-primary" />
+        <CardHeader className="text-center space-y-3 md:space-y-4 p-4 md:p-6">
+          <div className="mx-auto w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Mail className="w-6 h-6 md:w-8 md:h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-xl md:text-2xl font-bold">
             Verifica tu Email
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-sm md:text-base">
             Hemos enviado un link de verificación a:
             <br />
             <strong className="text-foreground">{email}</strong>

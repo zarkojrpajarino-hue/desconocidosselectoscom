@@ -8,14 +8,14 @@ const OnboardingSuccess = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full p-8 text-center">
-        <div className="mb-6">
-          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full mx-auto flex items-center justify-center mb-4">
-            <Check className="h-10 w-10 text-green-600 dark:text-green-500" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-3 md:p-4">
+      <Card className="max-w-2xl w-full p-4 md:p-8 text-center">
+        <div className="mb-4 md:mb-6">
+          <div className="w-14 h-14 md:w-20 md:h-20 bg-green-100 dark:bg-green-900/20 rounded-full mx-auto flex items-center justify-center mb-3 md:mb-4">
+            <Check className="h-7 w-7 md:h-10 md:w-10 text-green-600 dark:text-green-500" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">¡Onboarding Completado!</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">¡Onboarding Completado!</h1>
+          <p className="text-muted-foreground text-sm md:text-lg">
             Hemos recibido toda tu información
           </p>
         </div>

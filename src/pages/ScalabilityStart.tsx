@@ -37,16 +37,16 @@ const ScalabilityStart = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="text-center mb-8">
-        <TrendingUp className="w-16 h-16 text-primary mx-auto mb-4" />
-        <h1 className="text-3xl font-bold mb-2">Análisis de Escalabilidad</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Descubre los cuellos de botella de tu negocio, dependencias críticas y oportunidades de automatización para escalar.
+    <div className="container mx-auto p-3 md:p-6 max-w-4xl pb-24 md:pb-6">
+      <div className="text-center mb-4 md:mb-8">
+        <TrendingUp className="w-10 h-10 md:w-16 md:h-16 text-primary mx-auto mb-2 md:mb-4" />
+        <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">Análisis de Escalabilidad</h1>
+        <p className="text-xs md:text-base text-muted-foreground max-w-2xl mx-auto">
+          Descubre cuellos de botella y oportunidades de automatización.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
         <Card>
           <CardHeader className="pb-3">
             <BarChart3 className="w-8 h-8 text-primary mb-2" />

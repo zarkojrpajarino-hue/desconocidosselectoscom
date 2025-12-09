@@ -29,14 +29,14 @@ export default function InstallPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 md:p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Smartphone className="w-10 h-10 text-primary" />
+        <CardHeader className="text-center p-4 md:p-6">
+          <div className="w-14 h-14 md:w-20 md:h-20 mx-auto mb-3 md:mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Smartphone className="w-7 h-7 md:w-10 md:h-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Instalar Experiencia Selecta</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl md:text-2xl">Instalar App</CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             Instala la app para una mejor experiencia
           </CardDescription>
         </CardHeader>

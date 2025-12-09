@@ -113,22 +113,22 @@ const GeneratingWorkspace = () => {
   }, [organizationId, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full p-8 space-y-8 shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-3 md:p-4">
+      <Card className="max-w-2xl w-full p-4 md:p-8 space-y-4 md:space-y-8 shadow-2xl">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 md:space-y-4">
           <div className="flex justify-center">
             <div className="relative">
-              <Sparkles className="h-16 w-16 text-primary animate-pulse" />
-              <Loader2 className="h-16 w-16 text-primary/40 animate-spin absolute top-0 left-0" />
+              <Sparkles className="h-10 w-10 md:h-16 md:w-16 text-primary animate-pulse" />
+              <Loader2 className="h-10 w-10 md:h-16 md:w-16 text-primary/40 animate-spin absolute top-0 left-0" />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Generando tu Workspace Personalizado
+            <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">
+              Generando tu Workspace
             </h1>
-            <p className="text-muted-foreground">
-              Nuestro AI está adaptando OPTIMUS-K específicamente para tu negocio...
+            <p className="text-xs md:text-base text-muted-foreground">
+              Nuestro AI está adaptando OPTIMUS-K para tu negocio...
             </p>
           </div>
         </div>

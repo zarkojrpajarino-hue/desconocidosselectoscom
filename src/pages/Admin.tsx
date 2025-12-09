@@ -471,26 +471,26 @@ const Admin = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto px-3 md:px-6 py-2 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/home')}
-              className="hover:bg-accent"
+              className="hover:bg-accent h-8 w-8 md:h-10 md:w-10 flex-shrink-0"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Panel de Administración
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                Admin
               </h1>
-              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                Gestión del equipo y estadísticas
+              <p className="text-[10px] md:text-sm text-muted-foreground hidden sm:block">
+                Gestión del equipo
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
