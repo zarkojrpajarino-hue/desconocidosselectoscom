@@ -53,31 +53,31 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="container max-w-4xl mx-auto px-4 py-8">
+      <div className="container max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8">
         {/* Trial Status Widget */}
         <TrialStatusWidget />
         
         {/* Profile Card with Welcome Message */}
-        <div id="user-profile-section" className="mb-8">
+        <div id="user-profile-section" className="mb-4 md:mb-8">
           <Card className="bg-gradient-to-br from-primary/5 to-accent/5 shadow-card">
-            <CardContent className="pt-6 pb-6">
-              <div className="flex items-start justify-between flex-wrap gap-6">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-2xl font-bold text-white shadow-lg flex-shrink-0">
+            <CardContent className="pt-4 md:pt-6 pb-4 md:pb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 md:gap-6">
+                <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-primary flex items-center justify-center text-xl md:text-2xl font-bold text-white shadow-lg flex-shrink-0">
                     {userProfile?.full_name?.charAt(0) || 'U'}
                   </div>
-                  <div className="flex-1">
-                    <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-xl md:text-3xl font-bold text-foreground mb-1 truncate">
                       Bienvenido {userProfile?.full_name || 'Usuario'}
                     </h1>
-                    <p className="text-sm text-muted-foreground mb-1">@{userProfile?.username}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">@{userProfile?.username}</p>
                     {currentOrganization && (
-                      <div className="flex items-center gap-1 text-sm mt-1">
-                        <Building2 className="h-3 w-3" />
-                        <span className="font-medium">{currentOrganization.organization_name}</span>
+                      <div className="flex items-center gap-1 text-xs md:text-sm mt-1">
+                        <Building2 className="h-3 w-3 flex-shrink-0" />
+                        <span className="font-medium truncate">{currentOrganization.organization_name}</span>
                       </div>
                     )}
-                    <p className="text-muted-foreground mt-2">
+                    <p className="text-xs md:text-base text-muted-foreground mt-2 hidden sm:block">
                       Selecciona una sección para comenzar
                     </p>
                   </div>
@@ -119,21 +119,21 @@ const Home = () => {
         {/* Tarjeta de invitación (solo para admins) */}
         <RoleInvitationCard />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {sections.map((section) => {
             const Icon = section.icon;
             return (
               <Card
                 key={section.path}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-2"
+                className="cursor-pointer hover:shadow-lg transition-all duration-300 active:scale-95 md:hover:scale-105 border-2"
                 onClick={() => navigate(section.path)}
               >
-                <CardHeader>
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-4`}>
-                    <Icon className="w-8 h-8 text-white" />
+                <CardHeader className="p-4 md:p-6">
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-3 md:mb-4`}>
+                    <Icon className="w-6 h-6 md:w-8 md:h-8 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{section.title}</CardTitle>
-                  <CardDescription className="text-base">
+                  <CardTitle className="text-lg md:text-xl">{section.title}</CardTitle>
+                  <CardDescription className="text-sm md:text-base">
                     {section.description}
                   </CardDescription>
                 </CardHeader>
