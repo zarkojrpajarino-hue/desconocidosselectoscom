@@ -15,14 +15,14 @@ const GuiaInteractiva = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <BookOpen className="h-8 w-8 text-primary" />
-            Guía de Emprendimiento
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 pb-20 md:pb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
+            <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-primary flex-shrink-0" />
+            <span className="truncate">Guía de Emprendimiento</span>
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
             15 pasos para lanzar tu negocio validado
           </p>
         </div>

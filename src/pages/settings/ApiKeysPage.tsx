@@ -86,16 +86,16 @@ export default function ApiKeysPage() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6 pb-20 md:pb-6">
       <div>
-        <h1 className="text-3xl font-bold">API & Integraciones</h1>
-        <p className="text-muted-foreground">
-          Gestiona las API Keys y Webhooks para integrar OPTIMUS-K con otras herramientas
+        <h1 className="text-xl md:text-3xl font-bold">API & Integraciones</h1>
+        <p className="text-xs md:text-sm text-muted-foreground">
+          Gestiona API Keys y Webhooks para integrar OPTIMUS-K
         </p>
       </div>
 
       <Tabs defaultValue="api-keys" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex overflow-x-auto pb-1 md:pb-0 -mx-3 px-3 md:mx-0 md:px-0 md:flex-wrap gap-1">
           <TabsTrigger value="api-keys" className="flex items-center gap-2">
             <Key className="w-4 h-4" />
             API Keys

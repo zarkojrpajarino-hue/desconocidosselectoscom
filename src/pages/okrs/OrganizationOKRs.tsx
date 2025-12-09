@@ -231,42 +231,45 @@ const OrganizationOKRs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Building2 className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Building2 className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
                 OKRs Organizacionales
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Objetivos estratégicos de toda la empresa
+              <p className="text-xs md:text-sm text-muted-foreground truncate">
+                Objetivos estratégicos de la empresa
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="secondary"
+              size="sm"
               onClick={() => navigate('/okrs/organization/history')}
-              className="gap-2"
+              className="gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm"
             >
-              <History className="h-4 w-4" />
-              Historial OKRs Empresa
+              <History className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden md:inline">Historial OKRs</span>
+              <span className="md:hidden">Historial</span>
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/okrs')}
-              className="gap-2"
+              className="gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Volver a OKRs Personales
+              <ArrowLeft className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden md:inline">Volver</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         <div className="space-y-6">
           {/* Header con refresh */}
           <div className="flex items-center justify-between">

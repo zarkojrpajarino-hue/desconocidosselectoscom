@@ -29,13 +29,13 @@ const BuyerPersona = () => {
     const countryData = persona.country_code ? getCountryByCode(persona.country_code) : null;
 
     return (
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:gap-6">
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-2xl">{persona.name}</CardTitle>
-                <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+                <CardTitle className="text-xl md:text-2xl">{persona.name}</CardTitle>
+                <div className="flex flex-wrap items-center gap-1 md:gap-2 mt-1 text-muted-foreground text-sm">
                   <span>{persona.age} años</span>
                   <span>•</span>
                   <span>{persona.occupation}</span>

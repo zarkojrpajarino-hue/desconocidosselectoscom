@@ -29,27 +29,28 @@ const BrandKitPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
+    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4 max-w-5xl pb-20 md:pb-8">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/herramientas')}
-          className="mb-4 gap-2"
+          className="mb-3 md:mb-4 gap-2 h-8 md:h-9 text-xs md:text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver a Herramientas
+          <span className="hidden md:inline">Volver a Herramientas</span>
+          <span className="md:hidden">Volver</span>
         </Button>
         
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Palette className="h-6 w-6 text-primary" />
+        <div className="flex items-center gap-2 md:gap-3 mb-2">
+          <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+            <Palette className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Brand Kit</h1>
-            <p className="text-muted-foreground">
-              {organizationName ? `Identidad visual de ${organizationName}` : 'Crea tu identidad de marca'}
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-2xl font-bold">Brand Kit</h1>
+            <p className="text-xs md:text-sm text-muted-foreground truncate">
+              {organizationName ? `Identidad de ${organizationName}` : 'Crea tu identidad de marca'}
             </p>
           </div>
         </div>

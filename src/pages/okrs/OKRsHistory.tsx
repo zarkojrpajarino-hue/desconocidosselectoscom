@@ -88,32 +88,33 @@ const OKRsHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <History className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Historial de OKRs del Equipo
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <History className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                Historial OKRs
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Selecciona un usuario para ver su historial completo de OKRs
+              <p className="text-xs md:text-sm text-muted-foreground truncate">
+                Selecciona usuario para ver historial
               </p>
             </div>
           </div>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => navigate('/okrs')}
-            className="gap-2"
+            className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3 flex-shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver a OKRs
+            <span className="hidden md:inline">Volver</span>
           </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         <div className="space-y-6">
           {/* Información introductoria */}
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
