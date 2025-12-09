@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -203,7 +204,7 @@ const Landing = () => {
           <strong className="text-primary">{t('landing.hero.subtitleHighlight')}</strong>
         </p>
 
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: t('landing.hero.description') }} />
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('landing.hero.description')) }} />
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
           <Button size="lg" onClick={() => navigate('/signup')} className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
@@ -250,7 +251,7 @@ const Landing = () => {
       {/* Integrations Section */}
       <div id="integrations" className="container mx-auto px-4 py-16 bg-muted/20">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.integrations.title')}</h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: t('landing.integrations.subtitle') }} />
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('landing.integrations.subtitle')) }} />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto mb-8">
           {['Slack', 'HubSpot', 'Outlook', 'Trello', 'Asana', 'Zapier'].map((name) => (
