@@ -36,6 +36,21 @@ serve(async (req) => {
 
     const { organizationId, taskId } = await req.json();
 
+    // Verify user belongs to the organization (IDOR protection)
+    const { data: membership, error: membershipError } = await supabase
+      .from('user_roles')
+      .select('organization_id')
+      .eq('user_id', user.id)
+      .eq('organization_id', organizationId)
+      .single();
+
+    if (membershipError || !membership) {
+      return new Response(JSON.stringify({ error: 'You are not a member of this organization' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Get Asana account
     const { data: asanaAccount, error: accountError } = await supabase
       .from('asana_accounts')
