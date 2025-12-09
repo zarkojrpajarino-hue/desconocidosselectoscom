@@ -200,36 +200,37 @@ const UserTransactionsHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Transacciones de {userInfo?.full_name || 'Usuario'}
+              <div className="min-w-0">
+                <h1 className="text-base md:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
+                  Trans. de {userInfo?.full_name || 'Usuario'}
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Historial completo de transacciones registradas
+                <p className="text-xs md:text-sm text-muted-foreground truncate">
+                  Historial de transacciones
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/financial/transactions')}
-              className="gap-2"
+              className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3 flex-shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver al Historial
+              <span className="hidden md:inline">Volver</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl space-y-4 md:space-y-6">
         {/* Stats Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>

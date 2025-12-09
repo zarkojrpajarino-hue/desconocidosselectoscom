@@ -268,35 +268,37 @@ const AgendaSemanal = () => {
 
   return (
     <Card className="shadow-card bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/10 dark:to-blue-950/10">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-6 h-6" />
-              📅 Agenda Semanal
+      <CardHeader className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
+              <span className="truncate">📅 Agenda Semanal</span>
             </CardTitle>
-            <CardDescription>
-              {currentPeriod === 'filling' && 'Período de disponibilidad: hasta Lunes 13:30'}
-              {currentPeriod === 'reviewing' && 'Período de revisión: hasta Miércoles 13:29'}
-              {currentPeriod === 'active' && 'Semana activa - Agenda bloqueada'}
+            <CardDescription className="text-xs md:text-sm mt-1">
+              {currentPeriod === 'filling' && 'Disponibilidad: hasta Lun 13:30'}
+              {currentPeriod === 'reviewing' && 'Revisión: hasta Mié 13:29'}
+              {currentPeriod === 'active' && 'Semana activa - Bloqueada'}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <SectionTourButton sectionId="agenda" variant="ghost" size="sm" />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <SectionTourButton sectionId="agenda" variant="ghost" size="sm" className="h-8 w-8 md:h-9 md:w-auto md:px-3" />
             {hasAvailability && currentPeriod === 'reviewing' && (
               <Button
                 onClick={handleGenerateSchedules}
                 disabled={isGenerating}
-                className="bg-gradient-primary gap-2"
+                size="sm"
+                className="bg-gradient-primary gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm"
               >
-                <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                {isGenerating ? 'Regenerando...' : 'Regenerar Agenda'}
+                <RefreshCw className={`h-3 w-3 md:h-4 md:w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                <span className="hidden md:inline">{isGenerating ? 'Regenerando...' : 'Regenerar'}</span>
+                <span className="md:hidden">{isGenerating ? '...' : 'Regen.'}</span>
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
         {hasAvailability === null ? (
           <div className="text-center py-12">
             <Calendar className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />

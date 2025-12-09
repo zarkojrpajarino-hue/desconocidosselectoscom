@@ -76,15 +76,15 @@ const Calculadora = () => {
     if (!calc) return null;
 
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         {/* Market Analysis */}
         {calc.market_analysis && (
           <div>
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-primary" />
+            <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2">
+              <PieChart className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               Análisis de Mercado
             </h3>
-            <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">

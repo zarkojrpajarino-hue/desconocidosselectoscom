@@ -189,25 +189,26 @@ const UserLeadsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold truncate">
                 {isOwnLeads ? '🌟 Tus Leads' : `Leads de ${userName}`}
               </h1>
-              <p className="text-sm text-muted-foreground capitalize">
-                {userRole} • {stats.total} leads registrados
+              <p className="text-xs md:text-sm text-muted-foreground capitalize truncate">
+                {userRole} • {stats.total} leads
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={handleExport}
-              className="gap-2"
+              className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3"
               disabled={leads.length === 0}
             >
               <Download className="h-4 w-4" />
@@ -215,24 +216,25 @@ const UserLeadsPage = () => {
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/crm')}
-              className="gap-2"
+              className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline">Volver al CRM</span>
+              <span className="hidden md:inline">Volver</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl space-y-4 md:space-y-6">
         {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
+        <div className="flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-3 lg:grid-cols-6 md:gap-4 md:pb-0 md:overflow-visible -mx-3 px-3 md:mx-0 md:px-0">
+          <Card className="min-w-[120px] flex-shrink-0 md:min-w-0 md:flex-shrink">
+            <CardHeader className="pb-1 md:pb-2 p-3 md:p-6">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
               <p className="text-2xl font-bold">{stats.total}</p>
             </CardContent>
           </Card>

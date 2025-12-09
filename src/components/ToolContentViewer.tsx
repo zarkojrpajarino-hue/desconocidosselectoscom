@@ -152,11 +152,11 @@ const ToolContentViewer = ({ toolType, title, description, renderContent }: Tool
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">{title}</h2>
-            <p className="text-sm text-muted-foreground">{description}</p>
+      <div className="space-y-4 pb-20 md:pb-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-xl font-semibold truncate">{title}</h2>
+            <p className="text-xs md:text-sm text-muted-foreground">{description}</p>
           </div>
           {isAdmin && hasToolAccess && (
             <Button
@@ -164,17 +164,19 @@ const ToolContentViewer = ({ toolType, title, description, renderContent }: Tool
               disabled={generating}
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 flex-shrink-0 h-8 md:h-9 text-xs md:text-sm"
             >
               {generating ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Regenerando...
+                  <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin" />
+                  <span className="hidden md:inline">Regenerando...</span>
+                  <span className="md:hidden">...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-4 w-4" />
-                  Regenerar
+                  <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden md:inline">Regenerar</span>
+                  <span className="md:hidden">Regen.</span>
                 </>
               )}
             </Button>
