@@ -95,39 +95,38 @@ const OKRsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Target className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Gestión de OKRs
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Target className="w-6 h-6 md:w-8 md:h-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                OKRs
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
                 Objetivos y Resultados Clave
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <SectionTourButton sectionId="okrs" />
-            <Button variant="secondary" onClick={() => navigate('/okrs/organization')} className="gap-2">
+          <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            <SectionTourButton sectionId="okrs" className="hidden md:flex" />
+            <Button variant="secondary" onClick={() => navigate('/okrs/organization')} className="gap-1 p-2 md:px-3" size="sm">
               <Building2 className="h-4 w-4" />
-              OKRs Empresa
+              <span className="hidden md:inline">Empresa</span>
             </Button>
-            <Button variant="secondary" onClick={() => navigate('/okrs/history')} className="gap-2">
+            <Button variant="secondary" onClick={() => navigate('/okrs/history')} className="gap-1 p-2 md:px-3 hidden sm:flex" size="sm">
               <History className="h-4 w-4" />
-              Historial
+              <span className="hidden md:inline">Historial</span>
             </Button>
-            <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-2">
+            <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-1 p-2 md:px-3" size="sm">
               <ArrowLeft className="h-4 w-4" />
-              Volver
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* OKR Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* OKR Stats Cards - Mobile horizontal scroll */}
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-4 md:overflow-visible md:pb-0 -mx-3 px-3 md:mx-0 md:px-0 mb-6">
           <StatCard
             variant="primary"
             size="md"
@@ -136,7 +135,7 @@ const OKRsPage = () => {
             change={`Q${Math.ceil((new Date().getMonth() + 1) / 3)}`}
             trend="neutral"
             icon={<Target className="w-5 h-5 text-primary" />}
-            className="animate-fade-in"
+            className="animate-fade-in min-w-[160px] snap-center md:min-w-0"
           />
           
           <StatCard

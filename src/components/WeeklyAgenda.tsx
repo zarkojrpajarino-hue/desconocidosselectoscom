@@ -260,35 +260,36 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
                       className={`p-3 rounded-lg border transition-all ${
                         task.status === 'completed'
                           ? 'bg-success/5 border-success/30'
-                          : 'bg-card hover:bg-muted/50'
+                          : 'bg-card hover:bg-muted/50 active:bg-muted/70'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-2 md:gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm font-medium">
+                          <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1">
+                            <Clock className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs md:text-sm font-medium">
                               {formatTime(task.scheduled_start)} - {formatTime(task.scheduled_end)}
                             </span>
-                            <Badge className={getStatusColor(task.status)} variant="secondary">
+                            <Badge className={`${getStatusColor(task.status)} text-[10px] md:text-xs`} variant="secondary">
                               {getStatusLabel(task.status)}
                             </Badge>
                           </div>
-                          <h4 className="font-medium truncate">{task.task.title}</h4>
+                          <h4 className="font-medium text-sm md:text-base truncate">{task.task.title}</h4>
                           {task.is_collaborative && task.collaborator && (
                             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                               <Users className="w-3 h-3" />
-                              <span>Con {task.collaborator.full_name}</span>
+                              <span className="truncate">Con {task.collaborator.full_name}</span>
                             </div>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                           {task.status !== 'completed' && (
                             <>
                               <Button
                                 size="sm"
                                 variant="ghost"
+                                className="h-8 w-8 p-0"
                                 onClick={() => {
                                   setSelectedTask(task);
                                   setRescheduleModalOpen(true);
@@ -299,6 +300,7 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
                               <Button
                                 size="sm"
                                 variant="default"
+                                className="h-8 w-8 p-0"
                                 onClick={() => handleMarkComplete(task.id)}
                               >
                                 <CheckCircle2 className="w-4 h-4" />

@@ -192,22 +192,21 @@ const CRMPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                CRM Profesional - Pipeline de Leads
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                CRM Pipeline
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Sistema global de gestión de leads del equipo
+              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+                Gestión de leads del equipo
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <SectionTourButton sectionId="crm-hub" />
+          <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            <SectionTourButton sectionId="crm-hub" className="hidden md:flex" />
             
-            {/* Notificar en Slack */}
             <IntegrationButton
               type="slack"
               action="notify"
@@ -219,27 +218,29 @@ const CRMPage = () => {
                   `✅ Ganados: ${globalStats?.won_leads || 0}`,
                 channel: '#sales'
               }}
-              label="Slack"
+              label=""
               size="sm"
               variant="outline"
+              className="hidden sm:flex"
             />
             
             <Button
               variant="outline"
               onClick={handleExportLeads}
-              className="gap-2"
+              className="gap-1 p-2 md:px-3"
+              size="sm"
               disabled={filteredLeads.length === 0}
             >
               <Download className="h-4 w-4" />
-              <span className="hidden md:inline">Exportar CSV</span>
+              <span className="hidden md:inline">CSV</span>
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/metrics')}
-              className="gap-2"
+              className="gap-1 p-2 md:px-3"
+              size="sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden md:inline">Volver</span>
             </Button>
           </div>
         </div>
@@ -278,9 +279,9 @@ const CRMPage = () => {
       </div>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-        {/* KPIs Globales con StatCards */}
+        {/* KPIs Globales con StatCards - Mobile horizontal scroll */}
         {globalStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-4 md:overflow-visible md:pb-0 -mx-3 px-3 md:mx-0 md:px-0">
             <StatCard
               variant="primary"
               size="md"
@@ -289,7 +290,7 @@ const CRMPage = () => {
               change="este mes"
               trend="neutral"
               icon={<Users className="w-5 h-5 text-primary" />}
-              className="animate-fade-in"
+              className="animate-fade-in min-w-[160px] snap-center md:min-w-0"
             />
             
             <StatCard

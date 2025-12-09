@@ -308,82 +308,83 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header del perfil */}
+    <div className="space-y-4 md:space-y-6">
+      {/* Header del perfil - Mobile optimized */}
       <Card className="bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-6">
+        <CardContent className="pt-4 md:pt-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-full bg-gradient-primary flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+            <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-primary flex items-center justify-center text-2xl md:text-4xl font-bold text-white shadow-lg shrink-0">
               {userProfile?.full_name?.charAt(0) || 'U'}
             </div>
 
             {/* Info */}
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-1">{userProfile?.full_name}</h2>
-              <p className="text-muted-foreground mb-2">@{userProfile?.username}</p>
+            <div className="flex-1 text-center sm:text-left min-w-0">
+              <h2 className="text-xl md:text-3xl font-bold mb-1 truncate">{userProfile?.full_name}</h2>
+              <p className="text-sm text-muted-foreground mb-2">@{userProfile?.username}</p>
               {currentOrganization && (
-                <div className="flex items-center gap-2 mb-3">
-                  <Building2 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">{currentOrganization.organization_name}</span>
-                  <Badge variant="outline" className="text-xs">{currentOrganization.role}</Badge>
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
+                  <Building2 className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-sm font-medium truncate">{currentOrganization.organization_name}</span>
+                  <Badge variant="outline" className="text-xs shrink-0">{currentOrganization.role}</Badge>
                 </div>
               )}
 
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
-                  <span className="font-semibold">{achievements?.total_points || 0} puntos</span>
+              {/* Stats - Horizontal scroll on mobile */}
+              <div className="flex gap-3 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap sm:gap-4 -mx-4 px-4 sm:mx-0 sm:px-0 justify-start">
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                  <span className="font-semibold text-sm md:text-base">{achievements?.total_points || 0}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                  <span className="font-semibold">{achievements?.current_streak || 0} semanas</span>
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
+                  <span className="font-semibold text-sm md:text-base">{achievements?.current_streak || 0}w</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-500" />
-                  <span className="font-semibold">{badges.length} badges</span>
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <Award className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+                  <span className="font-semibold text-sm md:text-base">{badges.length}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-500" />
-                  <span className="font-semibold">{stats?.totalCompleted || 0} tareas completadas</span>
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <Target className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
+                  <span className="font-semibold text-sm md:text-base">{stats?.totalCompleted || 0}</span>
                 </div>
               </div>
             </div>
 
-            {/* Botón de exportar */}
-            <Button variant="outline" className="gap-2">
+            {/* Botón de exportar - Hidden on mobile */}
+            <Button variant="outline" className="gap-2 hidden md:flex shrink-0">
               <Download className="w-4 h-4" />
-              Exportar Perfil
+              Exportar
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tabs de contenido */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Vista General
+      {/* Tabs de contenido - Mobile scrollable */}
+      <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+        <TabsList className="flex w-full overflow-x-auto md:grid md:grid-cols-4 gap-1 p-1">
+          <TabsTrigger value="overview" className="gap-1 md:gap-2 shrink-0">
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Vista</span>
           </TabsTrigger>
-          <TabsTrigger value="stats">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Estadísticas
+          <TabsTrigger value="stats" className="gap-1 md:gap-2 shrink-0">
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Stats</span>
           </TabsTrigger>
-          <TabsTrigger value="badges">
-            <Award className="w-4 h-4 mr-2" />
-            Badges
+          <TabsTrigger value="badges" className="gap-1 md:gap-2 shrink-0">
+            <Award className="w-4 h-4" />
+            <span className="hidden sm:inline">Badges</span>
           </TabsTrigger>
-          <TabsTrigger value="history">
-            <Clock className="w-4 h-4 mr-2" />
-            Historial
+          <TabsTrigger value="history" className="gap-1 md:gap-2 shrink-0">
+            <Clock className="w-4 h-4" />
+            <span className="hidden sm:inline">Historial</span>
           </TabsTrigger>
         </TabsList>
 
         {/* TAB: Vista General */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stats Cards - Grid on all sizes, 2 cols mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
