@@ -36,27 +36,28 @@ const HerramientasHub = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Herramientas</h1>
-            <p className="text-sm text-muted-foreground">Selecciona una sección</p>
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-2xl font-bold truncate">Herramientas</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">Selecciona una sección</p>
           </div>
-          <div className="flex items-center gap-2">
-            <SectionTourButton sectionId="herramientas-hub" />
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <SectionTourButton sectionId="herramientas-hub" className="hidden sm:flex" />
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/home')}
-              className="gap-2"
+              className="gap-1 md:gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver
+              <span className="hidden sm:inline">Volver</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div id="tools-grid" data-tour="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="container max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8">
+        <div id="tools-grid" data-tour="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {sections.map((section) => {
             const Icon = section.icon;
             return (

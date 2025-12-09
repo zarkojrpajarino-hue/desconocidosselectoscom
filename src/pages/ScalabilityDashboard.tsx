@@ -190,15 +190,15 @@ const ScalabilityDashboard = () => {
   const totalTimeSaved = opportunities.reduce((sum, opp) => sum + (opp.time_saved_hours_month || 0), 0);
   
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-20 md:pb-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/scalability')}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Análisis de Escalabilidad</h1>
-          <p className="text-muted-foreground">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-3xl font-bold truncate">Análisis de Escalabilidad</h1>
+          <p className="text-xs md:text-base text-muted-foreground">
             {new Date(analysis.analysis_date).toLocaleDateString('es-ES', { 
               day: 'numeric', month: 'long', year: 'numeric' 
             })}
@@ -260,10 +260,10 @@ const ScalabilityDashboard = () => {
       
       {/* Tabs */}
       <Tabs defaultValue="bottlenecks" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="bottlenecks">Cuellos de Botella ({bottlenecks.length})</TabsTrigger>
-          <TabsTrigger value="dependencies">Dependencias ({dependencies.length})</TabsTrigger>
-          <TabsTrigger value="automation">Automatización ({opportunities.length})</TabsTrigger>
+        <TabsList className="flex overflow-x-auto w-full md:grid md:grid-cols-3 gap-1">
+          <TabsTrigger value="bottlenecks" className="text-xs md:text-sm whitespace-nowrap">Cuellos ({bottlenecks.length})</TabsTrigger>
+          <TabsTrigger value="dependencies" className="text-xs md:text-sm whitespace-nowrap">Dependencias ({dependencies.length})</TabsTrigger>
+          <TabsTrigger value="automation" className="text-xs md:text-sm whitespace-nowrap">Automatización ({opportunities.length})</TabsTrigger>
         </TabsList>
         
         {/* BOTTLENECKS */}

@@ -134,67 +134,68 @@ const Integraciones = () => {
         return 'bg-muted text-muted-foreground';
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+        <div className="container flex h-14 md:h-16 items-center justify-between px-3 md:px-4 gap-2">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0">
             <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
+              <ArrowLeft className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Volver</span>
             </Button>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
               Integraciones
             </span>
           </div>
-          <Button onClick={() => navigate('/signup')}>
-            Empezar Gratis
+          <Button size="sm" onClick={() => navigate('/signup')}>
+            <span className="hidden sm:inline">Empezar Gratis</span>
+            <span className="sm:hidden">Empezar</span>
           </Button>
         </div>
       </header>
 
       {/* Hero */}
-      <div className="container mx-auto px-4 pt-16 pb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      <div className="container mx-auto px-3 md:px-4 pt-8 md:pt-16 pb-6 md:pb-12 text-center">
+        <h1 className="text-2xl md:text-5xl font-bold mb-3 md:mb-4">
           Conecta con tus Herramientas Favoritas
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+        <p className="text-sm md:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 md:mb-8">
           OPTIMUS-K se integra con las herramientas que ya usas. 
           Automatiza flujos y elimina el trabajo manual.
         </p>
-        <div className="flex justify-center gap-4 flex-wrap">
-          <Badge variant="outline" className="text-sm py-1 px-3">
-            <Check className="h-4 w-4 mr-1 text-green-500" />
-            7 integraciones disponibles
+        <div className="flex justify-center gap-2 md:gap-4 flex-wrap">
+          <Badge variant="outline" className="text-xs md:text-sm py-1 px-2 md:px-3">
+            <Check className="h-3 w-3 md:h-4 md:w-4 mr-1 text-green-500" />
+            7 integraciones
           </Badge>
-          <Badge variant="outline" className="text-sm py-1 px-3">
-            <Zap className="h-4 w-4 mr-1 text-orange-500" />
+          <Badge variant="outline" className="text-xs md:text-sm py-1 px-2 md:px-3">
+            <Zap className="h-3 w-3 md:h-4 md:w-4 mr-1 text-orange-500" />
             +5000 apps via Zapier
           </Badge>
         </div>
       </div>
 
       {/* Integrations Grid */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {integrations.map(integration => <Card key={integration.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start gap-4 mb-4">
-                <div className={`p-3 rounded-xl bg-muted ${integration.color}`}>
-                  {integration.icon}
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {integrations.map(integration => <Card key={integration.id} className="p-4 md:p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
+                <div className={`p-2 md:p-3 rounded-lg md:rounded-xl bg-muted ${integration.color} flex-shrink-0`}>
+                  <div className="w-6 h-6 md:w-8 md:h-8">{integration.icon}</div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold">{integration.name}</h3>
-                    <Badge variant="outline" className={getPlanBadgeColor(integration.minPlan)}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1">
+                    <h3 className="text-lg md:text-xl font-bold">{integration.name}</h3>
+                    <Badge variant="outline" className={`text-xs ${getPlanBadgeColor(integration.minPlan)}`}>
                       {integration.minPlan === 'Starter' ? <Check className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
                       {integration.minPlan}+
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground text-sm">{integration.description}</p>
+                  <p className="text-muted-foreground text-xs md:text-sm">{integration.description}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {/* Features */}
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-muted-foreground uppercase tracking-wide">
@@ -237,17 +238,17 @@ const Integraciones = () => {
       
 
       {/* Suggestion Form */}
-      <div id="suggest" className="container mx-auto px-4 py-12">
-        <Card className="max-w-2xl mx-auto p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold mb-2">¿Echas en falta alguna herramienta?</h2>
-            <p className="text-muted-foreground">
-              Cuéntanos qué integración te gustaría ver y la evaluaremos para futuras versiones.
+      <div id="suggest" className="container mx-auto px-3 md:px-4 py-6 md:py-12">
+        <Card className="max-w-2xl mx-auto p-4 md:p-8">
+          <div className="text-center mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-bold mb-2">¿Echas en falta alguna herramienta?</h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Cuéntanos qué integración te gustaría ver.
             </p>
           </div>
 
-          <form onSubmit={handleSuggestionSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSuggestionSubmit} className="space-y-3 md:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Tu nombre (opcional)</label>
                 <Input placeholder="Juan García" value={suggestionName} onChange={e => setSuggestionName(e.target.value)} />

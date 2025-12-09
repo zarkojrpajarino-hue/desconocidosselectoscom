@@ -30,35 +30,36 @@ const Pipeline = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
                 Pipeline de Ventas
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Visualiza y gestiona el embudo completo de conversión
+              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+                Visualiza y gestiona el embudo de conversión
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <SectionTourButton sectionId="crm-pipeline" />
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <SectionTourButton sectionId="crm-pipeline" className="hidden sm:flex" />
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/crm')}
-              className="gap-2"
+              className="gap-1 md:gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver a CRM y Leads
+              <span className="hidden sm:inline">Volver a CRM</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-[1800px]">
+      <main className="container mx-auto px-2 md:px-4 py-4 md:py-8 max-w-[1800px] overflow-x-auto">
         {/* ¿Qué es Pipeline? + Tarjetas explicativas */}
         <Collapsible
           open={isPipelineInfoOpen}

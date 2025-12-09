@@ -64,31 +64,31 @@ const AIAnalysis = () => {
   const { allowed: hasAccess, remaining } = canUseAiAnalysis();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold">Análisis con IA</h1>
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Brain className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold truncate">Análisis con IA</h1>
               {limits.max_ai_analysis_per_month !== -1 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {aiAnalysisCount}/{limits.max_ai_analysis_per_month} análisis este mes
                 </p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <SectionTourButton sectionId="ai-analysis" />
-            <Button variant="outline" onClick={() => navigate('/home')} className="gap-2">
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <SectionTourButton sectionId="ai-analysis" className="hidden sm:flex" />
+            <Button variant="outline" size="sm" onClick={() => navigate('/home')} className="gap-1 md:gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Volver al Menú
+              <span className="hidden sm:inline">Volver</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         {!hasAccess && !analysis.data ? (
           <Card className="max-w-2xl mx-auto">
             <CardHeader>

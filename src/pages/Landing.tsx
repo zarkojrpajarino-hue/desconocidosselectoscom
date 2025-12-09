@@ -313,11 +313,11 @@ const Landing = () => {
       </div>
 
       {/* Pricing Section */}
-      <div id="pricing" className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.pricing.title')}</h2>
-        <p className="text-center text-muted-foreground mb-12">{t('landing.pricing.subtitle')}</p>
+      <div id="pricing" className="container mx-auto px-3 md:px-4 py-8 md:py-16">
+        <h2 className="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">{t('landing.pricing.title')}</h2>
+        <p className="text-sm md:text-base text-center text-muted-foreground mb-6 md:mb-12">{t('landing.pricing.subtitle')}</p>
 
-        <div className="grid grid-cols-4 gap-3 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-0 md:px-4">
           {plans.map((plan, index) => (
             <Card key={index} className={`p-4 flex flex-col min-w-0 ${plan.featured ? 'border-primary border-2 shadow-2xl relative' : 'hover:shadow-lg transition-shadow'}`}>
               {plan.featured && (

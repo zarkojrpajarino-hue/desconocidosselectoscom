@@ -40,23 +40,25 @@ const BIDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-20 md:pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <BarChart3 className="w-8 h-8 text-primary" />
-            Business Intelligence
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Análisis avanzado de métricas y tendencias de negocio
-          </p>
+      <div className="flex flex-col gap-3 md:gap-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+              <span className="truncate">Business Intelligence</span>
+            </h1>
+            <p className="text-xs md:text-base text-muted-foreground mt-1">
+              Análisis avanzado de métricas y tendencias
+            </p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[140px]">
-              <Calendar className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-[130px] md:w-[140px] flex-shrink-0">
+              <Calendar className="w-4 h-4 mr-1 md:mr-2" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -68,13 +70,13 @@ const BIDashboard = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={refreshing}>
+          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={refreshing} className="flex-shrink-0">
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
           
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
+          <Button variant="outline" size="sm" onClick={handleExport} className="flex-shrink-0">
+            <Download className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Exportar</span>
           </Button>
         </div>
       </div>
@@ -88,7 +90,7 @@ const BIDashboard = () => {
 
       {/* Detailed Analytics Tabs */}
       <Tabs defaultValue="revenue" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="flex overflow-x-auto w-full lg:w-auto lg:inline-grid lg:grid-cols-4 gap-1">
           <TabsTrigger value="revenue" className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             <span className="hidden sm:inline">Ingresos</span>
