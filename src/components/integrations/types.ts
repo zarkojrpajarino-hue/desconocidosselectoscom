@@ -5,7 +5,8 @@
 export type IntegrationType = 
   | 'slack' 
   | 'hubspot' 
-  | 'calendar' 
+  | 'calendar'
+  | 'outlook' 
   | 'asana' 
   | 'trello' 
   | 'zapier' 

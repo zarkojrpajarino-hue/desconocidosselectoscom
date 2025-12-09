@@ -8,7 +8,8 @@ import {
   Calendar, 
   ListTodo, 
   LayoutDashboard, 
-  Zap 
+  Zap,
+  Mail
 } from 'lucide-react';
 import type { IntegrationType, IntegrationConfig, PlanLevel } from './types';
 
@@ -29,10 +30,17 @@ export const INTEGRATION_CONFIG: Record<Exclude<IntegrationType, 'all'>, Integra
   },
   calendar: {
     icon: <Calendar className="h-4 w-4" />,
-    label: 'Calendario',
+    label: 'Google Calendar',
     colorClass: 'text-blue-500',
     minPlan: 'starter',
     endpoint: 'sync-calendar-events'
+  },
+  outlook: {
+    icon: <Mail className="h-4 w-4" />,
+    label: 'Outlook Calendar',
+    colorClass: 'text-blue-600',
+    minPlan: 'professional',
+    endpoint: 'sync-outlook-events'
   },
   asana: {
     icon: <ListTodo className="h-4 w-4" />,

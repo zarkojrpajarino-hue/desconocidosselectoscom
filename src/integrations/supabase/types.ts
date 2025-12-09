@@ -63,6 +63,71 @@ export type Database = {
           },
         ]
       }
+      ai_generations_history: {
+        Row: {
+          cost_usd: number | null
+          created_at: string | null
+          error_message: string | null
+          feedback_text: string | null
+          id: string
+          input_data: Json | null
+          organization_id: string | null
+          prompt: string | null
+          response: Json
+          response_time_ms: number | null
+          tokens_used: number | null
+          tool_name: string
+          user_id: string | null
+          user_rating: number | null
+          was_successful: boolean | null
+          was_useful: boolean | null
+        }
+        Insert: {
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          feedback_text?: string | null
+          id?: string
+          input_data?: Json | null
+          organization_id?: string | null
+          prompt?: string | null
+          response: Json
+          response_time_ms?: number | null
+          tokens_used?: number | null
+          tool_name: string
+          user_id?: string | null
+          user_rating?: number | null
+          was_successful?: boolean | null
+          was_useful?: boolean | null
+        }
+        Update: {
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          feedback_text?: string | null
+          id?: string
+          input_data?: Json | null
+          organization_id?: string | null
+          prompt?: string | null
+          response?: Json
+          response_time_ms?: number | null
+          tokens_used?: number | null
+          tool_name?: string
+          user_id?: string | null
+          user_rating?: number | null
+          was_successful?: boolean | null
+          was_useful?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generations_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_task_resources: {
         Row: {
           created_at: string | null
@@ -380,6 +445,62 @@ export type Database = {
             foreignKeyName: "asana_accounts_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          endpoint: string | null
+          http_method: string | null
+          id: string
+          ip_address: unknown
+          new_values: Json | null
+          old_values: Json | null
+          organization_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          endpoint?: string | null
+          http_method?: string | null
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          endpoint?: string | null
+          http_method?: string | null
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -2564,6 +2685,78 @@ export type Database = {
             columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      okr_check_ins: {
+        Row: {
+          attachments: Json | null
+          blockers: string | null
+          check_in_date: string
+          confidence_level: number | null
+          created_at: string | null
+          id: string
+          key_result_id: string
+          learnings: string | null
+          new_value: number
+          next_steps: string | null
+          organization_id: string | null
+          previous_value: number | null
+          progress_update: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          blockers?: string | null
+          check_in_date?: string
+          confidence_level?: number | null
+          created_at?: string | null
+          id?: string
+          key_result_id: string
+          learnings?: string | null
+          new_value: number
+          next_steps?: string | null
+          organization_id?: string | null
+          previous_value?: number | null
+          progress_update: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          blockers?: string | null
+          check_in_date?: string
+          confidence_level?: number | null
+          created_at?: string | null
+          id?: string
+          key_result_id?: string
+          learnings?: string | null
+          new_value?: number
+          next_steps?: string | null
+          organization_id?: string | null
+          previous_value?: number | null
+          progress_update?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_check_ins_key_result_id_fkey"
+            columns: ["key_result_id"]
+            isOneToOne: false
+            referencedRelation: "key_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_check_ins_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -5156,6 +5349,101 @@ export type Database = {
           },
         ]
       }
+      user_notification_preferences: {
+        Row: {
+          created_at: string | null
+          daily_digest: boolean | null
+          email_enabled: boolean | null
+          lead_assigned: boolean | null
+          lead_status_change: boolean | null
+          milestone_reached: boolean | null
+          monthly_report: boolean | null
+          okr_at_risk: boolean | null
+          okr_update: boolean | null
+          organization_id: string | null
+          push_enabled: boolean | null
+          quiet_hours_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          role_changed: boolean | null
+          slack_enabled: boolean | null
+          task_assigned: boolean | null
+          task_completed: boolean | null
+          task_due_soon: boolean | null
+          task_overdue: boolean | null
+          team_invite: boolean | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+          weekly_digest: boolean | null
+          weekly_summary: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_digest?: boolean | null
+          email_enabled?: boolean | null
+          lead_assigned?: boolean | null
+          lead_status_change?: boolean | null
+          milestone_reached?: boolean | null
+          monthly_report?: boolean | null
+          okr_at_risk?: boolean | null
+          okr_update?: boolean | null
+          organization_id?: string | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          role_changed?: boolean | null
+          slack_enabled?: boolean | null
+          task_assigned?: boolean | null
+          task_completed?: boolean | null
+          task_due_soon?: boolean | null
+          task_overdue?: boolean | null
+          team_invite?: boolean | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+          weekly_digest?: boolean | null
+          weekly_summary?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_digest?: boolean | null
+          email_enabled?: boolean | null
+          lead_assigned?: boolean | null
+          lead_status_change?: boolean | null
+          milestone_reached?: boolean | null
+          monthly_report?: boolean | null
+          okr_at_risk?: boolean | null
+          okr_update?: boolean | null
+          organization_id?: string | null
+          push_enabled?: boolean | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          role_changed?: boolean | null
+          slack_enabled?: boolean | null
+          task_assigned?: boolean | null
+          task_completed?: boolean | null
+          task_due_soon?: boolean | null
+          task_overdue?: boolean | null
+          team_invite?: boolean | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_digest?: boolean | null
+          weekly_summary?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -5870,6 +6158,17 @@ export type Database = {
       count_user_swaps_for_week: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: number
+      }
+      create_audit_log: {
+        Args: {
+          p_action: string
+          p_new_values?: Json
+          p_old_values?: Json
+          p_organization_id?: string
+          p_resource_id: string
+          p_resource_type: string
+        }
+        Returns: string
       }
       detect_stalled_deals:
         | {
