@@ -40,7 +40,12 @@
     "integrations": "Integrationen",
     "settings": "Einstellungen",
     "profile": "Profil",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "goToDashboard": "Zum Dashboard",
+    "login": "Anmelden",
+    "startFree": "Kostenlos starten"
   },
   "auth": {
     "login": "Anmelden",
@@ -56,13 +61,23 @@
     "createAccount": "Konto erstellen"
   },
   "landing": {
+    "badge": "🎁 14 Tage KOSTENLOS · Keine Karte erforderlich",
     "hero": {
-      "title": "Steigern Sie Ihr Geschäft mit Intelligenz",
-      "subtitle": "Die All-in-One-Plattform zur Verwaltung Ihres Unternehmens",
-      "cta": "Kostenlos starten"
+      "title": "OPTIMUS-K",
+      "subtitle": "Ihr Unternehmen verdient eine Management-App",
+      "subtitleHighlight": "so einzigartig wie Ihr Unternehmen",
+      "description": "In <strong>2-3 Stunden</strong> haben Sie eine komplette App, die Ihre Sprache spricht: mit IHREN Prozessen, IHREN Metriken und IHRER Arbeitsweise.",
+      "cta": "Jetzt starten",
+      "viewPricing": "Preise ansehen"
+    },
+    "trust": {
+      "noCommitment": "Keine Bindung",
+      "securePayment": "Sichere Zahlung",
+      "quickSetup": "Setup in 2-3h"
     },
     "features": {
-      "title": "Funktionen",
+      "title": "Was ist in Ihrer App enthalten?",
+      "subtitle": "Alle Werkzeuge, die Sie benötigen, um Ihr Unternehmen an einem Ort zu verwalten",
       "dashboard": {
         "title": "Personalisiertes Dashboard",
         "description": "Dashboard angepasst an IHR Unternehmen mit wichtigen Metriken"
@@ -88,56 +103,243 @@
         "description": "Slack, HubSpot, Outlook, Trello, Asana, Zapier und mehr"
       }
     },
+    "integrations": {
+      "title": "Integriert sich mit Ihren Lieblingswerkzeugen",
+      "subtitle": "<strong>OPTIMUS-K passt sich Ihrer Arbeitsweise an.</strong> Wenn Ihr Team Slack verwendet, erhalten sie dort Benachrichtigungen. Wenn Sie HubSpot haben, wird alles automatisch synchronisiert.",
+      "viewAll": "Alle Integrationen anzeigen",
+      "apiNote": "Ihr Lieblingswerkzeug nicht aufgeführt? Wir haben eine offene API, um jedes System zu verbinden"
+    },
+    "choosePath": {
+      "title": "Jetzt starten - Wählen Sie Ihren Weg",
+      "subtitle": "OPTIMUS-K passt sich Ihrer Situation an. Haben Sie bereits ein laufendes Unternehmen oder starten Sie mit einer Idee?",
+      "business": {
+        "title": "Ich habe ein Unternehmen",
+        "description": "Ich habe bereits Kunden, Verkäufe und ein Team. Ich möchte mein Management mit KI und personalisierten Metriken optimieren.",
+        "feature1": "30 Fragen zu Ihrem Unternehmen",
+        "feature2": "Workspace in 2-3h generiert",
+        "feature3": "CRM, OKRs, KPIs angepasst",
+        "cta": "Unternehmens-Onboarding starten"
+      },
+      "startup": {
+        "title": "Ich habe eine Idee",
+        "description": "Ich starte ein Projekt oder Startup. Ich muss meine Idee validieren und meinen Launch strukturieren.",
+        "feature1": "6 Validierungsschritte",
+        "feature2": "Automatisches Lean Canvas",
+        "feature3": "Startup-Roadmap und Metriken",
+        "cta": "Startup-Onboarding starten"
+      }
+    },
     "pricing": {
-      "title": "Pläne und Preise",
-      "monthly": "Monatlich",
-      "yearly": "Jährlich",
-      "free": "Kostenlose Testversion",
-      "starter": "Starter",
-      "professional": "Professional",
-      "enterprise": "Enterprise",
+      "title": "Transparente Preise",
+      "subtitle": "Kostenlos starten · Keine Bindung · Jederzeit kündbar",
+      "mostPopular": "⭐ Am beliebtesten",
       "perMonth": "/Monat",
-      "startTrial": "Testversion starten",
-      "choosePlan": "Plan wählen"
+      "days": "Tage",
+      "customPlan": "Benötigen Sie etwas Spezifischeres? Mehr als 25 Benutzer?",
+      "contactUs": "Kontaktieren Sie uns für einen individuellen Plan →",
+      "plans": {
+        "free": {
+          "name": "Kostenlose Testversion",
+          "price": "Kostenlos",
+          "period": "14 Tage",
+          "description": "Ohne Verpflichtung testen",
+          "limits": "3 Benutzer · 500 Leads · 3 OKRs",
+          "features": [
+            "Personalisiertes Dashboard",
+            "CRM mit Basis-Pipeline",
+            "3 OKRs mit Schlüsselergebnissen",
+            "Punkte- und Badge-System",
+            "2 KI-Analysen/Monat",
+            "CSV-Export",
+            "E-Mail-Support (72h)"
+          ],
+          "cta": "Kostenlos starten"
+        },
+        "starter": {
+          "name": "Starter",
+          "description": "Für kleine Teams",
+          "limits": "10 Benutzer · 1.000 Leads · 10 OKRs",
+          "features": [
+            "Alles aus Kostenlos +",
+            "Unbegrenzte wöchentliche Aufgaben",
+            "Anpassbare Pipeline",
+            "Automatisches Scoring",
+            "Vollständige Gamification",
+            "Google Calendar Sync",
+            "Excel- und PDF-Export",
+            "E-Mail-Support (48h)"
+          ],
+          "cta": "Mit Starter beginnen"
+        },
+        "professional": {
+          "name": "Professional",
+          "description": "Für wachsende Unternehmen",
+          "limits": "25 Benutzer · 5.000 Leads · Unbegrenzte OKRs",
+          "features": [
+            "Alles aus Starter +",
+            "Generative KI (Buyer Personas, Brand Kit)",
+            "Wettbewerbsanalyse",
+            "5 BI-Dashboards",
+            "Slack, HubSpot, Outlook, Zapier",
+            "Startup-Onboarding",
+            "Prioritäts-Support 24h"
+          ],
+          "cta": "Professional testen"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Für große Organisationen",
+          "limits": "Alles unbegrenzt",
+          "features": [
+            "Alles aus Professional +",
+            "Vollständiges White-Label",
+            "SSO/SAML",
+            "SAP, Oracle, Dynamics",
+            "99,9% Uptime SLA",
+            "Dedizierter Account Manager",
+            "24/7 Support (<1h)"
+          ],
+          "cta": "Vertrieb kontaktieren"
+        }
+      }
+    },
+    "cta": {
+      "title": "Bereit, wie ein Profi zu managen?",
+      "subtitle": "Schließen Sie sich hunderten von Unternehmen an, die ihr Geschäft bereits mit OPTIMUS-K verwalten",
+      "button": "14 Tage kostenlos starten",
+      "noCreditCard": "Keine Kreditkarte erforderlich"
+    },
+    "footer": {
+      "copyright": "© 2025 OPTIMUS-K. Alle Rechte vorbehalten.",
+      "terms": "Bedingungen",
+      "privacy": "Datenschutz",
+      "contact": "Kontakt"
     }
   },
   "crm": {
+    "title": "CRM",
     "leads": "Leads",
     "newLead": "Neuer Lead",
-    "editLead": "Lead bearbeiten",
-    "deleteLead": "Lead löschen",
-    "leadName": "Lead-Name",
-    "company": "Unternehmen",
-    "email": "E-Mail",
-    "phone": "Telefon",
-    "status": "Status",
-    "source": "Quelle",
-    "value": "Wert",
-    "probability": "Wahrscheinlichkeit",
-    "closeDate": "Abschlussdatum",
-    "notes": "Notizen"
-  },
-  "dashboard": {
-    "welcome": "Willkommen",
-    "overview": "Übersicht",
-    "recentActivity": "Letzte Aktivitäten",
-    "quickActions": "Schnellaktionen",
-    "metrics": "Metriken",
-    "goals": "Ziele"
+    "pipeline": "Pipeline",
+    "totalLeads": "Gesamte Leads",
+    "qualified": "Qualifiziert",
+    "won": "Gewonnen",
+    "lost": "Verloren",
+    "pipelineValue": "Pipeline-Wert",
+    "stages": {
+      "discovery": "Entdeckung",
+      "qualification": "Qualifikation",
+      "proposal": "Angebot",
+      "negotiation": "Verhandlung",
+      "won": "Gewonnen",
+      "lost": "Verloren"
+    },
+    "lead": {
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "company": "Unternehmen",
+      "value": "Geschätzter Wert",
+      "probability": "Wahrscheinlichkeit",
+      "source": "Quelle",
+      "notes": "Notizen",
+      "assignedTo": "Zugewiesen an",
+      "createdAt": "Erstellt",
+      "updatedAt": "Aktualisiert"
+    }
   },
   "tasks": {
     "title": "Aufgaben",
+    "myTasks": "Meine Aufgaben",
+    "today": "Heute",
+    "thisWeek": "Diese Woche",
+    "pending": "Ausstehend",
+    "completed": "Abgeschlossen",
+    "overdue": "Überfällig",
+    "markComplete": "Als erledigt markieren",
     "newTask": "Neue Aufgabe",
-    "editTask": "Aufgabe bearbeiten",
-    "deleteTask": "Aufgabe löschen",
-    "taskName": "Aufgabenname",
-    "description": "Beschreibung",
     "dueDate": "Fälligkeitsdatum",
     "priority": "Priorität",
-    "assignedTo": "Zugewiesen an",
-    "status": "Status",
-    "completed": "Abgeschlossen",
-    "pending": "Ausstehend",
-    "inProgress": "In Bearbeitung"
+    "high": "Hoch",
+    "medium": "Mittel",
+    "low": "Niedrig"
+  },
+  "okrs": {
+    "title": "OKRs",
+    "objectives": "Ziele",
+    "keyResults": "Schlüsselergebnisse",
+    "newObjective": "Neues Ziel",
+    "progress": "Fortschritt",
+    "onTrack": "Auf Kurs",
+    "atRisk": "Gefährdet",
+    "behind": "Im Rückstand",
+    "quarter": "Quartal"
+  },
+  "financial": {
+    "title": "Finanzen",
+    "revenue": "Einnahmen",
+    "expenses": "Ausgaben",
+    "profit": "Gewinn",
+    "margin": "Marge",
+    "transactions": "Transaktionen",
+    "newRevenue": "Neue Einnahme",
+    "newExpense": "Neue Ausgabe",
+    "category": "Kategorie",
+    "amount": "Betrag",
+    "date": "Datum",
+    "description": "Beschreibung"
+  },
+  "metrics": {
+    "title": "Metriken",
+    "kpis": "KPIs",
+    "businessMetrics": "Geschäftsmetriken",
+    "conversionRate": "Konversionsrate",
+    "avgTicket": "Durchschnittlicher Bestellwert",
+    "cac": "CAC",
+    "ltv": "LTV",
+    "churnRate": "Abwanderungsrate",
+    "nps": "NPS"
+  },
+  "integrations": {
+    "title": "Integrationen",
+    "connected": "Verbunden",
+    "notConnected": "Nicht verbunden",
+    "connect": "Verbinden",
+    "disconnect": "Trennen",
+    "configure": "Konfigurieren",
+    "sync": "Synchronisieren",
+    "lastSync": "Letzte Synchronisation",
+    "suggestTool": "Fehlt ein Werkzeug?",
+    "suggestPlaceholder": "Beschreiben Sie das Werkzeug, das Sie benötigen...",
+    "sendSuggestion": "Vorschlag senden",
+    "plans": {
+      "starter": "Verfügbar auf Starter",
+      "professional": "Verfügbar auf Professional",
+      "enterprise": "Verfügbar auf Enterprise"
+    }
+  },
+  "ai": {
+    "title": "KI-Analyse",
+    "generating": "Analyse wird generiert...",
+    "financialHealth": "Finanzielle Gesundheit",
+    "teamPerformance": "Teamleistung",
+    "honestFeedback": "Ehrliches Feedback",
+    "recommendations": "Empfehlungen",
+    "refresh": "Analyse aktualisieren"
+  },
+  "trial": {
+    "title": "Kostenlose Version",
+    "daysLeft": "Tage übrig",
+    "expired": "Ihre Testversion ist abgelaufen",
+    "upgrade": "Pläne ansehen",
+    "choosePlan": "Wählen Sie Ihren Plan, um fortzufahren"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "networkError": "Verbindungsfehler",
+    "unauthorized": "Nicht autorisiert",
+    "notFound": "Nicht gefunden",
+    "validation": "Validierungsfehler",
+    "tryAgain": "Erneut versuchen"
   }
 }
