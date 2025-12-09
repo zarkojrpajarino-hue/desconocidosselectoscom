@@ -160,10 +160,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.slack-notify]
-verify_jwt = false
+verify_jwt = true
 
 [functions.trigger-webhook]
-verify_jwt = false
+verify_jwt = true
 
 [functions.outlook-auth-url]
 verify_jwt = true
