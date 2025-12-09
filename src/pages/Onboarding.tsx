@@ -676,23 +676,23 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
   const progress = (currentStep / TOTAL_STEPS) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <div className="max-w-4xl mx-auto py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-3 md:p-4 pb-24 md:pb-4">
+      <div className="max-w-4xl mx-auto py-4 md:py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">
             Bienvenido a <span className="text-primary">OPTIMUS-K</span>
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm md:text-lg">
             Generador de Apps de Gestión Empresarial
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-2 hidden sm:block">
             Completa este formulario y en 2-3 horas tendrás tu app personalizada lista
           </p>
         </div>
 
         {/* Progress - Stepper Visual */}
-        <Card className="p-6 mb-6">
+        <Card className="p-3 md:p-6 mb-4 md:mb-6 overflow-x-auto">
           <OnboardingStepper
             currentStep={currentStep}
             totalSteps={TOTAL_STEPS}
@@ -707,7 +707,7 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         </Card>
 
         {/* Form Steps */}
-        <Card className="p-8">
+        <Card className="p-4 md:p-8">
           {/* Si es usuario existente con organizaciones, mostrar opciones */}
           {showExistingUserOptions ? (
             <ExistingUserOptions
@@ -738,31 +738,35 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
 
           {/* Navigation - solo si no está en opciones de usuario existente */}
           {!showExistingUserOptions && (
-            <div className="flex justify-between mt-8 pt-6 border-t">
+            <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t gap-2">
               <Button
                 variant="outline"
                 onClick={handleBack}
                 disabled={currentStep === 1 || loading}
+                size="sm"
+                className="h-9 md:h-10 text-xs md:text-sm"
               >
-                <ChevronLeft className="mr-2 h-4 w-4" />
+                <ChevronLeft className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
                 Anterior
               </Button>
 
               <Button
                 onClick={handleNext}
                 disabled={loading}
+                size="sm"
+                className="h-9 md:h-10 text-xs md:text-sm"
               >
                 {loading ? (
                   "Guardando..."
                 ) : currentStep === TOTAL_STEPS ? (
                   <>
-                    <Check className="mr-2 h-4 w-4" />
+                    <Check className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
                     Finalizar
                   </>
                 ) : (
                   <>
                     Siguiente
-                    <ChevronRight className="ml-2 h-4 w-4" />
+                    <ChevronRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
                   </>
                 )}
               </Button>
@@ -771,9 +775,10 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         </Card>
 
         {/* Trial Info */}
-        <div className="text-center mt-6 text-sm text-muted-foreground">
+        <div className="text-center mt-4 md:mt-6 text-xs md:text-sm text-muted-foreground">
           <p>🎁 <strong>14 días GRATIS</strong></p>
-          <p>Luego desde €99/mes · Sin permanencia · Cancela cuando quieras</p>
+          <p className="hidden sm:block">Luego desde €99/mes · Sin permanencia · Cancela cuando quieras</p>
+          <p className="sm:hidden">Luego desde €99/mes</p>
         </div>
       </div>
     </div>

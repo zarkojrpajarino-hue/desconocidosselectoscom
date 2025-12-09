@@ -138,14 +138,14 @@ const SelectRole = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-4">
-      <div className="container max-w-5xl mx-auto py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-3 md:p-4 pb-24 md:pb-4">
+      <div className="container max-w-5xl mx-auto py-4 md:py-8">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">
             Selecciona tu Rol
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Elige el rol que mejor describe tu función en la organización
+          <p className="text-muted-foreground text-sm md:text-lg">
+            Elige el rol que mejor describe tu función
           </p>
         </div>
 

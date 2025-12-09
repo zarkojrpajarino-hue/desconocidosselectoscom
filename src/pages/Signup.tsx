@@ -116,9 +116,9 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-3 md:p-4">
       <Card className="w-full max-w-md shadow-xl border-border/50">
-        <CardHeader className="space-y-1">
+        <CardHeader className="space-y-1 p-4 md:p-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -128,9 +128,9 @@ const Signup = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
+            <CardTitle className="text-xl md:text-2xl font-bold">Crear Cuenta</CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-xs md:text-sm">
             Completa tus datos para registrarte
           </CardDescription>
         </CardHeader>

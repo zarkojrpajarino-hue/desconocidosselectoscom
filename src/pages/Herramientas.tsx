@@ -24,24 +24,25 @@ const Herramientas = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Botón Volver al Menú */}
       <Button
         variant="outline"
+        size="sm"
         onClick={() => navigate('/home')}
-        className="fixed top-4 right-4 z-50 gap-2 shadow-lg"
+        className="fixed top-2 right-2 md:top-4 md:right-4 z-50 gap-1 md:gap-2 shadow-lg h-8 md:h-10 text-xs md:text-sm"
       >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="hidden sm:inline">Volver al Menú</span>
+        <ArrowLeft className="h-3 w-3 md:h-4 md:w-4" />
+        <span className="hidden sm:inline">Volver</span>
       </Button>
 
-      <div className="container max-w-6xl mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">🎨 Herramientas Visuales</h1>
+      <div className="container max-w-6xl mx-auto px-3 md:px-4 py-4 md:py-6">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-lg md:text-2xl font-bold">🎨 Herramientas</h1>
         </div>
 
-        {/* Tabs superiores */}
-        <div className="border-b border-border mb-6 overflow-x-auto">
+        {/* Tabs superiores - horizontal scroll en móvil */}
+        <div className="border-b border-border mb-4 md:mb-6 overflow-x-auto scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0">
           <div className="flex gap-1 min-w-max">
             {tabs.map((tab) => (
               <NavLink

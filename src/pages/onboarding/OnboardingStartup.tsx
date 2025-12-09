@@ -354,33 +354,34 @@ export default function OnboardingStartup() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Rocket className="w-8 h-8 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold">Onboarding Startup</h1>
-                <p className="text-sm text-muted-foreground">
-                  Paso {currentStep} de {TOTAL_STEPS}: {STEP_TITLES[currentStep - 1]}
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <Rocket className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-base md:text-xl font-bold truncate">Onboarding Startup</h1>
+                <p className="text-[10px] md:text-sm text-muted-foreground">
+                  Paso {currentStep}/{TOTAL_STEPS}: {STEP_TITLES[currentStep - 1]}
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={isSaving}>
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Guardar borrador
+            <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={isSaving} className="flex-shrink-0 h-8 text-xs md:text-sm">
+              {isSaving ? <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin mr-1 md:mr-2" /> : <Save className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />}
+              <span className="hidden sm:inline">Guardar</span>
             </Button>
           </div>
           
-          <Progress value={(currentStep / TOTAL_STEPS) * 100} className="h-2" />
+          <Progress value={(currentStep / TOTAL_STEPS) * 100} className="h-1.5 md:h-2" />
           
-          <div className="flex justify-between mt-2">
+          {/* Step titles - horizontal scroll on mobile */}
+          <div className="flex justify-between mt-2 overflow-x-auto scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0 gap-1">
             {STEP_TITLES.map((title, index) => (
               <button
                 key={index}
                 onClick={() => index + 1 <= currentStep && setCurrentStep(index + 1)}
-                className={`text-xs px-2 py-1 rounded transition-colors ${
+                className={`text-[9px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded transition-colors whitespace-nowrap flex-shrink-0 ${
                   index + 1 === currentStep
                     ? 'bg-primary text-primary-foreground font-semibold'
                     : index + 1 < currentStep
@@ -395,35 +396,37 @@ export default function OnboardingStartup() {
         </div>
       </div>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-4xl">
         <Card>
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-3 md:p-8">
             {renderStep()}
           </CardContent>
         </Card>
 
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" onClick={handleBack} disabled={currentStep === 1}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
+        <div className="flex justify-between mt-4 md:mt-6 gap-2">
+          <Button variant="outline" onClick={handleBack} disabled={currentStep === 1} size="sm" className="h-9 md:h-10 text-xs md:text-sm">
+            <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             Anterior
           </Button>
 
           {currentStep < TOTAL_STEPS ? (
-            <Button onClick={handleNext}>
+            <Button onClick={handleNext} size="sm" className="h-9 md:h-10 text-xs md:text-sm">
               Siguiente
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 h-9 md:h-10 text-xs md:text-sm">
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Generando workspace...
+                  <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Generando...</span>
+                  <span className="sm:hidden">...</span>
                 </>
               ) : (
                 <>
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Finalizar y Generar Workspace
+                  <Rocket className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Finalizar</span>
+                  <span className="sm:hidden">Crear</span>
                 </>
               )}
             </Button>

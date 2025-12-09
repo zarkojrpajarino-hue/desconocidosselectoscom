@@ -85,8 +85,8 @@ export default function SelectOrganization() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <div className="max-w-2xl mx-auto py-12">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-3 md:p-4">
+      <div className="max-w-2xl mx-auto py-6 md:py-12">
         <ExistingUserOptions
           userEmail={userEmail}
           organizations={organizations}
