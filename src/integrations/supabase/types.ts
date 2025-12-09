@@ -5821,11 +5821,11 @@ export type Database = {
       }
       calculate_lead_score: { Args: { p_lead_id: string }; Returns: string }
       calculate_lead_score_enterprise:
+        | { Args: { p_lead_id: string }; Returns: number }
         | {
             Args: { p_lead_id: string; p_organization_id: string }
             Returns: number
           }
-        | { Args: { p_lead_id: string }; Returns: number }
       calculate_monthly_metrics: {
         Args: { target_month: string }
         Returns: {
