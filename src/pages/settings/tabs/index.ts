@@ -7,3 +7,6 @@ export { HubSpotTab } from './HubSpotTab';
 export { AsanaTab } from './AsanaTab';
 export { TrelloTab } from './TrelloTab';
 export { ActivityTab } from './ActivityTab';
+export { NotificationsTab } from './NotificationsTab';
+export { AuditLogTab } from './AuditLogTab';
+export { BillingTab } from './BillingTab';

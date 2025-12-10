@@ -15,6 +15,8 @@ export interface TaskData {
   order_index: number;
   estimated_cost: number | null;
   actual_cost: number | null;
+  estimated_hours?: number | null;
+  actual_hours?: number | null;
   is_collaborative?: boolean;
   created_at?: string | null;
   organization_id?: string;

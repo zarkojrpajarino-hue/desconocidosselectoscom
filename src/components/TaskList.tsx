@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, Users, AlertCircle, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Users, AlertCircle, Sparkles, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import TaskFeedbackModal from "./TaskFeedbackModal";
 import TaskImpactMeasurementModal from "./TaskImpactMeasurementModal";
@@ -18,6 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AIResourcesPanel } from "./tasks/ai-resources";
 import type { AIResourceType } from "@/types/ai-resources.types";
 import { IntegrationButton } from "./IntegrationButton";
+import { TimeTracker } from "./tasks/TimeTracker";
+import { TimeLogsModal } from "./tasks/TimeLogsModal";
 import type {
   TaskData,
   TaskCompletionData,
@@ -48,7 +50,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [unlockedBadge, setUnlockedBadge] = useState<BadgeData | null>(null);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiPanelTask, setAiPanelTask] = useState<AIPanelTaskData | null>(null);
-
+  const [timeLogsModalOpen, setTimeLogsModalOpen] = useState(false);
+  const [timeLogsTask, setTimeLogsTask] = useState<TaskData | null>(null);
   // Get current organization for multi-tenancy
   const { currentOrganizationId } = useAuth();
 
@@ -721,6 +724,30 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             </Button>
           )}
 
+          {/* Time Tracking */}
+          {!isCompleted && (
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
+              <TimeTracker
+                taskId={task.id}
+                estimatedHours={task.estimated_hours}
+                actualHours={task.actual_hours}
+                compact={true}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  setTimeLogsTask(task);
+                  setTimeLogsModalOpen(true);
+                }}
+              >
+                <Clock className="w-3 h-3 mr-1" />
+                Ver historial
+              </Button>
+            </div>
+          )}
+
           {/* Botones de Integración */}
           {!isCompleted && (
             <div className="flex flex-wrap gap-2 mt-2">
@@ -875,6 +902,16 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
           taskDescription={aiPanelTask.description}
           open={aiPanelOpen}
           onOpenChange={setAiPanelOpen}
+        />
+      )}
+
+      {/* Time Logs Modal */}
+      {timeLogsTask && (
+        <TimeLogsModal
+          open={timeLogsModalOpen}
+          onOpenChange={setTimeLogsModalOpen}
+          taskId={timeLogsTask.id}
+          taskTitle={timeLogsTask.title}
         />
       )}
     </>
