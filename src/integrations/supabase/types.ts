@@ -1096,6 +1096,107 @@ export type Database = {
           },
         ]
       }
+      churn_surveys: {
+        Row: {
+          cancellation_date: string
+          competitor_better_features: boolean | null
+          competitor_better_price: boolean | null
+          competitor_name: string | null
+          created_at: string | null
+          discount_duration_months: number | null
+          discount_percentage: number | null
+          follow_up_date: string | null
+          follow_up_notes: string | null
+          follow_up_scheduled: boolean | null
+          id: string
+          missing_features: string[] | null
+          mrr_lost: number | null
+          nps_score: number | null
+          organization_id: string
+          plan_before_cancel: string
+          reason: string
+          reason_category: string | null
+          reason_detail: string | null
+          retention_offer_accepted: boolean | null
+          retention_offer_shown: boolean | null
+          retention_offer_type: string | null
+          satisfaction_score: number | null
+          updated_at: string | null
+          user_id: string
+          win_back_attempted: boolean | null
+          win_back_successful: boolean | null
+          would_recommend: boolean | null
+        }
+        Insert: {
+          cancellation_date?: string
+          competitor_better_features?: boolean | null
+          competitor_better_price?: boolean | null
+          competitor_name?: string | null
+          created_at?: string | null
+          discount_duration_months?: number | null
+          discount_percentage?: number | null
+          follow_up_date?: string | null
+          follow_up_notes?: string | null
+          follow_up_scheduled?: boolean | null
+          id?: string
+          missing_features?: string[] | null
+          mrr_lost?: number | null
+          nps_score?: number | null
+          organization_id: string
+          plan_before_cancel: string
+          reason: string
+          reason_category?: string | null
+          reason_detail?: string | null
+          retention_offer_accepted?: boolean | null
+          retention_offer_shown?: boolean | null
+          retention_offer_type?: string | null
+          satisfaction_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          win_back_attempted?: boolean | null
+          win_back_successful?: boolean | null
+          would_recommend?: boolean | null
+        }
+        Update: {
+          cancellation_date?: string
+          competitor_better_features?: boolean | null
+          competitor_better_price?: boolean | null
+          competitor_name?: string | null
+          created_at?: string | null
+          discount_duration_months?: number | null
+          discount_percentage?: number | null
+          follow_up_date?: string | null
+          follow_up_notes?: string | null
+          follow_up_scheduled?: boolean | null
+          id?: string
+          missing_features?: string[] | null
+          mrr_lost?: number | null
+          nps_score?: number | null
+          organization_id?: string
+          plan_before_cancel?: string
+          reason?: string
+          reason_category?: string | null
+          reason_detail?: string | null
+          retention_offer_accepted?: boolean | null
+          retention_offer_shown?: boolean | null
+          retention_offer_type?: string | null
+          satisfaction_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          win_back_attempted?: boolean | null
+          win_back_successful?: boolean | null
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "churn_surveys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitive_landscape: {
         Row: {
           competitor_name: string
@@ -1437,6 +1538,77 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_anomalies: {
+        Row: {
+          action_url: string | null
+          anomaly_type: string
+          created_at: string | null
+          current_value: number | null
+          dismissed_at: string | null
+          id: string
+          is_resolved: boolean | null
+          message: string
+          metric_name: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          previous_value: number | null
+          resolved_at: string | null
+          severity: string
+          threshold_value: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          anomaly_type: string
+          created_at?: string | null
+          current_value?: number | null
+          dismissed_at?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          message: string
+          metric_name: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          previous_value?: number | null
+          resolved_at?: string | null
+          severity: string
+          threshold_value?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          anomaly_type?: string
+          created_at?: string | null
+          current_value?: number | null
+          dismissed_at?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          message?: string
+          metric_name?: string
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          previous_value?: number | null
+          resolved_at?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_anomalies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -6222,6 +6394,17 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_churn_rate: {
+        Args: { p_organization_id: string; p_period_months?: number }
+        Returns: {
+          churn_rate: number
+          churned_customers: number
+          mrr_lost: number
+          period_end: string
+          period_start: string
+          total_customers: number
+        }[]
+      }
       calculate_deal_velocity: {
         Args: { org_id: string }
         Returns: {
@@ -6298,6 +6481,20 @@ export type Database = {
         }
         Returns: string
       }
+      detect_financial_anomalies: {
+        Args: { p_organization_id: string }
+        Returns: {
+          action_url: string
+          anomaly_type: string
+          current_value: number
+          message: string
+          metric_name: string
+          previous_value: number
+          severity: string
+          threshold_value: number
+          title: string
+        }[]
+      }
       detect_stalled_deals:
         | {
             Args: { org_id: string }
@@ -6331,7 +6528,26 @@ export type Database = {
           task_id: string
         }[]
       }
+      get_churn_reasons_breakdown: {
+        Args: { p_organization_id: string; p_period_months?: number }
+        Returns: {
+          count: number
+          percentage: number
+          reason: string
+          reason_category: string
+        }[]
+      }
       get_next_week_start: { Args: never; Returns: string }
+      get_retention_success_rate: {
+        Args: { p_organization_id: string; p_period_months?: number }
+        Returns: {
+          mrr_saved: number
+          offer_type: string
+          offers_accepted: number
+          offers_shown: number
+          success_rate: number
+        }[]
+      }
       get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
       get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
@@ -6364,6 +6580,10 @@ export type Database = {
         Returns: Json
       }
       slugify: { Args: { text_input: string }; Returns: string }
+      store_financial_anomalies: {
+        Args: { p_organization_id: string }
+        Returns: number
+      }
       update_financial_metrics: {
         Args: { target_month: string }
         Returns: undefined
