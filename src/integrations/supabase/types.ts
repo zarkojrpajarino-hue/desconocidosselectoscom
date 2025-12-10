@@ -4676,6 +4676,74 @@ export type Database = {
           },
         ]
       }
+      subscription_cancellations: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          created_at: string | null
+          days_active: number | null
+          feature_usage_score: number | null
+          feedback: string | null
+          id: string
+          last_login_at: string | null
+          ltv: number | null
+          organization_id: string | null
+          plan_type: string
+          retention_accepted: boolean | null
+          retention_attempted: boolean | null
+          retention_offer: string | null
+          subscription_id: string | null
+          total_revenue: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          days_active?: number | null
+          feature_usage_score?: number | null
+          feedback?: string | null
+          id?: string
+          last_login_at?: string | null
+          ltv?: number | null
+          organization_id?: string | null
+          plan_type: string
+          retention_accepted?: boolean | null
+          retention_attempted?: boolean | null
+          retention_offer?: string | null
+          subscription_id?: string | null
+          total_revenue?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          days_active?: number | null
+          feature_usage_score?: number | null
+          feedback?: string | null
+          id?: string
+          last_login_at?: string | null
+          ltv?: number | null
+          organization_id?: string | null
+          plan_type?: string
+          retention_accepted?: boolean | null
+          retention_attempted?: boolean | null
+          retention_offer?: string | null
+          subscription_id?: string | null
+          total_revenue?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_cancellations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_events: {
         Row: {
           created_at: string
@@ -5036,13 +5104,69 @@ export type Database = {
           },
         ]
       }
+      task_time_logs: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          notes: string | null
+          organization_id: string | null
+          started_at: string
+          task_id: string
+          user_id: string
+          was_interrupted: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          started_at?: string
+          task_id: string
+          user_id: string
+          was_interrupted?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          started_at?: string
+          task_id?: string
+          user_id?: string
+          was_interrupted?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_time_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_time_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           actual_cost: number | null
+          actual_hours: number | null
           area: string | null
           created_at: string | null
           description: string | null
           estimated_cost: number | null
+          estimated_hours: number | null
           id: string
           leader_id: string | null
           order_index: number
@@ -5053,10 +5177,12 @@ export type Database = {
         }
         Insert: {
           actual_cost?: number | null
+          actual_hours?: number | null
           area?: string | null
           created_at?: string | null
           description?: string | null
           estimated_cost?: number | null
+          estimated_hours?: number | null
           id?: string
           leader_id?: string | null
           order_index?: number
@@ -5067,10 +5193,12 @@ export type Database = {
         }
         Update: {
           actual_cost?: number | null
+          actual_hours?: number | null
           area?: string | null
           created_at?: string | null
           description?: string | null
           estimated_cost?: number | null
+          estimated_hours?: number | null
           id?: string
           leader_id?: string | null
           order_index?: number
@@ -6194,6 +6322,15 @@ export type Database = {
           }
       generate_all_smart_alerts: { Args: never; Returns: number }
       generate_webhook_secret: { Args: never; Returns: string }
+      get_active_time_log: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          notes: string
+          started_at: string
+          task_id: string
+        }[]
+      }
       get_next_week_start: { Args: never; Returns: string }
       get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
