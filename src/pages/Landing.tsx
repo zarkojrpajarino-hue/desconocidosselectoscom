@@ -15,6 +15,14 @@ import {
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
+// Integration logos
+import slackLogo from "@/assets/integrations/slack-logo.png";
+import hubspotLogo from "@/assets/integrations/hubspot-logo.png";
+import outlookLogo from "@/assets/integrations/outlook-logo.png";
+import trelloLogo from "@/assets/integrations/trello-logo.png";
+import asanaLogo from "@/assets/integrations/asana-logo.png";
+import zapierLogo from "@/assets/integrations/zapier-logo.png";
+
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -254,12 +262,23 @@ const Landing = () => {
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('landing.integrations.subtitle')) }} />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto mb-8">
-          {['Slack', 'HubSpot', 'Outlook', 'Trello', 'Asana', 'Zapier'].map((name) => (
-            <div key={name} className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
-              <div className="w-16 h-16 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border">
-                <span className="text-2xl font-bold text-primary">{name[0]}</span>
+          {[
+            { name: 'Slack', logo: slackLogo },
+            { name: 'HubSpot', logo: hubspotLogo },
+            { name: 'Outlook', logo: outlookLogo },
+            { name: 'Trello', logo: trelloLogo },
+            { name: 'Asana', logo: asanaLogo },
+            { name: 'Zapier', logo: zapierLogo }
+          ].map((integration) => (
+            <div key={integration.name} className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-background transition-colors group">
+              <div className="w-20 h-20 bg-background rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border p-3">
+                <img 
+                  src={integration.logo} 
+                  alt={`${integration.name} logo`} 
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-sm font-medium text-center">{name}</span>
+              <span className="text-sm font-medium text-center">{integration.name}</span>
             </div>
           ))}
         </div>
