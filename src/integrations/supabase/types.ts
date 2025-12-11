@@ -8035,6 +8035,7 @@ export type Database = {
         }
         Returns: string
       }
+      decrypt_token: { Args: { encrypted_token: string }; Returns: string }
       detect_financial_anomalies: {
         Args: { p_organization_id: string }
         Returns: {
@@ -8071,6 +8072,7 @@ export type Database = {
               stage: string
             }[]
           }
+      encrypt_token: { Args: { plain_token: string }; Returns: string }
       generate_all_smart_alerts: { Args: never; Returns: number }
       generate_webhook_secret: { Args: never; Returns: string }
       get_active_time_log: {
@@ -8090,6 +8092,10 @@ export type Database = {
           reason: string
           reason_category: string
         }[]
+      }
+      get_decrypted_oauth_token: {
+        Args: { record_id: string; table_name: string; token_column: string }
+        Returns: string
       }
       get_next_week_start: { Args: never; Returns: string }
       get_nps_trends: {

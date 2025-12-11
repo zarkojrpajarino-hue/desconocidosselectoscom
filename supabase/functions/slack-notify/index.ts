@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { validateInput, SlackNotifySchema, validationErrorResponse, ValidationError } from '../_shared/validation.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -66,11 +67,9 @@ serve(async (req) => {
       )
     }
 
-    const { organization_id, event_type, data } = await req.json() as {
-      organization_id: string
-      event_type: string
-      data: SlackEventData
-    }
+    // Validate input using schema
+    const rawBody = await req.json()
+    const { organization_id, event_type, data } = validateInput(SlackNotifySchema, rawBody)
 
     // Verify user belongs to the organization
     const { data: userRole, error: roleError } = await supabase
@@ -118,15 +117,15 @@ serve(async (req) => {
     const mapping = workspace.slack_event_mappings[0]
 
     // Build message based on event type
-    let message = buildSlackMessage(event_type, data)
+    let message = buildSlackMessage(event_type, data as SlackEventData)
     
     // Use custom template if provided
     if (mapping.template) {
-      message = interpolateTemplate(mapping.template, data)
+      message = interpolateTemplate(mapping.template, data as SlackEventData)
     }
 
     // Build Slack message blocks
-    const blocks = buildSlackBlocks(event_type, data, message)
+    const blocks = buildSlackBlocks(event_type, data as SlackEventData, message)
 
     // Send to Slack
     const slackResponse = await fetch('https://slack.com/api/chat.postMessage', {
@@ -175,6 +174,11 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    // Handle validation errors
+    if (error instanceof ValidationError) {
+      return validationErrorResponse(error, corsHeaders)
+    }
+    
     console.error('Slack notify error:', error)
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
+import { validateInput, WelcomeEmailSchema, validationErrorResponse, ValidationError } from '../_shared/validation.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -7,10 +8,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface WelcomeEmailRequest {
-  userId: string;
-}
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
@@ -59,7 +56,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { userId }: WelcomeEmailRequest = await req.json();
+    // Validate input using schema
+    const rawBody = await req.json();
+    const { userId } = validateInput(WelcomeEmailSchema, rawBody);
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -146,6 +145,11 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: unknown) {
+    // Handle validation errors
+    if (error instanceof ValidationError) {
+      return validationErrorResponse(error, corsHeaders);
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error enviando email de bienvenida:', errorMessage);
     return new Response(
