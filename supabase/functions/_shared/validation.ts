@@ -240,3 +240,73 @@ export const AIAnalysisSchema = z.object({
     depth: z.enum(['basic', 'detailed', 'comprehensive']).optional(),
   }).optional(),
 });
+
+// ============================================
+// New Schemas for Edge Function Input Validation
+// ============================================
+
+/**
+ * Schema for welcome email request
+ */
+export const WelcomeEmailSchema = z.object({
+  userId: CommonSchemas.userId,
+});
+
+/**
+ * Schema for Slack notification event data
+ */
+export const SlackEventDataSchema = z.object({
+  id: CommonSchemas.uuid.optional(),
+  name: z.string().max(200).optional(),
+  email: z.string().email().max(255).optional(),
+  phone: z.string().max(30).optional(),
+  company: z.string().max(200).optional(),
+  value: z.number().optional(),
+  title: z.string().max(300).optional(),
+  progress: z.number().min(0).max(100).optional(),
+  full_name: z.string().max(200).optional(),
+  threshold: z.number().optional(),
+}).passthrough(); // Allow additional fields for flexibility
+
+/**
+ * Schema for Slack notify request
+ */
+export const SlackNotifySchema = z.object({
+  organization_id: CommonSchemas.organizationId,
+  event_type: z.string()
+    .min(1, 'Event type is required')
+    .max(50, 'Event type too long')
+    .regex(/^[a-z]+\.[a-z_]+$/, 'Event type must follow format: category.action (e.g., lead.created)'),
+  data: SlackEventDataSchema,
+});
+
+/**
+ * Schema for API v1 lead creation/update
+ */
+export const ApiLeadSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  company: z.string().max(100).optional().nullable(),
+  email: z.string().email('Invalid email').max(255).optional().nullable(),
+  phone: z.string().max(30).optional().nullable(),
+  estimated_value: z.number().nonnegative().max(100_000_000).optional(),
+  probability: z.number().min(0).max(100).optional(),
+  notes: z.string().max(5000).optional().nullable(),
+  source: z.string().max(50).optional().nullable(),
+  stage: z.string().max(50).optional(),
+  assigned_to: CommonSchemas.uuid.optional().nullable(),
+});
+
+/**
+ * Schema for API v1 task creation/update
+ */
+export const ApiTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  description: z.string().max(5000).optional().nullable(),
+  estimated_hours: z.number().positive().max(200).optional(),
+  phase: z.number().int().min(1).max(10).optional(),
+  area: z.string().max(50).optional(),
+  assigned_to: CommonSchemas.uuid.optional().nullable(),
+  due_date: z.string().refine((val) => !val || !isNaN(Date.parse(val)), {
+    message: 'Invalid date format',
+  }).optional().nullable(),
+});
