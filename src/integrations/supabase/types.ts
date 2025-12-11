@@ -1607,6 +1607,33 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          created_at: string
+          default_enabled: boolean
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_enabled?: boolean
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_enabled?: boolean
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_anomalies: {
         Row: {
           action_url: string | null
@@ -3237,6 +3264,63 @@ export type Database = {
           value_proposition?: string
         }
         Relationships: []
+      }
+      organization_feature_flags: {
+        Row: {
+          created_at: string
+          disabled_at: string | null
+          disabled_by: string | null
+          enabled: boolean
+          enabled_at: string | null
+          enabled_by: string | null
+          feature_flag_id: string
+          id: string
+          notes: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          enabled?: boolean
+          enabled_at?: string | null
+          enabled_by?: string | null
+          feature_flag_id: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          enabled?: boolean
+          enabled_at?: string | null
+          enabled_by?: string | null
+          feature_flag_id?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_feature_flags_feature_flag_id_fkey"
+            columns: ["feature_flag_id"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_feature_flags_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_guide_achievements: {
         Row: {
@@ -6685,6 +6769,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_leader: { Args: { _user_id: string }; Returns: boolean }
+      is_feature_enabled: {
+        Args: { p_feature_name: string; p_organization_id: string }
+        Returns: boolean
+      }
       is_service_role: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: undefined }
       mark_notification_read: {
