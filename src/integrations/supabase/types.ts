@@ -1209,6 +1209,127 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_channel_members: {
+        Row: {
+          channel_id: string
+          id: string
+          joined_at: string | null
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          id?: string
+          joined_at?: string | null
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          id?: string
+          joined_at?: string | null
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channel_members_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_channels: {
+        Row: {
+          channel_name: string | null
+          channel_type: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          organization_id: string
+          related_task_id: string | null
+        }
+        Insert: {
+          channel_name?: string | null
+          channel_type: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          related_task_id?: string | null
+        }
+        Update: {
+          channel_name?: string | null
+          channel_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          related_task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_channels_related_task_id_fkey"
+            columns: ["related_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachments: Json | null
+          channel_id: string
+          created_at: string | null
+          edited_at: string | null
+          id: string
+          is_edited: boolean | null
+          message: string
+          reactions: Json | null
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          channel_id: string
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          message: string
+          reactions?: Json | null
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          channel_id?: string
+          created_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          message?: string
+          reactions?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       churn_surveys: {
         Row: {
           cancellation_date: string
@@ -1498,6 +1619,45 @@ export type Database = {
           },
         ]
       }
+      cookie_consents: {
+        Row: {
+          analytics: boolean | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          marketing: boolean | null
+          necessary: boolean | null
+          preferences: boolean | null
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analytics?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          marketing?: boolean | null
+          necessary?: boolean | null
+          preferences?: boolean | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analytics?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          marketing?: boolean | null
+          necessary?: boolean | null
+          preferences?: boolean | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       country_data: {
         Row: {
           corporate_tax_rate: number | null
@@ -1558,6 +1718,189 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_dashboards: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          layout: Json
+          name: string
+          organization_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          layout: Json
+          name: string
+          organization_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          layout?: Json
+          name?: string
+          organization_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_dashboards_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_field_definitions: {
+        Row: {
+          created_at: string | null
+          default_value: string | null
+          display_order: number | null
+          entity_type: string
+          field_key: string
+          field_name: string
+          field_type: string
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          options: Json | null
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_value?: string | null
+          display_order?: number | null
+          entity_type: string
+          field_key: string
+          field_name: string
+          field_type: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: Json | null
+          organization_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_value?: string | null
+          display_order?: number | null
+          entity_type?: string
+          field_key?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          options?: Json | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_field_values: {
+        Row: {
+          created_at: string | null
+          custom_field_id: string
+          entity_id: string
+          entity_type: string
+          id: string
+          organization_id: string
+          updated_at: string | null
+          value: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_field_id: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          organization_id: string
+          updated_at?: string | null
+          value?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_field_id?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string | null
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_field_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_values_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          permissions: Json
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          permissions: Json
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          permissions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_velocity_cache: {
         Row: {
           average_days: number | null
@@ -1586,6 +1929,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "deal_velocity_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string
+          subject: string
+          template_type: string
+          text_content: string
+          updated_at: string | null
+          variables: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id: string
+          subject: string
+          template_type: string
+          text_content: string
+          updated_at?: string | null
+          variables?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string
+          subject?: string
+          template_type?: string
+          text_content?: string
+          updated_at?: string | null
+          variables?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -2010,6 +2406,56 @@ export type Database = {
           },
         ]
       }
+      gdpr_data_exports: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          deletion_completed_at: string | null
+          deletion_scheduled_at: string | null
+          export_data: Json | null
+          export_url: string | null
+          id: string
+          organization_id: string
+          request_type: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          deletion_completed_at?: string | null
+          deletion_scheduled_at?: string | null
+          export_data?: Json | null
+          export_url?: string | null
+          id?: string
+          organization_id: string
+          request_type: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          deletion_completed_at?: string | null
+          deletion_scheduled_at?: string | null
+          export_data?: Json | null
+          export_url?: string | null
+          id?: string
+          organization_id?: string
+          request_type?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gdpr_data_exports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_calendar_tokens: {
         Row: {
           access_token: string
@@ -2229,6 +2675,47 @@ export type Database = {
             columns: ["hubspot_account_id"]
             isOneToOne: false
             referencedRelation: "hubspot_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_allowlist: {
+        Row: {
+          applies_to_roles: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          ip_range: unknown
+          is_active: boolean | null
+          organization_id: string
+        }
+        Insert: {
+          applies_to_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          ip_range: unknown
+          is_active?: boolean | null
+          organization_id: string
+        }
+        Update: {
+          applies_to_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          ip_range?: unknown
+          is_active?: boolean | null
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_allowlist_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -4282,6 +4769,59 @@ export type Database = {
           },
         ]
       }
+      revenue_forecasts: {
+        Row: {
+          confidence_level: number | null
+          created_at: string | null
+          forecast_date: string
+          forecast_period: string
+          id: string
+          insights: Json | null
+          lower_bound: number | null
+          model_accuracy: number | null
+          model_type: string | null
+          organization_id: string
+          predicted_revenue: number
+          upper_bound: number | null
+        }
+        Insert: {
+          confidence_level?: number | null
+          created_at?: string | null
+          forecast_date: string
+          forecast_period: string
+          id?: string
+          insights?: Json | null
+          lower_bound?: number | null
+          model_accuracy?: number | null
+          model_type?: string | null
+          organization_id: string
+          predicted_revenue: number
+          upper_bound?: number | null
+        }
+        Update: {
+          confidence_level?: number | null
+          created_at?: string | null
+          forecast_date?: string
+          forecast_period?: string
+          id?: string
+          insights?: Json | null
+          lower_bound?: number | null
+          model_accuracy?: number | null
+          model_type?: string | null
+          organization_id?: string
+          predicted_revenue?: number
+          upper_bound?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_forecasts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_targets: {
         Row: {
           created_at: string | null
@@ -4316,6 +4856,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sales_targets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_views: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          filters: Json
+          id: string
+          is_shared: boolean | null
+          last_used_at: string | null
+          name: string
+          organization_id: string
+          shared_with_users: string[] | null
+          use_count: number | null
+          view_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          filters: Json
+          id?: string
+          is_shared?: boolean | null
+          last_used_at?: string | null
+          name: string
+          organization_id: string
+          shared_with_users?: string[] | null
+          use_count?: number | null
+          view_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_shared?: boolean | null
+          last_used_at?: string | null
+          name?: string
+          organization_id?: string
+          shared_with_users?: string[] | null
+          use_count?: number | null
+          view_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_views_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -5851,6 +6444,65 @@ export type Database = {
           },
         ]
       }
+      templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          last_used_at: string | null
+          name: string
+          organization_id: string | null
+          tags: string[] | null
+          template_data: Json
+          template_type: string
+          updated_at: string | null
+          use_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          last_used_at?: string | null
+          name: string
+          organization_id?: string | null
+          tags?: string[] | null
+          template_data: Json
+          template_type: string
+          updated_at?: string | null
+          use_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          last_used_at?: string | null
+          name?: string
+          organization_id?: string | null
+          tags?: string[] | null
+          template_data?: Json
+          template_type?: string
+          updated_at?: string | null
+          use_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_contents: {
         Row: {
           content: Json
@@ -6177,6 +6829,45 @@ export type Database = {
           },
         ]
       }
+      user_custom_roles: {
+        Row: {
+          created_at: string | null
+          custom_role_id: string
+          id: string
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_role_id: string
+          id?: string
+          organization_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_role_id?: string
+          id?: string
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_custom_roles_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "custom_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_custom_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notification_preferences: {
         Row: {
           created_at: string | null
@@ -6312,6 +7003,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_name: string | null
+          device_type: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          last_activity_at: string | null
+          location_city: string | null
+          location_country: string | null
+          os: string | null
+          session_token: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          os?: string | null
+          session_token: string
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          os?: string | null
+          session_token?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_weekly_availability: {
         Row: {
@@ -6714,6 +7456,156 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      white_label_settings: {
+        Row: {
+          company_name: string | null
+          created_at: string | null
+          custom_domain: string | null
+          custom_domain_verified: boolean | null
+          favicon_url: string | null
+          hide_powered_by: boolean | null
+          id: string
+          logo_url: string | null
+          organization_id: string
+          primary_color: string | null
+          secondary_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
+          favicon_url?: string | null
+          hide_powered_by?: boolean | null
+          id?: string
+          logo_url?: string | null
+          organization_id: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
+          favicon_url?: string | null
+          hide_powered_by?: boolean | null
+          id?: string
+          logo_url?: string | null
+          organization_id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "white_label_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_runs: {
+        Row: {
+          actions_executed: Json | null
+          completed_at: string | null
+          error: string | null
+          id: string
+          started_at: string | null
+          status: string
+          trigger_data: Json | null
+          workflow_id: string
+        }
+        Insert: {
+          actions_executed?: Json | null
+          completed_at?: string | null
+          error?: string | null
+          id?: string
+          started_at?: string | null
+          status: string
+          trigger_data?: Json | null
+          workflow_id: string
+        }
+        Update: {
+          actions_executed?: Json | null
+          completed_at?: string | null
+          error?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          trigger_data?: Json | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflows: {
+        Row: {
+          actions: Json
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          name: string
+          organization_id: string
+          run_count: number | null
+          trigger_config: Json | null
+          trigger_type: string
+        }
+        Insert: {
+          actions: Json
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name: string
+          organization_id: string
+          run_count?: number | null
+          trigger_config?: Json | null
+          trigger_type: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          organization_id?: string
+          run_count?: number | null
+          trigger_config?: Json | null
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflows_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
