@@ -1161,6 +1161,54 @@ export type Database = {
           },
         ]
       }
+      changelog_entries: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          details: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          published_at: string | null
+          title: string
+          updated_at: string
+          version: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          details?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          published_at?: string | null
+          title: string
+          updated_at?: string
+          version: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          details?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+          version?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       churn_surveys: {
         Row: {
           cancellation_date: string
@@ -5976,6 +6024,41 @@ export type Database = {
           },
         ]
       }
+      user_changelog_views: {
+        Row: {
+          changelog_id: string
+          feedback: string | null
+          feedback_at: string | null
+          id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          changelog_id: string
+          feedback?: string | null
+          feedback_at?: string | null
+          id?: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          changelog_id?: string
+          feedback?: string | null
+          feedback_at?: string | null
+          id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_changelog_views_changelog_id_fkey"
+            columns: ["changelog_id"]
+            isOneToOne: false
+            referencedRelation: "changelog_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notification_preferences: {
         Row: {
           created_at: string | null
@@ -6899,6 +6982,10 @@ export type Database = {
           success_rate: number
         }[]
       }
+      get_unread_changelog_count: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
       get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
@@ -6916,6 +7003,10 @@ export type Database = {
       }
       is_service_role: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: undefined }
+      mark_changelog_read: {
+        Args: { p_changelog_id: string }
+        Returns: undefined
+      }
       mark_notification_read: {
         Args: { notification_id: string }
         Returns: undefined
