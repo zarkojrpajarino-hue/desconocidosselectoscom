@@ -136,3 +136,30 @@ export const WEBHOOK_EVENT_TYPES = [
   { value: 'okr.updated', label: 'OKR actualizado' },
   { value: 'metric.created', label: 'Métrica registrada' }
 ];
+
+export interface IntegrationToken {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  integration_type: string;
+  is_active: boolean;
+  expires_at: string | null;
+  scope: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CalendarSyncEvent {
+  id: string;
+  user_id: string;
+  task_id: string | null;
+  google_event_id: string | null;
+  event_title: string;
+  event_start: string;
+  event_end: string;
+  event_description: string | null;
+  sync_status: 'synced' | 'pending' | 'failed';
+  last_synced_at: string;
+  created_at: string;
+}

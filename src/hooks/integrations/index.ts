@@ -6,3 +6,5 @@ export { useOutlookIntegration } from './useOutlookIntegration';
 export { useHubSpotIntegration } from './useHubSpotIntegration';
 export { useAsanaIntegration } from './useAsanaIntegration';
 export { useTrelloIntegration } from './useTrelloIntegration';
+export { useIntegrationTokens } from './useIntegrationTokens';
+export { useGoogleCalendarSync } from './useGoogleCalendarSync';

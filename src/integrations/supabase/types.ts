@@ -1059,6 +1059,56 @@ export type Database = {
           },
         ]
       }
+      calendar_sync_events: {
+        Row: {
+          created_at: string | null
+          event_description: string | null
+          event_end: string
+          event_start: string
+          event_title: string
+          google_event_id: string | null
+          id: string
+          last_synced_at: string | null
+          sync_status: string | null
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_description?: string | null
+          event_end: string
+          event_start: string
+          event_title: string
+          google_event_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          sync_status?: string | null
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_description?: string | null
+          event_end?: string
+          event_start?: string
+          event_title?: string
+          google_event_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          sync_status?: string | null
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_sync_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_balance: {
         Row: {
           balance: number
@@ -2675,6 +2725,62 @@ export type Database = {
             columns: ["hubspot_account_id"]
             isOneToOne: false
             referencedRelation: "hubspot_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_tokens: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          integration_type: string
+          is_active: boolean | null
+          metadata: Json | null
+          organization_id: string
+          refresh_token: string | null
+          scope: string | null
+          token_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          integration_type: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          organization_id: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          integration_type?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          organization_id?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
