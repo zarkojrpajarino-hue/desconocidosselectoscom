@@ -506,6 +506,71 @@ export type Database = {
           },
         ]
       }
+      automated_reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          filters: Json | null
+          format: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          name: string
+          next_scheduled_at: string | null
+          organization_id: string
+          recipients: Json
+          report_type: string
+          schedule_cron: string
+          sections: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          filters?: Json | null
+          format?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name: string
+          next_scheduled_at?: string | null
+          organization_id: string
+          recipients?: Json
+          report_type: string
+          schedule_cron?: string
+          sections?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          filters?: Json | null
+          format?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name?: string
+          next_scheduled_at?: string | null
+          organization_id?: string
+          recipients?: Json
+          report_type?: string
+          schedule_cron?: string
+          sections?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automated_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_opportunities: {
         Row: {
           analysis_id: string
@@ -3775,6 +3840,63 @@ export type Database = {
           },
         ]
       }
+      report_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          file_url: string | null
+          id: string
+          organization_id: string
+          recipients_count: number | null
+          report_data: Json | null
+          report_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          file_url?: string | null
+          id?: string
+          organization_id: string
+          recipients_count?: number | null
+          report_data?: Json | null
+          report_id: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          file_url?: string | null
+          id?: string
+          organization_id?: string
+          recipients_count?: number | null
+          report_data?: Json | null
+          report_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_executions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "automated_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenue_entries: {
         Row: {
           amount: number
@@ -6436,6 +6558,10 @@ export type Database = {
           total_expenses: number
           total_revenue: number
         }[]
+      }
+      calculate_next_report_schedule: {
+        Args: { cron_expression: string }
+        Returns: string
       }
       calculate_objective_progress: {
         Args: { obj_id: string }
