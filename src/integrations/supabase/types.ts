@@ -2860,6 +2860,127 @@ export type Database = {
           },
         ]
       }
+      nps_campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          name: string
+          next_send_at: string | null
+          organization_id: string
+          target_audience: string | null
+          total_responded: number | null
+          total_sent: number | null
+          trigger_config: Json | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name: string
+          next_send_at?: string | null
+          organization_id: string
+          target_audience?: string | null
+          total_responded?: number | null
+          total_sent?: number | null
+          trigger_config?: Json | null
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name?: string
+          next_send_at?: string | null
+          organization_id?: string
+          target_audience?: string | null
+          total_responded?: number | null
+          total_sent?: number | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_campaigns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nps_surveys: {
+        Row: {
+          category: string
+          created_at: string
+          feature_ratings: Json | null
+          feedback: string | null
+          follow_up_completed: boolean | null
+          follow_up_notes: string | null
+          follow_up_requested: boolean | null
+          id: string
+          improvement_suggestion: string | null
+          organization_id: string
+          score: number
+          survey_context: string | null
+          updated_at: string
+          user_id: string
+          would_recommend_reason: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          feature_ratings?: Json | null
+          feedback?: string | null
+          follow_up_completed?: boolean | null
+          follow_up_notes?: string | null
+          follow_up_requested?: boolean | null
+          id?: string
+          improvement_suggestion?: string | null
+          organization_id: string
+          score: number
+          survey_context?: string | null
+          updated_at?: string
+          user_id: string
+          would_recommend_reason?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          feature_ratings?: Json | null
+          feedback?: string | null
+          follow_up_completed?: boolean | null
+          follow_up_notes?: string | null
+          follow_up_requested?: boolean | null
+          id?: string
+          improvement_suggestion?: string | null
+          organization_id?: string
+          score?: number
+          survey_context?: string | null
+          updated_at?: string
+          user_id?: string
+          would_recommend_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_surveys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objectives: {
         Row: {
           budget_allocated: number | null
@@ -6647,6 +6768,18 @@ export type Database = {
         Args: { cron_expression: string }
         Returns: string
       }
+      calculate_nps_score: {
+        Args: { p_days?: number; p_organization_id: string }
+        Returns: {
+          detractors_count: number
+          detractors_pct: number
+          nps_score: number
+          passives_count: number
+          promoters_count: number
+          promoters_pct: number
+          total_responses: number
+        }[]
+      }
       calculate_objective_progress: {
         Args: { obj_id: string }
         Returns: number
@@ -6748,6 +6881,14 @@ export type Database = {
         }[]
       }
       get_next_week_start: { Args: never; Returns: string }
+      get_nps_trends: {
+        Args: { p_months?: number; p_organization_id: string }
+        Returns: {
+          month: string
+          nps_score: number
+          responses: number
+        }[]
+      }
       get_retention_success_rate: {
         Args: { p_organization_id: string; p_period_months?: number }
         Returns: {
