@@ -1310,6 +1310,65 @@ export type Database = {
           },
         ]
       }
+      cohort_metrics: {
+        Row: {
+          active_users: number | null
+          avg_revenue_per_user: number | null
+          calculated_at: string
+          churned_users: number | null
+          cohort_month: string
+          cohort_type: string
+          id: string
+          organization_id: string
+          period_month: string
+          period_number: number
+          retained_users: number | null
+          retention_rate: number | null
+          total_revenue: number | null
+          total_users: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          avg_revenue_per_user?: number | null
+          calculated_at?: string
+          churned_users?: number | null
+          cohort_month: string
+          cohort_type?: string
+          id?: string
+          organization_id: string
+          period_month: string
+          period_number: number
+          retained_users?: number | null
+          retention_rate?: number | null
+          total_revenue?: number | null
+          total_users?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          avg_revenue_per_user?: number | null
+          calculated_at?: string
+          churned_users?: number | null
+          cohort_month?: string
+          cohort_type?: string
+          id?: string
+          organization_id?: string
+          period_month?: string
+          period_number?: number
+          retained_users?: number | null
+          retention_rate?: number | null
+          total_revenue?: number | null
+          total_users?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_metrics_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitive_landscape: {
         Row: {
           competitor_name: string
@@ -6059,6 +6118,65 @@ export type Database = {
           },
         ]
       }
+      user_cohorts: {
+        Row: {
+          churned_at: string | null
+          cohort_month: string
+          cohort_type: string
+          created_at: string
+          first_action_at: string
+          id: string
+          is_churned: boolean | null
+          last_action_at: string | null
+          metadata: Json | null
+          organization_id: string
+          total_actions: number | null
+          total_revenue: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          churned_at?: string | null
+          cohort_month: string
+          cohort_type?: string
+          created_at?: string
+          first_action_at?: string
+          id?: string
+          is_churned?: boolean | null
+          last_action_at?: string | null
+          metadata?: Json | null
+          organization_id: string
+          total_actions?: number | null
+          total_revenue?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          churned_at?: string | null
+          cohort_month?: string
+          cohort_type?: string
+          created_at?: string
+          first_action_at?: string
+          id?: string
+          is_churned?: boolean | null
+          last_action_at?: string | null
+          metadata?: Json | null
+          organization_id?: string
+          total_actions?: number | null
+          total_revenue?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cohorts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notification_preferences: {
         Row: {
           created_at: string | null
@@ -6804,6 +6922,14 @@ export type Database = {
       }
     }
     Functions: {
+      assign_user_to_cohort: {
+        Args: {
+          p_cohort_type?: string
+          p_organization_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       calculate_churn_rate: {
         Args: { p_organization_id: string; p_period_months?: number }
         Returns: {
@@ -6814,6 +6940,10 @@ export type Database = {
           period_start: string
           total_customers: number
         }[]
+      }
+      calculate_cohort_metrics: {
+        Args: { p_organization_id: string }
+        Returns: number
       }
       calculate_deal_velocity: {
         Args: { org_id: string }
