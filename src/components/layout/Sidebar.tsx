@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -22,6 +23,9 @@ import {
   Sparkles,
   PanelLeftClose,
   PanelLeft,
+  Lock,
+  Zap,
+  Link2,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -35,6 +39,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { PlanLimits, PlanType } from '@/constants/subscriptionLimits';
 
 interface NavItemProps {
   to: string;
@@ -42,9 +47,11 @@ interface NavItemProps {
   label: string;
   badge?: string | number;
   children?: NavItemProps[];
+  requiredPlan?: PlanType;
+  featureKey?: keyof PlanLimits;
 }
 
-// RUTAS ADAPTADAS a tu proyecto actual
+// RUTAS ADAPTADAS con permisos de plan
 const navigation: NavItemProps[] = [
   {
     to: '/home',
@@ -71,7 +78,15 @@ const navigation: NavItemProps[] = [
     to: '/ai-analysis',
     icon: Brain,
     label: 'Análisis IA',
-    badge: 'PRO',
+    requiredPlan: 'professional',
+    featureKey: 'ai_competitive_analysis',
+  },
+  {
+    to: '/bi',
+    icon: BarChart3,
+    label: 'BI Avanzado',
+    requiredPlan: 'professional',
+    featureKey: 'advanced_reports',
   },
   {
     to: '/herramientas-hub',
@@ -85,6 +100,13 @@ const navigation: NavItemProps[] = [
       { to: '/practicar/simulador', icon: GraduationCap, label: 'Simulador' },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
     ],
+  },
+  {
+    to: '/integraciones',
+    icon: Link2,
+    label: 'Integraciones',
+    requiredPlan: 'professional',
+    featureKey: 'google_calendar',
   },
   {
     to: '/gamification',
@@ -103,7 +125,17 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boolean }) {
+function NavItem({ 
+  item, 
+  isCollapsed, 
+  hasAccess = true,
+  onLockedClick 
+}: { 
+  item: NavItemProps; 
+  isCollapsed: boolean;
+  hasAccess?: boolean;
+  onLockedClick?: (requiredPlan: PlanType) => void;
+}) {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
@@ -111,6 +143,15 @@ function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boole
     (hasChildren && item.children?.some(child => location.pathname.startsWith(child.to)));
 
   const Icon = item.icon;
+  const isLocked = !hasAccess && item.requiredPlan;
+
+  // Handle locked item click
+  const handleLockedClick = (e: React.MouseEvent) => {
+    if (isLocked && item.requiredPlan) {
+      e.preventDefault();
+      onLockedClick?.(item.requiredPlan);
+    }
+  };
 
   if (hasChildren) {
     return (
@@ -160,6 +201,49 @@ function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boole
     );
   }
 
+  // Locked item styling
+  if (isLocked) {
+    const lockedContent = (
+      <button
+        onClick={handleLockedClick}
+        className={cn(
+          'sidebar-nav-item w-full opacity-60 hover:opacity-80 cursor-pointer group'
+        )}
+      >
+        <Icon className="sidebar-nav-item-icon" />
+        {!isCollapsed && (
+          <>
+            <span className="flex-1">{item.label}</span>
+            <Badge 
+              variant="outline" 
+              className="ml-auto text-[9px] px-1.5 py-0 h-5 border-primary/30 text-primary bg-primary/5 flex items-center gap-1"
+            >
+              <Lock className="h-2.5 w-2.5" />
+              {item.requiredPlan?.toUpperCase()}
+            </Badge>
+          </>
+        )}
+      </button>
+    );
+
+    if (isCollapsed) {
+      return (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>{lockedContent}</TooltipTrigger>
+          <TooltipContent side="right" className="flex items-center gap-2">
+            <Lock className="h-3 w-3" />
+            {item.label}
+            <Badge variant="outline" className="text-[10px]">
+              {item.requiredPlan?.toUpperCase()}
+            </Badge>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return lockedContent;
+  }
+
   const navLinkContent = (
     <NavLink
       to={item.to}
@@ -171,11 +255,6 @@ function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boole
       {!isCollapsed && (
         <>
           <span className="flex-1">{item.label}</span>
-          {item.badge && (
-            <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-5 bg-primary/20 text-primary-foreground">
-              {item.badge}
-            </Badge>
-          )}
         </>
       )}
     </NavLink>
@@ -187,7 +266,6 @@ function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boole
         <TooltipTrigger asChild>{navLinkContent}</TooltipTrigger>
         <TooltipContent side="right" className="flex items-center gap-2">
           {item.label}
-          {item.badge && <Badge variant="secondary">{item.badge}</Badge>}
         </TooltipContent>
       </Tooltip>
     );
@@ -198,10 +276,23 @@ function NavItem({ item, isCollapsed }: { item: NavItemProps; isCollapsed: boole
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const { userProfile, currentOrganizationId, userOrganizations, signOut } = useAuth();
+  const planAccess = usePlanAccess();
+  const navigate = useNavigate();
   
   const currentOrganization = userOrganizations.find(
     (org) => org.organization_id === currentOrganizationId
   );
+
+  // Handle locked item click - navigate to pricing
+  const handleLockedClick = (requiredPlan: PlanType) => {
+    navigate('/#pricing');
+  };
+
+  // Check if item has access based on plan
+  const checkAccess = (item: NavItemProps): boolean => {
+    if (!item.featureKey) return true;
+    return planAccess.hasFeature(item.featureKey);
+  };
 
   return (
     <aside
@@ -239,7 +330,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         </button>
       </div>
 
-      {/* Organization Switcher */}
+      {/* Organization Switcher with Plan Badge */}
       {currentOrganization && !isCollapsed && (
         <div className="px-3 py-4 border-b border-sidebar-border">
           <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/10 transition-colors">
@@ -250,9 +341,23 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               <p className="text-sm font-medium text-sidebar-foreground truncate">
                 {currentOrganization.organization_name}
               </p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {currentOrganization.role}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground capitalize">
+                  {currentOrganization.role}
+                </p>
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "text-[9px] px-1 py-0 h-4",
+                    planAccess.isEnterprise && "border-violet-500/50 text-violet-500 bg-violet-500/10",
+                    planAccess.isProfessional && "border-primary/50 text-primary bg-primary/10",
+                    planAccess.isStarter && "border-emerald-500/50 text-emerald-500 bg-emerald-500/10",
+                    planAccess.isFree && "border-muted-foreground/50 text-muted-foreground"
+                  )}
+                >
+                  {planAccess.planName}
+                </Badge>
+              </div>
             </div>
             <ChevronDown className="w-4 h-4 text-muted-foreground" />
           </button>
@@ -262,14 +367,40 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       {/* Main Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => (
-          <NavItem key={item.to} item={item} isCollapsed={isCollapsed} />
+          <NavItem 
+            key={item.to} 
+            item={item} 
+            isCollapsed={isCollapsed}
+            hasAccess={checkAccess(item)}
+            onLockedClick={handleLockedClick}
+          />
         ))}
       </nav>
+
+      {/* Upgrade CTA for non-paid users */}
+      {!planAccess.isPaid && !isCollapsed && (
+        <div className="px-3 py-3 border-t border-sidebar-border">
+          <button
+            onClick={() => navigate('/#pricing')}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gradient-to-r from-primary to-violet-600 text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Zap className="w-4 h-4" />
+            <span>Upgrade</span>
+            <span className="ml-auto text-xs opacity-80">desde €129</span>
+          </button>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <div className="px-3 py-2 border-t border-sidebar-border">
         {bottomNavigation.map((item) => (
-          <NavItem key={item.to} item={item} isCollapsed={isCollapsed} />
+          <NavItem 
+            key={item.to} 
+            item={item} 
+            isCollapsed={isCollapsed}
+            hasAccess={true}
+            onLockedClick={handleLockedClick}
+          />
         ))}
       </div>
 
