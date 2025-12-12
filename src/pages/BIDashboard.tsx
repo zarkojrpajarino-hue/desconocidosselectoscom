@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,22 +12,47 @@ import { SalesPerformance } from '@/components/bi/SalesPerformance';
 import { CustomerInsights } from '@/components/bi/CustomerInsights';
 import { OperationalMetrics } from '@/components/bi/OperationalMetrics';
 import { ExecutiveSummary } from '@/components/bi/ExecutiveSummary';
+import { LockedFeatureCard } from '@/components/plan';
 
 const BIDashboard = () => {
   const { currentOrganizationId } = useAuth();
+  const planAccess = usePlanAccess();
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30d');
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Trigger refresh in child components via key change
     setTimeout(() => setRefreshing(false), 1000);
   };
 
   const handleExport = () => {
-    // Export dashboard data
     console.log('Exporting BI dashboard...');
   };
+
+  // Check plan access
+  const hasAccess = planAccess.hasFeature('advanced_reports');
+
+  if (!hasAccess) {
+    return (
+      <div className="container mx-auto p-6 max-w-3xl">
+        <LockedFeatureCard
+          icon="📊"
+          title="Business Intelligence Avanzado"
+          description="Dashboards ejecutivos con análisis profundo de métricas, tendencias y KPIs."
+          requiredPlan="professional"
+          features={[
+            'Análisis de ingresos por producto y canal',
+            'Rendimiento del equipo de ventas',
+            'Insights de clientes (LTV, CAC, cohortes)',
+            'Métricas operacionales en tiempo real',
+            'Exportación de reportes personalizados'
+          ]}
+          onUpgrade={() => navigate('/#pricing')}
+        />
+      </div>
+    );
+  }
 
   if (!currentOrganizationId) {
     return (

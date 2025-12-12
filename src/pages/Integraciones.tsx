@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, X, MessageSquare, Link2, Calendar, ListTodo, LayoutDashboard, Zap, Send, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { LockedFeatureCard } from "@/components/plan";
+
 interface IntegrationInfo {
   id: string;
   name: string;
@@ -18,6 +22,7 @@ interface IntegrationInfo {
   plans: ('starter' | 'professional' | 'enterprise')[];
   minPlan: string;
 }
+
 const integrations: IntegrationInfo[] = [{
   id: 'google-calendar',
   name: 'Google Calendar',
@@ -91,11 +96,17 @@ const integrations: IntegrationInfo[] = [{
 }];
 const Integraciones = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const planAccess = usePlanAccess();
   const [suggestionName, setSuggestionName] = useState('');
   const [suggestionEmail, setSuggestionEmail] = useState('');
   const [suggestionTool, setSuggestionTool] = useState('');
   const [suggestionReason, setSuggestionReason] = useState('');
   const [sending, setSending] = useState(false);
+
+  // Check plan access for integrations
+  const hasAccess = planAccess.hasFeature('google_calendar');
+
   const handleSuggestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!suggestionTool.trim()) {
@@ -104,14 +115,10 @@ const Integraciones = () => {
     }
     setSending(true);
     try {
-      // TODO: Conectar con edge function para enviar email
-      // Por ahora simulamos el envío
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('¡Gracias por tu sugerencia!', {
         description: 'Evaluaremos añadir esta integración pronto.'
       });
-
-      // Limpiar formulario
       setSuggestionName('');
       setSuggestionEmail('');
       setSuggestionTool('');
@@ -122,6 +129,7 @@ const Integraciones = () => {
       setSending(false);
     }
   };
+
   const getPlanBadgeColor = (plan: string) => {
     switch (plan) {
       case 'Starter':
@@ -134,6 +142,44 @@ const Integraciones = () => {
         return 'bg-muted text-muted-foreground';
     }
   };
+
+  // Show locked card for users without access (logged in users only)
+  if (user && !hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-0">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+          <div className="container flex h-14 md:h-16 items-center justify-between px-3 md:px-4 gap-2">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/home')}>
+                <ArrowLeft className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Volver</span>
+              </Button>
+              <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent truncate">
+                Integraciones
+              </span>
+            </div>
+          </div>
+        </header>
+        
+        <div className="container mx-auto p-6 max-w-3xl pt-12">
+          <LockedFeatureCard
+            icon="🔗"
+            title="Integraciones Avanzadas"
+            description="Conecta OPTIMUS-K con tus herramientas favoritas para automatizar flujos de trabajo."
+            requiredPlan="professional"
+            features={[
+              'Google Calendar - Sincroniza tareas automáticamente',
+              'Slack - Notificaciones en tiempo real',
+              'HubSpot - CRM bidireccional',
+              'Outlook - Para equipos Microsoft',
+              'Zapier - +5000 aplicaciones'
+            ]}
+            onUpgrade={() => navigate('/#pricing')}
+          />
+        </div>
+      </div>
+    );
+  }
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
