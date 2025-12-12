@@ -9,12 +9,13 @@ interface UserOrganization {
   organization_id: string;
   role: string;
   organization_name: string;
+  plan: string;
 }
 
 interface UserRoleQueryResult {
   organization_id: string;
   role: string;
-  organizations: { name: string } | null;
+  organizations: { name: string; plan: string } | null;
 }
 
 interface AuthContextType {
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select(`
           organization_id,
           role,
-          organizations!inner(name)
+          organizations!inner(name, plan)
         `)
         .eq('user_id', userId);
 
@@ -89,7 +90,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const orgs = (data as UserRoleQueryResult[]).map((item) => ({
           organization_id: item.organization_id,
           role: item.role,
-          organization_name: item.organizations?.name || 'Sin nombre'
+          organization_name: item.organizations?.name || 'Sin nombre',
+          plan: item.organizations?.plan || 'free'
         }));
         
         setUserOrganizations(orgs);
