@@ -6473,6 +6473,7 @@ export type Database = {
           estimated_cost: number | null
           estimated_hours: number | null
           id: string
+          is_personal: boolean | null
           leader_id: string | null
           order_index: number
           organization_id: string | null
@@ -6489,6 +6490,7 @@ export type Database = {
           estimated_cost?: number | null
           estimated_hours?: number | null
           id?: string
+          is_personal?: boolean | null
           leader_id?: string | null
           order_index?: number
           organization_id?: string | null
@@ -6505,6 +6507,7 @@ export type Database = {
           estimated_cost?: number | null
           estimated_hours?: number | null
           id?: string
+          is_personal?: boolean | null
           leader_id?: string | null
           order_index?: number
           organization_id?: string | null
@@ -6973,6 +6976,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_global_agenda_settings: {
+        Row: {
+          created_at: string | null
+          default_view: string | null
+          id: string
+          linked_organization_ids: string[] | null
+          org_color_map: Json | null
+          saved_filters: Json | null
+          show_org_tasks: boolean | null
+          show_personal_tasks: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_view?: string | null
+          id?: string
+          linked_organization_ids?: string[] | null
+          org_color_map?: Json | null
+          saved_filters?: Json | null
+          show_org_tasks?: boolean | null
+          show_personal_tasks?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_view?: string | null
+          id?: string
+          linked_organization_ids?: string[] | null
+          org_color_map?: Json | null
+          saved_filters?: Json | null
+          show_org_tasks?: boolean | null
+          show_personal_tasks?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_notification_preferences: {
         Row: {
@@ -8014,6 +8056,23 @@ export type Database = {
       check_pending_validations: { Args: never; Returns: undefined }
       check_performance_drop: { Args: never; Returns: undefined }
       check_rising_cac: { Args: never; Returns: undefined }
+      check_schedule_conflicts: {
+        Args: {
+          p_exclude_task_schedule_id?: string
+          p_scheduled_date: string
+          p_scheduled_end: string
+          p_scheduled_start: string
+          p_user_id: string
+        }
+        Returns: {
+          conflict_end: string
+          conflict_id: string
+          conflict_organization: string
+          conflict_start: string
+          conflict_task_title: string
+          is_personal_conflict: boolean
+        }[]
+      }
       check_stagnant_opportunities: { Args: never; Returns: undefined }
       check_stale_leads: { Args: never; Returns: undefined }
       check_stale_metrics: { Args: never; Returns: undefined }
@@ -8097,6 +8156,19 @@ export type Database = {
         Args: { record_id: string; table_name: string; token_column: string }
         Returns: string
       }
+      get_global_agenda_stats: {
+        Args: { p_user_id: string; p_week_start: string }
+        Returns: {
+          collaborative_tasks: number
+          completed_tasks: number
+          org_tasks: number
+          organizations_count: number
+          pending_tasks: number
+          personal_tasks: number
+          total_hours: number
+          total_tasks: number
+        }[]
+      }
       get_next_week_start: { Args: never; Returns: string }
       get_nps_trends: {
         Args: { p_months?: number; p_organization_id: string }
@@ -8129,6 +8201,27 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_global_agenda_settings: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string | null
+          default_view: string | null
+          id: string
+          linked_organization_ids: string[] | null
+          org_color_map: Json | null
+          saved_filters: Json | null
+          show_org_tasks: boolean | null
+          show_personal_tasks: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_global_agenda_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       is_admin_or_leader: { Args: { _user_id: string }; Returns: boolean }
       is_feature_enabled: {

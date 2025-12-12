@@ -74,6 +74,7 @@ const UserLeadsPage = lazy(() => import("./pages/crm/UserLeadsPage"));
 // Lazy loaded pages - Dashboard sub-pages
 const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
 const AgendaSemanal = lazy(() => import("./pages/dashboard/AgendaSemanal"));
+const GlobalAgenda = lazy(() => import("./pages/GlobalAgenda"));
 const DashboardGamification = lazy(() => import("./pages/dashboard/Gamification"));
 const DashboardNotifications = lazy(() => import("./pages/dashboard/DashboardNotifications"));
 
@@ -236,6 +237,9 @@ const AppContent = () => {
           
           {/* BI Dashboard */}
           <Route path="/bi" element={<BIDashboard />} />
+          
+          {/* Global Agenda */}
+          <Route path="/agenda-global" element={<GlobalAgenda />} />
         </Route>
         
         {/* ===== 404 ===== */}
