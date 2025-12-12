@@ -112,7 +112,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-tool-content]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-smart-alerts]
 verify_jwt = false
