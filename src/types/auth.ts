@@ -21,6 +21,7 @@ export interface UserOrganization {
   organization_id: string;
   role: string;
   organization_name: string;
+  plan: string;
 }
 
 export interface AuthContextType {
