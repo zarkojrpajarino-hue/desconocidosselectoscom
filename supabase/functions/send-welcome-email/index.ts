@@ -112,17 +112,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Email de bienvenida enviado:', emailResponse);
 
-    // Log email sent event
-    await supabaseAdmin
-      .from('email_logs')
-      .insert({
-        user_id: user.id,
-        email_type: 'welcome',
-        email_id: emailResponse.id,
-        sent_at: new Date().toISOString(),
-        status: 'sent'
-      })
-      .catch(err => console.error('Error logging email:', err));
+    // Log email sent event - use proper async/await pattern
+    try {
+      const emailId = (emailResponse as { id?: string }).id || null;
+      await supabaseAdmin
+        .from('email_logs')
+        .insert({
+          user_id: user.id,
+          email_type: 'welcome',
+          email_id: emailId,
+          sent_at: new Date().toISOString(),
+          status: 'sent'
+        });
+    } catch (logError) {
+      console.error('Error logging email:', logError);
+    }
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
