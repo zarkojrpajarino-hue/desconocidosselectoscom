@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react';
+import { ThemeProvider } from 'next-themes';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { PlanProvider } from "@/contexts/PlanContext";
 import { DemoModeProvider } from "@/contexts/DemoModeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -250,22 +250,24 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <DemoModeProvider>
-            <ErrorBoundary>
-              <AppContent />
-            </ErrorBoundary>
-          </DemoModeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <DemoModeProvider>
+              <ErrorBoundary>
+                <AppContent />
+              </ErrorBoundary>
+            </DemoModeProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
