@@ -84,6 +84,7 @@ const GrowthModel = lazy(() => import("./pages/herramientas/GrowthModel"));
 const BuyerPersona = lazy(() => import("./pages/herramientas/BuyerPersona"));
 const CustomerJourney = lazy(() => import("./pages/herramientas/CustomerJourney"));
 const BrandKit = lazy(() => import("./pages/herramientas/BrandKit"));
+const WebGenerator = lazy(() => import("./pages/herramientas/WebGenerator"));
 
 // Lazy loaded pages - Practicar sub-pages
 const Simulador = lazy(() => import("./pages/practicar/Simulador"));
@@ -185,6 +186,7 @@ const AppContent = () => {
             <Route path="buyer-persona" element={<BuyerPersona />} />
             <Route path="customer-journey" element={<CustomerJourney />} />
             <Route path="brand-kit" element={<BrandKit />} />
+            <Route path="web-generator" element={<WebGenerator />} />
           </Route>
           
           {/* Practicar con sub-rutas */}
