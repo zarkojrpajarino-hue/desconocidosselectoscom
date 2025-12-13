@@ -361,5 +361,154 @@
       "cta": "Upgrade para Professional - €249/mês",
       "ctaSubtext": "Inclui Google Calendar, Outlook, IA avançada e mais"
     }
+  },
+  "integrations": {
+    "title": "Integrações",
+    "hero": {
+      "title": "Conecte-se às Suas Ferramentas Favoritas",
+      "description": "OPTIMUS-K integra-se com as ferramentas que você já usa. Automatize fluxos e elimine o trabalho manual.",
+      "badge1": "7 integrações",
+      "badge2": "+5000 apps via Zapier"
+    },
+    "features": "Recursos",
+    "useCases": "Casos de Uso",
+    "availableIn": "Disponível em",
+    "locked": {
+      "title": "Integrações Avançadas",
+      "description": "Conecte OPTIMUS-K às suas ferramentas favoritas para automatizar fluxos de trabalho.",
+      "features": {
+        "googleCalendar": "Google Calendar - Sincronize tarefas automaticamente",
+        "slack": "Slack - Notificações em tempo real",
+        "hubspot": "HubSpot - CRM bidirecional",
+        "outlook": "Outlook - Para equipes Microsoft",
+        "zapier": "Zapier - +5000 aplicações"
+      }
+    },
+    "items": {
+      "googleCalendar": {
+        "name": "Google Calendar",
+        "description": "Sincronize automaticamente suas tarefas com o Google Calendar. Nunca perca um prazo.",
+        "features": {
+          "sync": "Sincronização automática de tarefas",
+          "reminders": "Eventos com lembretes",
+          "weeklyView": "Visualização de agenda semanal unificada",
+          "timeBlocking": "Bloqueio de tempo para trabalho profundo"
+        },
+        "useCases": {
+          "schedule": "Agende suas tarefas semanais automaticamente",
+          "reminders": "Receba lembretes antes de cada prazo",
+          "workload": "Visualize sua carga de trabalho no calendário"
+        }
+      },
+      "slack": {
+        "name": "Slack",
+        "description": "Receba notificações em tempo real sobre leads, tarefas e OKRs diretamente no Slack.",
+        "features": {
+          "leads": "Notificações de novos leads",
+          "okrs": "Alertas de OKRs em risco",
+          "celebrations": "Celebração de tarefas concluídas",
+          "dailySummary": "Resumo diário automático"
+        },
+        "useCases": {
+          "hotLeads": "A equipe de vendas recebe alertas quando um lead quente chega",
+          "okrAlerts": "Os gerentes veem alertas quando um OKR está em risco",
+          "teamCelebrations": "Celebre conquistas da equipe automaticamente no canal"
+        }
+      },
+      "hubspot": {
+        "name": "HubSpot",
+        "description": "Sincronização bidirecional com HubSpot CRM. Seus contatos e negócios sempre atualizados.",
+        "features": {
+          "import": "Importação automática de contatos",
+          "export": "Exportação de leads para HubSpot",
+          "deals": "Sincronização de negócios e valores",
+          "mapping": "Mapeamento de campos personalizado"
+        },
+        "useCases": {
+          "import": "Importe todos os seus contatos do HubSpot com um clique",
+          "autoCreate": "Leads que você ganha são criados automaticamente no HubSpot",
+          "unifiedMetrics": "A equipe de marketing vê métricas unificadas"
+        }
+      },
+      "outlook": {
+        "name": "Outlook Calendar",
+        "description": "Para equipes Microsoft. Sincronize tarefas e eventos com o Outlook Calendar.",
+        "features": {
+          "sync365": "Sincronização com Outlook 365",
+          "reminders": "Eventos com lembretes",
+          "corporate": "Suporte para contas corporativas",
+          "teams": "Integração com Teams (em breve)"
+        },
+        "useCases": {
+          "microsoft": "Empresas que usam Microsoft 365",
+          "syncWork": "Sincronize sua agenda de trabalho com OPTIMUS-K",
+          "unified": "Veja todas as suas reuniões e tarefas em um só lugar"
+        }
+      },
+      "trello": {
+        "name": "Trello",
+        "description": "Exporte tarefas para quadros do Trello. Ideal se sua equipe já usa Trello.",
+        "features": {
+          "export": "Exportação de tarefas como cartões",
+          "columns": "Mapeamento de fases para colunas",
+          "labels": "Etiquetas automáticas",
+          "status": "Sincronização de status"
+        },
+        "useCases": {
+          "teams": "Equipes que já usam Trello para gestão de projetos",
+          "visualize": "Visualize tarefas do OPTIMUS-K no seu quadro favorito",
+          "keepUpdated": "Mantenha o Trello atualizado sem trabalho manual"
+        }
+      },
+      "asana": {
+        "name": "Asana",
+        "description": "Conecte-se ao Asana para gestão avançada de projetos.",
+        "features": {
+          "export": "Exportação de tarefas para projetos",
+          "deadlines": "Sincronização de prazos",
+          "assignees": "Atribuição de responsáveis",
+          "subtasks": "Subtarefas automáticas"
+        },
+        "useCases": {
+          "teams": "Equipes que usam Asana para gestão de projetos",
+          "syncDeadlines": "Sincronize prazos entre plataformas",
+          "productTeam": "A equipe de produto vê tudo no Asana"
+        }
+      },
+      "zapier": {
+        "name": "Zapier",
+        "description": "Conecte OPTIMUS-K com +5000 aplicações através do Zapier.",
+        "features": {
+          "webhooks": "Webhooks personalizados",
+          "triggers": "Gatilhos de eventos",
+          "apps": "Conexão com +5000 apps",
+          "unlimited": "Automações ilimitadas"
+        },
+        "useCases": {
+          "stripe": "Quando você ganha um lead → criar fatura no Stripe",
+          "discord": "Quando você completa uma tarefa → notificar no Discord",
+          "mailchimp": "Novo lead → adicionar ao Mailchimp"
+        }
+      }
+    },
+    "suggestion": {
+      "title": "Falta alguma ferramenta?",
+      "description": "Diga-nos qual integração você gostaria de ver.",
+      "name": "Seu nome (opcional)",
+      "namePlaceholder": "João Silva",
+      "email": "Seu email (opcional)",
+      "emailPlaceholder": "joao@empresa.com",
+      "tool": "Qual ferramenta está faltando?",
+      "toolPlaceholder": "Ex: Notion, Monday.com, Pipedrive...",
+      "reason": "Para que você a usaria? (opcional)",
+      "reasonPlaceholder": "Descreva como essa integração ajudaria você...",
+      "submit": "Enviar Sugestão",
+      "sending": "Enviando...",
+      "success": "Obrigado pela sua sugestão!",
+      "successDescription": "Avaliaremos adicionar essa integração em breve.",
+      "error": "Erro ao enviar sugestão",
+      "errorEmpty": "Por favor, indique qual ferramenta está faltando"
+    },
+    "footer": "© 2025 OPTIMUS-K. Todos os direitos reservados."
   }
 }
