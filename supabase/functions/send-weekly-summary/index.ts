@@ -20,6 +20,61 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { userId }: WeeklySummaryRequest = await req.json();
 
+    // Authorization check: verify CRON_SECRET for scheduled invocations
+    const cronSecret = req.headers.get('x-cron-secret');
+    const expectedCronSecret = Deno.env.get('CRON_SECRET');
+    
+    // If called with CRON_SECRET (scheduled job), allow it
+    const isScheduledJob = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
+    
+    // If not a scheduled job, verify the caller is the same user or an admin
+    if (!isScheduledJob) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'Authorization required' }),
+          { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+      
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      
+      const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid authentication' }),
+          { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+      
+      // Only allow users to send emails to themselves, or admins to send to anyone
+      if (authUser.id !== userId) {
+        // Check if caller is an admin
+        const supabaseAdmin = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        const { data: callerRole } = await supabaseAdmin
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', authUser.id)
+          .eq('role', 'admin')
+          .single();
+        
+        if (!callerRole) {
+          return new Response(
+            JSON.stringify({ error: 'Not authorized to send emails to other users' }),
+            { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+      }
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -51,12 +106,12 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('user_id', userId);
 
     const completedTasks = tasks?.filter(task => 
-      task.task_completions && task.task_completions.some((comp: any) => comp.completed_by_user)
+      task.task_completions && task.task_completions.some((comp: { completed_by_user: boolean }) => comp.completed_by_user)
     ) || [];
 
     const pendingTasks = tasks?.filter(task => 
       !task.task_completions || task.task_completions.length === 0 || 
-      !task.task_completions.some((comp: any) => comp.completed_by_user)
+      !task.task_completions.some((comp: { completed_by_user: boolean }) => comp.completed_by_user)
     ) || [];
 
     const completionRate = tasks && tasks.length > 0 
@@ -152,10 +207,11 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
-    console.error('Error enviando resumen semanal:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error enviando resumen semanal:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
