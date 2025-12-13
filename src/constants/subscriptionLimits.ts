@@ -69,6 +69,7 @@ export interface PlanLimits {
   // IA
   max_ai_analysis_per_month: number;  // -1 = ilimitado
   max_ai_tools: number;  // Número de herramientas IA disponibles
+  max_enterprise_tools: number;  // Herramientas premium adicionales para Enterprise (5 max)
   available_ai_tools: string[];
   ai_weekly_insights: boolean;
   ai_predictive_models: boolean;
@@ -178,6 +179,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     // IA
     max_ai_analysis_per_month: 2,  // 2 análisis total en el trial
     max_ai_tools: 2,
+    max_enterprise_tools: 0,  // No disponible en Free
     available_ai_tools: ['buyer_persona', 'lead_scoring'],
     ai_weekly_insights: false,
     ai_predictive_models: false,
@@ -288,6 +290,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     // IA
     max_ai_analysis_per_month: 4,  // 1 por semana
     max_ai_tools: 4,
+    max_enterprise_tools: 0,  // No disponible en Starter
     available_ai_tools: [
       'buyer_persona',
       'lead_scoring',
@@ -398,6 +401,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     // IA
     max_ai_analysis_per_month: 8,  // 2 por semana
     max_ai_tools: 8,  // TODAS
+    max_enterprise_tools: 0,  // No disponible en Professional
     available_ai_tools: [
       'buyer_persona',
       'lead_scoring',
@@ -512,6 +516,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     // IA
     max_ai_analysis_per_month: -1,  // Ilimitado
     max_ai_tools: -1,
+    max_enterprise_tools: 5,  // 5 herramientas premium adicionales
     available_ai_tools: [],  // Todas + custom
     ai_weekly_insights: true,
     ai_predictive_models: true,

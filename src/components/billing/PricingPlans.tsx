@@ -60,6 +60,7 @@ const plans = [
       { text: "Usuarios ilimitados", included: true },
       { text: "Todo ilimitado", included: true },
       { text: "Generaciones IA ilimitadas", included: true },
+      { text: "5 Herramientas IA Premium personalizadas", included: true },
       { text: "White-label (tu marca)", included: true },
       { text: "Account manager dedicado", included: true },
       { text: "Onboarding personalizado (2h)", included: true },
