@@ -353,7 +353,7 @@ const Simulador = () => {
 
   return (
     <ToolContentViewer
-      toolType="simulador_ventas"
+      toolType="sales_simulator"
       title="Simulador de Ventas"
       description="Practica tus habilidades de venta con escenarios interactivos y obtén feedback inmediato"
       renderContent={renderContent}

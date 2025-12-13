@@ -8,10 +8,22 @@ export type ToolType =
   | 'customer_journey' 
   | 'growth_model' 
   | 'lead_scoring'
-  | 'guia_comunicacion'
-  | 'simulador_ventas'
   | 'sales_playbook'
-  | 'calculadora_oportunidad';
+  | 'sales_simulator'
+  | 'communication_guide'
+  | 'opportunity_calculator';
+
+// Plan requirements for each tool
+export const TOOL_PLAN_REQUIREMENTS: Record<ToolType, 'free' | 'starter' | 'professional' | 'enterprise'> = {
+  buyer_persona: 'free',
+  customer_journey: 'free',
+  growth_model: 'free',
+  lead_scoring: 'free',
+  sales_playbook: 'professional',
+  sales_simulator: 'professional',
+  communication_guide: 'professional',
+  opportunity_calculator: 'professional'
+};
 
 export const useToolContent = (toolType: ToolType) => {
   const { user } = useAuth();

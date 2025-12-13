@@ -267,7 +267,7 @@ const Guia = () => {
 
   return (
     <ToolContentViewer
-      toolType="guia_comunicacion"
+      toolType="communication_guide"
       title="Guía de Comunicación"
       description="Guía completa de tono de voz, mensajes clave y templates de comunicación para tu marca"
       renderContent={renderContent}
