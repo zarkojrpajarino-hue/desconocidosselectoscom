@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from 'next-themes';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,9 +59,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { userProfile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(() => 
-    document.documentElement.classList.contains('dark')
-  );
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   // Generate breadcrumbs
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -72,8 +70,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }));
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -136,7 +133,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={toggleTheme}
             className="text-muted-foreground hover:text-foreground"
           >
-            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
           {/* Notifications */}
