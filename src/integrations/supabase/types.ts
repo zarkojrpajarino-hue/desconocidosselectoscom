@@ -7375,7 +7375,7 @@ export type Database = {
           organization_id?: string | null
           role: string
           strategic_objectives?: string | null
-          username: string
+          username?: string
         }
         Update: {
           created_at?: string | null

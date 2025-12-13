@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, ArrowLeft, Check } from 'lucide-react';
+import { Loader2, ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +18,8 @@ const Signup = () => {
   const [fullName, setFullName] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const validatePassword = (pass: string): string | null => {
@@ -36,9 +38,9 @@ const Signup = () => {
     if (/[0-9]/.test(pass)) strength++;
     if (/[^A-Za-z0-9]/.test(pass)) strength++;
 
-    if (strength <= 2) return { level: strength, text: 'Débil', color: 'bg-red-500' };
-    if (strength <= 3) return { level: strength, text: 'Media', color: 'bg-yellow-500' };
-    return { level: strength, text: 'Fuerte', color: 'bg-green-500' };
+    if (strength <= 2) return { level: strength, text: 'Débil', color: 'bg-destructive' };
+    if (strength <= 3) return { level: strength, text: 'Media', color: 'bg-warning' };
+    return { level: strength, text: 'Fuerte', color: 'bg-success' };
   };
 
   const passwordStrength = getPasswordStrength(password);
@@ -70,12 +72,15 @@ const Signup = () => {
     setLoading(true);
 
     try {
+      const usernameFromName = fullName.trim().toLowerCase().replace(/\s+/g, '_') || email.split('@')[0];
+      
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName,
+            username: usernameFromName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -164,15 +169,26 @@ const Signup = () => {
 
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {password && (
                 <div className="space-y-1">
                   <div className="flex gap-1">
@@ -186,8 +202,8 @@ const Signup = () => {
                     ))}
                   </div>
                   <p className={`text-xs ${
-                    passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
-                    passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' : 'text-green-500'
+                    passwordStrength.color === 'bg-destructive' ? 'text-destructive' :
+                    passwordStrength.color === 'bg-warning' ? 'text-warning' : 'text-success'
                   }`}>
                     Seguridad: {passwordStrength.text}
                   </p>
@@ -195,15 +211,15 @@ const Signup = () => {
               )}
               <ul className="text-xs text-muted-foreground space-y-0.5 mt-1">
                 <li className="flex items-center gap-1">
-                  <Check className={`h-3 w-3 ${password.length >= 8 ? 'text-green-500' : 'text-muted-foreground/50'}`} />
+                  <Check className={`h-3 w-3 ${password.length >= 8 ? 'text-success' : 'text-muted-foreground/50'}`} />
                   Mínimo 8 caracteres
                 </li>
                 <li className="flex items-center gap-1">
-                  <Check className={`h-3 w-3 ${/[A-Z]/.test(password) ? 'text-green-500' : 'text-muted-foreground/50'}`} />
+                  <Check className={`h-3 w-3 ${/[A-Z]/.test(password) ? 'text-success' : 'text-muted-foreground/50'}`} />
                   Una mayúscula
                 </li>
                 <li className="flex items-center gap-1">
-                  <Check className={`h-3 w-3 ${/[0-9]/.test(password) ? 'text-green-500' : 'text-muted-foreground/50'}`} />
+                  <Check className={`h-3 w-3 ${/[0-9]/.test(password) ? 'text-success' : 'text-muted-foreground/50'}`} />
                   Un número
                 </li>
               </ul>
@@ -211,17 +227,28 @@ const Signup = () => {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500">Las contraseñas no coinciden</p>
+                <p className="text-xs text-destructive">Las contraseñas no coinciden</p>
               )}
             </div>
 
