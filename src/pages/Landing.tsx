@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DOMPurify from "dompurify";
 import { useTranslation } from 'react-i18next';
+import { useTheme } from 'next-themes';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import {
   CheckCircle2, Zap, TrendingUp, Users, Target, BarChart3, 
   ArrowRight, Clock, Shield, Building2, Rocket, Sparkles, 
   Check, LogIn, User, Menu, X, Lightbulb, Bot, Link as LinkIcon,
-  Gauge, Crown, Star, Gift
+  Gauge, Crown, Star, Gift, Moon, Sun
 } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -28,6 +29,11 @@ const Landing = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   const features = [
     {
@@ -143,6 +149,16 @@ const Landing = () => {
 
           <div className="flex items-center gap-3">
             <LanguageSelector />
+            
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
 
             {user ? (
               <Button onClick={() => navigate('/home')}>
