@@ -341,5 +341,25 @@
     "notFound": "Nicht gefunden",
     "validation": "Validierungsfehler",
     "tryAgain": "Erneut versuchen"
+  },
+  "globalAgenda": {
+    "locked": {
+      "title": "Globale Agenda",
+      "description": "Verwalten Sie Aufgaben aller Ihrer Organisationen in einer einzigen Ansicht, synchronisiert mit Ihren Kalendern",
+      "features": {
+        "viewAll": "Aufgaben aller Organisationen anzeigen",
+        "googleCalendar": "Mit Google Calendar synchronisieren",
+        "outlookCalendar": "Mit Outlook Calendar synchronisieren",
+        "personalTasks": "Persönliche Aufgaben erstellen",
+        "conflictDetection": "Automatische Konflikterkennung",
+        "orgColors": "Farben pro Organisation"
+      },
+      "preview": "Vorschau",
+      "previewOrg1": "Org 1 - Marketing-Aufgabe",
+      "previewOrg2": "Org 2 - Vertriebsmeeting",
+      "previewPersonal": "Persönlich - KPI-Überprüfung",
+      "cta": "Upgrade auf Professional - 249€/Monat",
+      "ctaSubtext": "Inklusive Google Calendar, Outlook, erweiterte KI und mehr"
+    }
   }
 }

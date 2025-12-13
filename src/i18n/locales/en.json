@@ -341,5 +341,25 @@
     "notFound": "Not found",
     "validation": "Validation error",
     "tryAgain": "Try again"
+  },
+  "globalAgenda": {
+    "locked": {
+      "title": "Global Agenda",
+      "description": "Manage tasks from all your organizations in a single view synced with your calendars",
+      "features": {
+        "viewAll": "View tasks from all your organizations",
+        "googleCalendar": "Sync with Google Calendar",
+        "outlookCalendar": "Sync with Outlook Calendar",
+        "personalTasks": "Create personal tasks",
+        "conflictDetection": "Automatic conflict detection",
+        "orgColors": "Colors per organization"
+      },
+      "preview": "Preview",
+      "previewOrg1": "Org 1 - Marketing Task",
+      "previewOrg2": "Org 2 - Sales Meeting",
+      "previewPersonal": "Personal - KPIs Review",
+      "cta": "Upgrade to Professional - €249/mo",
+      "ctaSubtext": "Includes Google Calendar, Outlook, advanced AI and more"
+    }
   }
 }
