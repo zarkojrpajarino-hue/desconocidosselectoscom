@@ -26,3 +26,6 @@ export { OKRQuarterlyView } from './OKRQuarterlyView';
 export { OKRCheckInForm } from './OKRCheckInForm';
 export { OKRDependencyMap } from './OKRDependencyMap';
 export { OKRRetrospective } from './OKRRetrospective';
+
+// Enterprise Tools Catalog
+export { EnterpriseToolsCatalog } from './EnterpriseToolsCatalog';
