@@ -341,5 +341,25 @@
     "notFound": "No encontrado",
     "validation": "Error de validación",
     "tryAgain": "Intentar de nuevo"
+  },
+  "globalAgenda": {
+    "locked": {
+      "title": "Agenda Global",
+      "description": "Gestiona tareas de todas tus organizaciones en una sola vista sincronizada con tus calendarios",
+      "features": {
+        "viewAll": "Ver tareas de todas tus organizaciones",
+        "googleCalendar": "Sincronizar con Google Calendar",
+        "outlookCalendar": "Sincronizar con Outlook Calendar",
+        "personalTasks": "Crear tareas personales",
+        "conflictDetection": "Detectar conflictos automáticamente",
+        "orgColors": "Colores por organización"
+      },
+      "preview": "Vista previa",
+      "previewOrg1": "Org 1 - Tarea Marketing",
+      "previewOrg2": "Org 2 - Reunión Ventas",
+      "previewPersonal": "Personal - Revisión KPIs",
+      "cta": "Upgrade a Professional - €249/mes",
+      "ctaSubtext": "Incluye Google Calendar, Outlook, IA avanzada y más"
+    }
   }
 }

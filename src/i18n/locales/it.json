@@ -341,5 +341,25 @@
     "notFound": "Non trovato",
     "validation": "Errore di validazione",
     "tryAgain": "Riprova"
+  },
+  "globalAgenda": {
+    "locked": {
+      "title": "Agenda Globale",
+      "description": "Gestisci le attività di tutte le tue organizzazioni in un'unica vista sincronizzata con i tuoi calendari",
+      "features": {
+        "viewAll": "Visualizza attività di tutte le tue organizzazioni",
+        "googleCalendar": "Sincronizza con Google Calendar",
+        "outlookCalendar": "Sincronizza con Outlook Calendar",
+        "personalTasks": "Crea attività personali",
+        "conflictDetection": "Rilevamento automatico dei conflitti",
+        "orgColors": "Colori per organizzazione"
+      },
+      "preview": "Anteprima",
+      "previewOrg1": "Org 1 - Attività Marketing",
+      "previewOrg2": "Org 2 - Riunione Vendite",
+      "previewPersonal": "Personale - Revisione KPI",
+      "cta": "Passa a Professional - €249/mese",
+      "ctaSubtext": "Include Google Calendar, Outlook, IA avanzata e altro"
+    }
   }
 }
