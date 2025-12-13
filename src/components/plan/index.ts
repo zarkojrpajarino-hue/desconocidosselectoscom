@@ -8,3 +8,4 @@ export { LockedFeatureCard } from './LockedFeatureCard';
 export { LockedFeatureOverlay, SimpleLockedMessage } from './LockedFeatureOverlay';
 export { UpgradePrompt } from './UpgradePrompt';
 export { PlanUsageWidget, PlanUsageGrid } from './PlanUsageWidget';
+export { GlobalAgendaLockedCard } from './GlobalAgendaLockedCard';

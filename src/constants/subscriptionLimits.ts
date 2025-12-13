@@ -89,6 +89,8 @@ export interface PlanLimits {
   
   // INTEGRACIONES
   google_calendar: boolean | 'bidirectional';
+  outlook_calendar: boolean;
+  global_agenda: boolean;  // Agenda multi-org
   exportations: 'none' | 'csv_basic' | 'excel_advanced' | 'api_full';
   api_access: 'none' | 'read_only' | 'full';
   zapier: boolean;
@@ -196,6 +198,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     
     // INTEGRACIONES
     google_calendar: false,
+    outlook_calendar: false,
+    global_agenda: false,
     exportations: 'none',
     api_access: 'none',
     zapier: false,
@@ -309,6 +313,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     
     // INTEGRACIONES
     google_calendar: false,
+    outlook_calendar: false,
+    global_agenda: false,
     exportations: 'csv_basic',
     api_access: 'none',
     zapier: false,
@@ -421,6 +427,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     
     // INTEGRACIONES
     google_calendar: true,
+    outlook_calendar: true,
+    global_agenda: true,
     exportations: 'excel_advanced',
     api_access: 'read_only',
     zapier: true,
@@ -524,6 +532,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     
     // INTEGRACIONES
     google_calendar: 'bidirectional',
+    outlook_calendar: true,
+    global_agenda: true,
     exportations: 'api_full',
     api_access: 'full',
     zapier: true,
