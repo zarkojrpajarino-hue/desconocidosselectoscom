@@ -2,12 +2,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Palette, Target, Calculator, ArrowLeft } from 'lucide-react';
+import { Palette, Target, Calculator, ArrowLeft, Crown } from 'lucide-react';
 import { SectionTourButton } from '@/components/SectionTourButton';
+import { EnterpriseToolsCatalog } from '@/components/enterprise/EnterpriseToolsCatalog';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
+import { Badge } from '@/components/ui/badge';
 
 const HerramientasHub = () => {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
+  const { isEnterprise } = usePlanAccess();
 
   const sections = [
     {
@@ -56,7 +60,7 @@ const HerramientasHub = () => {
         </div>
       </div>
 
-      <div className="container max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8">
+      <div className="container max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8 space-y-8">
         <div id="tools-grid" data-tour="tools-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {sections.map((section) => {
             const Icon = section.icon;
@@ -78,6 +82,11 @@ const HerramientasHub = () => {
               </Card>
             );
           })}
+        </div>
+
+        {/* Catálogo Enterprise */}
+        <div className="pt-4 border-t">
+          <EnterpriseToolsCatalog />
         </div>
       </div>
     </div>

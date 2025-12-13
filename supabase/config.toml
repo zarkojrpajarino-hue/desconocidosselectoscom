@@ -1,5 +1,8 @@
 project_id = "nrsrzfqtzjrxrvqyypdn"
 
+[functions.generate-enterprise-tool]
+verify_jwt = true
+
 [functions.generate-task-alternatives]
 verify_jwt = true
 
