@@ -592,6 +592,125 @@ Genera SOLO el JSON con este formato exacto:
   "intro_message": "Mensaje introductorio explicando la oportunidad de negocio...",
   "highlight_message": "Mensaje destacado sobre el porcentaje de comisión..."
 }`
+    } else if (toolType === 'brand_kit') {
+      prompt = `Genera un Brand Kit completo para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Descripción: ${org.business_description}
+- Clientes objetivo: ${org.target_customers}
+- Propuesta de valor: ${org.value_proposition}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "colors": {
+    "primary": "#3B82F6",
+    "secondary": "#10B981",
+    "accent": "#8B5CF6",
+    "neutral_light": "#F8FAFC",
+    "neutral_dark": "#1E293B",
+    "psychology": {
+      "primary_meaning": "Significado psicológico del color primario...",
+      "secondary_meaning": "Significado psicológico del color secundario...",
+      "accent_meaning": "Significado psicológico del color accent..."
+    }
+  },
+  "typography": {
+    "font_heading": "Inter",
+    "font_heading_url": "https://fonts.google.com/specimen/Inter",
+    "font_body": "Open Sans",
+    "font_body_url": "https://fonts.google.com/specimen/Open+Sans",
+    "usage_guide": "Descripción de cuándo usar cada tipografía..."
+  },
+  "tone_of_voice": {
+    "primary_tone": "Profesional y cercano",
+    "characteristics": ["Característica 1", "Característica 2", "Característica 3"],
+    "do_list": ["Hacer 1", "Hacer 2", "Hacer 3"],
+    "dont_list": ["No hacer 1", "No hacer 2", "No hacer 3"],
+    "example_phrases": ["Frase ejemplo 1", "Frase ejemplo 2", "Frase ejemplo 3"]
+  },
+  "visual_elements": {
+    "logo_concept": "Descripción del concepto de logo recomendado...",
+    "icon_style": "Estilo de iconografía recomendado...",
+    "image_style": "Estilo de imágenes recomendado...",
+    "patterns": "Patrones o texturas recomendados..."
+  },
+  "applications": {
+    "social_media": "Guía de aplicación en redes sociales...",
+    "website": "Guía de aplicación en web...",
+    "print": "Guía de aplicación en impresos...",
+    "presentations": "Guía de aplicación en presentaciones..."
+  }
+}`
+
+    } else if (toolType === 'web_generator') {
+      prompt = `Genera el contenido para una Landing Page profesional para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Descripción: ${org.business_description}
+- Clientes objetivo: ${org.target_customers}
+- Propuesta de valor: ${org.value_proposition}
+- Productos/Servicios: ${JSON.stringify(org.products_services)}
+- Diferenciadores: ${org.competitive_advantage || 'No especificado'}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "meta": {
+    "title": "Título SEO de la página (max 60 caracteres)",
+    "description": "Meta descripción SEO (max 160 caracteres)"
+  },
+  "design": {
+    "primary_color": "#3B82F6",
+    "secondary_color": "#10B981",
+    "accent_color": "#8B5CF6",
+    "font_heading": "Inter",
+    "font_body": "Open Sans"
+  },
+  "hero": {
+    "headline": "Titular principal impactante que capture la propuesta de valor",
+    "subheadline": "Subtítulo que explique brevemente qué hace la empresa y para quién",
+    "cta_text": "Texto del botón principal",
+    "cta_url": "#contact"
+  },
+  "features": {
+    "title": "Título de la sección de características",
+    "items": [
+      {"icon": "🚀", "title": "Feature 1", "description": "Descripción de la característica 1"},
+      {"icon": "⚡", "title": "Feature 2", "description": "Descripción de la característica 2"},
+      {"icon": "🎯", "title": "Feature 3", "description": "Descripción de la característica 3"}
+    ]
+  },
+  "benefits": {
+    "title": "Título de la sección de beneficios",
+    "items": [
+      {"title": "Beneficio 1", "description": "Descripción del beneficio 1"},
+      {"title": "Beneficio 2", "description": "Descripción del beneficio 2"},
+      {"title": "Beneficio 3", "description": "Descripción del beneficio 3"},
+      {"title": "Beneficio 4", "description": "Descripción del beneficio 4"}
+    ]
+  },
+  "testimonials": {
+    "title": "Lo que dicen nuestros clientes",
+    "items": [
+      {"quote": "Testimonio 1 del cliente...", "author": "Nombre Cliente 1", "role": "CEO, Empresa 1"},
+      {"quote": "Testimonio 2 del cliente...", "author": "Nombre Cliente 2", "role": "Director, Empresa 2"},
+      {"quote": "Testimonio 3 del cliente...", "author": "Nombre Cliente 3", "role": "Manager, Empresa 3"}
+    ]
+  },
+  "cta": {
+    "headline": "Titular de cierre con call to action",
+    "subheadline": "Subtítulo que motive a tomar acción",
+    "button_text": "Texto del botón",
+    "button_url": "#contact"
+  },
+  "footer": {
+    "tagline": "Tagline o eslogan de la empresa"
+  }
+}`
+
     }
 
     if (!prompt) {

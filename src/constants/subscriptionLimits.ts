@@ -71,6 +71,8 @@ export interface PlanLimits {
   max_ai_tools: number;  // Número de herramientas IA disponibles
   max_enterprise_tools: number;  // Herramientas premium adicionales para Enterprise (5 max)
   available_ai_tools: string[];
+  brand_kit: boolean;  // Generador de identidad de marca
+  web_generator: boolean;  // Generador de páginas web
   ai_weekly_insights: boolean;
   ai_predictive_models: boolean;
   ai_competitive_analysis: boolean;  // Análisis de competidores con IA
@@ -181,6 +183,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     max_ai_tools: 2,
     max_enterprise_tools: 0,  // No disponible en Free
     available_ai_tools: ['buyer_persona', 'lead_scoring'],
+    brand_kit: false,
+    web_generator: false,
     ai_weekly_insights: false,
     ai_predictive_models: false,
     ai_competitive_analysis: false,
@@ -297,6 +301,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
       'growth_model',
       'customer_journey'
     ],
+    brand_kit: false,
+    web_generator: false,
     ai_weekly_insights: false,
     ai_predictive_models: false,
     ai_competitive_analysis: false,
@@ -400,7 +406,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     
     // IA
     max_ai_analysis_per_month: 8,  // 2 por semana
-    max_ai_tools: 8,  // TODAS
+    max_ai_tools: 10,  // TODAS + brand_kit + web_generator
     max_enterprise_tools: 0,  // No disponible en Professional
     available_ai_tools: [
       'buyer_persona',
@@ -410,8 +416,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
       'sales_playbook',
       'sales_simulator',
       'communication_guide',
-      'opportunity_calculator'
+      'opportunity_calculator',
+      'brand_kit',
+      'web_generator'
     ],
+    brand_kit: true,
+    web_generator: true,
     ai_weekly_insights: true,
     ai_predictive_models: false,
     ai_competitive_analysis: true,  // Professional tiene análisis competitivo
@@ -518,6 +528,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     max_ai_tools: -1,
     max_enterprise_tools: 5,  // 5 herramientas premium adicionales
     available_ai_tools: [],  // Todas + custom
+    brand_kit: true,
+    web_generator: true,
     ai_weekly_insights: true,
     ai_predictive_models: true,
     ai_competitive_analysis: true,  // Enterprise tiene análisis competitivo completo

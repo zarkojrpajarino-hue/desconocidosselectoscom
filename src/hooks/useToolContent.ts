@@ -11,18 +11,22 @@ export type ToolType =
   | 'sales_playbook'
   | 'sales_simulator'
   | 'communication_guide'
-  | 'opportunity_calculator';
+  | 'opportunity_calculator'
+  | 'brand_kit'
+  | 'web_generator';
 
 // Plan requirements for each tool
 export const TOOL_PLAN_REQUIREMENTS: Record<ToolType, 'free' | 'starter' | 'professional' | 'enterprise'> = {
   buyer_persona: 'free',
-  customer_journey: 'free',
-  growth_model: 'free',
+  customer_journey: 'starter',
+  growth_model: 'starter',
   lead_scoring: 'free',
   sales_playbook: 'professional',
   sales_simulator: 'professional',
   communication_guide: 'professional',
-  opportunity_calculator: 'professional'
+  opportunity_calculator: 'professional',
+  brand_kit: 'professional',
+  web_generator: 'professional'
 };
 
 export const useToolContent = (toolType: ToolType) => {
