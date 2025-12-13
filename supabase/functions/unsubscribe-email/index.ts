@@ -119,14 +119,17 @@ const handler = async (req: Request): Promise<Response> => {
     if (error) throw error;
 
     // Log unsubscribe
-    await supabaseAdmin
-      .from('email_unsubscribes')
-      .insert({
-        user_id: userId,
-        email_type: emailType,
-        unsubscribed_at: new Date().toISOString()
-      })
-      .catch(err => console.error('Error logging unsubscribe:', err));
+    try {
+      await supabaseAdmin
+        .from('email_unsubscribes')
+        .insert({
+          user_id: userId,
+          email_type: emailType,
+          unsubscribed_at: new Date().toISOString()
+        });
+    } catch (logError) {
+      console.error('Error logging unsubscribe:', logError);
+    }
 
     console.log(`User ${userId} unsubscribed from ${emailType}`);
 

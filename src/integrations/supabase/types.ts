@@ -1986,6 +1986,39 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          created_at: string | null
+          email_id: string | null
+          email_type: string
+          id: string
+          metadata: Json | null
+          sent_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_id?: string | null
+          email_type: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_id?: string | null
+          email_type?: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string | null
@@ -2038,6 +2071,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_unsubscribes: {
+        Row: {
+          created_at: string | null
+          email_type: string
+          id: string
+          unsubscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_type: string
+          id?: string
+          unsubscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_type?: string
+          id?: string
+          unsubscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       expense_entries: {
         Row: {
@@ -8229,6 +8286,10 @@ export type Database = {
         Returns: boolean
       }
       is_service_role: { Args: never; Returns: boolean }
+      is_user_unsubscribed: {
+        Args: { p_email_type: string; p_user_id: string }
+        Returns: boolean
+      }
       mark_all_notifications_read: { Args: never; Returns: undefined }
       mark_changelog_read: {
         Args: { p_changelog_id: string }
