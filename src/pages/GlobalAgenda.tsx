@@ -9,9 +9,14 @@ import { GlobalWeeklyView } from '@/components/agenda/GlobalWeeklyView';
 import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
 import { AgendaFilters, AgendaStats } from '@/components/agenda/AgendaFilters';
+import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
 import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 
 export default function GlobalAgenda() {
+  const { hasFeature } = usePlanAccess();
+  const hasAccess = hasFeature('global_agenda');
+
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 3 }), 'yyyy-MM-dd')
   );
@@ -45,6 +50,15 @@ export default function GlobalAgenda() {
   const handleRegenerate = () => {
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
   };
+
+  // Show locked card if user doesn't have access
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 pb-20">
+        <GlobalAgendaLockedCard />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 space-y-6 pb-20">

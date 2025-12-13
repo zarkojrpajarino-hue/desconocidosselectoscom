@@ -26,6 +26,7 @@ import {
   Lock,
   Zap,
   Link2,
+  Calendar,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -62,6 +63,13 @@ const navigation: NavItemProps[] = [
     to: '/dashboard/home',
     icon: LayoutDashboard,
     label: 'Dashboard',
+  },
+  {
+    to: '/agenda-global',
+    icon: Calendar,
+    label: 'Agenda Global',
+    requiredPlan: 'professional',
+    featureKey: 'global_agenda',
   },
   {
     to: '/metrics',
