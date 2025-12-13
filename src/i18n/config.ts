@@ -8,14 +8,21 @@ import fr from './locales/fr.json';
 import de from './locales/de.json';
 import pt from './locales/pt.json';
 import it from './locales/it.json';
+import { enterpriseToolsTranslations } from './locales/enterpriseTools';
+
+// Merge enterprise tools translations with base translations
+const mergeTranslations = (base: Record<string, unknown>, enterprise: Record<string, unknown>) => ({
+  ...base,
+  enterpriseTools: enterprise,
+});
 
 export const resources = {
-  en: { translation: en },
-  es: { translation: es },
-  fr: { translation: fr },
-  de: { translation: de },
-  pt: { translation: pt },
-  it: { translation: it },
+  en: { translation: mergeTranslations(en, enterpriseToolsTranslations.en) },
+  es: { translation: mergeTranslations(es, enterpriseToolsTranslations.es) },
+  fr: { translation: mergeTranslations(fr, enterpriseToolsTranslations.fr) },
+  de: { translation: mergeTranslations(de, enterpriseToolsTranslations.de) },
+  pt: { translation: mergeTranslations(pt, enterpriseToolsTranslations.pt) },
+  it: { translation: mergeTranslations(it, enterpriseToolsTranslations.it) },
 } as const;
 
 i18n
