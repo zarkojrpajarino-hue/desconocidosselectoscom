@@ -215,6 +215,387 @@ Genera SOLO el JSON con este formato exacto:
     {"min": 61, "max": 100, "grade": "A", "label": "Hot Lead"}
   ]
 }`
+
+    } else if (toolType === 'sales_playbook') {
+      prompt = `Genera un Sales Playbook completo para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Descripción: ${org.business_description}
+- Productos/Servicios: ${JSON.stringify(org.products_services)}
+- Clientes objetivo: ${org.target_customers}
+- Propuesta de valor: ${org.value_proposition}
+- Proceso de ventas: ${org.sales_process}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "intro": {
+    "big_message": "NO VENDEMOS PRODUCTOS - VENDEMOS EXPERIENCIAS",
+    "key_points": [
+      "Punto clave 1 sobre cómo vender",
+      "Punto clave 2 sobre cómo vender",
+      "Punto clave 3 sobre cómo vender",
+      "Punto clave 4 sobre cómo vender",
+      "Punto clave 5 sobre cómo vender"
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "Cliente Individual",
+      "icon": "👤",
+      "tone": "Personal, cercano, enfocado en beneficios individuales",
+      "channels": {
+        "instagram": "Speech de ejemplo para Instagram DM...",
+        "whatsapp": "Speech de ejemplo para WhatsApp...",
+        "email": "Speech de ejemplo para Email...",
+        "phone": "Speech de ejemplo para llamada telefónica...",
+        "presencial": "Speech de ejemplo para venta presencial..."
+      },
+      "key_phrases": [
+        "Frase clave 1",
+        "Frase clave 2",
+        "Frase clave 3",
+        "Frase clave 4",
+        "Frase clave 5",
+        "Frase clave 6"
+      ],
+      "objections": [
+        {"question": "Objeción común 1", "response": "Respuesta efectiva 1"},
+        {"question": "Objeción común 2", "response": "Respuesta efectiva 2"},
+        {"question": "Objeción común 3", "response": "Respuesta efectiva 3"}
+      ],
+      "closing_steps": [
+        "Paso 1 para cerrar la venta",
+        "Paso 2 para cerrar la venta",
+        "Paso 3 para cerrar la venta",
+        "Paso 4 para cerrar la venta"
+      ]
+    },
+    {
+      "name": "Familia",
+      "icon": "👨‍👩‍👧‍👦",
+      "tone": "Cálido, tradicional, enfocado en compartir momentos",
+      "channels": {
+        "instagram": "Speech de ejemplo para familias en Instagram...",
+        "whatsapp": "Speech de ejemplo para familias en WhatsApp...",
+        "email": "Speech de ejemplo para familias por Email...",
+        "phone": "Speech de ejemplo para familias por teléfono...",
+        "presencial": "Speech de ejemplo para familias presencial..."
+      },
+      "key_phrases": ["Frase 1", "Frase 2", "Frase 3", "Frase 4", "Frase 5", "Frase 6"],
+      "objections": [
+        {"question": "Objeción 1", "response": "Respuesta 1"},
+        {"question": "Objeción 2", "response": "Respuesta 2"}
+      ],
+      "closing_steps": ["Paso 1", "Paso 2", "Paso 3", "Paso 4"]
+    },
+    {
+      "name": "Grupo de Amigos",
+      "icon": "🎉",
+      "tone": "Divertido, alternativo, diferente",
+      "channels": {
+        "instagram": "Speech para grupos en Instagram...",
+        "whatsapp": "Speech para grupos en WhatsApp...",
+        "email": "Speech para grupos por Email...",
+        "phone": "Speech para grupos por teléfono...",
+        "presencial": "Speech para grupos presencial..."
+      },
+      "key_phrases": ["Frase 1", "Frase 2", "Frase 3", "Frase 4", "Frase 5", "Frase 6"],
+      "objections": [
+        {"question": "Objeción 1", "response": "Respuesta 1"},
+        {"question": "Objeción 2", "response": "Respuesta 2"}
+      ],
+      "closing_steps": ["Paso 1", "Paso 2", "Paso 3", "Paso 4"]
+    },
+    {
+      "name": "Empresa B2B",
+      "icon": "💼",
+      "tone": "Profesional, ROI, beneficios corporativos",
+      "channels": {
+        "instagram": "Speech B2B para Instagram...",
+        "whatsapp": "Speech B2B para WhatsApp...",
+        "email": "Speech B2B profesional por Email...",
+        "phone": "Speech B2B para llamadas...",
+        "presencial": "Speech B2B para reuniones presenciales..."
+      },
+      "key_phrases": ["Frase B2B 1", "Frase B2B 2", "Frase B2B 3", "Frase B2B 4", "Frase B2B 5", "Frase B2B 6"],
+      "objections": [
+        {"question": "Objeción B2B 1", "response": "Respuesta B2B 1"},
+        {"question": "Objeción B2B 2", "response": "Respuesta B2B 2"},
+        {"question": "Objeción B2B 3", "response": "Respuesta B2B 3"}
+      ],
+      "closing_steps": ["Paso B2B 1", "Paso B2B 2", "Paso B2B 3", "Paso B2B 4", "Paso B2B 5"]
+    }
+  ],
+  "tips": [
+    {"title": "Tip 1 título", "description": "Descripción del tip 1"},
+    {"title": "Tip 2 título", "description": "Descripción del tip 2"},
+    {"title": "Tip 3 título", "description": "Descripción del tip 3"},
+    {"title": "Tip 4 título", "description": "Descripción del tip 4"},
+    {"title": "Tip 5 título", "description": "Descripción del tip 5"},
+    {"title": "Tip 6 título", "description": "Descripción del tip 6"}
+  ],
+  "final_message": "Mensaje motivacional final para el equipo de ventas"
+}`
+
+    } else if (toolType === 'sales_simulator') {
+      prompt = `Genera un Simulador de Ventas interactivo para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Descripción: ${org.business_description}
+- Productos/Servicios: ${JSON.stringify(org.products_services)}
+- Proceso de ventas: ${org.sales_process}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "client_types": [
+    {"id": "individual", "name": "Cliente Individual", "icon": "👤"},
+    {"id": "familia", "name": "Familia", "icon": "👨‍👩‍👧‍👦"},
+    {"id": "amigos", "name": "Grupo de Amigos", "icon": "🎉"},
+    {"id": "desconocido", "name": "Desconocido (Icebreaker)", "icon": "🎭"},
+    {"id": "empresa_cercana", "name": "Empresa Cercana", "icon": "🏢"},
+    {"id": "empresa_b2b", "name": "Empresa B2B Real", "icon": "💼"}
+  ],
+  "channels": [
+    {"id": "instagram", "name": "Instagram DM", "icon": "📸"},
+    {"id": "whatsapp", "name": "WhatsApp", "icon": "💬"},
+    {"id": "email", "name": "Email", "icon": "📧"},
+    {"id": "phone", "name": "Llamada Telefónica", "icon": "📞"},
+    {"id": "presencial", "name": "Presencial", "icon": "🤝"}
+  ],
+  "scenarios": {
+    "individual": {
+      "initial_speech": "Speech inicial para cliente individual...",
+      "conversation": [
+        {
+          "client_message": "Mensaje del cliente preguntando...",
+          "response_options": ["Respuesta opción A", "Respuesta opción B", "Respuesta opción C"],
+          "tips": ["Tip 1 para esta etapa", "Tip 2 para esta etapa", "Tip 3 para esta etapa"]
+        },
+        {
+          "client_message": "Segunda pregunta o objeción del cliente...",
+          "response_options": ["Respuesta A", "Respuesta B", "Respuesta C"],
+          "tips": ["Tip 1", "Tip 2", "Tip 3"]
+        },
+        {
+          "client_message": "Pregunta de cierre del cliente...",
+          "response_options": ["Cierre opción A", "Cierre opción B", "Cierre opción C"],
+          "tips": ["Tip cierre 1", "Tip cierre 2", "Tip cierre 3"]
+        }
+      ]
+    },
+    "familia": {
+      "initial_speech": "Speech inicial para familias...",
+      "conversation": [
+        {"client_message": "Pregunta familia 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta familia 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta familia 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
+      ]
+    },
+    "amigos": {
+      "initial_speech": "Speech inicial para grupos de amigos...",
+      "conversation": [
+        {"client_message": "Pregunta amigos 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta amigos 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta amigos 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
+      ]
+    },
+    "desconocido": {
+      "initial_speech": "Speech icebreaker para desconocidos...",
+      "conversation": [
+        {"client_message": "Pregunta icebreaker 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta icebreaker 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta icebreaker 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
+      ]
+    },
+    "empresa_cercana": {
+      "initial_speech": "Speech para empresa cercana/conocida...",
+      "conversation": [
+        {"client_message": "Pregunta empresa cercana 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta empresa cercana 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta empresa cercana 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
+      ]
+    },
+    "empresa_b2b": {
+      "initial_speech": "Speech profesional B2B...",
+      "conversation": [
+        {"client_message": "Pregunta B2B 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta B2B 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
+        {"client_message": "Pregunta B2B 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
+      ]
+    }
+  },
+  "completion_message": "¡Felicidades! Has completado la simulación de ventas."
+}`
+
+    } else if (toolType === 'communication_guide') {
+      prompt = `Genera una Guía de Comunicación completa para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Descripción: ${org.business_description}
+- Propuesta de valor: ${org.value_proposition}
+- Clientes objetivo: ${org.target_customers}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "elevator_pitches": {
+    "short": "Pitch de 30 segundos: explicación corta y directa de qué hace la empresa y por qué es diferente...",
+    "long": "Pitch de 2 minutos: versión expandida que plantea el problema, presenta la solución, beneficios clave y propuesta de valor..."
+  },
+  "keywords": [
+    "EXPERIENCIA",
+    "TRANSFORMACIÓN",
+    "CONEXIÓN REAL",
+    "MEMORABLE",
+    "AUTÉNTICO",
+    "PROPÓSITO",
+    "RECUERDOS",
+    "LIBERTAD",
+    "PRESENCIA REAL",
+    "DIFERENTE",
+    "SIN FILTROS",
+    "DESCUBRIR",
+    "ESPACIO SEGURO",
+    "ROMPER MONOTONÍA",
+    "ACTO DE REBELDÍA"
+  ],
+  "instagram_posts": [
+    {
+      "type": "Problema",
+      "content": "Contenido del post sobre el problema que resuelve la empresa... 8-10 líneas con emojis y hashtags"
+    },
+    {
+      "type": "Productos/Industria",
+      "content": "Contenido del post enfocado en los productos/servicios y apoyo local..."
+    },
+    {
+      "type": "Invitación",
+      "content": "Contenido del post con propuesta radical, desafío, call to action..."
+    },
+    {
+      "type": "Manifiesto",
+      "content": "Contenido del post como manifiesto de marca, valores, movimiento..."
+    }
+  ],
+  "conversation_examples": [
+    {
+      "scenario": "¿Qué es esto?",
+      "messages": [
+        {"role": "client", "text": "¿Qué es exactamente lo que hacéis?"},
+        {"role": "vendor", "text": "Respuesta del vendedor explicando..."},
+        {"role": "client", "text": "Pero eso ya existe, ¿no?"},
+        {"role": "vendor", "text": "Respuesta manejando la objeción..."}
+      ]
+    },
+    {
+      "scenario": "DM Instagram",
+      "messages": [
+        {"role": "client", "text": "Hola, he visto vuestro perfil. ¿Cómo funciona?"},
+        {"role": "vendor", "text": "Respuesta casual pero efectiva..."}
+      ]
+    }
+  ],
+  "communication_tips": [
+    "Nunca empieces con 'vendemos X'",
+    "Usa storytelling para conectar emocionalmente",
+    "Contrasta con alternativas tradicionales",
+    "Enfatiza lo local/nacional si aplica",
+    "Sé visual: usa ejemplos y analogías",
+    "Habla de emociones antes que de características",
+    "Invita, no vendas",
+    "Usa testimonios y casos de éxito",
+    "Menciona el propósito detrás del producto",
+    "Cierra con la transformación que ofreces"
+  ]
+}`
+
+    } else if (toolType === 'opportunity_calculator') {
+      prompt = `Genera una Calculadora de Oportunidad de Negocio para esta empresa:
+
+CONTEXTO DE LA EMPRESA:
+- Nombre: ${org.name}
+- Industria: ${org.industry}
+- Productos/Servicios: ${JSON.stringify(org.products_services)}
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "commission_percentage": 70,
+  "products": [
+    {"name": "Producto 1", "price": 100, "cost": 30, "margin": 70, "earn": 49, "badge": "premium"},
+    {"name": "Producto 2", "price": 80, "cost": 25, "margin": 55, "earn": 38.5, "badge": "standard"},
+    {"name": "Producto 3", "price": 60, "cost": 20, "margin": 40, "earn": 28, "badge": "basic"},
+    {"name": "Producto 4", "price": 120, "cost": 40, "margin": 80, "earn": 56, "badge": "premium"},
+    {"name": "Producto 5", "price": 90, "cost": 30, "margin": 60, "earn": 42, "badge": "standard"},
+    {"name": "Producto 6", "price": 50, "cost": 15, "margin": 35, "earn": 24.5, "badge": "basic"},
+    {"name": "Producto 7", "price": 150, "cost": 50, "margin": 100, "earn": 70, "badge": "premium"},
+    {"name": "Producto 8", "price": 70, "cost": 22, "margin": 48, "earn": 33.6, "badge": "standard"}
+  ],
+  "team_scenarios": [
+    {
+      "name": "Vendedor Conservador",
+      "icon": "🐢",
+      "role": "Ventas a tiempo parcial",
+      "scenario_type": "Conservador",
+      "weekly_sales": {
+        "b2c": [{"product": "Producto 1", "qty": 2}, {"product": "Producto 2", "qty": 3}],
+        "b2b": [{"product": "Producto 4", "qty": 1}]
+      },
+      "weekly_earnings": 200,
+      "monthly_earnings": 800,
+      "eleven_weeks_earnings": 2200
+    },
+    {
+      "name": "Vendedor Moderado",
+      "icon": "🦊",
+      "role": "Ventas regulares",
+      "scenario_type": "Moderado",
+      "weekly_sales": {
+        "b2c": [{"product": "Producto 1", "qty": 4}, {"product": "Producto 3", "qty": 5}],
+        "b2b": [{"product": "Producto 7", "qty": 2}]
+      },
+      "weekly_earnings": 450,
+      "monthly_earnings": 1800,
+      "eleven_weeks_earnings": 4950
+    },
+    {
+      "name": "Vendedor Agresivo",
+      "icon": "🦁",
+      "role": "Ventas a tiempo completo",
+      "scenario_type": "Agresivo",
+      "weekly_sales": {
+        "b2c": [{"product": "Producto 1", "qty": 8}, {"product": "Producto 2", "qty": 6}],
+        "b2b": [{"product": "Producto 4", "qty": 5}, {"product": "Producto 7", "qty": 3}]
+      },
+      "weekly_earnings": 950,
+      "monthly_earnings": 3800,
+      "eleven_weeks_earnings": 10450
+    },
+    {
+      "name": "Super Vendedor",
+      "icon": "🚀",
+      "role": "Top performer",
+      "scenario_type": "Máximo",
+      "weekly_sales": {
+        "b2c": [{"product": "Producto 1", "qty": 15}, {"product": "Producto 4", "qty": 10}],
+        "b2b": [{"product": "Producto 7", "qty": 8}]
+      },
+      "weekly_earnings": 1800,
+      "monthly_earnings": 7200,
+      "eleven_weeks_earnings": 19800
+    }
+  ],
+  "intro_message": "Mensaje introductorio explicando la oportunidad de negocio...",
+  "highlight_message": "Mensaje destacado sobre el porcentaje de comisión..."
+}`
+    }
+
+    if (!prompt) {
+      throw new Error(`Tipo de herramienta no soportado: ${toolType}`)
     }
 
     console.log('Calling Lovable AI...')

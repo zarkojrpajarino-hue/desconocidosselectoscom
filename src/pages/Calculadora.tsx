@@ -482,7 +482,7 @@ const Calculadora = () => {
         
         <div className="bg-card rounded-lg border p-6">
           <ToolContentViewer
-            toolType="calculadora_oportunidad"
+            toolType="opportunity_calculator"
             title="Calculadora de Oportunidad de Negocio"
             description="Análisis de mercado, proyecciones financieras, unit economics y plan de acción personalizado"
             renderContent={renderContent}
