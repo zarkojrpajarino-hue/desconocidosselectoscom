@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -190,7 +191,17 @@ const Integraciones = () => {
     }
     setSending(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase.functions.invoke('send-tool-suggestion', {
+        body: {
+          name: suggestionName.trim() || undefined,
+          email: suggestionEmail.trim() || undefined,
+          toolName: suggestionTool.trim(),
+          reason: suggestionReason.trim() || undefined,
+        }
+      });
+      
+      if (error) throw error;
+      
       toast.success(t('integrations.suggestion.success'), {
         description: t('integrations.suggestion.successDescription')
       });

@@ -6707,6 +6707,56 @@ export type Database = {
           },
         ]
       }
+      tool_suggestions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          organization_id: string | null
+          reason: string | null
+          reviewed_at: string | null
+          status: string
+          tool_name: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          status?: string
+          tool_name: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          organization_id?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          status?: string
+          tool_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_suggestions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trello_accounts: {
         Row: {
           api_key: string
