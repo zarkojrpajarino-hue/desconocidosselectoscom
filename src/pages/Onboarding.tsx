@@ -120,12 +120,12 @@ const Onboarding = () => {
   const [showExistingUserOptions, setShowExistingUserOptions] = useState(false);
   const [isExistingUser, setIsExistingUser] = useState(false);
 
-  // Redirect to startup onboarding if type=startup and user is authenticated
+  // Redirect to startup onboarding if type=startup (immediately, regardless of auth)
   useEffect(() => {
-    if (onboardingType === 'startup' && user) {
+    if (onboardingType === 'startup') {
       navigate('/onboarding/startup');
     }
-  }, [onboardingType, user, navigate]);
+  }, [onboardingType, navigate]);
   
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Paso 1
