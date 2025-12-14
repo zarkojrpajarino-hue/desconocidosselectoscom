@@ -362,6 +362,15 @@ export default function OnboardingStartup() {
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
           <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
             <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/')} 
+                className="flex-shrink-0 h-8 px-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Volver</span>
+              </Button>
               <Rocket className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
               <div className="min-w-0">
                 <h1 className="text-base md:text-xl font-bold truncate">Onboarding Startup</h1>
