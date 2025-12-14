@@ -328,7 +328,10 @@ export default function OnboardingStartup() {
         toast.success('¡Workspace generado! Tus tareas y herramientas están listas.');
       }
 
-      navigate('/home');
+      toast.success('¡Organización creada exitosamente!', {
+        description: 'Ahora selecciona tu plan...'
+      });
+      navigate('/select-plan');
     } catch (error) {
       console.error('Error:', error);
       toast.error('Error al generar workspace');

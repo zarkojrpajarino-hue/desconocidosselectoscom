@@ -231,12 +231,12 @@ const Landing = () => {
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('landing.hero.description')) }} />
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <Button size="lg" onClick={() => navigate('/signup')} className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
+          <Button size="lg" onClick={() => scrollToSection('how-it-works')} className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
             {t('landing.hero.cta')}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button size="lg" variant="outline" onClick={() => scrollToSection('pricing')} className="text-lg px-8 py-6">
-            {t('landing.hero.viewPricing')}
+          <Button size="lg" variant="outline" onClick={() => scrollToSection('features')} className="text-lg px-8 py-6">
+            {t('landing.hero.viewPricing', 'Ver Características')}
           </Button>
         </div>
 
@@ -386,8 +386,8 @@ const Landing = () => {
                 ))}
               </ul>
 
-              <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => navigate('/signup')}>
-                {plan.cta}
+              <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => scrollToSection('how-it-works')}>
+                {t('landing.pricing.startOnboarding', 'Empezar Onboarding')}
               </Button>
             </Card>
           ))}
@@ -405,7 +405,7 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-16 text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-3xl mb-16">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.cta.title')}</h2>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('landing.cta.subtitle')}</p>
-        <Button size="lg" onClick={() => navigate('/signup')} className="text-lg px-12 py-6">
+        <Button size="lg" onClick={() => scrollToSection('how-it-works')} className="text-lg px-12 py-6">
           {t('landing.cta.button')}
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
