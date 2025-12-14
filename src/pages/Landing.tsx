@@ -169,13 +169,13 @@ const Landing = () => {
               <>
                 <Button 
                   variant="ghost" 
-                  onClick={() => navigate('/login')} 
+                  onClick={() => scrollToSection('how-it-works')} 
                   className="hidden sm:flex"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   {t('nav.login')}
                 </Button>
-                <Button onClick={() => navigate('/signup')}>
+                <Button onClick={() => scrollToSection('how-it-works')}>
                   {t('nav.startFree')}
                 </Button>
               </>
@@ -205,7 +205,7 @@ const Landing = () => {
                 {t('nav.pricing')}
               </Button>
               {!user && (
-                <Button variant="ghost" className="justify-start" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>
+                <Button variant="ghost" className="justify-start" onClick={() => { scrollToSection('how-it-works'); }}>
                   <LogIn className="w-4 h-4 mr-2" />
                   {t('nav.login')}
                 </Button>

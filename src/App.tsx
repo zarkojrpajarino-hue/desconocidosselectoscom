@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoModeProvider } from "@/contexts/DemoModeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -23,8 +23,6 @@ const PageLoader = () => (
 
 // Lazy loaded pages - Core (frequently used)
 const Login = lazy(() => import("./pages/Login"));
-const Signup = lazy(() => import("./pages/Signup"));
-const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Home = lazy(() => import("./pages/Home"));
@@ -97,10 +95,8 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OnboardingStartup = lazy(() => import("./pages/onboarding/OnboardingStartup"));
 const OnboardingSuccess = lazy(() => import("./pages/OnboardingSuccess"));
 const AdminOnboardings = lazy(() => import("./pages/AdminOnboardings"));
-const SelectOrganization = lazy(() => import("./pages/SelectOrganization"));
 const SelectPlan = lazy(() => import("./pages/SelectPlan"));
 const GeneratingWorkspace = lazy(() => import("./pages/GeneratingWorkspace"));
-const SelectRole = lazy(() => import("./pages/SelectRole"));
 
 // Lazy loaded pages - Others
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
@@ -135,8 +131,8 @@ const AppContent = () => {
         {/* ===== RUTAS PÚBLICAS (sin layout) ===== */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/signup" element={<Navigate to="/#how-it-works" replace />} />
+        <Route path="/verify-email" element={<Navigate to="/#how-it-works" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/integraciones" element={<Integraciones />} />
@@ -147,11 +143,7 @@ const AppContent = () => {
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
         
         {/* ===== RUTAS PROTEGIDAS SIN LAYOUT (flujos especiales) ===== */}
-        <Route path="/select-organization" element={
-          <ProtectedRoute>
-            <SelectOrganization />
-          </ProtectedRoute>
-        } />
+        <Route path="/select-organization" element={<Navigate to="/select-plan" replace />} />
         <Route path="/select-plan" element={
           <ProtectedRoute>
             <SelectPlan />
@@ -162,11 +154,7 @@ const AppContent = () => {
             <OnboardingStartup />
           </ProtectedRoute>
         } />
-        <Route path="/join/:token" element={
-          <ProtectedRoute>
-            <SelectRole />
-          </ProtectedRoute>
-        } />
+        <Route path="/join/:token" element={<Navigate to="/home" replace />} />
         
         {/* ===== RUTAS PROTEGIDAS CON NUEVO AppLayout ===== */}
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
