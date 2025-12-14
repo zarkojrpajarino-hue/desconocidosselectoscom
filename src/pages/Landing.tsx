@@ -395,7 +395,7 @@ const Landing = () => {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">{t('landing.pricing.customPlan')}</p>
-          <Button variant="link" onClick={() => window.location.href = 'mailto:sales@optimus-k.com'}>
+          <Button variant="link" onClick={() => window.location.href = 'mailto:info@optimus-k.com'}>
             {t('landing.pricing.contactUs')}
           </Button>
         </div>

@@ -7,7 +7,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const APP_NAME = 'OPTIMUS-K';
-const APP_URL = Deno.env.get('APP_URL') || 'https://optimusk.app';
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

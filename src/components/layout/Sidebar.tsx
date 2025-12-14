@@ -315,13 +315,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg flex-shrink-0">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
-          {!isCollapsed && (
+{!isCollapsed && (
             <div className="flex flex-col">
               <span className="font-bold text-sidebar-foreground text-sm leading-tight">
-                Experiencia
-              </span>
-              <span className="text-[10px] text-muted-foreground font-medium">
-                Selecta
+                OPTIMUS-K
               </span>
             </div>
           )}

@@ -59,7 +59,7 @@ const OnboardingSuccess = () => {
 
           <div className="pt-4 space-y-3">
             <p className="text-sm text-muted-foreground">
-              Si tienes alguna pregunta, escríbenos a <strong>soporte@optimus-k.com</strong>
+              Si tienes alguna pregunta, escríbenos a <strong>info@optimus-k.com</strong>
             </p>
             
             <Button

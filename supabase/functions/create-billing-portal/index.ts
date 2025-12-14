@@ -80,7 +80,7 @@ serve(async (req) => {
     }
 
     // Create Stripe billing portal session
-    const siteUrl = Deno.env.get("SITE_URL") || "https://optimus-k.lovable.app";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://optimus-k.com";
     
     const session = await stripe.billingPortal.sessions.create({
       customer: org.stripe_customer_id,

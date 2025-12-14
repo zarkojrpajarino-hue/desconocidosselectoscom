@@ -80,7 +80,7 @@ export function AppLayout() {
 
         {/* Footer - Hidden on mobile */}
         <footer className="hidden md:block py-4 px-6 border-t border-border text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Experiencia Selecta. Todos los derechos reservados.
+          © {new Date().getFullYear()} OPTIMUS-K. Todos los derechos reservados.
         </footer>
       </div>
 

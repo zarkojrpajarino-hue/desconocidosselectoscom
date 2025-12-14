@@ -55,7 +55,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-premium mx-auto">
         <CardHeader className="space-y-1 pb-4">
           <CardTitle className="text-xl md:text-3xl font-bold text-center bg-gradient-primary bg-clip-text text-transparent">
-            Experiencia Selecta
+            OPTIMUS-K
           </CardTitle>
           <CardDescription className="text-center text-xs md:text-base">
             Sistema de gestión de tareas del equipo
