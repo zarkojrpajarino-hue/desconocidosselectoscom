@@ -386,7 +386,7 @@ const Landing = () => {
                 ))}
               </ul>
 
-              <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => navigate('/onboarding')}>
+              <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => scrollToSection('how-it-works')}>
                 {plan.cta}
               </Button>
             </Card>
