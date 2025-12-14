@@ -206,8 +206,12 @@ const Onboarding = () => {
     switch (step) {
       case 1:
         // Si es usuario existente, saltar validación de paso 1
-        if (isExistingUser) return true;
+        if (isExistingUser || user) return true;
         
+        if (!formData.contactName) {
+          toast.error("Por favor ingresa tu nombre");
+          return false;
+        }
         if (!formData.accountEmail || !formData.accountPassword) {
           toast.error("Por favor completa todos los campos del paso 1");
           return false;
