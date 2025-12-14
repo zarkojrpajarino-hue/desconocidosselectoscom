@@ -153,7 +153,7 @@ export function usePushNotifications() {
     }
 
     // Send local notification for testing
-    const notification = new Notification('Experiencia Selecta', {
+    const notification = new Notification('OPTIMUS-K', {
       body: '¡Las notificaciones están funcionando!',
       icon: '/pwa-192x192.svg',
       badge: '/pwa-192x192.svg',
