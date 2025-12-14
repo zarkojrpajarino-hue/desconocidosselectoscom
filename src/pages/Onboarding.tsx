@@ -217,19 +217,9 @@ const Onboarding = () => {
         // Si es usuario existente, saltar validación de paso 1
         if (isExistingUser || user) return true;
         
-        if (!formData.contactName) {
-          toast.error("Por favor ingresa tu nombre");
-          return false;
-        }
-        if (!formData.accountEmail || !formData.accountPassword) {
-          toast.error("Por favor completa todos los campos del paso 1");
-          return false;
-        }
-        if (formData.accountPassword.length < 8) {
-          toast.error("La contraseña debe tener al menos 8 caracteres");
-          return false;
-        }
-        return true;
+        // Verificar que la cuenta haya sido creada
+        toast.error("Por favor crea tu cuenta antes de continuar");
+        return false;
       
       case 2:
         if (!formData.companyName || !formData.contactName || !formData.contactEmail || 
@@ -497,58 +487,16 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
     setLoading(true);
     
     try {
-      // 1. Check if user is already logged in
+      // Get current user (account was created in step 1)
       const { data: existingUserData } = await supabase.auth.getUser();
-      let userId: string;
-      let isNewUser = false;
       
-      if (existingUserData?.user) {
-        // Usuario ya logueado, crear solo la organización
-        userId = existingUserData.user.id;
-        toast.success('Creando nueva organización para tu cuenta existente...');
-      } else {
-        // 2. Create new user account
-        const { data: authData, error: signUpError } = await supabase.auth.signUp({
-          email: formData.accountEmail,
-          password: formData.accountPassword,
-          options: {
-            data: {
-              full_name: formData.contactName,
-            }
-          }
-        });
-
-        if (signUpError) {
-          if (signUpError.message.includes('already registered')) {
-            throw new Error('Este email ya está registrado. Por favor inicia sesión primero.');
-          }
-          throw signUpError;
-        }
-        if (!authData.user) throw new Error('No se pudo crear el usuario');
-
-        userId = authData.user.id;
-        isNewUser = true;
-
-        // 3. Wait for trigger to create user in public.users (only for new users)
-        let userCreated = false;
-        for (let i = 0; i < 6; i++) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', userId)
-            .single();
-          
-          if (userData) {
-            userCreated = true;
-            break;
-          }
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        if (!userCreated) {
-          throw new Error('Error al configurar el usuario. Intenta de nuevo.');
-        }
+      if (!existingUserData?.user) {
+        throw new Error('No se encontró tu cuenta. Por favor vuelve al paso 1 y crea tu cuenta.');
       }
+      
+      const userId = existingUserData.user.id;
+      toast.info('Creando tu organización...');
+
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({
@@ -610,10 +558,6 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         .single();
 
       if (orgError) {
-        // Cleanup: delete auth user if org creation fails (only for new users)
-        if (isNewUser) {
-          await supabase.auth.admin.deleteUser(userId);
-        }
         throw new Error(`Error al crear organización: ${orgError.message}`);
       }
 
@@ -752,7 +696,7 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
             />
           ) : (
             <>
-              {currentStep === 1 && <OnboardingStep1 formData={formData} updateFormData={updateFormData} />}
+              {currentStep === 1 && <OnboardingStep1 formData={formData} updateFormData={updateFormData} onAccountCreated={() => setCurrentStep(2)} />}
               {currentStep === 2 && <OnboardingStep2 formData={formData} updateFormData={updateFormData} />}
               {currentStep === 3 && <OnboardingStep3 formData={formData} updateFormData={updateFormData} />}
               {currentStep === 4 && <OnboardingStep4 formData={formData} updateFormData={updateFormData} />}

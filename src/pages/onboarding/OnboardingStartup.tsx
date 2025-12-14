@@ -31,11 +31,12 @@ import StartupStep5GoToMarket from './startup/StartupStep5GoToMarket';
 import StartupStep6Resources from './startup/StartupStep6Resources';
 import StartupStep7Validation from './startup/StartupStep7Validation';
 import StartupStep8Timeline from './startup/StartupStep8Timeline';
+import StartupStep0Account from './startup/StartupStep0Account';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9; // Now includes step 0 (account)
 
 const STEP_TITLES = [
-  'Visión', 'Mercado', 'Modelo de Negocio', 'Producto',
+  'Cuenta', 'Visión', 'Mercado', 'Modelo de Negocio', 'Producto',
   'Go-to-Market', 'Recursos', 'Validación', 'Timeline'
 ];
 
@@ -73,23 +74,27 @@ function parseFundingStrategy(value: string | null | undefined): FundingStrategy
 
 export default function OnboardingStartup() {
   const navigate = useNavigate();
-  const { user, currentOrganizationId } = useAuth();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<StartupOnboardingData>(INITIAL_STARTUP_DATA);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
+  // Load draft only after org is set
   useEffect(() => {
-    loadDraft();
-  }, [currentOrganizationId]);
+    if (organizationId) {
+      loadDraft();
+    }
+  }, [organizationId]);
 
   const loadDraft = async () => {
-    if (!currentOrganizationId) return;
+    if (!organizationId) return;
     
     const { data: draft } = await supabase
       .from('startup_onboardings')
       .select('*')
-      .eq('organization_id', currentOrganizationId)
+      .eq('organization_id', organizationId)
       .eq('status', 'draft')
       .maybeSingle();
 
