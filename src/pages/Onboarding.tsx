@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -112,11 +112,20 @@ const TOTAL_STEPS = 9;
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const onboardingType = searchParams.get('type');
   const { user, userOrganizations } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showExistingUserOptions, setShowExistingUserOptions] = useState(false);
   const [isExistingUser, setIsExistingUser] = useState(false);
+
+  // Redirect to startup onboarding if type=startup and user is authenticated
+  useEffect(() => {
+    if (onboardingType === 'startup' && user) {
+      navigate('/onboarding/startup');
+    }
+  }, [onboardingType, user, navigate]);
   
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Paso 1
@@ -686,6 +695,17 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-3 md:p-4 pb-24 md:pb-4">
       <div className="max-w-4xl mx-auto py-4 md:py-8">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/')} 
+          className="mb-4"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Volver al inicio
+        </Button>
+
         {/* Header */}
         <div className="text-center mb-4 md:mb-8">
           <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">

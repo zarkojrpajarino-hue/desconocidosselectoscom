@@ -137,6 +137,7 @@
       "days": "jours",
       "customPlan": "Besoin de quelque chose de plus spécifique? Plus de 25 utilisateurs?",
       "contactUs": "Contactez-nous pour un plan personnalisé →",
+      "startOnboarding": "Commencer l'Onboarding",
       "plans": {
         "free": {
           "name": "Essai gratuit",

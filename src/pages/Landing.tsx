@@ -278,7 +278,7 @@ const Landing = () => {
             </div>
           </Card>
 
-          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding/startup')}>
+          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding?type=startup')}>
             <div className="flex flex-col items-center text-center">
               <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Rocket className="h-10 w-10 text-accent" />
@@ -387,7 +387,7 @@ const Landing = () => {
               </ul>
 
               <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => scrollToSection('how-it-works')}>
-                {plan.cta}
+                {t('landing.pricing.startOnboarding')}
               </Button>
             </Card>
           ))}
