@@ -98,6 +98,7 @@ const OnboardingStartup = lazy(() => import("./pages/onboarding/OnboardingStartu
 const OnboardingSuccess = lazy(() => import("./pages/OnboardingSuccess"));
 const AdminOnboardings = lazy(() => import("./pages/AdminOnboardings"));
 const SelectOrganization = lazy(() => import("./pages/SelectOrganization"));
+const SelectPlan = lazy(() => import("./pages/SelectPlan"));
 const GeneratingWorkspace = lazy(() => import("./pages/GeneratingWorkspace"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
 
@@ -149,6 +150,11 @@ const AppContent = () => {
         <Route path="/select-organization" element={
           <ProtectedRoute>
             <SelectOrganization />
+          </ProtectedRoute>
+        } />
+        <Route path="/select-plan" element={
+          <ProtectedRoute>
+            <SelectPlan />
           </ProtectedRoute>
         } />
         <Route path="/onboarding/startup" element={

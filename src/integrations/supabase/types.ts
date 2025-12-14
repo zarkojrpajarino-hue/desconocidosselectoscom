@@ -4400,6 +4400,7 @@ export type Database = {
           conversion_rate: number | null
           country_code: string | null
           created_at: string
+          created_by: string | null
           current_period_end: string | null
           current_problems: string
           customer_acquisition_channels: Json | null
@@ -4471,6 +4472,7 @@ export type Database = {
           conversion_rate?: number | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           current_period_end?: string | null
           current_problems: string
           customer_acquisition_channels?: Json | null
@@ -4542,6 +4544,7 @@ export type Database = {
           conversion_rate?: number | null
           country_code?: string | null
           created_at?: string
+          created_by?: string | null
           current_period_end?: string | null
           current_problems?: string
           customer_acquisition_channels?: Json | null
@@ -8158,6 +8161,7 @@ export type Database = {
       check_badge_proximity: { Args: never; Returns: undefined }
       check_collaborative_tasks: { Args: never; Returns: undefined }
       check_crm_daily_actions: { Args: never; Returns: undefined }
+      check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_financial_risks: { Args: never; Returns: undefined }
       check_okr_risks: { Args: never; Returns: undefined }
       check_pending_validations: { Args: never; Returns: undefined }
@@ -8301,6 +8305,19 @@ export type Database = {
       }
       get_unread_notification_count: { Args: never; Returns: number }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
+      get_user_organizations: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          current_period_end: string
+          id: string
+          is_owner: boolean
+          name: string
+          plan: string
+          slug: string
+          subscription_status: string
+        }[]
+      }
       get_user_swap_limit: { Args: { p_user_id: string }; Returns: number }
       has_role: {
         Args: {
