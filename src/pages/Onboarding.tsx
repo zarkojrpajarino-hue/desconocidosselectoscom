@@ -591,6 +591,7 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
           contact_email: formData.contactEmail,
           contact_phone: formData.contactPhone,
           ai_generation_status: 'pending',
+          created_by: userId,
         })
         .select()
         .single();

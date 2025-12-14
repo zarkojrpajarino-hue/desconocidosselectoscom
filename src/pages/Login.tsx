@@ -12,16 +12,22 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, userOrganizations } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (user) {
-      const redirectTo = searchParams.get('redirect') || '/home';
-      navigate(redirectTo);
+    if (user && userOrganizations.length > 0) {
+      // Si tiene múltiples orgs y no hay una seleccionada, ir a select-plan
+      const currentOrgId = localStorage.getItem('current_organization_id');
+      if (userOrganizations.length > 1 && !currentOrgId) {
+        navigate('/select-plan');
+      } else {
+        const redirectTo = searchParams.get('redirect') || '/home';
+        navigate(redirectTo);
+      }
     }
-  }, [user, navigate, searchParams]);
+  }, [user, userOrganizations, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,18 +40,15 @@ const Login = () => {
         toast.error('Error al iniciar sesión', {
           description: 'Usuario o contraseña incorrectos'
         });
-      } else {
-        toast.success('¡Bienvenido!');
-        
-        // Esperar un momento para que AuthContext cargue las organizaciones
-        setTimeout(() => {
-          const redirectTo = searchParams.get('redirect') || '/home';
-          navigate(redirectTo);
-        }, 500);
+        setLoading(false);
+        return;
       }
+      
+      toast.success('¡Bienvenido!');
+      // El useEffect manejará la navegación cuando userOrganizations se cargue via onAuthStateChange
+      
     } catch (error) {
       toast.error('Error inesperado');
-    } finally {
       setLoading(false);
     }
   };
