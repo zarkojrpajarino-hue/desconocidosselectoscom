@@ -214,7 +214,7 @@ export default function OnboardingStartup() {
   };
 
   const buildDataToSave = () => ({
-    organization_id: currentOrganizationId!,
+    organization_id: organizationId!,
     created_by: user!.id,
     business_name: formData.businessName,
     tagline: formData.tagline,
@@ -272,7 +272,7 @@ export default function OnboardingStartup() {
   });
 
   const handleSaveDraft = async () => {
-    if (!user || !currentOrganizationId) return;
+    if (!user || !organizationId) return;
     setIsSaving(true);
 
     try {
@@ -299,7 +299,7 @@ export default function OnboardingStartup() {
       toast.error('Por favor completa los campos requeridos');
       return;
     }
-    if (!user || !currentOrganizationId) return;
+    if (!user || !organizationId) return;
 
     setIsSubmitting(true);
 
