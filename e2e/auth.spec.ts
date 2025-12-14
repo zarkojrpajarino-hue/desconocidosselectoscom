@@ -2,15 +2,15 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Authentication E2E Tests - CORREGIDO
- * Actualizado para "Experiencia Selecta - Business Platform"
+ * Actualizado para "OPTIMUS-K - Plataforma de Gestión Empresarial"
  */
 test.describe('Authentication Flow', () => {
   
   test.describe('Landing Page', () => {
     test('should display landing page with correct title', async ({ page }) => {
       await page.goto('/');
-      // CORREGIDO: Acepta "Experiencia Selecta" O "Optimus"
-      await expect(page).toHaveTitle(/Experiencia Selecta|Optimus|Business Platform/i);
+      // CORREGIDO: Acepta "OPTIMUS-K" O "Optimus"
+      await expect(page).toHaveTitle(/OPTIMUS-K|Optimus|Plataforma/i);
     });
 
     test('should have visible header with navigation', async ({ page }) => {

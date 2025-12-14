@@ -326,7 +326,7 @@ const Onboarding = () => {
 # Generar App OPTIMUS-K para: ${data.companyName}
 
 ## INSTRUCCIONES PARA LOVABLE AI:
-Genera una app IDÉNTICA al proyecto "Experiencia Selecta" (OPTIMUS-K base), pero 100% personalizada con la siguiente información del cliente:
+Genera una app IDÉNTICA al proyecto "OPTIMUS-K" (base), pero 100% personalizada con la siguiente información del cliente:
 
 ---
 
@@ -451,7 +451,7 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
 
 - Usar terminología específica de ${data.industry}
 - Adaptar ejemplos y placeholders a su negocio
-- Mantener estructura base de Experiencia Selecta
+- Mantener estructura base de OPTIMUS-K
 
 ---
 
