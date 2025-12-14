@@ -9,9 +9,9 @@
 // ═══════════════════════════════════════════════════════════════
 
 const APP_NAME = 'OPTIMUS-K';
-const APP_URL = Deno.env.get('APP_URL') || 'https://optimusk.app';
-const SUPPORT_EMAIL = Deno.env.get('SUPPORT_EMAIL') || 'soporte@optimusk.app';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || `${APP_NAME} <noreply@optimusk.app>`;
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com';
+const SUPPORT_EMAIL = Deno.env.get('SUPPORT_EMAIL') || 'info@optimus-k.com';
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || `${APP_NAME} <info@optimus-k.com>`;
 
 // Colores del brand
 const COLORS = {

@@ -230,7 +230,7 @@ export function PricingPlans() {
             💳 Aceptamos todas las tarjetas · 🔒 Pago seguro con Stripe
           </p>
           <p className="text-xs text-muted-foreground">
-            ¿Necesitas un plan personalizado? <a href="mailto:support@optimus-k.com" className="text-primary underline hover:text-primary/80">Contáctanos</a>
+            ¿Necesitas un plan personalizado? <a href="mailto:info@optimus-k.com" className="text-primary underline hover:text-primary/80">Contáctanos</a>
           </p>
         </div>
       </div>

@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'Experiencia Selecta - Business Platform',
-        short_name: 'Selecta',
+name: 'OPTIMUS-K - Plataforma de Gestión Empresarial',
+        short_name: 'OPTIMUS-K',
         description: 'Plataforma de gestión empresarial con IA',
         theme_color: '#8b5cf6',
         background_color: '#ffffff',
