@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { OrganizationSwitcher } from '@/components/OrganizationSwitcher';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -122,6 +123,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               )}
             />
           </div>
+
+          {/* Organization Switcher */}
+          <OrganizationSwitcher />
 
           {/* Language Selector */}
           <LanguageSelector />
