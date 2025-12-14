@@ -643,8 +643,11 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         console.error('AI generation error:', error);
       });
 
-      // 9. Redirect to generating workspace screen
-      navigate(`/generating-workspace?org=${org.id}`);
+      // 9. Redirect to select-plan para que el usuario elija su organización
+      toast.success('¡Organización creada exitosamente!', {
+        description: 'Ahora selecciona tu plan...'
+      });
+      navigate('/select-plan');
       
     } catch (error: unknown) {
       console.error('Error submitting onboarding:', error);
