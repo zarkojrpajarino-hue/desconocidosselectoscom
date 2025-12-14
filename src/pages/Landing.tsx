@@ -175,7 +175,6 @@ const Landing = () => {
                   <LogIn className="w-4 h-4 mr-2" />
                   {t('nav.login')}
                 </Button>
-                {/* ✅ CAMBIO 1: Header button ahora usa scrollToSection */}
                 <Button onClick={() => scrollToSection('how-it-works')}>
                   {t('nav.startFree')}
                 </Button>
@@ -232,7 +231,6 @@ const Landing = () => {
         <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('landing.hero.description')) }} />
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          {/* ✅ CAMBIO 2: Hero CTA button ahora usa scrollToSection */}
           <Button size="lg" onClick={() => scrollToSection('how-it-works')} className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
             {t('landing.hero.cta')}
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -255,6 +253,49 @@ const Landing = () => {
             <Clock className="h-4 w-4 text-green-500" />
             <span>{t('landing.trust.quickSetup')}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Choose Path Section - AHORA JUSTO DESPUÉS DEL HERO */}
+      <div id="how-it-works" className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.choosePath.title')}</h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">{t('landing.choosePath.subtitle')}</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary" onClick={() => navigate('/onboarding')}>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Building2 className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">{t('landing.choosePath.business.title')}</h3>
+              <p className="text-muted-foreground mb-6">{t('landing.choosePath.business.description')}</p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature1')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature2')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature3')}</span></li>
+              </ul>
+              <Button className="w-full group-hover:bg-primary/90">{t('landing.choosePath.business.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </div>
+          </Card>
+
+          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding/startup')}>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Rocket className="h-10 w-10 text-accent" />
+              </div>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-2xl font-bold">{t('landing.choosePath.startup.title')}</h3>
+                <Sparkles className="h-5 w-5 text-accent" />
+              </div>
+              <p className="text-muted-foreground mb-6">{t('landing.choosePath.startup.description')}</p>
+              <ul className="text-sm text-left space-y-2 mb-6">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature1')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature2')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature3')}</span></li>
+              </ul>
+              <Button variant="outline" className="w-full group-hover:border-accent group-hover:text-accent">{t('landing.choosePath.startup.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </div>
+          </Card>
         </div>
       </div>
 
@@ -307,49 +348,6 @@ const Landing = () => {
         </div>
       </div>
 
-      {/* Choose Path Section */}
-      <div id="how-it-works" className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.choosePath.title')}</h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">{t('landing.choosePath.subtitle')}</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary" onClick={() => navigate('/onboarding')}>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Building2 className="h-10 w-10 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">{t('landing.choosePath.business.title')}</h3>
-              <p className="text-muted-foreground mb-6">{t('landing.choosePath.business.description')}</p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature1')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature2')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature3')}</span></li>
-              </ul>
-              <Button className="w-full group-hover:bg-primary/90">{t('landing.choosePath.business.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
-            </div>
-          </Card>
-
-          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding/startup')}>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Rocket className="h-10 w-10 text-accent" />
-              </div>
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-2xl font-bold">{t('landing.choosePath.startup.title')}</h3>
-                <Sparkles className="h-5 w-5 text-accent" />
-              </div>
-              <p className="text-muted-foreground mb-6">{t('landing.choosePath.startup.description')}</p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature1')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature2')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature3')}</span></li>
-              </ul>
-              <Button variant="outline" className="w-full group-hover:border-accent group-hover:text-accent">{t('landing.choosePath.startup.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
-            </div>
-          </Card>
-        </div>
-      </div>
-
       {/* Pricing Section */}
       <div id="pricing" className="container mx-auto px-3 md:px-4 py-8 md:py-16">
         <h2 className="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">{t('landing.pricing.title')}</h2>
@@ -388,7 +386,6 @@ const Landing = () => {
                 ))}
               </ul>
 
-              {/* ✅ CAMBIO 3: Pricing buttons ahora usan scrollToSection */}
               <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => scrollToSection('how-it-works')}>
                 {plan.cta}
               </Button>
@@ -408,7 +405,6 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-16 text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-3xl mb-16">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.cta.title')}</h2>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">{t('landing.cta.subtitle')}</p>
-        {/* ✅ CAMBIO 4: Final CTA button ahora usa scrollToSection */}
         <Button size="lg" onClick={() => scrollToSection('how-it-works')} className="text-lg px-12 py-6">
           {t('landing.cta.button')}
           <ArrowRight className="ml-2 h-5 w-5" />
