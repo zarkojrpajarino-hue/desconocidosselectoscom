@@ -169,7 +169,7 @@ const Landing = () => {
               <>
                 <Button 
                   variant="ghost" 
-                  onClick={() => scrollToSection('how-it-works')} 
+                  onClick={() => navigate('/login')} 
                   className="hidden sm:flex"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
@@ -205,7 +205,7 @@ const Landing = () => {
                 {t('nav.pricing')}
               </Button>
               {!user && (
-                <Button variant="ghost" className="justify-start" onClick={() => { scrollToSection('how-it-works'); }}>
+                <Button variant="ghost" className="justify-start" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>
                   <LogIn className="w-4 h-4 mr-2" />
                   {t('nav.login')}
                 </Button>
@@ -235,8 +235,8 @@ const Landing = () => {
             {t('landing.hero.cta')}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button size="lg" variant="outline" onClick={() => scrollToSection('features')} className="text-lg px-8 py-6">
-            {t('landing.hero.viewPricing', 'Ver Características')}
+          <Button size="lg" variant="outline" onClick={() => scrollToSection('pricing')} className="text-lg px-8 py-6">
+            {t('landing.hero.viewPricing')}
           </Button>
         </div>
 
@@ -261,7 +261,7 @@ const Landing = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.features.title')}</h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">{t('landing.features.subtitle')}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
               <div className="text-primary mb-4">{feature.icon}</div>
@@ -387,7 +387,7 @@ const Landing = () => {
               </ul>
 
               <Button className="w-full mt-auto text-xs" size="sm" variant={plan.featured ? "default" : "outline"} onClick={() => scrollToSection('how-it-works')}>
-                {t('landing.pricing.startOnboarding', 'Empezar Onboarding')}
+                {plan.cta}
               </Button>
             </Card>
           ))}
@@ -395,7 +395,7 @@ const Landing = () => {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">{t('landing.pricing.customPlan')}</p>
-          <Button variant="link" onClick={() => window.location.href = 'mailto:info@optimus-k.com'}>
+          <Button variant="link" onClick={() => window.location.href = 'mailto:sales@optimus-k.com'}>
             {t('landing.pricing.contactUs')}
           </Button>
         </div>
