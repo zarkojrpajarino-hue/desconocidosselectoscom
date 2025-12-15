@@ -43,6 +43,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AnalysisData {
   money_section: {
@@ -157,33 +158,27 @@ interface AnalysisData {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = {}) => {
+  const { currentOrganizationId } = useAuth();
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('money');
   const [showConfidentialInfo, setShowConfidentialInfo] = useState(true);
 
   useEffect(() => {
-    fetchAnalysis();
-  }, []);
+    if (currentOrganizationId) {
+      fetchAnalysis();
+    }
+  }, [currentOrganizationId]);
 
   const fetchAnalysis = async (forceRefresh = false) => {
     setLoading(true);
     try {
-      // Obtener organization_id del usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No authenticated user');
-
-      const { data: userRole } = await supabase
-        .from('user_roles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!userRole?.organization_id) throw new Error('No organization found');
+      // ✅ CORREGIDO: Usar currentOrganizationId del contexto
+      if (!currentOrganizationId) throw new Error('No organization selected');
 
       const { data: analysisData, error } = await supabase.functions.invoke('analyze-project-data-v3', {
         body: { 
-          organizationId: userRole.organization_id,
+          organizationId: currentOrganizationId,
           includeCompetitors: true
         }
       });

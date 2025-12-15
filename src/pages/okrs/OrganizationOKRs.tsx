@@ -93,59 +93,76 @@ const OrganizationOKRs = () => {
 
       if (objError) throw objError;
 
-      const objectivesWithKRs = await Promise.all(
-        (objectivesData || []).map(async (obj) => {
-          const { data: krs } = await supabase
-            .from('key_results')
-            .select('*')
-            .eq('objective_id', obj.id);
+      // ✅ OPTIMIZADO: Batch queries en lugar de N+1
+      const objectiveIds = (objectivesData || []).map(obj => obj.id);
+      const ownerIds = [...new Set((objectivesData || []).map(obj => obj.owner_user_id).filter(Boolean))];
 
-          const krsWithProgress = (krs || []).map(kr => {
-            const progress = calculateKRProgress(kr);
-            return {
-              ...kr,
-              status: kr.status as 'on_track' | 'at_risk' | 'behind' | 'achieved',
-              progress
-            };
-          });
+      // Query batch para todos los key_results
+      const { data: allKeyResults } = await supabase
+        .from('key_results')
+        .select('*')
+        .in('objective_id', objectiveIds);
 
-          const { data: ownerData } = await supabase
-            .from('users')
-            .select('full_name')
-            .eq('id', obj.owner_user_id)
-            .single();
+      // Query batch para todos los owners
+      const { data: allOwners } = await supabase
+        .from('users')
+        .select('id, full_name')
+        .in('id', ownerIds);
 
-          const totalWeight = krsWithProgress.reduce((sum, kr) => sum + (kr.weight || 1), 0);
-          const weightedProgress = krsWithProgress.reduce(
-            (sum, kr) => sum + (kr.progress * (kr.weight || 1)),
-            0
-          );
-          const objectiveProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
+      // Crear Maps para lookup rápido
+      const krsMap = new Map<string, typeof allKeyResults>();
+      (allKeyResults || []).forEach(kr => {
+        const existing = krsMap.get(kr.objective_id) || [];
+        krsMap.set(kr.objective_id, [...existing, kr]);
+      });
 
-          const achieved_krs = krsWithProgress.filter(kr => kr.status === 'achieved').length;
-          const on_track_krs = krsWithProgress.filter(kr => kr.status === 'on_track').length;
-          const at_risk_krs = krsWithProgress.filter(kr => kr.status === 'at_risk').length;
-          const behind_krs = krsWithProgress.filter(kr => kr.status === 'behind').length;
+      const ownersMap = new Map<string, string>();
+      (allOwners || []).forEach(owner => {
+        ownersMap.set(owner.id, owner.full_name);
+      });
 
+      // Combinar datos sin queries adicionales
+      const objectivesWithKRs = (objectivesData || []).map(obj => {
+        const krs = krsMap.get(obj.id) || [];
+        const krsWithProgress = krs.map(kr => {
+          const progress = calculateKRProgress(kr);
           return {
-            id: obj.id,
-            title: obj.title,
-            description: obj.description,
-            quarter: obj.quarter,
-            year: obj.year,
-            status: obj.status as 'active' | 'completed' | 'cancelled' | 'at_risk',
-            target_date: obj.target_date,
-            owner_name: ownerData?.full_name || 'Organización',
-            progress: objectiveProgress,
-            key_results: krsWithProgress,
-            total_key_results: krsWithProgress.length,
-            achieved_krs,
-            on_track_krs,
-            at_risk_krs,
-            behind_krs
+            ...kr,
+            status: kr.status as 'on_track' | 'at_risk' | 'behind' | 'achieved',
+            progress
           };
-        })
-      );
+        });
+
+        const totalWeight = krsWithProgress.reduce((sum, kr) => sum + (kr.weight || 1), 0);
+        const weightedProgress = krsWithProgress.reduce(
+          (sum, kr) => sum + (kr.progress * (kr.weight || 1)),
+          0
+        );
+        const objectiveProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
+
+        const achieved_krs = krsWithProgress.filter(kr => kr.status === 'achieved').length;
+        const on_track_krs = krsWithProgress.filter(kr => kr.status === 'on_track').length;
+        const at_risk_krs = krsWithProgress.filter(kr => kr.status === 'at_risk').length;
+        const behind_krs = krsWithProgress.filter(kr => kr.status === 'behind').length;
+
+        return {
+          id: obj.id,
+          title: obj.title,
+          description: obj.description,
+          quarter: obj.quarter,
+          year: obj.year,
+          status: obj.status as 'active' | 'completed' | 'cancelled' | 'at_risk',
+          target_date: obj.target_date,
+          owner_name: ownersMap.get(obj.owner_user_id) || 'Organización',
+          progress: objectiveProgress,
+          key_results: krsWithProgress,
+          total_key_results: krsWithProgress.length,
+          achieved_krs,
+          on_track_krs,
+          at_risk_krs,
+          behind_krs
+        };
+      });
 
       setObjectives(objectivesWithKRs);
     } catch (error: unknown) {
