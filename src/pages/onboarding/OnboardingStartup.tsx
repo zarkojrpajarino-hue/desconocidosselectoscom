@@ -485,6 +485,21 @@ export default function OnboardingStartup() {
   // Calculate progress (step 0 = 0%, step 8 = 100%)
   const progress = currentStep === 0 ? 0 : ((currentStep / (TOTAL_STEPS - 1)) * 100);
 
+  // Loading state while initializing organization
+  if (isLoadingOrg) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Preparando tu workspace...</h2>
+            <p className="text-muted-foreground">Esto solo tomará un momento</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
