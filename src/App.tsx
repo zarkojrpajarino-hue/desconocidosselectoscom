@@ -29,6 +29,7 @@ const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Integraciones = lazy(() => import("./pages/Integraciones"));
+const IntegracionesDashboard = lazy(() => import("./pages/IntegracionesDashboard"));
 
 // Layout component
 const AppLayout = lazy(() => import("./components/layout/AppLayout"));
@@ -229,6 +230,9 @@ const AppContent = () => {
           
           {/* BI Dashboard */}
           <Route path="/bi" element={<BIDashboard />} />
+          
+          {/* Integraciones Dashboard */}
+          <Route path="/integraciones-dashboard" element={<IntegracionesDashboard />} />
           
           {/* Global Agenda */}
           <Route path="/agenda-global" element={<GlobalAgenda />} />

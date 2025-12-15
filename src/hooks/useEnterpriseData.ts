@@ -513,6 +513,7 @@ export function useCashFlowForecast(organizationId: string | null, months: 6 | 1
   const [data, setData] = useState<CashFlowForecastType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isUsingDemoData, setIsUsingDemoData] = useState(false);
 
   useEffect(() => {
     async function fetchCashFlowForecast() {
@@ -530,6 +531,7 @@ export function useCashFlowForecast(organizationId: string | null, months: 6 | 1
           .limit(months);
 
         if (!cacheError && cachedForecast && cachedForecast.length > 0) {
+          setIsUsingDemoData(false);
           const formattedData: CashFlowForecastType[] = cachedForecast.map((cf) => ({
             month: cf.month || '',
             opening_balance: Number(cf.opening_balance || 0),
@@ -580,11 +582,18 @@ export function useCashFlowForecast(organizationId: string | null, months: 6 | 1
           .limit(1)
           .maybeSingle();
 
-        const avgMonthlyRevenue = revenueData && revenueData.length > 0
+        const hasRealRevenue = revenueData && revenueData.length > 0;
+        const hasRealExpenses = expenseData && expenseData.length > 0;
+        const hasRealCash = !!cashData?.balance;
+        
+        // Indicar si estamos usando datos demo
+        setIsUsingDemoData(!hasRealRevenue && !hasRealExpenses && !hasRealCash);
+
+        const avgMonthlyRevenue = hasRealRevenue
           ? revenueData.reduce((sum, r) => sum + Number(r.amount || 0), 0) / Math.max(revenueData.length / 30, 1)
           : 45000;
 
-        const avgMonthlyExpenses = expenseData && expenseData.length > 0
+        const avgMonthlyExpenses = hasRealExpenses
           ? expenseData.reduce((sum, e) => sum + Number(e.amount || 0), 0) / Math.max(expenseData.length / 30, 1)
           : 35000;
 
@@ -637,7 +646,7 @@ export function useCashFlowForecast(organizationId: string | null, months: 6 | 1
     fetchCashFlowForecast();
   }, [organizationId, months]);
 
-  return { data, loading, error };
+  return { data, loading, error, isUsingDemoData };
 }
 
 // ============================================
