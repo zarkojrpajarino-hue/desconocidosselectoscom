@@ -1,4 +1,5 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Calendar, Trophy, Bell } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useEffect } from 'react';
@@ -7,6 +8,7 @@ import { useTrialExpiration } from '@/hooks/useTrialExpiration';
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Verificar expiración del trial
   useTrialExpiration();
@@ -19,10 +21,10 @@ const Dashboard = () => {
   }, [location.pathname, navigate]);
 
   const tabs = [
-    { path: '/dashboard/home', label: 'Panel Principal', icon: LayoutDashboard },
-    { path: '/dashboard/agenda', label: 'Agenda Semanal', icon: Calendar },
-    { path: '/dashboard/gamification', label: 'Gamificación', icon: Trophy },
-    { path: '/dashboard/notifications', label: 'Notificaciones', icon: Bell }
+    { path: '/dashboard/home', label: t('dashboard.mainPanel'), icon: LayoutDashboard },
+    { path: '/dashboard/agenda', label: t('dashboard.weeklyAgenda'), icon: Calendar },
+    { path: '/dashboard/gamification', label: t('dashboard.gamification'), icon: Trophy },
+    { path: '/dashboard/notifications', label: t('dashboard.notifications'), icon: Bell }
   ];
 
   return (
