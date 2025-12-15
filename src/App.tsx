@@ -22,7 +22,7 @@ const PageLoader = () => (
 );
 
 // Lazy loaded pages - Core (frequently used)
-const Login = lazy(() => import("./pages/Login"));
+// Login page removed - now using LoginModal in Landing
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Home = lazy(() => import("./pages/Home"));
@@ -130,7 +130,7 @@ const AppContent = () => {
       <Routes>
         {/* ===== RUTAS PÚBLICAS (sin layout) ===== */}
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/signup" element={<Navigate to="/#how-it-works" replace />} />
         <Route path="/verify-email" element={<Navigate to="/#how-it-works" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
