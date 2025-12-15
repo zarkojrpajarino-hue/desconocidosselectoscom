@@ -226,7 +226,39 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         console.log(`[stripe-webhook] ✅ Payment succeeded: ${invoice.id} for ${invoice.amount_paid / 100}€`);
         
-        // Opcional: enviar email de confirmación aquí
+        // ✅ MEJORADO: Reactivar inmediatamente si estaba past_due
+        if (invoice.subscription) {
+          const { data: org } = await supabase
+            .from('organizations')
+            .select('id, subscription_status')
+            .eq('stripe_subscription_id', invoice.subscription as string)
+            .maybeSingle();
+
+          if (org && org.subscription_status === 'past_due') {
+            await supabase
+              .from('organizations')
+              .update({ subscription_status: 'active' })
+              .eq('id', org.id);
+
+            // Log evento
+            await supabase
+              .from('subscription_events')
+              .insert({
+                organization_id: org.id,
+                stripe_event_id: event.id,
+                event_type: event.type,
+                previous_status: 'past_due',
+                new_status: 'active',
+                metadata: { 
+                  invoice_id: invoice.id,
+                  amount_paid: invoice.amount_paid 
+                },
+              });
+
+            console.log(`[stripe-webhook] ✅ Reactivated org ${org.id} from past_due to active`);
+          }
+        }
+        
         break;
       }
 
@@ -238,9 +270,9 @@ serve(async (req) => {
         if (invoice.subscription) {
           const { data: org } = await supabase
             .from('organizations')
-            .select('id')
+            .select('id, plan')
             .eq('stripe_subscription_id', invoice.subscription as string)
-            .single();
+            .maybeSingle();
 
           if (org) {
             await supabase
@@ -248,7 +280,24 @@ serve(async (req) => {
               .update({ subscription_status: 'past_due' })
               .eq('id', org.id);
 
-            console.log(`[stripe-webhook] ⚠️ Marked org ${org.id} as past_due`);
+            // ✅ MEJORADO: Log evento en subscription_events
+            await supabase
+              .from('subscription_events')
+              .insert({
+                organization_id: org.id,
+                stripe_event_id: event.id,
+                event_type: event.type,
+                previous_status: 'active',
+                new_status: 'past_due',
+                metadata: { 
+                  invoice_id: invoice.id,
+                  amount_due: invoice.amount_due,
+                  attempt_count: invoice.attempt_count,
+                  next_payment_attempt: invoice.next_payment_attempt 
+                },
+              });
+
+            console.log(`[stripe-webhook] ⚠️ Marked org ${org.id} as past_due and logged event`);
           }
         }
         break;
