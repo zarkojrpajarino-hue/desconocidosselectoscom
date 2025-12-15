@@ -54,7 +54,7 @@ const BusinessMetricsDashboard = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('metric_date', today)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
 
