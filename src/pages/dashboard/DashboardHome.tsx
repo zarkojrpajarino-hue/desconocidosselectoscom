@@ -50,7 +50,7 @@ interface CompletionItem {
 }
 
 const DashboardHome = () => {
-  const { user, userProfile, signOut, loading } = useAuth();
+  const { user, userProfile, currentOrganizationId, userOrganizations, loading } = useAuth();
   const navigate = useNavigate();
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [userWeeklyData, setUserWeeklyData] = useState<UserWeeklyData | null>(null);
@@ -62,6 +62,12 @@ const DashboardHome = () => {
   const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
+
+  // Obtener el rol actual del usuario en la organización seleccionada
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
 
   useEffect(() => {
     if (!loading && !user) {
@@ -194,7 +200,7 @@ const DashboardHome = () => {
   // Calcular tareas completadas al 100% (validated_by_leader = true)
   const fullyCompletedCount = completions.length; // Ya están filtradas por validated_by_leader en el fetch
 
-  if (loading || !userProfile) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -214,7 +220,7 @@ const DashboardHome = () => {
             <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
               Hola, {userProfile.full_name?.split(' ')[0]}
             </h1>
-            {userProfile.role === 'admin' && (
+            {isAdmin && (
               <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground text-[10px] md:text-xs shrink-0 hidden sm:flex">
                 Admin
               </Badge>
@@ -231,7 +237,7 @@ const DashboardHome = () => {
               <User className="h-4 w-4" />
               <span className="hidden md:inline">Mi Perfil</span>
             </Button>
-            {userProfile.role === 'admin' && (
+            {isAdmin && (
               <Button
                 onClick={() => navigate('/admin')}
                 variant="outline"
@@ -291,7 +297,7 @@ const DashboardHome = () => {
             />
 
             {/* Phase Selector - Only for Admins */}
-            {userProfile?.role === 'admin' && systemConfig && (
+            {isAdmin && systemConfig && (
               <PhaseSelector
                 currentPhase={systemConfig.current_phase}
                 onPhaseChange={fetchSystemConfig}
@@ -321,7 +327,7 @@ const DashboardHome = () => {
               <StatsCards 
                 userId={user?.id} 
                 currentPhase={systemConfig?.current_phase} 
-                organizationId={userProfile?.organization_id}
+                organizationId={currentOrganizationId || undefined}
                 taskLimit={userWeeklyData?.task_limit}
                 remainingSwaps={remainingSwaps}
                 swapLimit={limit}

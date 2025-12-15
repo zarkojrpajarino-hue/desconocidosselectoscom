@@ -73,7 +73,7 @@ interface MarketingROI {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--secondary))'];
 
 const FinancialDashboard = () => {
-  const { userProfile, currentOrganizationId } = useAuth();
+  const { userProfile, currentOrganizationId, userOrganizations } = useAuth();
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
   const [revenueByProduct, setRevenueByProduct] = useState<RevenueByProduct[]>([]);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseByCategory[]>([]);
@@ -81,6 +81,12 @@ const FinancialDashboard = () => {
   const [cashBalance, setCashBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  
+  // Obtener el rol actual del usuario en la organización seleccionada
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const canViewFinancials = currentUserRole === 'admin' || currentUserRole === 'leader';
 
   useEffect(() => {
     if (currentOrganizationId) {
@@ -210,7 +216,7 @@ const FinancialDashboard = () => {
   }
 
   // Verificar permisos
-  if (userProfile?.role !== 'admin' && userProfile?.role !== 'leader') {
+  if (!canViewFinancials) {
     return (
       <Card className="border-destructive">
         <CardContent className="flex flex-col items-center justify-center py-16">
