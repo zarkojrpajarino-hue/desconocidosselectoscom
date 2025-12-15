@@ -421,10 +421,24 @@ const Landing = () => {
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>{t('landing.footer.copyright')}</p>
+          
+          {/* Support Email */}
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg inline-block">
+            <p className="font-medium text-foreground mb-1">¿Necesitas ayuda?</p>
+            <a 
+              href="mailto:info@optimus-k.com" 
+              className="text-primary hover:underline flex items-center justify-center gap-2"
+            >
+              📧 info@optimus-k.com
+            </a>
+          </div>
+          
           <div className="flex justify-center gap-4 mt-4">
             <Button variant="link" size="sm">{t('landing.footer.terms')}</Button>
             <Button variant="link" size="sm">{t('landing.footer.privacy')}</Button>
-            <Button variant="link" size="sm">{t('landing.footer.contact')}</Button>
+            <Button variant="link" size="sm" onClick={() => window.location.href = 'mailto:info@optimus-k.com'}>
+              {t('landing.footer.contact')}
+            </Button>
           </div>
         </div>
       </footer>

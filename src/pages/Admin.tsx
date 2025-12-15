@@ -65,7 +65,7 @@ interface SystemConfig {
 }
 
 const Admin = () => {
-  const { userProfile, loading } = useAuth();
+  const { userProfile, loading, currentOrganizationId, userOrganizations } = useAuth();
   const navigate = useNavigate();
   const [teamStats, setTeamStats] = useState<UserStats[]>([]);
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
@@ -88,24 +88,30 @@ const Admin = () => {
   const [weekComparison, setWeekComparison] = useState<WeekComparison[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
 
-  useEffect(() => {
-    if (!loading && userProfile?.role !== 'admin') {
-      navigate('/dashboard');
-    }
-  }, [userProfile, loading, navigate]);
+  // Obtener el rol actual del usuario en la organización seleccionada
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
 
   useEffect(() => {
-    if (userProfile?.role === 'admin') {
+    if (!loading && !isAdmin) {
+      navigate('/dashboard');
+    }
+  }, [isAdmin, loading, navigate]);
+
+  useEffect(() => {
+    if (isAdmin && currentOrganizationId) {
       fetchData();
     }
-  }, [userProfile]);
+  }, [isAdmin, currentOrganizationId]);
 
   // Recargar heatmap cuando cambia el usuario seleccionado
   useEffect(() => {
-    if (userProfile?.role === 'admin') {
+    if (isAdmin) {
       fetchHeatmapData();
     }
-  }, [selectedUserId, userProfile]);
+  }, [selectedUserId, isAdmin]);
 
   const fetchSystemConfig = async () => {
     const { data } = await supabase
