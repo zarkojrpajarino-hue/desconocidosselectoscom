@@ -26,7 +26,7 @@ import {
 export function CashFlowForecast() {
   const { organizationId } = useCurrentOrganization();
   const [months, setMonths] = useState<6 | 12>(6);
-  const { data, loading, error } = useCashFlowForecast(organizationId, months);
+  const { data, loading, error, isUsingDemoData } = useCashFlowForecast(organizationId, months);
 
   if (loading) {
     return (
@@ -65,10 +65,20 @@ export function CashFlowForecast() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Data Banner */}
+      {isUsingDemoData && (
+        <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-warning flex-shrink-0" />
+          <p className="text-sm text-warning">
+            <strong>Datos de demostración:</strong> No hay datos financieros reales. Registra ingresos, gastos y saldo en caja para ver proyecciones personalizadas.
+          </p>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Proyección de Cash Flow</h2>
+          <h2 className="text-2xl font-bold text-foreground">Proyección de Cash Flow</h2>
           <p className="text-muted-foreground">Forecast a {months} meses</p>
         </div>
         <div className="flex gap-2">
