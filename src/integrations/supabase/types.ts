@@ -8380,6 +8380,7 @@ export type Database = {
         }
         Returns: Json
       }
+      send_weekly_summaries_to_admins: { Args: never; Returns: undefined }
       slugify: { Args: { text_input: string }; Returns: string }
       store_financial_anomalies: {
         Args: { p_organization_id: string }
