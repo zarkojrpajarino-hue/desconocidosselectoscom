@@ -36,8 +36,8 @@ import StartupStep0Account from '@/components/onboarding/StartupStep0Account';
 const TOTAL_STEPS = 9; // Now includes step 0 (account)
 
 const STEP_TITLES = [
-  'Cuenta', 'Visión', 'Mercado', 'Modelo de Negocio', 'Producto',
-  'Go-to-Market', 'Recursos', 'Validación', 'Timeline'
+  '👤 Cuenta', '🚀 Visión', '🎯 Mercado', '💼 Modelo', '📦 Producto',
+  '📈 Go-to-Market', '💰 Recursos', '✅ Validación', '📅 Timeline'
 ];
 
 // Helper function to safely parse JSON arrays from database
@@ -415,6 +415,19 @@ export default function OnboardingStartup() {
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          {/* Welcome header */}
+          <div className="text-center mb-4 md:mb-6">
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground">
+              Bienvenido a <span className="text-primary">OPTIMUS-K</span>
+            </h1>
+            <p className="text-base md:text-lg text-primary/80 mt-1">
+              Generador de Apps para Startups
+            </p>
+            <p className="text-xs md:text-sm text-muted-foreground mt-1">
+              Completa este formulario y en 2-3 horas tendrás tu workspace personalizado listo 🚀
+            </p>
+          </div>
+
           <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
             <div className="flex items-center gap-2 md:gap-3 min-w-0">
               <Button 
@@ -428,7 +441,6 @@ export default function OnboardingStartup() {
               </Button>
               <Rocket className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
               <div className="min-w-0">
-                <h1 className="text-base md:text-xl font-bold truncate">Onboarding Startup</h1>
                 <p className="text-[10px] md:text-sm text-muted-foreground">
                   Paso {currentStep}/{TOTAL_STEPS - 1}: {STEP_TITLES[currentStep]}
                 </p>
