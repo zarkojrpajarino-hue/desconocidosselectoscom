@@ -45,7 +45,8 @@ export const useToolContent = (toolType: ToolType) => {
   // Cargar contenido existente
   useEffect(() => {
     const fetchContent = async () => {
-      if (!user) {
+      // ✅ CORREGIDO: Verificar user y currentOrganizationId
+      if (!user || !currentOrganizationId) {
         setLoading(false);
         return;
       }
@@ -53,25 +54,13 @@ export const useToolContent = (toolType: ToolType) => {
       setLoading(true);
 
       try {
-        // Obtener organización del usuario
-        const { data: userRole } = await supabase
-          .from('user_roles')
-          .select('organization_id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (!userRole) {
-          setLoading(false);
-          return;
-        }
-
-        // Buscar contenido de la herramienta
+        // ✅ CORREGIDO: Usar currentOrganizationId directamente, sin query a user_roles
         const { data, error } = await supabase
           .from('tool_contents')
           .select('*')
-          .eq('organization_id', userRole.organization_id)
+          .eq('organization_id', currentOrganizationId)
           .eq('tool_type', toolType)
-          .single();
+          .maybeSingle(); // ✅ CORREGIDO: Usar maybeSingle() para evitar error si no existe
 
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching tool content:', error);
@@ -86,7 +75,7 @@ export const useToolContent = (toolType: ToolType) => {
     };
 
     fetchContent();
-  }, [user, toolType]);
+  }, [user, currentOrganizationId, toolType]); // ✅ CORREGIDO: Agregado currentOrganizationId a dependencies
 
   const generateContent = async () => {
     if (!isAdmin) {

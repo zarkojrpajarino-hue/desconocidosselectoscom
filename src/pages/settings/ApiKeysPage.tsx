@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
+/**
+ * Página de gestión de API Keys e integraciones
+ * ✅ CORREGIDO: Usa currentOrganizationId del contexto directamente
+ */
+
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Key, 
@@ -29,29 +33,11 @@ import {
 import { useWebhooks } from '@/hooks/integrations';
 
 export default function ApiKeysPage() {
-  const { user } = useAuth();
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  // ✅ CORREGIDO: Obtener currentOrganizationId del contexto
+  const { user, currentOrganizationId } = useAuth();
   
-  // Load organization
-  useEffect(() => {
-    const loadOrganization = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('user_roles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .single();
-      
-      if (data) {
-        setOrganizationId(data.organization_id);
-      }
-    };
-    loadOrganization();
-  }, [user]);
-
   // Get deliveries for activity tab
-  const { deliveries } = useWebhooks(organizationId);
+  const { deliveries } = useWebhooks(currentOrganizationId);
 
   // Handle OAuth callbacks
   useEffect(() => {
@@ -135,19 +121,19 @@ export default function ApiKeysPage() {
         </TabsList>
 
         <TabsContent value="api-keys">
-          <ApiKeysTab organizationId={organizationId} />
+          <ApiKeysTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="webhooks">
-          <WebhooksTab organizationId={organizationId} />
+          <WebhooksTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="slack">
-          <SlackTab organizationId={organizationId} />
+          <SlackTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="zapier">
-          <ZapierTab organizationId={organizationId} />
+          <ZapierTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="outlook">
@@ -155,15 +141,15 @@ export default function ApiKeysPage() {
         </TabsContent>
 
         <TabsContent value="hubspot">
-          <HubSpotTab organizationId={organizationId} />
+          <HubSpotTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="asana">
-          <AsanaTab organizationId={organizationId} />
+          <AsanaTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="trello">
-          <TrelloTab organizationId={organizationId} />
+          <TrelloTab organizationId={currentOrganizationId} />
         </TabsContent>
 
         <TabsContent value="activity">
