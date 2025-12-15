@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import {
 const OKRsPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('weekly');
   const [objectives, setObjectives] = useState<ObjectiveData[]>([]);
@@ -100,10 +102,10 @@ const OKRsPage = () => {
             <Target className="w-6 h-6 md:w-8 md:h-8 text-primary shrink-0" />
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                OKRs
+                {t('okrs.title')}
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                Objetivos y Resultados Clave
+                {t('okrs.subtitle')}
               </p>
             </div>
           </div>
@@ -111,11 +113,11 @@ const OKRsPage = () => {
             <SectionTourButton sectionId="okrs" className="hidden md:flex" />
             <Button variant="secondary" onClick={() => navigate('/okrs/organization')} className="gap-1 p-2 md:px-3" size="sm">
               <Building2 className="h-4 w-4" />
-              <span className="hidden md:inline">Empresa</span>
+              <span className="hidden md:inline">{t('okrs.company')}</span>
             </Button>
             <Button variant="secondary" onClick={() => navigate('/okrs/history')} className="gap-1 p-2 md:px-3 hidden sm:flex" size="sm">
               <History className="h-4 w-4" />
-              <span className="hidden md:inline">Historial</span>
+              <span className="hidden md:inline">{t('okrs.history')}</span>
             </Button>
             <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-1 p-2 md:px-3" size="sm">
               <ArrowLeft className="h-4 w-4" />
@@ -131,7 +133,7 @@ const OKRsPage = () => {
             variant="primary"
             size="md"
             value={okrStats.totalOKRs}
-            label="OKRs Activos"
+            label={t('okrs.activeOkrs')}
             change={`Q${Math.ceil((new Date().getMonth() + 1) / 3)}`}
             trend="neutral"
             icon={<Target className="w-5 h-5 text-primary" />}
@@ -142,7 +144,7 @@ const OKRsPage = () => {
             variant="success"
             size="md"
             value={okrStats.completedOKRs}
-            label="Completados"
+            label={t('okrs.completed')}
             change={okrStats.totalOKRs > 0 ? `${Math.round((okrStats.completedOKRs / okrStats.totalOKRs) * 100)}%` : '0%'}
             trend="up"
             icon={<CheckCircle2 className="w-5 h-5 text-success" />}
@@ -154,8 +156,8 @@ const OKRsPage = () => {
             variant="info"
             size="md"
             value={okrStats.inProgressOKRs}
-            label="En Progreso"
-            change={`${okrStats.overallProgress}% promedio`}
+            label={t('okrs.inProgress')}
+            change={`${okrStats.overallProgress}% ${t('okrs.avgProgress')}`}
             trend={okrStats.overallProgress > 50 ? "up" : "neutral"}
             icon={<TrendingUp className="w-5 h-5 text-info" />}
             className="animate-fade-in"
@@ -166,8 +168,8 @@ const OKRsPage = () => {
             variant={okrStats.atRiskOKRs > 0 ? "warning" : "success"}
             size="md"
             value={okrStats.atRiskOKRs}
-            label="En Riesgo"
-            change={okrStats.atRiskOKRs > 0 ? "Requieren atención" : "Todo OK"}
+            label={t('okrs.atRiskLabel')}
+            change={okrStats.atRiskOKRs > 0 ? t('okrs.needAttention') : t('okrs.allOk')}
             trend={okrStats.atRiskOKRs > 0 ? "down" : "up"}
             icon={okrStats.atRiskOKRs > 0 ? <AlertTriangle className="w-5 h-5 text-warning" /> : <CheckCircle2 className="w-5 h-5 text-success" />}
             className="animate-fade-in"
@@ -179,9 +181,9 @@ const OKRsPage = () => {
         {okrStats.atRiskOKRs > 0 && (
           <Alert variant="destructive" className="animate-fade-in">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>⚠️ {okrStats.atRiskOKRs} OKR{okrStats.atRiskOKRs > 1 ? 's' : ''} en riesgo</AlertTitle>
+            <AlertTitle>⚠️ {okrStats.atRiskOKRs} {t('okrs.alertTitle')}</AlertTitle>
             <AlertDescription className="flex items-center justify-between">
-              <span>Progreso menor al 30%. Requieren atención inmediata.</span>
+              <span>{t('okrs.alertDescription')}</span>
               <IntegrationButton
                 type="slack"
                 action="notify"
@@ -193,7 +195,7 @@ const OKRsPage = () => {
                     `@channel - Se requiere atención inmediata`,
                   channel: '#okrs-alerts'
                 }}
-                label="Alertar equipo"
+                label={t('okrs.alertTeam')}
                 size="sm"
                 variant="outline"
               />
@@ -209,7 +211,7 @@ const OKRsPage = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
-                    🎯 ¿Qué son los OKRs?
+                    🎯 {t('okrs.whatAreOkrs')}
                   </CardTitle>
                   <ChevronDown className={`h-5 w-5 transition-transform ${isOkrInfoOpen ? 'rotate-180' : ''}`} />
                 </div>
@@ -218,9 +220,9 @@ const OKRsPage = () => {
             <CollapsibleContent>
               <CardContent className="pt-0">
                 <div className="bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 rounded-xl p-6 text-sm text-muted-foreground space-y-2">
-                  <p><strong className="text-foreground">OKR = Objectives and Key Results</strong> - Marcos para metas ambiciosas y medición de progreso.</p>
-                  <p><strong className="text-foreground">🎯 Semanales vs Empresa:</strong> Los semanales son tácticos, los de empresa estratégicos.</p>
-                  <p><strong className="text-foreground">📊 Estructura:</strong> 1 Objetivo + 3-5 Key Results medibles.</p>
+                  <p><strong className="text-foreground">{t('okrs.okrExplanation1')}</strong></p>
+                  <p><strong className="text-foreground">{t('okrs.okrExplanation2')}</strong></p>
+                  <p><strong className="text-foreground">{t('okrs.okrExplanation3')}</strong></p>
                 </div>
               </CardContent>
             </CollapsibleContent>
@@ -232,23 +234,23 @@ const OKRsPage = () => {
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto mb-6">
             <TabsTrigger value="weekly" className="gap-2">
               <Target className="h-4 w-4" />
-              <span className="hidden md:inline">Semanales</span>
+              <span className="hidden md:inline">{t('okrs.tabs.weekly')}</span>
             </TabsTrigger>
             <TabsTrigger value="quarterly" className="gap-2">
               <Calendar className="h-4 w-4" />
-              <span className="hidden md:inline">Trimestral</span>
+              <span className="hidden md:inline">{t('okrs.tabs.quarterly')}</span>
             </TabsTrigger>
             <TabsTrigger value="checkin" className="gap-2">
               <CheckSquare className="h-4 w-4" />
-              <span className="hidden md:inline">Check-in</span>
+              <span className="hidden md:inline">{t('okrs.tabs.checkin')}</span>
             </TabsTrigger>
             <TabsTrigger value="dependencies" className="gap-2">
               <Link2 className="h-4 w-4" />
-              <span className="hidden md:inline">Dependencias</span>
+              <span className="hidden md:inline">{t('okrs.tabs.dependencies')}</span>
             </TabsTrigger>
             <TabsTrigger value="retro" className="gap-2">
               <RotateCcw className="h-4 w-4" />
-              <span className="hidden md:inline">Retrospectiva</span>
+              <span className="hidden md:inline">{t('okrs.tabs.retro')}</span>
             </TabsTrigger>
           </TabsList>
 
