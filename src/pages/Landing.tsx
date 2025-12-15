@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 // Integration logos
 import slackLogo from "@/assets/integrations/slack-logo.png";
@@ -29,6 +30,7 @@ const Landing = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
 
   const toggleTheme = () => {
@@ -169,7 +171,7 @@ const Landing = () => {
               <>
                 <Button 
                   variant="ghost" 
-                  onClick={() => navigate('/login')} 
+                  onClick={() => setLoginModalOpen(true)} 
                   className="hidden sm:flex"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
@@ -205,7 +207,7 @@ const Landing = () => {
                 {t('nav.pricing')}
               </Button>
               {!user && (
-                <Button variant="ghost" className="justify-start" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>
+                <Button variant="ghost" className="justify-start" onClick={() => { setLoginModalOpen(true); setMobileMenuOpen(false); }}>
                   <LogIn className="w-4 h-4 mr-2" />
                   {t('nav.login')}
                 </Button>
@@ -214,6 +216,9 @@ const Landing = () => {
           </div>
         )}
       </header>
+
+      {/* Login Modal */}
+      <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
 
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-12 text-center">
