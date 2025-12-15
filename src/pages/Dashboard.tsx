@@ -4,6 +4,7 @@ import { LayoutDashboard, Calendar, Trophy, Bell } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useEffect } from 'react';
 import { useTrialExpiration } from '@/hooks/useTrialExpiration';
+import { SubscriptionBanner } from '@/components/SubscriptionBanner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +31,11 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="container max-w-7xl mx-auto px-4 py-6">
+        {/* Banner de subscripción - Esquina superior derecha */}
+        <div className="flex justify-end mb-4">
+          <SubscriptionBanner />
+        </div>
+
         {/* Tabs superiores */}
         <div className="border-b border-border mb-6 overflow-x-auto">
           <div className="flex gap-1 min-w-max">
