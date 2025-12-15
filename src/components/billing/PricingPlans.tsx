@@ -1,7 +1,13 @@
+/**
+ * Componente de planes de precios
+ * ✅ CORREGIDO: Usa currentOrganizationId del contexto directamente
+ */
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, X, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PLAN_LIMITS, PLAN_PRICES } from "@/constants/subscriptionLimits";
@@ -76,27 +82,22 @@ const plans = [
 ];
 
 export function PricingPlans() {
+  // ✅ CORREGIDO: Obtener currentOrganizationId del contexto
+  const { user, currentOrganizationId } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleSubscribe = async (priceKey: string, planName: string) => {
     setLoading(priceKey);
 
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
+      if (!user) {
         toast.error('Debes estar autenticado para suscribirte');
         setLoading(null);
         return;
       }
 
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (rolesError || !userRoles?.organization_id) {
+      // ✅ CORREGIDO: Usar currentOrganizationId directamente del contexto
+      if (!currentOrganizationId) {
         toast.error('No se encontró tu organización');
         setLoading(null);
         return;
@@ -107,7 +108,7 @@ export function PricingPlans() {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           planName: planName.toLowerCase(),
-          organizationId: userRoles.organization_id,
+          organizationId: currentOrganizationId,
         },
       });
 

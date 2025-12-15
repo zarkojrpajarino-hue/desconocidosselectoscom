@@ -54,7 +54,8 @@ interface Objective {
 }
 
 const OrganizationOKRs = () => {
-  const { user } = useAuth();
+  // ✅ CORREGIDO: Agregado currentOrganizationId del contexto
+  const { user, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,28 +68,26 @@ const OrganizationOKRs = () => {
   } | null>(null);
 
   useEffect(() => {
-    if (user) {
+    // ✅ CORREGIDO: Verificar user y currentOrganizationId
+    if (user && currentOrganizationId) {
       fetchOrganizationOKRs();
     }
-  }, [user]);
+  }, [user, currentOrganizationId]); // ✅ CORREGIDO: Agregado currentOrganizationId a dependencies
 
   const fetchOrganizationOKRs = async () => {
     setLoading(true);
     try {
-      // Obtener la organización del usuario desde user_roles
-      const { data: userRoleData, error: userRoleError } = await supabase
-        .from('user_roles')
-        .select('organization_id')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (userRoleError) throw userRoleError;
+      // ✅ CORREGIDO: Usar currentOrganizationId directamente del contexto
+      if (!currentOrganizationId) {
+        setLoading(false);
+        return;
+      }
 
       // Obtener OKRs organizacionales (no tienen owner_user_id o tienen phase)
       const { data: objectivesData, error: objError } = await supabase
         .from('objectives')
         .select('*')
-        .eq('organization_id', userRoleData.organization_id)
+        .eq('organization_id', currentOrganizationId)
         .is('phase', null) // Solo OKRs organizacionales (sin phase)
         .order('created_at', { ascending: false });
 

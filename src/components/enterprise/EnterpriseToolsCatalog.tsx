@@ -1,6 +1,8 @@
 /**
  * @fileoverview Catálogo de herramientas empresariales premium para Enterprise
  * Permite seleccionar y generar hasta 5 herramientas adicionales personalizadas con IA
+ * 
+ * ✅ CORREGIDO: Usa currentOrganizationId del contexto en vez de .single()
  */
 
 import { useState, useEffect } from 'react';
@@ -108,40 +110,29 @@ interface GeneratedTool {
 
 export function EnterpriseToolsCatalog() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth(); // ✅ CORREGIDO: Agregado currentOrganizationId
   const { isEnterprise } = usePlanAccess();
   
   const [generatedTools, setGeneratedTools] = useState<GeneratedTool[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
-  // Obtener organización y herramientas generadas
+  // Obtener herramientas generadas
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      // ✅ CORREGIDO: Verificar user y currentOrganizationId
+      if (!user || !currentOrganizationId) {
+        setLoading(false);
+        return;
+      }
       
       try {
-        // Obtener organización
-        const { data: userRole } = await supabase
-          .from('user_roles')
-          .select('organization_id')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (!userRole?.organization_id) {
-          setLoading(false);
-          return;
-        }
-        
-        setOrganizationId(userRole.organization_id);
-        
-        // Obtener herramientas ya generadas (filtrar las del catálogo enterprise)
+        // ✅ CORREGIDO: Usar currentOrganizationId directamente, sin query a user_roles
         const enterpriseToolIds = ENTERPRISE_TOOLS_CATALOG.map(t => t.id);
         const { data: tools } = await supabase
           .from('tool_contents')
           .select('id, tool_type, content, created_at')
-          .eq('organization_id', userRole.organization_id)
+          .eq('organization_id', currentOrganizationId)
           .in('tool_type', enterpriseToolIds);
         
         setGeneratedTools((tools as GeneratedTool[]) || []);
@@ -153,7 +144,7 @@ export function EnterpriseToolsCatalog() {
     };
     
     fetchData();
-  }, [user]);
+  }, [user, currentOrganizationId]); // ✅ CORREGIDO: Agregado currentOrganizationId a dependencies
 
   const isToolGenerated = (toolId: string) => {
     return generatedTools.some(t => t.tool_type === toolId);
@@ -188,11 +179,11 @@ export function EnterpriseToolsCatalog() {
       if (error) throw error;
       
       if (data?.success) {
-        // Recargar herramientas
+        // Recargar herramientas usando currentOrganizationId
         const { data: tools } = await supabase
           .from('tool_contents')
           .select('id, tool_type, content, created_at')
-          .eq('organization_id', organizationId)
+          .eq('organization_id', currentOrganizationId) // ✅ CORREGIDO: Usar currentOrganizationId
           .in('tool_type', ENTERPRISE_TOOLS_CATALOG.map(t => t.id));
         
         setGeneratedTools((tools as GeneratedTool[]) || []);

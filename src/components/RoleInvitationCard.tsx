@@ -1,3 +1,8 @@
+/**
+ * Tarjeta para invitar colaboradores a la organización
+ * ✅ CORREGIDO: Usa userOrganizations y currentOrganizationId del contexto
+ */
+
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,47 +14,37 @@ import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits'
 import { UpgradeModal } from '@/components/UpgradeModal'
 
 export const RoleInvitationCard = () => {
-  const { user } = useAuth()
+  // ✅ CORREGIDO: Obtener currentOrganizationId y userOrganizations del contexto
+  const { user, currentOrganizationId, userOrganizations } = useAuth()
   const { canAddUser, plan, userCount, limits } = useSubscriptionLimits()
   const [inviteLink, setInviteLink] = useState<string>('')
-  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      checkAdminAndLoadInvitation()
-    }
-  }, [user])
+  // ✅ CORREGIDO: Verificar si es admin usando userOrganizations
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )
+  const isAdmin = currentUserRole?.role === 'admin'
 
-  const checkAdminAndLoadInvitation = async () => {
-    if (!user) return
+  useEffect(() => {
+    if (user && currentOrganizationId) {
+      loadInvitation()
+    }
+  }, [user, currentOrganizationId])
+
+  const loadInvitation = async () => {
+    if (!user || !currentOrganizationId || !isAdmin) {
+      setLoading(false)
+      return
+    }
 
     try {
-      // Verificar si es admin
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role, organization_id')
-        .eq('user_id', user.id)
-        .single()
-
-      if (!roleData) {
-        setLoading(false)
-        return
-      }
-
-      setIsAdmin(roleData.role === 'admin')
-
-      if (roleData.role !== 'admin') {
-        setLoading(false)
-        return
-      }
-
       // Obtener o crear link de invitación
       const { data: invitation } = await supabase
         .from('organization_invitations')
         .select('token')
-        .eq('organization_id', roleData.organization_id)
+        .eq('organization_id', currentOrganizationId)
         .eq('is_active', true)
         .single()
 
@@ -61,7 +56,7 @@ export const RoleInvitationCard = () => {
         const { data: newInvite, error } = await supabase
           .from('organization_invitations')
           .insert({
-            organization_id: roleData.organization_id,
+            organization_id: currentOrganizationId,
             created_by: user.id
           })
           .select('token')
@@ -127,9 +122,9 @@ export const RoleInvitationCard = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {!canInvite && (
-            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-              <div className="text-sm text-amber-800">
+            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-950/30 dark:border-amber-800">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <div className="text-sm text-amber-800 dark:text-amber-200">
                 <p className="font-semibold">Límite alcanzado</p>
                 <p>En tu plan {plan} el máximo es {maxUsers} usuarios. Actualiza a un plan superior para añadir más miembros.</p>
               </div>
