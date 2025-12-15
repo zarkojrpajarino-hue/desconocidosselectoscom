@@ -13,13 +13,26 @@ export function useTrelloIntegration(organizationId: string | null) {
     setLoading(true);
     
     try {
-      const { data } = await supabase
-        .from('trello_accounts')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .maybeSingle();
+      // Use secure function that only returns connection status, not tokens
+      const { data, error } = await supabase
+        .rpc('get_trello_connection_status', { org_id: organizationId });
       
-      setAccount(data as TrelloAccount | null);
+      if (error) throw error;
+      
+      // Map the RPC result to match expected interface
+      const accountData = data?.[0] ? {
+        id: data[0].id,
+        organization_id: data[0].organization_id,
+        board_id: data[0].board_id,
+        board_name: data[0].board_name,
+        sync_enabled: data[0].sync_enabled,
+        last_sync_at: data[0].last_sync_at,
+        last_sync_status: data[0].last_sync_status,
+        created_at: new Date().toISOString(), // Not exposed but required by type
+        // api_key and api_token are not exposed to client anymore
+      } as TrelloAccount : null;
+      
+      setAccount(accountData);
     } catch (error) {
       // Silent fail
     } finally {
@@ -42,30 +55,27 @@ export function useTrelloIntegration(organizationId: string | null) {
     setSaving(true);
     
     try {
-      // Verify credentials by getting boards
-      const response = await fetch(
-        `https://api.trello.com/1/members/me/boards?key=${apiKey}&token=${apiToken}`
-      );
-      const boards = await response.json();
-      
-      if (!Array.isArray(boards)) {
-        throw new Error('Credenciales inválidas');
-      }
-
-      const { error } = await supabase.from('trello_accounts').upsert({
-        organization_id: organizationId,
-        api_key: apiKey,
-        api_token: apiToken,
-        sync_enabled: true
-      }, { onConflict: 'organization_id' });
+      // Call edge function to validate and store credentials securely
+      const { data, error } = await supabase.functions.invoke('validate-trello-token', {
+        body: { 
+          organizationId,
+          apiKey,
+          apiToken
+        }
+      });
 
       if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Credenciales inválidas');
+      }
       
       toast.success('Trello conectado correctamente');
       await loadAccount();
       return true;
-    } catch (error) {
-      toast.error('Error al conectar con Trello. Verifica tus credenciales.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al conectar con Trello';
+      toast.error(message);
       return false;
     } finally {
       setSaving(false);

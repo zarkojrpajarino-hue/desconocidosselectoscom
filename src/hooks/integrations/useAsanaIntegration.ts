@@ -13,13 +13,28 @@ export function useAsanaIntegration(organizationId: string | null) {
     setLoading(true);
     
     try {
-      const { data } = await supabase
-        .from('asana_accounts')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .maybeSingle();
+      // Use secure function that only returns connection status, not tokens
+      const { data, error } = await supabase
+        .rpc('get_asana_connection_status', { org_id: organizationId });
       
-      setAccount(data as AsanaAccount | null);
+      if (error) throw error;
+      
+      // Map the RPC result to match expected interface
+      const accountData = data?.[0] ? {
+        id: data[0].id,
+        organization_id: data[0].organization_id,
+        workspace_id: data[0].workspace_id,
+        workspace_name: data[0].workspace_name,
+        project_id: data[0].project_id,
+        project_name: data[0].project_name,
+        sync_enabled: data[0].sync_enabled,
+        last_sync_at: data[0].last_sync_at,
+        last_sync_status: data[0].last_sync_status,
+        created_at: new Date().toISOString(), // Not exposed but required by type
+        // access_token is not exposed to client anymore
+      } as AsanaAccount : null;
+      
+      setAccount(accountData);
     } catch (error) {
       // Silent fail
     } finally {
@@ -42,33 +57,26 @@ export function useAsanaIntegration(organizationId: string | null) {
     setSaving(true);
     
     try {
-      // Verify token by getting user workspaces
-      const response = await fetch('https://app.asana.com/api/1.0/workspaces', {
-        headers: { 'Authorization': `Bearer ${apiKey}` }
+      // Call edge function to validate and store credentials securely
+      const { data, error } = await supabase.functions.invoke('validate-asana-token', {
+        body: { 
+          organizationId,
+          accessToken: apiKey 
+        }
       });
-      const workspacesData = await response.json();
-      
-      if (workspacesData.errors) {
-        throw new Error('Token inválido');
-      }
-
-      const workspace = workspacesData.data?.[0];
-      
-      const { error } = await supabase.from('asana_accounts').upsert({
-        organization_id: organizationId,
-        access_token: apiKey,
-        workspace_id: workspace?.gid || null,
-        workspace_name: workspace?.name || null,
-        sync_enabled: true
-      }, { onConflict: 'organization_id' });
 
       if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Token inválido');
+      }
       
       toast.success('Asana conectado correctamente');
       await loadAccount();
       return true;
-    } catch (error) {
-      toast.error('Error al conectar con Asana. Verifica tu token.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error al conectar con Asana';
+      toast.error(message);
       return false;
     } finally {
       setSaving(false);
