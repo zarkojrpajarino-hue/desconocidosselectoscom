@@ -30,28 +30,17 @@ export const TOOL_PLAN_REQUIREMENTS: Record<ToolType, 'free' | 'starter' | 'prof
 };
 
 export const useToolContent = (toolType: ToolType) => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId, userOrganizations } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Verificar si el usuario es admin
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-      
-      setIsAdmin(data?.role === 'admin');
-    };
-
-    checkAdmin();
-  }, [user]);
+  // Verificar si el usuario es admin usando userOrganizations
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
 
   // Cargar contenido existente
   useEffect(() => {

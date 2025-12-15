@@ -27,7 +27,7 @@ import {
 } from '@/components/enterprise';
 
 const FinancialPage = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading, currentOrganizationId, userOrganizations } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [revenueModalOpen, setRevenueModalOpen] = useState(false);
@@ -36,6 +36,12 @@ const FinancialPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFinancialInfoOpen, setIsFinancialInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Obtener el rol actual del usuario en la organización seleccionada
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const canViewTransactions = currentUserRole === 'admin' || currentUserRole === 'leader';
 
   const { transactions, loading: transactionsLoading, refetch } = useFinancialData();
 
@@ -252,7 +258,7 @@ const FinancialPage = () => {
             </Collapsible>
 
             {/* Registro de Transacciones */}
-            {(userProfile?.role === 'admin' || userProfile?.role === 'leader') ? (
+            {canViewTransactions ? (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">

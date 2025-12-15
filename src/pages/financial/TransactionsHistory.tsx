@@ -31,13 +31,19 @@ interface UserTransactionStats {
 }
 
 const TransactionsHistory = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading, currentOrganizationId, userOrganizations } = useAuth();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [userStats, setUserStats] = useState<UserTransactionStats[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [transactionsOpen, setTransactionsOpen] = useState(false);
   const [userStatsOpen, setUserStatsOpen] = useState(false);
+
+  // Obtener el rol actual del usuario en la organización seleccionada
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const canViewTransactions = currentUserRole === 'admin' || currentUserRole === 'leader';
 
   useEffect(() => {
     if (!loading && !user) {
@@ -265,7 +271,7 @@ const TransactionsHistory = () => {
   }
 
   // Check permissions
-  if (userProfile?.role !== 'admin' && userProfile?.role !== 'leader') {
+  if (!canViewTransactions) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md">

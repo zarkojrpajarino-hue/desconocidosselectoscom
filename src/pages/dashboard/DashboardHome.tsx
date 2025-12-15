@@ -24,6 +24,7 @@ import { getCurrentWeekDeadline } from '@/lib/weekUtils';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
+import { TrialCountdown } from '@/components/TrialCountdown';
 
 interface SystemConfig {
   week_start: string;
@@ -288,6 +289,9 @@ const DashboardHome = () => {
         {/* DASHBOARD NORMAL (solo si no está bloqueado) */}
         {!showAvailabilityBlock && !showQuestionnaire && (
           <>
+            {/* Trial Countdown */}
+            <TrialCountdown />
+
             {/* Marketing Message */}
             <InfoMessage
               icon={Lightbulb}
