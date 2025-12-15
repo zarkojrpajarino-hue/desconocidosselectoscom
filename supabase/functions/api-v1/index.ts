@@ -1,5 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { validateInput, validationErrorResponse, ValidationError, ApiLeadSchema, ApiTaskSchema, z } from '../_shared/validation.ts'
+
+// Schema for API v1 lead update (partial - all fields optional)
+const ApiLeadUpdateSchema = ApiLeadSchema.partial();
+
+// Schema for API v1 metrics
+const ApiMetricsSchema = z.object({
+  metric_date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format' }).optional(),
+  revenue: z.number().nonnegative().max(1_000_000_000).optional(),
+  leads_generated: z.number().int().nonnegative().max(1_000_000).optional(),
+  conversion_rate: z.number().min(0).max(100).optional(),
+  cac: z.number().nonnegative().max(1_000_000).optional(),
+  lifetime_value: z.number().nonnegative().max(100_000_000).optional(),
+  nps_score: z.number().min(-100).max(100).optional(),
+  avg_ticket: z.number().nonnegative().optional(),
+  orders_count: z.number().int().nonnegative().optional(),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -287,21 +304,45 @@ serve(async (req) => {
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        const body = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(
+            JSON.stringify({ error: 'Invalid JSON body' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Validate input with Zod schema
+        let validatedData;
+        try {
+          validatedData = validateInput(ApiLeadSchema, body);
+        } catch (validationError: unknown) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, '/leads', 'POST', 400, responseTime, req);
+          if (validationError instanceof ValidationError) {
+            return validationErrorResponse(validationError, corsHeaders);
+          }
+          return new Response(
+            JSON.stringify({ error: 'Validation failed' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         
         const { data, error } = await supabase
           .from('leads')
           .insert({
-            name: body.name,
-            email: body.email,
-            company: body.company,
-            phone: body.phone,
-            stage: body.stage || 'new',
-            priority: body.priority || 'medium',
-            estimated_value: body.estimated_value,
-            source: body.source || 'api',
-            notes: body.notes,
-            organization_id: auth.organization_id
+            name: validatedData.name,
+            email: validatedData.email,
+            company: validatedData.company,
+            phone: validatedData.phone,
+            stage: validatedData.stage || 'new',
+            priority: 'medium',
+            estimated_value: validatedData.estimated_value,
+            source: validatedData.source || 'api',
+            notes: validatedData.notes,
+            organization_id: auth.organization_id // Always use auth context, never from body
           })
           .select()
           .single();
@@ -356,11 +397,38 @@ serve(async (req) => {
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        const body = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(
+            JSON.stringify({ error: 'Invalid JSON body' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Validate input with Zod schema (partial for updates)
+        let validatedData;
+        try {
+          validatedData = validateInput(ApiLeadUpdateSchema, body);
+        } catch (validationError: unknown) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, `/leads/${resourceId}`, 'PUT', 400, responseTime, req);
+          if (validationError instanceof ValidationError) {
+            return validationErrorResponse(validationError, corsHeaders);
+          }
+          return new Response(
+            JSON.stringify({ error: 'Validation failed' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Remove organization_id from update data to prevent manipulation
+        const { organization_id: _ignored, ...safeUpdateData } = validatedData as Record<string, unknown>;
         
         const { data, error } = await supabase
           .from('leads')
-          .update(body)
+          .update(safeUpdateData)
           .eq('id', resourceId)
           .eq('organization_id', auth.organization_id)
           .select()
@@ -470,7 +538,31 @@ serve(async (req) => {
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        const body = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(
+            JSON.stringify({ error: 'Invalid JSON body' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Validate input with Zod schema
+        let validatedData;
+        try {
+          validatedData = validateInput(ApiMetricsSchema, body);
+        } catch (validationError: unknown) {
+          const responseTime = Date.now() - startTime;
+          await logApiUsage(supabase, auth, '/metrics', 'POST', 400, responseTime, req);
+          if (validationError instanceof ValidationError) {
+            return validationErrorResponse(validationError, corsHeaders);
+          }
+          return new Response(
+            JSON.stringify({ error: 'Validation failed' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         
         // Get first user from organization for user_id requirement
         const { data: userRole } = await supabase
@@ -483,8 +575,8 @@ serve(async (req) => {
         const { data, error } = await supabase
           .from('business_metrics')
           .insert({
-            ...body,
-            organization_id: auth.organization_id,
+            ...validatedData,
+            organization_id: auth.organization_id, // Always from auth context
             user_id: userRole?.user_id
           })
           .select()
