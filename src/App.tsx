@@ -138,6 +138,7 @@ const AppContent = () => {
         <Route path="/integraciones" element={<Integraciones />} />
         <Route path="/install" element={<InstallPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding/startup" element={<OnboardingStartup />} />
         <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
@@ -147,11 +148,6 @@ const AppContent = () => {
         <Route path="/select-plan" element={
           <ProtectedRoute>
             <SelectPlan />
-          </ProtectedRoute>
-        } />
-        <Route path="/onboarding/startup" element={
-          <ProtectedRoute>
-            <OnboardingStartup />
           </ProtectedRoute>
         } />
         <Route path="/join/:token" element={<Navigate to="/home" replace />} />
