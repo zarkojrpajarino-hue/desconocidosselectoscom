@@ -6,22 +6,28 @@ import { Button } from "@/components/ui/button";
 import { OnboardingFormData } from "@/pages/Onboarding";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, CheckCircle2, Loader2, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, UserPlus, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 interface OnboardingStep1Props {
   formData: OnboardingFormData;
   updateFormData: (data: Partial<OnboardingFormData>) => void;
-  onAccountCreated?: () => void;
+  onAccountCreated?: (userId: string) => void;
+  accountAlreadyCreated?: boolean;
 }
 
-export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: OnboardingStep1Props) => {
+export const OnboardingStep1 = ({ 
+  formData, 
+  updateFormData, 
+  onAccountCreated,
+  accountAlreadyCreated = false 
+}: OnboardingStep1Props) => {
   const { user, userOrganizations } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [accountCreated, setAccountCreated] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(accountAlreadyCreated);
   const [showPassword, setShowPassword] = useState(false);
 
   // Detectar si el usuario ya está logueado
@@ -63,39 +69,41 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
     return () => clearTimeout(timer);
   }, [formData.accountEmail, isLoggedIn]);
 
+  // Función para crear cuenta
   const handleCreateAccount = async () => {
     // Validaciones
-    if (!formData.contactName) {
-      toast.error("Por favor ingresa tu nombre");
+    if (!formData.contactName || !formData.accountEmail || !formData.accountPassword) {
+      toast.error('Por favor completa todos los campos');
       return;
     }
-    if (!formData.accountEmail) {
-      toast.error("Por favor ingresa tu email");
+
+    if (formData.accountPassword.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres');
       return;
     }
-    if (!formData.accountPassword || formData.accountPassword.length < 8) {
-      toast.error("La contraseña debe tener al menos 8 caracteres");
+
+    if (emailExists) {
+      toast.error('Este email ya está registrado. Por favor inicia sesión.');
       return;
     }
 
     setIsCreatingAccount(true);
 
     try {
+      // Crear usuario
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.accountEmail,
         password: formData.accountPassword,
         options: {
           data: {
             full_name: formData.contactName,
-          },
-          emailRedirectTo: `${window.location.origin}/`
+          }
         }
       });
 
       if (signUpError) {
         if (signUpError.message.includes('already registered')) {
-          toast.error('Este email ya está registrado. Por favor inicia sesión primero.');
-          return;
+          throw new Error('Este email ya está registrado. Por favor inicia sesión primero.');
         }
         throw signUpError;
       }
@@ -104,36 +112,40 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
         throw new Error('No se pudo crear el usuario');
       }
 
+      const userId = authData.user.id;
+
       // Esperar a que el trigger cree el usuario en public.users
       let userCreated = false;
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 10; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { data: userData } = await supabase
           .from('users')
           .select('id')
-          .eq('id', authData.user.id)
+          .eq('id', userId)
           .single();
-        
+
         if (userData) {
           userCreated = true;
           break;
         }
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       if (!userCreated) {
-        throw new Error('Error al configurar el usuario. Intenta de nuevo.');
+        throw new Error('Error al crear el perfil de usuario. Por favor intenta nuevamente.');
       }
 
+      toast.success('¡Cuenta creada exitosamente! 🎉');
       setAccountCreated(true);
-      setIsLoggedIn(true);
-      toast.success('¡Cuenta creada! Ahora continúa con el onboarding.');
-      
+
+      // Callback al padre
       if (onAccountCreated) {
-        onAccountCreated();
+        onAccountCreated(userId);
       }
 
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error creando la cuenta';
+    } catch (error: unknown) {
+      console.error('Error creating account:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear la cuenta';
       toast.error(errorMessage);
     } finally {
       setIsCreatingAccount(false);
@@ -147,6 +159,8 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
         <p className="text-sm md:text-base text-muted-foreground">
           {isLoggedIn 
             ? "Ya tienes una cuenta. Estás creando una nueva organización."
+            : accountCreated
+            ? "Cuenta creada exitosamente. Continúa con el siguiente paso."
             : "Primero, configura tus credenciales de acceso"
           }
         </p>
@@ -165,22 +179,25 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
         </div>
       )}
 
-      {/* Mensaje de cuenta creada */}
-      {accountCreated && !userOrganizations.length && (
+      {/* Mensaje si cuenta recién creada */}
+      {accountCreated && !isLoggedIn && (
         <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="font-medium text-green-700 dark:text-green-300">¡Cuenta creada exitosamente!</span>
+            <span className="font-medium text-green-900 dark:text-green-100">Cuenta creada exitosamente</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Ya puedes continuar con el siguiente paso para configurar tu organización.
+          <p className="text-sm text-green-700 dark:text-green-300">
+            Tu cuenta ha sido creada con el email: <Badge variant="secondary">{formData.accountEmail}</Badge>
+          </p>
+          <p className="text-sm text-green-700 dark:text-green-300 mt-2">
+            Ahora puedes continuar completando los datos de tu organización.
           </p>
         </div>
       )}
 
       <div className="space-y-4">
-        {/* Campo Nombre - Solo si NO está logueado */}
-        {!isLoggedIn && (
+        {/* Campo Nombre - Solo si NO está logueado y NO ha creado cuenta */}
+        {!isLoggedIn && !accountCreated && (
           <div>
             <Label htmlFor="contactName">Tu nombre completo *</Label>
             <Input
@@ -190,8 +207,7 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
               value={formData.contactName}
               onChange={(e) => updateFormData({ contactName: e.target.value })}
               required
-              disabled={accountCreated}
-              className={accountCreated ? "bg-muted" : ""}
+              disabled={isCreatingAccount}
             />
           </div>
         )}
@@ -205,12 +221,14 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
             value={formData.accountEmail}
             onChange={(e) => updateFormData({ accountEmail: e.target.value })}
             required
-            disabled={isLoggedIn || accountCreated}
+            disabled={isLoggedIn || accountCreated || isCreatingAccount}
             className={(isLoggedIn || accountCreated) ? "bg-muted" : ""}
           />
           <p className="text-xs text-muted-foreground mt-1">
             {isLoggedIn 
               ? "Usarás tu cuenta existente"
+              : accountCreated
+              ? "Cuenta creada con este email"
               : "Usarás este email para acceder a tu app"
             }
           </p>
@@ -226,7 +244,7 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
           )}
         </div>
 
-        {/* Password - Solo si NO está logueado y cuenta no creada */}
+        {/* Password - Solo si NO está logueado y NO ha creado cuenta */}
         {!isLoggedIn && !accountCreated && (
           <div>
             <Label htmlFor="accountPassword">Contraseña *</Label>
@@ -239,6 +257,7 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
                 onChange={(e) => updateFormData({ accountPassword: e.target.value })}
                 required
                 minLength={8}
+                disabled={isCreatingAccount}
                 className="pr-10"
               />
               <button
@@ -255,25 +274,35 @@ export const OnboardingStep1 = ({ formData, updateFormData, onAccountCreated }: 
           </div>
         )}
 
-        {/* Botón Crear Cuenta - Solo si NO está logueado y cuenta no creada */}
+        {/* Botón Crear Cuenta - Solo si NO está logueado y NO ha creado cuenta */}
         {!isLoggedIn && !accountCreated && (
-          <Button 
+          <Button
             onClick={handleCreateAccount}
-            disabled={isCreatingAccount || !formData.contactName || !formData.accountEmail || !formData.accountPassword || formData.accountPassword.length < 8 || emailExists}
+            disabled={isCreatingAccount || emailExists || !formData.contactName || !formData.accountEmail || !formData.accountPassword}
             className="w-full"
             size="lg"
           >
             {isCreatingAccount ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creando cuenta...
               </>
             ) : (
-              'Crear Cuenta'
+              <>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Crear Cuenta
+              </>
             )}
           </Button>
         )}
       </div>
+
+      {/* Info adicional */}
+      {!isLoggedIn && !accountCreated && (
+        <p className="text-xs text-muted-foreground text-center">
+          Al crear una cuenta, aceptas nuestros términos y condiciones
+        </p>
+      )}
     </div>
   );
 };
