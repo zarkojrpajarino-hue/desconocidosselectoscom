@@ -8254,6 +8254,21 @@ export type Database = {
           task_id: string
         }[]
       }
+      get_asana_connection_status: {
+        Args: { org_id: string }
+        Returns: {
+          id: string
+          is_connected: boolean
+          last_sync_at: string
+          last_sync_status: string
+          organization_id: string
+          project_id: string
+          project_name: string
+          sync_enabled: boolean
+          workspace_id: string
+          workspace_name: string
+        }[]
+      }
       get_churn_reasons_breakdown: {
         Args: { p_organization_id: string; p_period_months?: number }
         Returns: {
@@ -8297,6 +8312,20 @@ export type Database = {
           offers_accepted: number
           offers_shown: number
           success_rate: number
+        }[]
+      }
+      get_trello_connection_status: {
+        Args: { org_id: string }
+        Returns: {
+          board_id: string
+          board_name: string
+          id: string
+          is_connected: boolean
+          last_sync_at: string
+          last_sync_status: string
+          list_mapping: Json
+          organization_id: string
+          sync_enabled: boolean
         }[]
       }
       get_unread_changelog_count: {
