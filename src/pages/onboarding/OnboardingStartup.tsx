@@ -31,7 +31,7 @@ import StartupStep5GoToMarket from './startup/StartupStep5GoToMarket';
 import StartupStep6Resources from './startup/StartupStep6Resources';
 import StartupStep7Validation from './startup/StartupStep7Validation';
 import StartupStep8Timeline from './startup/StartupStep8Timeline';
-import StartupStep0Account from './startup/StartupStep0Account';
+import StartupStep0Account from '@/components/onboarding/StartupStep0Account';
 
 const TOTAL_STEPS = 9; // Now includes step 0 (account)
 
@@ -75,26 +75,33 @@ function parseFundingStrategy(value: string | null | undefined): FundingStrategy
 export default function OnboardingStartup() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
+  
+  // Start at step 0 if not logged in, otherwise step 1
+  const [currentStep, setCurrentStep] = useState(user ? 1 : 0);
   const [formData, setFormData] = useState<StartupOnboardingData>(INITIAL_STARTUP_DATA);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  
+  // States for account/org created in step 0
+  const [createdUserId, setCreatedUserId] = useState<string | null>(null);
+  const [createdOrganizationId, setCreatedOrganizationId] = useState<string | null>(null);
+  const [accountCreated, setAccountCreated] = useState(!!user);
 
   // Load draft only after org is set
   useEffect(() => {
-    if (organizationId) {
-      loadDraft();
+    const orgId = createdOrganizationId;
+    if (orgId) {
+      loadDraft(orgId);
     }
-  }, [organizationId]);
+  }, [createdOrganizationId]);
 
-  const loadDraft = async () => {
-    if (!organizationId) return;
+  const loadDraft = async (orgId: string) => {
+    if (!orgId) return;
     
     const { data: draft } = await supabase
       .from('startup_onboardings')
       .select('*')
-      .eq('organization_id', organizationId)
+      .eq('organization_id', orgId)
       .eq('status', 'draft')
       .maybeSingle();
 
@@ -172,8 +179,19 @@ export default function OnboardingStartup() {
     setFormData(prev => ({ ...prev, ...partialData }));
   };
 
+  // Callback when account is created in step 0
+  const handleAccountCreated = (userId: string, organizationId: string) => {
+    setCreatedUserId(userId);
+    setCreatedOrganizationId(organizationId);
+    setAccountCreated(true);
+    toast.success('¡Cuenta creada! Ahora completaremos los datos de tu startup 🚀');
+    setCurrentStep(1); // Advance to step 1 (Vision)
+  };
+
   const validateStep = (step: number): boolean => {
     switch (step) {
+      case 0:
+        return accountCreated; // Must have created account
       case 1:
         return !!formData.businessName && !!formData.problemStatement && !!formData.solutionDescription;
       case 2:
@@ -197,91 +215,110 @@ export default function OnboardingStartup() {
 
   const handleNext = () => {
     if (!validateStep(currentStep)) {
-      toast.error('Por favor completa los campos requeridos');
+      if (currentStep === 0 && !accountCreated) {
+        toast.error('Por favor crea tu cuenta primero');
+      } else {
+        toast.error('Por favor completa los campos requeridos');
+      }
       return;
     }
-    if (currentStep < TOTAL_STEPS) {
+    if (currentStep < TOTAL_STEPS - 1) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
   };
 
-  const buildDataToSave = () => ({
-    organization_id: organizationId!,
-    created_by: user!.id,
-    business_name: formData.businessName,
-    tagline: formData.tagline,
-    problem_statement: formData.problemStatement,
-    solution_description: formData.solutionDescription,
-    unique_value_proposition: formData.uniqueValueProposition,
-    why_now: formData.whyNow,
-    inspiration: formData.inspiration,
-    ideal_customer_profile: formData.idealCustomerProfile,
-    customer_pain_points: formData.customerPainPoints,
-    market_tam: formData.marketSize.TAM,
-    market_sam: formData.marketSize.SAM,
-    market_som: formData.marketSize.SOM,
-    competitors: formData.competitors as unknown as Json,
-    competitive_advantage: formData.competitiveAdvantage,
-    distribution_channels: formData.distributionChannels,
-    monetization_strategy: formData.monetizationStrategy,
-    pricing_lowest_tier: formData.pricingHypothesis.lowestTier,
-    pricing_middle_tier: formData.pricingHypothesis.middleTier,
-    pricing_highest_tier: formData.pricingHypothesis.highestTier,
-    pricing_currency: formData.pricingHypothesis.currency,
-    revenue_streams: formData.revenueStreams,
-    cost_structure: formData.costStructure as unknown as Json,
-    estimated_cac: formData.unitEconomics.estimatedCAC,
-    estimated_ltv: formData.unitEconomics.estimatedLTV,
-    target_ltv_cac_ratio: formData.unitEconomics.targetLTVCACRatio,
-    mvp_description: formData.mvpDescription,
-    core_features: formData.coreFeatures as unknown as Json,
-    development_timeline_weeks: formData.developmentTimeline,
-    technology_stack: formData.technologyStack,
-    technical_challenges: formData.technicalChallenges,
-    launch_strategy: formData.launchStrategy,
-    first_100_customers_strategy: formData.first100CustomersStrategy,
-    initial_marketing_budget: formData.initialMarketingBudget,
-    acquisition_channels: formData.acquisitionChannels as unknown as Json,
-    content_strategy: formData.contentStrategy,
-    partnerships_strategy: formData.partnershipsStrategy,
-    founders: formData.founders as unknown as Json,
-    missing_skills: formData.missingSkills,
-    current_capital: formData.currentCapital,
-    capital_needed: formData.capitalNeeded,
-    funding_strategy: formData.fundingStrategy,
-    runway_goal_months: formData.runwayGoal,
-    critical_hypotheses: formData.criticalHypotheses as unknown as Json,
-    prelaunch_metrics: formData.prelaunchMetrics,
-    postlaunch_kpis: formData.postlaunchKPIs,
-    pivot_criteria: formData.pivotCriteria,
-    success_definition: formData.successDefinition,
-    milestones: formData.milestones as unknown as Json,
-    three_month_goal: formData.threeMonthGoal,
-    six_month_goal: formData.sixMonthGoal,
-    twelve_month_goal: formData.twelveMonthGoal,
-    exit_strategy: formData.exitStrategy,
-    current_step: currentStep,
-  });
+  const getOrganizationId = () => createdOrganizationId;
+  const getUserId = () => createdUserId || user?.id;
+
+  const buildDataToSave = () => {
+    const orgId = getOrganizationId();
+    const userId = getUserId();
+    
+    if (!orgId || !userId) return null;
+    
+    return {
+      organization_id: orgId,
+      created_by: userId,
+      business_name: formData.businessName,
+      tagline: formData.tagline,
+      problem_statement: formData.problemStatement,
+      solution_description: formData.solutionDescription,
+      unique_value_proposition: formData.uniqueValueProposition,
+      why_now: formData.whyNow,
+      inspiration: formData.inspiration,
+      ideal_customer_profile: formData.idealCustomerProfile,
+      customer_pain_points: formData.customerPainPoints,
+      market_tam: formData.marketSize.TAM,
+      market_sam: formData.marketSize.SAM,
+      market_som: formData.marketSize.SOM,
+      competitors: formData.competitors as unknown as Json,
+      competitive_advantage: formData.competitiveAdvantage,
+      distribution_channels: formData.distributionChannels,
+      monetization_strategy: formData.monetizationStrategy,
+      pricing_lowest_tier: formData.pricingHypothesis.lowestTier,
+      pricing_middle_tier: formData.pricingHypothesis.middleTier,
+      pricing_highest_tier: formData.pricingHypothesis.highestTier,
+      pricing_currency: formData.pricingHypothesis.currency,
+      revenue_streams: formData.revenueStreams,
+      cost_structure: formData.costStructure as unknown as Json,
+      estimated_cac: formData.unitEconomics.estimatedCAC,
+      estimated_ltv: formData.unitEconomics.estimatedLTV,
+      target_ltv_cac_ratio: formData.unitEconomics.targetLTVCACRatio,
+      mvp_description: formData.mvpDescription,
+      core_features: formData.coreFeatures as unknown as Json,
+      development_timeline_weeks: formData.developmentTimeline,
+      technology_stack: formData.technologyStack,
+      technical_challenges: formData.technicalChallenges,
+      launch_strategy: formData.launchStrategy,
+      first_100_customers_strategy: formData.first100CustomersStrategy,
+      initial_marketing_budget: formData.initialMarketingBudget,
+      acquisition_channels: formData.acquisitionChannels as unknown as Json,
+      content_strategy: formData.contentStrategy,
+      partnerships_strategy: formData.partnershipsStrategy,
+      founders: formData.founders as unknown as Json,
+      missing_skills: formData.missingSkills,
+      current_capital: formData.currentCapital,
+      capital_needed: formData.capitalNeeded,
+      funding_strategy: formData.fundingStrategy,
+      runway_goal_months: formData.runwayGoal,
+      critical_hypotheses: formData.criticalHypotheses as unknown as Json,
+      prelaunch_metrics: formData.prelaunchMetrics,
+      postlaunch_kpis: formData.postlaunchKPIs,
+      pivot_criteria: formData.pivotCriteria,
+      success_definition: formData.successDefinition,
+      milestones: formData.milestones as unknown as Json,
+      three_month_goal: formData.threeMonthGoal,
+      six_month_goal: formData.sixMonthGoal,
+      twelve_month_goal: formData.twelveMonthGoal,
+      exit_strategy: formData.exitStrategy,
+      current_step: currentStep,
+    };
+  };
 
   const handleSaveDraft = async () => {
-    if (!user || !organizationId) return;
+    const dataToSave = buildDataToSave();
+    if (!dataToSave) {
+      toast.error('No se encontró organización o usuario');
+      return;
+    }
+    
     setIsSaving(true);
 
     try {
-      const dataToSave = { ...buildDataToSave(), status: 'draft' as const };
+      const draftData = { ...dataToSave, status: 'draft' as const };
 
       if (formData.id) {
-        await supabase.from('startup_onboardings').update(dataToSave).eq('id', formData.id);
+        await supabase.from('startup_onboardings').update(draftData).eq('id', formData.id);
       } else {
-        const { data } = await supabase.from('startup_onboardings').insert(dataToSave).select().single();
+        const { data } = await supabase.from('startup_onboardings').insert(draftData).select().single();
         if (data) setFormData(prev => ({ ...prev, id: data.id }));
       }
 
@@ -299,13 +336,18 @@ export default function OnboardingStartup() {
       toast.error('Por favor completa los campos requeridos');
       return;
     }
-    if (!user || !organizationId) return;
+    
+    const dataToSave = buildDataToSave();
+    if (!dataToSave) {
+      toast.error('No se encontró organización o usuario');
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      const dataToSave = {
-        ...buildDataToSave(),
+      const completedData = {
+        ...dataToSave,
         status: 'completed' as const,
         current_step: TOTAL_STEPS,
         completed_at: new Date().toISOString(),
@@ -314,9 +356,9 @@ export default function OnboardingStartup() {
       let onboardingId = formData.id;
 
       if (formData.id) {
-        await supabase.from('startup_onboardings').update(dataToSave).eq('id', formData.id);
+        await supabase.from('startup_onboardings').update(completedData).eq('id', formData.id);
       } else {
-        const { data } = await supabase.from('startup_onboardings').insert(dataToSave).select().single();
+        const { data } = await supabase.from('startup_onboardings').insert(completedData).select().single();
         if (data) onboardingId = data.id;
       }
 
@@ -346,6 +388,11 @@ export default function OnboardingStartup() {
   };
 
   const renderStep = () => {
+    // Step 0: Account creation
+    if (currentStep === 0) {
+      return <StartupStep0Account onAccountCreated={handleAccountCreated} />;
+    }
+    
     const props = { data: formData, updateData: updateFormData };
     
     switch (currentStep) {
@@ -360,6 +407,9 @@ export default function OnboardingStartup() {
       default: return null;
     }
   };
+
+  // Calculate progress (step 0 = 0%, step 8 = 100%)
+  const progress = currentStep === 0 ? 0 : ((currentStep / (TOTAL_STEPS - 1)) * 100);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -380,30 +430,33 @@ export default function OnboardingStartup() {
               <div className="min-w-0">
                 <h1 className="text-base md:text-xl font-bold truncate">Onboarding Startup</h1>
                 <p className="text-[10px] md:text-sm text-muted-foreground">
-                  Paso {currentStep}/{TOTAL_STEPS}: {STEP_TITLES[currentStep - 1]}
+                  Paso {currentStep}/{TOTAL_STEPS - 1}: {STEP_TITLES[currentStep]}
                 </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={isSaving} className="flex-shrink-0 h-8 text-xs md:text-sm">
-              {isSaving ? <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin mr-1 md:mr-2" /> : <Save className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />}
-              <span className="hidden sm:inline">Guardar</span>
-            </Button>
+            {currentStep > 0 && (
+              <Button variant="outline" size="sm" onClick={handleSaveDraft} disabled={isSaving} className="flex-shrink-0 h-8 text-xs md:text-sm">
+                {isSaving ? <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin mr-1 md:mr-2" /> : <Save className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />}
+                <span className="hidden sm:inline">Guardar</span>
+              </Button>
+            )}
           </div>
           
-          <Progress value={(currentStep / TOTAL_STEPS) * 100} className="h-1.5 md:h-2" />
+          <Progress value={progress} className="h-1.5 md:h-2" />
           
           {/* Step titles - horizontal scroll on mobile */}
           <div className="flex justify-between mt-2 overflow-x-auto scrollbar-hide -mx-3 px-3 md:mx-0 md:px-0 gap-1">
             {STEP_TITLES.map((title, index) => (
               <button
                 key={index}
-                onClick={() => index + 1 <= currentStep && setCurrentStep(index + 1)}
+                onClick={() => index <= currentStep && setCurrentStep(index)}
+                disabled={index > currentStep}
                 className={`text-[9px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded transition-colors whitespace-nowrap flex-shrink-0 ${
-                  index + 1 === currentStep
+                  index === currentStep
                     ? 'bg-primary text-primary-foreground font-semibold'
-                    : index + 1 < currentStep
+                    : index < currentStep
                     ? 'text-primary hover:bg-primary/10 cursor-pointer'
-                    : 'text-muted-foreground'
+                    : 'text-muted-foreground cursor-not-allowed'
                 }`}
               >
                 {title}
@@ -421,12 +474,18 @@ export default function OnboardingStartup() {
         </Card>
 
         <div className="flex justify-between mt-4 md:mt-6 gap-2">
-          <Button variant="outline" onClick={handleBack} disabled={currentStep === 1} size="sm" className="h-9 md:h-10 text-xs md:text-sm">
+          <Button 
+            variant="outline" 
+            onClick={handleBack} 
+            disabled={currentStep === 0} 
+            size="sm" 
+            className="h-9 md:h-10 text-xs md:text-sm"
+          >
             <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
             Anterior
           </Button>
 
-          {currentStep < TOTAL_STEPS ? (
+          {currentStep < TOTAL_STEPS - 1 ? (
             <Button onClick={handleNext} size="sm" className="h-9 md:h-10 text-xs md:text-sm">
               Siguiente
               <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2" />
@@ -436,14 +495,12 @@ export default function OnboardingStartup() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Generando...</span>
-                  <span className="sm:hidden">...</span>
+                  Guardando...
                 </>
               ) : (
                 <>
                   <Rocket className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Finalizar</span>
-                  <span className="sm:hidden">Crear</span>
+                  Finalizar y Guardar
                 </>
               )}
             </Button>
