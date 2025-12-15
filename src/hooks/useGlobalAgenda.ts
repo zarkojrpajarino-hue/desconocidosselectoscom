@@ -66,7 +66,7 @@ export function useGlobalAgendaSettings() {
         .from('user_global_agenda_settings')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // ✅ CORREGIDO: maybeSingle() para 0 o 1 resultados
 
       if (error && error.code !== 'PGRST116') throw error;
       return data as GlobalAgendaSettings | null;
@@ -88,7 +88,7 @@ export function useUpdateGlobalAgendaSettings() {
         .from('user_global_agenda_settings')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // ✅ CORREGIDO
 
       if (existing) {
         // Update existing
@@ -102,7 +102,7 @@ export function useUpdateGlobalAgendaSettings() {
           })
           .eq('user_id', user.id)
           .select()
-          .single();
+          .maybeSingle(); // ✅ CORREGIDO
         if (error) throw error;
         return data;
       } else {
@@ -117,7 +117,7 @@ export function useUpdateGlobalAgendaSettings() {
             org_color_map: settings.org_color_map || {},
           })
           .select()
-          .single();
+          .maybeSingle(); // ✅ CORREGIDO
         if (error) throw error;
         return data;
       }

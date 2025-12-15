@@ -84,7 +84,7 @@ export function KPIBenchmarking() {
           .eq('organization_id', organizationId)
           .order('month', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle(); // ✅ CORREGIDO: maybeSingle() es mejor que single() con limit()
 
         interface RawBenchmark {
           kpi_metric: string;

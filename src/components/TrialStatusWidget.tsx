@@ -11,9 +11,12 @@ import { useEffect, useState } from 'react';
 export const TrialStatusWidget = () => {
   const navigate = useNavigate();
   const { user, currentOrganizationId } = useAuth();
-  const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
-  const [progressPercentage, setProgressPercentage] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // ✅ OPTIMIZADO: Un solo estado objeto en vez de 3 useState separados
+  const [trialState, setTrialState] = useState({
+    daysRemaining: null as number | null,
+    progressPercentage: 0,
+    loading: true
+  });
 
   useEffect(() => {
     const fetchTrialStatus = async () => {
@@ -27,13 +30,13 @@ export const TrialStatusWidget = () => {
           .single();
 
         if (error || !org) {
-          setLoading(false);
+          setTrialState(prev => ({ ...prev, loading: false }));
           return;
         }
 
         // Si no está en trial, no mostrar el widget
         if (org.plan !== 'trial' && org.plan !== 'free') {
-          setLoading(false);
+          setTrialState(prev => ({ ...prev, loading: false }));
           return;
         }
 
@@ -44,17 +47,23 @@ export const TrialStatusWidget = () => {
         const remaining = Math.max(0, trialDurationDays - daysElapsed);
         const progress = Math.min(100, (daysElapsed / trialDurationDays) * 100);
 
-        setDaysRemaining(remaining);
-        setProgressPercentage(progress);
-        setLoading(false);
+        // ✅ CORREGIDO: Solo un setTrialState
+        setTrialState({ 
+          daysRemaining: remaining, 
+          progressPercentage: progress, 
+          loading: false 
+        });
       } catch (error) {
         console.error('Error fetching trial status:', error);
-        setLoading(false);
+        setTrialState(prev => ({ ...prev, loading: false }));
       }
     };
 
     fetchTrialStatus();
   }, [user, currentOrganizationId]);
+
+  // ✅ CORREGIDO: Usar destructuring del estado
+  const { loading, daysRemaining, progressPercentage } = trialState;
 
   if (loading || daysRemaining === null) return null;
 
@@ -83,7 +92,7 @@ export const TrialStatusWidget = () => {
           <Button 
             variant="default" 
             size="sm" 
-            onClick={() => navigate('/pricing')}
+            onClick={() => navigate('/select-plan')}
             className="gap-2 flex-shrink-0"
           >
             Ver Planes
