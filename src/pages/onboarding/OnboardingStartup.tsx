@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Loader2, Save, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 import { 
   StartupOnboardingData, 
   INITIAL_STARTUP_DATA,
@@ -86,6 +87,79 @@ export default function OnboardingStartup() {
   const [createdUserId, setCreatedUserId] = useState<string | null>(null);
   const [createdOrganizationId, setCreatedOrganizationId] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(!!user);
+  const [isLoadingOrg, setIsLoadingOrg] = useState(false);
+
+  // For existing users, find or create their organization
+  useEffect(() => {
+    const initializeExistingUser = async () => {
+      if (!user || createdOrganizationId) return;
+      
+      setIsLoadingOrg(true);
+      try {
+        // First check if user has an existing organization
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (existingRole?.organization_id) {
+          setCreatedOrganizationId(existingRole.organization_id);
+          setCreatedUserId(user.id);
+          return;
+        }
+        
+        // If no org exists, create one for the startup
+        const { data: orgData, error: orgError } = await supabase
+          .from('organizations')
+          .insert({
+            name: `Startup de ${user.email?.split('@')[0] || 'Usuario'}`,
+            created_by: user.id,
+            plan: 'trial',
+            subscription_status: 'trial',
+            industry: 'technology',
+            company_size: '1-10',
+            contact_name: user.email?.split('@')[0] || 'Usuario',
+            contact_email: user.email || '',
+            business_description: 'Por definir durante onboarding',
+            target_customers: 'Por definir durante onboarding',
+            sales_process: 'Por definir',
+            current_problems: 'Por definir',
+            main_objectives: 'Por definir',
+            value_proposition: 'Por definir',
+            lead_sources: [],
+            kpis_to_measure: [],
+            products_services: [],
+            team_structure: [],
+            business_type: 'startup'
+          })
+          .select()
+          .single();
+        
+        if (orgError) throw orgError;
+        
+        // Create user_role
+        await supabase.from('user_roles').insert({
+          user_id: user.id,
+          organization_id: orgData.id,
+          role: 'admin'
+        });
+        
+        // Register trial
+        await supabase.rpc('register_trial_email', { user_email: user.email });
+        
+        setCreatedOrganizationId(orgData.id);
+        setCreatedUserId(user.id);
+      } catch (error) {
+        logger.error('Error initializing existing user org:', error);
+        toast.error('Error inicializando organización');
+      } finally {
+        setIsLoadingOrg(false);
+      }
+    };
+    
+    initializeExistingUser();
+  }, [user, createdOrganizationId]);
 
   // Load draft only after org is set
   useEffect(() => {
