@@ -233,13 +233,41 @@ export const OnboardingStep1 = ({
             }
           </p>
           
+          {/* Indicador de verificación de email */}
+          {checkingEmail && !isLoggedIn && !accountCreated && (
+            <div className="flex items-center gap-2 mt-2 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Verificando email...</span>
+            </div>
+          )}
+          
           {/* Mensaje si el email ya existe */}
-          {emailExists && !isLoggedIn && !accountCreated && (
-            <div className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm">
-                Este email ya está registrado. <a href="/" className="underline font-medium">Inicia sesión</a> para crear otra organización.
-              </span>
+          {emailExists && !checkingEmail && !isLoggedIn && !accountCreated && (
+            <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm font-medium">Este email ya está registrado</span>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateFormData({ accountEmail: '' })}
+                  className="flex-1"
+                >
+                  Usar otro email
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => window.location.href = '/'}
+                  className="flex-1"
+                >
+                  Iniciar Sesión
+                </Button>
+              </div>
             </div>
           )}
         </div>
