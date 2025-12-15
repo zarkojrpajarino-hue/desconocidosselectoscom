@@ -1,9 +1,20 @@
 /**
  * Funciones para crear y animar elementos demo durante los tours interactivos
+ * 
+ * SECURITY NOTE: All innerHTML usage is sanitized with DOMPurify to prevent XSS.
+ * If modifying demo data sources, ensure all content remains sanitized.
  */
 
+import DOMPurify from 'dompurify';
 import { TOUR_DEMO_DATA } from './tourData';
 import { logger } from './logger';
+
+/**
+ * Helper function to safely set innerHTML with DOMPurify sanitization
+ */
+const safeSetInnerHTML = (element: HTMLElement, html: string): void => {
+  element.innerHTML = DOMPurify.sanitize(html);
+};
 
 /**
  * Crear lead demo en el pipeline
@@ -14,7 +25,7 @@ export const createDemoLead = (leadData: typeof TOUR_DEMO_DATA.lead = TOUR_DEMO_
   leadElement.className = 'demo-lead animate-slide-in bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-lg p-4 shadow-lg';
   leadElement.style.opacity = '0';
   
-  leadElement.innerHTML = `
+  safeSetInnerHTML(leadElement, `
     <div class="space-y-2">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -32,7 +43,7 @@ export const createDemoLead = (leadData: typeof TOUR_DEMO_DATA.lead = TOUR_DEMO_
         <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Alta Prioridad</span>
       </div>
     </div>
-  `;
+  `);
   
   // Buscar la primera columna del pipeline
   const pipelineColumns = document.querySelectorAll('[data-stage]');
@@ -127,7 +138,7 @@ export const createDemoOKR = (okrData: typeof TOUR_DEMO_DATA.okr = TOUR_DEMO_DAT
     `;
   }).join('');
   
-  okrElement.innerHTML = `
+  safeSetInnerHTML(okrElement, `
     <div class="space-y-4">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -143,7 +154,7 @@ export const createDemoOKR = (okrData: typeof TOUR_DEMO_DATA.okr = TOUR_DEMO_DAT
         ${keyResultsHTML}
       </div>
     </div>
-  `;
+  `);
   
   // Insertar en el contenedor de OKRs
   const okrContainer = document.querySelector('[data-okr-container]') || document.querySelector('main > div');
@@ -207,7 +218,7 @@ export const createDemoFinancialRecord = (recordData: typeof TOUR_DEMO_DATA.fina
   recordElement.className = 'demo-financial animate-slide-in bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4 shadow-lg';
   recordElement.style.opacity = '0';
   
-  recordElement.innerHTML = `
+  safeSetInnerHTML(recordElement, `
     <div class="flex items-center justify-between">
       <div class="flex-1">
         <div class="flex items-center gap-2">
@@ -223,7 +234,7 @@ export const createDemoFinancialRecord = (recordData: typeof TOUR_DEMO_DATA.fina
         <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-semibold">DEMO</span>
       </div>
     </div>
-  `;
+  `);
   
   // Insertar en tabla financiera
   const financialTable = document.querySelector('[data-financial-table]') || document.querySelector('main table tbody');

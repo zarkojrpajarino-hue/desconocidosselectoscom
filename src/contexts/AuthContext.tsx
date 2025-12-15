@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile } from '@/types/auth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface UserOrganization {
   organization_id: string;
@@ -110,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     } catch (error) {
-      console.error('Error loading user organizations:', error instanceof Error ? error.message : error);
+      logger.error('Error loading user organizations:', error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -125,11 +126,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!error && data) {
         setUserProfile(data as UserProfile);
       } else if (error) {
-        console.error('Error fetching user profile:', error);
+        logger.error('Error fetching user profile:', error);
         toast.error('Error cargando perfil de usuario');
       }
     } catch (error) {
-      console.error('Exception fetching user profile:', error);
+      logger.error('Exception fetching user profile:', error);
       toast.error('Error inesperado al cargar perfil');
     }
   };
@@ -142,13 +143,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        console.error('Login error:', error.message);
+        logger.error('Login error:', error.message);
       }
       
       return { error };
     } catch (error) {
-      console.error('Unexpected login error:', error);
-      return { error };
+      logger.error('Unexpected login error:', error);
+      return { error: error as AuthError };
     }
   };
 
