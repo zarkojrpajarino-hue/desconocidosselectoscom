@@ -98,6 +98,7 @@ const OnboardingSuccess = lazy(() => import("./pages/OnboardingSuccess"));
 const AdminOnboardings = lazy(() => import("./pages/AdminOnboardings"));
 const SelectPlan = lazy(() => import("./pages/SelectPlan"));
 const GeneratingWorkspace = lazy(() => import("./pages/GeneratingWorkspace"));
+const JoinOrganization = lazy(() => import("./pages/JoinOrganization"));
 
 // Lazy loaded pages - Others
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
@@ -151,7 +152,7 @@ const AppContent = () => {
             <SelectPlan />
           </ProtectedRoute>
         } />
-        <Route path="/join/:token" element={<Navigate to="/home" replace />} />
+        <Route path="/join/:token" element={<JoinOrganization />} />
         
         {/* ===== RUTAS PROTEGIDAS CON NUEVO AppLayout ===== */}
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
