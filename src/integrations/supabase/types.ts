@@ -938,6 +938,89 @@ export type Database = {
           },
         ]
       }
+      business_phases: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          ai_context: string | null
+          checklist: Json
+          created_at: string | null
+          duration_weeks: number | null
+          estimated_end: string | null
+          estimated_start: string | null
+          generated_by_ai: boolean | null
+          id: string
+          last_regenerated_at: string | null
+          methodology: string | null
+          objectives: Json
+          organization_id: string
+          phase_description: string | null
+          phase_name: string
+          phase_number: number
+          playbook: Json | null
+          progress_percentage: number | null
+          regeneration_count: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          ai_context?: string | null
+          checklist?: Json
+          created_at?: string | null
+          duration_weeks?: number | null
+          estimated_end?: string | null
+          estimated_start?: string | null
+          generated_by_ai?: boolean | null
+          id?: string
+          last_regenerated_at?: string | null
+          methodology?: string | null
+          objectives?: Json
+          organization_id: string
+          phase_description?: string | null
+          phase_name: string
+          phase_number: number
+          playbook?: Json | null
+          progress_percentage?: number | null
+          regeneration_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          ai_context?: string | null
+          checklist?: Json
+          created_at?: string | null
+          duration_weeks?: number | null
+          estimated_end?: string | null
+          estimated_start?: string | null
+          generated_by_ai?: boolean | null
+          id?: string
+          last_regenerated_at?: string | null
+          methodology?: string | null
+          objectives?: Json
+          organization_id?: string
+          phase_description?: string | null
+          phase_name?: string
+          phase_number?: number
+          playbook?: Json | null
+          progress_percentage?: number | null
+          regeneration_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_phases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_personas: {
         Row: {
           age: number | null
@@ -4384,11 +4467,15 @@ export type Database = {
           ai_generation_error: string | null
           ai_generation_status: string
           annual_revenue_range: string | null
+          areas_to_optimize: string[] | null
+          available_resources: string[] | null
           average_ticket: number | null
+          biggest_challenge: string | null
           brand_perception: string | null
           budget_constraints: string | null
           business_description: string
           business_model: string | null
+          business_stage: string | null
           business_type: string | null
           buying_motivations: Json | null
           churn_reasons: Json | null
@@ -4403,6 +4490,7 @@ export type Database = {
           created_by: string | null
           current_period_end: string | null
           current_problems: string
+          current_users_count: string | null
           customer_acquisition_channels: Json | null
           customer_pain_points: Json | null
           customer_retention_rate: number | null
@@ -4417,6 +4505,7 @@ export type Database = {
           kpis_to_measure: Json
           last_ai_analysis_at: string | null
           lead_sources: Json
+          main_goal_6months: string | null
           main_objections: Json | null
           main_objectives: string
           market_growth_rate: string | null
@@ -4424,6 +4513,7 @@ export type Database = {
           market_size: string | null
           monthly_leads: number | null
           monthly_marketing_budget: number | null
+          monthly_revenue_range: string | null
           name: string
           nps_score: number | null
           plan: string
@@ -4437,6 +4527,8 @@ export type Database = {
           revenue_goal_12_months: number | null
           sales_cycle_days: number | null
           sales_process: string
+          short_term_goal: string | null
+          startup_stage: string | null
           stripe_customer_id: string | null
           stripe_price_id: string | null
           stripe_subscription_id: string | null
@@ -4456,11 +4548,15 @@ export type Database = {
           ai_generation_error?: string | null
           ai_generation_status?: string
           annual_revenue_range?: string | null
+          areas_to_optimize?: string[] | null
+          available_resources?: string[] | null
           average_ticket?: number | null
+          biggest_challenge?: string | null
           brand_perception?: string | null
           budget_constraints?: string | null
           business_description: string
           business_model?: string | null
+          business_stage?: string | null
           business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
@@ -4475,6 +4571,7 @@ export type Database = {
           created_by?: string | null
           current_period_end?: string | null
           current_problems: string
+          current_users_count?: string | null
           customer_acquisition_channels?: Json | null
           customer_pain_points?: Json | null
           customer_retention_rate?: number | null
@@ -4489,6 +4586,7 @@ export type Database = {
           kpis_to_measure?: Json
           last_ai_analysis_at?: string | null
           lead_sources?: Json
+          main_goal_6months?: string | null
           main_objections?: Json | null
           main_objectives: string
           market_growth_rate?: string | null
@@ -4496,6 +4594,7 @@ export type Database = {
           market_size?: string | null
           monthly_leads?: number | null
           monthly_marketing_budget?: number | null
+          monthly_revenue_range?: string | null
           name: string
           nps_score?: number | null
           plan?: string
@@ -4509,6 +4608,8 @@ export type Database = {
           revenue_goal_12_months?: number | null
           sales_cycle_days?: number | null
           sales_process: string
+          short_term_goal?: string | null
+          startup_stage?: string | null
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
           stripe_subscription_id?: string | null
@@ -4528,11 +4629,15 @@ export type Database = {
           ai_generation_error?: string | null
           ai_generation_status?: string
           annual_revenue_range?: string | null
+          areas_to_optimize?: string[] | null
+          available_resources?: string[] | null
           average_ticket?: number | null
+          biggest_challenge?: string | null
           brand_perception?: string | null
           budget_constraints?: string | null
           business_description?: string
           business_model?: string | null
+          business_stage?: string | null
           business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
@@ -4547,6 +4652,7 @@ export type Database = {
           created_by?: string | null
           current_period_end?: string | null
           current_problems?: string
+          current_users_count?: string | null
           customer_acquisition_channels?: Json | null
           customer_pain_points?: Json | null
           customer_retention_rate?: number | null
@@ -4561,6 +4667,7 @@ export type Database = {
           kpis_to_measure?: Json
           last_ai_analysis_at?: string | null
           lead_sources?: Json
+          main_goal_6months?: string | null
           main_objections?: Json | null
           main_objectives?: string
           market_growth_rate?: string | null
@@ -4568,6 +4675,7 @@ export type Database = {
           market_size?: string | null
           monthly_leads?: number | null
           monthly_marketing_budget?: number | null
+          monthly_revenue_range?: string | null
           name?: string
           nps_score?: number | null
           plan?: string
@@ -4581,6 +4689,8 @@ export type Database = {
           revenue_goal_12_months?: number | null
           sales_cycle_days?: number | null
           sales_process?: string
+          short_term_goal?: string | null
+          startup_stage?: string | null
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
           stripe_subscription_id?: string | null
@@ -4679,6 +4789,72 @@ export type Database = {
             columns: ["task_schedule_id"]
             isOneToOne: true
             referencedRelation: "task_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phase_retrospectives: {
+        Row: {
+          action_items: Json | null
+          ai_insights: Json | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          lessons_learned: string | null
+          objectives_achieved: number | null
+          objectives_total: number | null
+          organization_id: string
+          phase_id: string
+          tasks_completed: number | null
+          tasks_total: number | null
+          what_to_improve: string[] | null
+          what_went_well: string[] | null
+        }
+        Insert: {
+          action_items?: Json | null
+          ai_insights?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          lessons_learned?: string | null
+          objectives_achieved?: number | null
+          objectives_total?: number | null
+          organization_id: string
+          phase_id: string
+          tasks_completed?: number | null
+          tasks_total?: number | null
+          what_to_improve?: string[] | null
+          what_went_well?: string[] | null
+        }
+        Update: {
+          action_items?: Json | null
+          ai_insights?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          lessons_learned?: string | null
+          objectives_achieved?: number | null
+          objectives_total?: number | null
+          organization_id?: string
+          phase_id?: string
+          tasks_completed?: number | null
+          tasks_total?: number | null
+          what_to_improve?: string[] | null
+          what_went_well?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_retrospectives_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_retrospectives_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "business_phases"
             referencedColumns: ["id"]
           },
         ]
@@ -6538,6 +6714,9 @@ export type Database = {
           order_index: number
           organization_id: string | null
           phase: number
+          phase_id: string | null
+          playbook: Json | null
+          task_category: string | null
           title: string
           user_id: string
         }
@@ -6555,6 +6734,9 @@ export type Database = {
           order_index?: number
           organization_id?: string | null
           phase: number
+          phase_id?: string | null
+          playbook?: Json | null
+          task_category?: string | null
           title: string
           user_id: string
         }
@@ -6572,6 +6754,9 @@ export type Database = {
           order_index?: number
           organization_id?: string | null
           phase?: number
+          phase_id?: string | null
+          playbook?: Json | null
+          task_category?: string | null
           title?: string
           user_id?: string
         }
@@ -6595,6 +6780,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "business_phases"
             referencedColumns: ["id"]
           },
           {
@@ -8149,6 +8341,10 @@ export type Database = {
       }
       calculate_objective_progress_from_tasks: {
         Args: { obj_id: string }
+        Returns: number
+      }
+      calculate_phase_progress: {
+        Args: { p_phase_id: string }
         Returns: number
       }
       can_use_ai_analysis: { Args: { _user_id: string }; Returns: Json }
