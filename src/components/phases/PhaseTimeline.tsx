@@ -114,7 +114,30 @@ export function PhaseTimeline({
                 {phases[0]?.methodology === 'lean_startup' ? 'Lean Startup' : 'Scaling Up'}
               </Badge>
             </CardTitle>
-            <span className="text-xl font-bold text-primary">{overallProgress}%</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xl font-bold text-primary">{overallProgress}%</span>
+              {isAdmin && (
+                <Button 
+                  onClick={() => generatePhases(undefined)} 
+                  disabled={isGenerating}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Regenerando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Regenerar Todo
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
