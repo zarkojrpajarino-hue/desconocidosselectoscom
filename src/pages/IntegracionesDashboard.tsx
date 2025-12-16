@@ -36,22 +36,25 @@ interface IntegrationStatus {
 const IntegracionesDashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, currentOrganizationId } = useAuth();
+  const { user, currentOrganizationId, loading: authLoading } = useAuth();
   const organizationId = currentOrganizationId;
-  
-  // Hooks de integración
-  const slackIntegration = useSlackIntegration(organizationId);
-  const hubspotIntegration = useHubSpotIntegration(organizationId);
-  const { integrations: tokenIntegrations, isLoading: tokensLoading, isConnected: isTokenConnected } = useIntegrationTokens();
   
   // Estado de Google Calendar
   const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
   const [googleCalendarLoading, setGoogleCalendarLoading] = useState(true);
+  
+  // Hooks de integración - solo cargar si hay organizationId
+  const slackIntegration = useSlackIntegration(organizationId);
+  const hubspotIntegration = useHubSpotIntegration(organizationId);
+  const { integrations: tokenIntegrations, isLoading: tokensLoading, isConnected: isTokenConnected } = useIntegrationTokens();
 
   // Verificar conexión de Google Calendar
   useEffect(() => {
     const checkGoogleCalendar = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setGoogleCalendarLoading(false);
+        return;
+      }
       setGoogleCalendarLoading(true);
       try {
         const { data, error } = await supabase
@@ -75,6 +78,40 @@ const IntegracionesDashboard = () => {
     
     checkGoogleCalendar();
   }, [user?.id]);
+
+  // Loading state mientras se carga auth/organization
+  if (authLoading || !user || !organizationId) {
+    return (
+      <div className="space-y-6 p-4 md:p-6 pb-24 md:pb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-24 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const handleGoogleCalendarConnect = async () => {
     try {
