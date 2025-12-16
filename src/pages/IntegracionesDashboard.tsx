@@ -1,427 +1,567 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ArrowLeft, Check, MessageSquare, Link2, Calendar, 
-  ListTodo, LayoutDashboard, Zap, RefreshCw, ExternalLink,
-  CheckCircle, XCircle, Settings, AlertCircle, Activity, History
-} from "lucide-react";
-import { toast } from "sonner";
-import { useSlackIntegration, useHubSpotIntegration, useIntegrationTokens } from "@/hooks/integrations";
-import { IntegrationHealthMetrics, UnifiedSyncLog, QuickActionsPanel } from "@/components/integrations";
+/**
+ * PÁGINA DE INTEGRACIONES DASHBOARD - Información detallada
+ * Muestra catálogo completo de integraciones con detalles y planes
+ */
 
-interface IntegrationStatus {
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LockedFeature, LockedFeatureCompact } from '@/components/LockedFeature';
+import {
+  Calendar,
+  MessageSquare,
+  Link2,
+  ListTodo,
+  Mail,
+  Zap,
+  Search,
+  Check,
+  ExternalLink,
+  Sparkles,
+  ArrowRight,
+  Lock,
+  CheckCircle2,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { PlanType } from '@/constants/subscriptionLimits';
+
+interface Integration {
   id: string;
   name: string;
-  icon: React.ReactNode;
   description: string;
-  isConnected: boolean;
-  loading: boolean;
-  lastSync?: string;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  onSync?: () => void;
-  syncEnabled?: boolean;
-  onToggleSync?: (enabled: boolean) => void;
+  detailedDescription: string;
+  icon: React.ReactNode;
+  requiredPlan: PlanType;
+  category: 'calendar' | 'communication' | 'crm' | 'productivity' | 'automation';
+  
+  // Beneficios clave
+  benefits: string[];
+  
+  // Casos de uso específicos
+  useCases: string[];
+  
+  // Características técnicas
+  features: string[];
+  
+  // Estado
+  isConnected?: boolean;
+  isComingSoon?: boolean;
+  
+  // Acción
+  connectUrl?: string;
+  documentationUrl?: string;
+}
+
+const INTEGRATIONS: Integration[] = [
+  {
+    id: 'google-calendar',
+    name: 'Google Calendar',
+    description: 'Sincroniza tus tareas y eventos automáticamente',
+    detailedDescription: 'Conecta tu Google Calendar para tener toda tu agenda sincronizada. Las tareas de OPTIMUS-K aparecen automáticamente en tu calendario, y los eventos se reflejan en la agenda global.',
+    icon: <Calendar className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'calendar',
+    benefits: [
+      'Sincronización bidireccional automática',
+      'Tareas visibles en tu calendario habitual',
+      'Recordatorios nativos de Google',
+      'Vista unificada de trabajo y vida personal',
+    ],
+    useCases: [
+      'Ver todas tus tareas semanales en Google Calendar',
+      'Recibir notificaciones de vencimientos en tu móvil',
+      'Bloquear tiempo para tareas importantes',
+      'Compartir tu disponibilidad con el equipo',
+    ],
+    features: [
+      'Sincronización en tiempo real',
+      'Soporte para múltiples calendarios',
+      'Gestión de conflictos automática',
+      'Sincronización de recordatorios',
+    ],
+    connectUrl: '/settings/integrations/google',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/google-calendar',
+  },
+  {
+    id: 'outlook',
+    name: 'Microsoft Outlook',
+    description: 'Integración con Outlook Calendar y Teams',
+    detailedDescription: 'Perfecta integración con el ecosistema Microsoft 365. Sincroniza calendarios, tareas y conecta con Microsoft Teams para notificaciones.',
+    icon: <Mail className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'calendar',
+    benefits: [
+      'Integración nativa con Microsoft 365',
+      'Compatible con entornos corporativos',
+      'Sincronización con Outlook Tasks',
+      'Notificaciones en Microsoft Teams',
+    ],
+    useCases: [
+      'Mantener sincronizada tu agenda corporativa',
+      'Recibir alertas de OKRs en Teams',
+      'Bloquear tiempo para deep work',
+      'Sincronizar tareas con Outlook Tasks',
+    ],
+    features: [
+      'Soporte para calendarios compartidos',
+      'Integración con Microsoft Teams',
+      'Compatibilidad con Azure AD',
+      'Sincronización de contactos',
+    ],
+    connectUrl: '/settings/integrations/outlook',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/outlook',
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    description: 'Notificaciones y bot inteligente en tu workspace',
+    detailedDescription: 'Recibe notificaciones importantes directamente en Slack. El bot de OPTIMUS-K puede responder preguntas, crear tareas y compartir actualizaciones de OKRs.',
+    icon: <MessageSquare className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'communication',
+    benefits: [
+      'Notificaciones instantáneas donde trabajas',
+      'Bot inteligente para acciones rápidas',
+      'Celebraciones automáticas de logros',
+      'Resúmenes diarios del equipo',
+    ],
+    useCases: [
+      'Recibir alerta cuando un lead caliente entra al CRM',
+      'Notificar al equipo cuando se completa un OKR',
+      'Celebrar automáticamente cuando alguien gana una insignia',
+      'Recibir resumen diario de métricas en tu canal',
+    ],
+    features: [
+      'Comandos slash personalizados',
+      'Notificaciones configurables',
+      'Bot interactivo',
+      'Integraciones con canales específicos',
+    ],
+    connectUrl: '/settings/integrations/slack',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/slack',
+  },
+  {
+    id: 'hubspot',
+    name: 'HubSpot CRM',
+    description: 'Sincroniza leads y deals bidireccionalmente',
+    detailedDescription: 'Importa y exporta leads automáticamente entre OPTIMUS-K y HubSpot. Mantén ambos CRMs sincronizados sin duplicar trabajo.',
+    icon: <Link2 className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'crm',
+    benefits: [
+      'Sincronización bidireccional de leads',
+      'Importación masiva de contactos',
+      'Exportación automática de deals cerrados',
+      'Mapping personalizable de campos',
+    ],
+    useCases: [
+      'Importar tu base de leads existente desde HubSpot',
+      'Crear automáticamente deals en HubSpot cuando cierras en OPTIMUS-K',
+      'Mantener métricas unificadas entre ambas plataformas',
+      'Migrar gradualmente de HubSpot a OPTIMUS-K',
+    ],
+    features: [
+      'API bidireccional',
+      'Mapeo de campos personalizado',
+      'Sincronización programada',
+      'Logs de sincronización',
+    ],
+    connectUrl: '/settings/integrations/hubspot',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/hubspot',
+  },
+  {
+    id: 'asana',
+    name: 'Asana',
+    description: 'Sincroniza tareas con tus proyectos de Asana',
+    detailedDescription: 'Conecta OPTIMUS-K con Asana para tener visibilidad completa. Las tareas creadas en cualquier plataforma se sincronizan automáticamente.',
+    icon: <ListTodo className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'productivity',
+    benefits: [
+      'Sincronización bidireccional de tareas',
+      'Mapping automático de estados',
+      'Actualización en tiempo real',
+      'Soporte para proyectos y secciones',
+    ],
+    useCases: [
+      'Usar Asana para planificación y OPTIMUS-K para ejecución',
+      'Mantener equipos sincronizados entre plataformas',
+      'Migrar gradualmente a OPTIMUS-K',
+      'Vista unificada de todos tus proyectos',
+    ],
+    features: [
+      'Sincronización de tareas y subtareas',
+      'Mapeo de custom fields',
+      'Soporte para múltiples workspaces',
+      'Webhooks en tiempo real',
+    ],
+    connectUrl: '/settings/integrations/asana',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/asana',
+  },
+  {
+    id: 'zapier',
+    name: 'Zapier',
+    description: 'Conecta con 5000+ aplicaciones automáticamente',
+    detailedDescription: 'Usa Zapier para crear automatizaciones personalizadas. Conecta OPTIMUS-K con cualquier herramienta que uses.',
+    icon: <Zap className="h-8 w-8" />,
+    requiredPlan: 'professional',
+    category: 'automation',
+    benefits: [
+      'Acceso a 5000+ integraciones',
+      'Automatizaciones sin código',
+      'Triggers y acciones personalizables',
+      'Templates pre-construidos',
+    ],
+    useCases: [
+      'Crear lead en OPTIMUS-K cuando llegas un form en tu web',
+      'Enviar email cuando completas un OKR',
+      'Añadir fila en Google Sheets con métricas diarias',
+      'Publicar en Twitter cuando ganas una insignia',
+    ],
+    features: [
+      'Triggers configurables',
+      'Acciones múltiples',
+      'Filtros y transformaciones',
+      'Multi-step Zaps',
+    ],
+    connectUrl: '/settings/integrations/zapier',
+    documentationUrl: 'https://docs.optimus-k.com/integrations/zapier',
+  },
+  {
+    id: 'trello',
+    name: 'Trello',
+    description: 'Sincroniza tableros Kanban con OPTIMUS-K',
+    detailedDescription: 'Convierte tarjetas de Trello en tareas de OPTIMUS-K automáticamente. Perfecto para equipos que aman los tableros visuales.',
+    icon: <ListTodo className="h-8 w-8" />,
+    requiredPlan: 'enterprise',
+    category: 'productivity',
+    benefits: [
+      'Sincronización de tableros completos',
+      'Mapping de listas a fases',
+      'Actualización bidireccional',
+      'Soporte para etiquetas y miembros',
+    ],
+    useCases: [
+      'Mantener Trello para brainstorming, OPTIMUS-K para ejecución',
+      'Sincronizar equipos que usan diferentes herramientas',
+      'Vista unificada de progreso',
+      'Migración gradual a OPTIMUS-K',
+    ],
+    features: [
+      'Sincronización de tableros múltiples',
+      'Mapeo de custom fields',
+      'Power-Ups compatibles',
+      'Webhooks',
+    ],
+    isComingSoon: true,
+    documentationUrl: 'https://docs.optimus-k.com/integrations/trello',
+  },
+  {
+    id: 'api',
+    name: 'API Rest',
+    description: 'Construye integraciones personalizadas',
+    detailedDescription: 'API Rest completa para desarrolladores. Crea integraciones custom con cualquier sistema.',
+    icon: <Sparkles className="h-8 w-8" />,
+    requiredPlan: 'enterprise',
+    category: 'automation',
+    benefits: [
+      'API Rest completa',
+      'Documentación detallada',
+      'Webhooks configurables',
+      'Rate limits generosos',
+    ],
+    useCases: [
+      'Conectar con sistemas internos',
+      'Crear dashboard personalizados',
+      'Automatizar reportes',
+      'Integrar con ERP o CRM propietario',
+    ],
+    features: [
+      'Autenticación OAuth2',
+      'Webhooks en tiempo real',
+      'GraphQL endpoint',
+      'SDK para JavaScript/Python',
+    ],
+    connectUrl: '/settings/api',
+    documentationUrl: 'https://docs.optimus-k.com/api',
+  },
+];
+
+// Función canAccessIntegration
+function canAccessIntegration(currentPlan: string, requiredPlan: PlanType): boolean {
+  const planHierarchy: Record<string, number> = {
+    free: 0,
+    trial: 0,
+    starter: 1,
+    professional: 2,
+    enterprise: 3,
+  };
+
+  return (planHierarchy[currentPlan] ?? 0) >= (planHierarchy[requiredPlan] ?? 0);
 }
 
 const IntegracionesDashboard = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { user, currentOrganizationId, loading: authLoading } = useAuth();
-  const organizationId = currentOrganizationId;
-  
-  // Estado de Google Calendar
-  const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
-  const [googleCalendarLoading, setGoogleCalendarLoading] = useState(true);
-  
-  // Hooks de integración - solo cargar si hay organizationId
-  const slackIntegration = useSlackIntegration(organizationId);
-  const hubspotIntegration = useHubSpotIntegration(organizationId);
-  const { integrations: tokenIntegrations, isLoading: tokensLoading, isConnected: isTokenConnected } = useIntegrationTokens();
+  const { user } = useAuth();
+  const { plan, limits } = useSubscriptionLimits();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Verificar conexión de Google Calendar
-  useEffect(() => {
-    const checkGoogleCalendar = async () => {
-      if (!user?.id) {
-        setGoogleCalendarLoading(false);
-        return;
-      }
-      setGoogleCalendarLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('google_calendar_tokens')
-          .select('is_active, token_expiry')
-          .eq('user_id', user.id)
-          .maybeSingle();
+  // Filtrar integraciones
+  const filteredIntegrations = INTEGRATIONS.filter(integration => {
+    const matchesSearch = integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         integration.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-        if (!error && data?.is_active) {
-          const expiry = new Date(data.token_expiry);
-          setGoogleCalendarConnected(expiry > new Date());
-        } else {
-          setGoogleCalendarConnected(false);
-        }
-      } catch {
-        setGoogleCalendarConnected(false);
-      } finally {
-        setGoogleCalendarLoading(false);
-      }
-    };
-    
-    checkGoogleCalendar();
-  }, [user?.id]);
+  // Separar disponibles y bloqueadas
+  const availableIntegrations = filteredIntegrations.filter(
+    int => canAccessIntegration(plan, int.requiredPlan)
+  );
+  const lockedIntegrations = filteredIntegrations.filter(
+    int => !canAccessIntegration(plan, int.requiredPlan)
+  );
 
-  // Loading state mientras se carga auth/organization
-  if (authLoading || !user || !organizationId) {
-    return (
-      <div className="space-y-6 p-4 md:p-6 pb-24 md:pb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-64 mt-2" />
-          </div>
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-16 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Skeleton className="h-10 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <Skeleton className="h-24 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const handleGoogleCalendarConnect = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('google-auth-url', {
-        body: { user_id: user?.id },
+  const handleConnect = (integration: Integration) => {
+    if (integration.isComingSoon) {
+      toast.info('Próximamente', {
+        description: 'Esta integración estará disponible pronto',
       });
-      if (error) throw error;
-      window.location.href = data.auth_url;
-    } catch (error) {
-      toast.error('Error al conectar con Google Calendar');
+      return;
+    }
+
+    if (!canAccessIntegration(plan, integration.requiredPlan)) {
+      navigate('/select-plan');
+      return;
+    }
+
+    if (integration.connectUrl) {
+      toast.success(`Conectando con ${integration.name}...`);
     }
   };
-
-  const handleGoogleCalendarDisconnect = async () => {
-    try {
-      await supabase
-        .from('google_calendar_tokens')
-        .delete()
-        .eq('user_id', user?.id);
-      setGoogleCalendarConnected(false);
-      toast.success('Google Calendar desconectado');
-    } catch {
-      toast.error('Error al desconectar');
-    }
-  };
-
-  // Check if integration is connected from tokens
-  const checkTokenConnected = (type: 'google_calendar' | 'slack' | 'outlook' | 'hubspot' | 'asana' | 'trello') => {
-    return isTokenConnected?.(type) || false;
-  };
-
-  const integrationsList: IntegrationStatus[] = [
-    {
-      id: 'google-calendar',
-      name: 'Google Calendar',
-      icon: <Calendar className="h-6 w-6" />,
-      description: t('integrations.items.googleCalendar.description', 'Sincroniza tareas con tu calendario'),
-      isConnected: googleCalendarConnected,
-      loading: googleCalendarLoading,
-      onConnect: handleGoogleCalendarConnect,
-      onDisconnect: handleGoogleCalendarDisconnect,
-    },
-    {
-      id: 'slack',
-      name: 'Slack',
-      icon: <MessageSquare className="h-6 w-6" />,
-      description: t('integrations.items.slack.description', 'Notificaciones en tiempo real'),
-      isConnected: !!slackIntegration.workspace,
-      loading: slackIntegration.loading,
-      lastSync: slackIntegration.workspace?.created_at,
-      syncEnabled: slackIntegration.workspace?.enabled,
-      onConnect: slackIntegration.connect,
-      onDisconnect: slackIntegration.disconnect,
-      onToggleSync: slackIntegration.toggleWorkspace,
-    },
-    {
-      id: 'hubspot',
-      name: 'HubSpot',
-      icon: <Link2 className="h-6 w-6" />,
-      description: t('integrations.items.hubspot.description', 'Sincroniza leads con tu CRM'),
-      isConnected: !!hubspotIntegration.account,
-      loading: hubspotIntegration.loading,
-      lastSync: hubspotIntegration.account?.last_sync_at || undefined,
-      syncEnabled: hubspotIntegration.account?.sync_enabled,
-      onConnect: hubspotIntegration.connect,
-      onDisconnect: hubspotIntegration.disconnect,
-      onSync: hubspotIntegration.syncNow,
-      onToggleSync: hubspotIntegration.toggleSync,
-    },
-    {
-      id: 'outlook',
-      name: 'Outlook Calendar',
-      icon: <Calendar className="h-6 w-6" />,
-      description: t('integrations.items.outlook.description', 'Sincroniza con Microsoft 365'),
-      isConnected: checkTokenConnected('outlook'),
-      loading: tokensLoading,
-      onConnect: () => toast.info('Configurar Outlook en Ajustes > Integraciones'),
-      onDisconnect: () => {},
-    },
-    {
-      id: 'asana',
-      name: 'Asana',
-      icon: <ListTodo className="h-6 w-6" />,
-      description: t('integrations.items.asana.description', 'Exporta tareas a Asana'),
-      isConnected: checkTokenConnected('asana'),
-      loading: tokensLoading,
-      onConnect: () => toast.info('Configurar Asana en Ajustes > Integraciones'),
-      onDisconnect: () => {},
-    },
-    {
-      id: 'trello',
-      name: 'Trello',
-      icon: <LayoutDashboard className="h-6 w-6" />,
-      description: t('integrations.items.trello.description', 'Exporta tareas como tarjetas'),
-      isConnected: checkTokenConnected('trello'),
-      loading: tokensLoading,
-      onConnect: () => toast.info('Configurar Trello en Ajustes > Integraciones'),
-      onDisconnect: () => {},
-    },
-    {
-      id: 'zapier',
-      name: 'Zapier',
-      icon: <Zap className="h-6 w-6" />,
-      description: t('integrations.items.zapier.description', 'Conecta con +5000 apps'),
-      isConnected: false, // Zapier uses API keys, not tokens
-      loading: false,
-      onConnect: () => toast.info('Configurar Zapier en Ajustes > API Keys'),
-      onDisconnect: () => {},
-    },
-  ];
 
   return (
-    <div className="space-y-6 p-4 md:p-6 pb-24 md:pb-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground">
-            {t('integrations.title', 'Integraciones')}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('integrations.dashboardDescription', 'Conecta y gestiona tus herramientas favoritas')}
-          </p>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2">Integraciones</h1>
+        <p className="text-muted-foreground text-lg">
+          Conecta OPTIMUS-K con tus herramientas favoritas
+        </p>
+      </div>
+
+      {/* Search and filters */}
+      <div className="mb-8 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+          <Input
+            placeholder="Buscar integraciones..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/settings/integrations')}>
-          <Settings className="h-4 w-4 mr-2" />
-          {t('common.settings', 'Ajustes')}
-        </Button>
+
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="calendar">Calendario</TabsTrigger>
+            <TabsTrigger value="communication">Comunicación</TabsTrigger>
+            <TabsTrigger value="crm">CRM</TabsTrigger>
+            <TabsTrigger value="productivity">Productividad</TabsTrigger>
+            <TabsTrigger value="automation">Automatización</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      {/* Resumen de estado */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <Card className="bg-success/10 border-success/20">
-          <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle className="h-8 w-8 text-success" />
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {integrationsList.filter(i => i.isConnected).length}
-              </p>
-              <p className="text-xs text-muted-foreground">{t('integrations.connected', 'Conectadas')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/50 border-border">
-          <CardContent className="p-4 flex items-center gap-3">
-            <XCircle className="h-8 w-8 text-muted-foreground" />
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {integrationsList.filter(i => !i.isConnected).length}
-              </p>
-              <p className="text-xs text-muted-foreground">{t('integrations.available', 'Disponibles')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-primary/10 border-primary/20">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Zap className="h-8 w-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold text-foreground">7</p>
-              <p className="text-xs text-muted-foreground">{t('integrations.total', 'Total')}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-warning/10 border-warning/20">
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertCircle className="h-8 w-8 text-warning" />
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {integrationsList.filter(i => i.syncEnabled === false && i.isConnected).length}
-              </p>
-              <p className="text-xs text-muted-foreground">{t('integrations.syncPaused', 'Sync pausada')}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs para las diferentes vistas */}
-      <Tabs defaultValue="connections" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 h-10">
-          <TabsTrigger value="connections" className="text-xs md:text-sm">
-            <Link2 className="h-4 w-4 mr-1.5 hidden md:inline" />
-            {t('integrations.tabs.connections', 'Conexiones')}
-          </TabsTrigger>
-          <TabsTrigger value="health" className="text-xs md:text-sm">
-            <Activity className="h-4 w-4 mr-1.5 hidden md:inline" />
-            {t('integrations.tabs.health', 'Salud')}
-          </TabsTrigger>
-          <TabsTrigger value="logs" className="text-xs md:text-sm">
-            <History className="h-4 w-4 mr-1.5 hidden md:inline" />
-            {t('integrations.tabs.logs', 'Historial')}
-          </TabsTrigger>
-          <TabsTrigger value="actions" className="text-xs md:text-sm">
-            <Zap className="h-4 w-4 mr-1.5 hidden md:inline" />
-            {t('integrations.tabs.actions', 'Acciones')}
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Tab: Conexiones */}
-        <TabsContent value="connections" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {integrationsList.map((integration) => (
-              <Card key={integration.id} className="border-border bg-card">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-lg ${integration.isConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                        {integration.icon}
-                      </div>
-                      <div>
-                        <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          {integration.name}
-                          {integration.isConnected && (
-                            <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
-                              <Check className="h-3 w-3 mr-1" />
-                              {t('integrations.active', 'Activa')}
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <CardDescription className="text-sm mt-0.5">
-                          {integration.description}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {integration.loading ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-9 w-24" />
-                    </div>
-                  ) : integration.isConnected ? (
-                    <div className="space-y-3">
-                      {integration.lastSync && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('integrations.lastSync', 'Última sync')}: {new Date(integration.lastSync).toLocaleString()}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          {integration.onSync && (
-                            <Button variant="outline" size="sm" onClick={integration.onSync}>
-                              <RefreshCw className="h-4 w-4 mr-1.5" />
-                              {t('integrations.sync', 'Sincronizar')}
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="sm" onClick={integration.onDisconnect} className="text-destructive hover:text-destructive">
-                            {t('integrations.disconnect', 'Desconectar')}
-                          </Button>
-                        </div>
-                        
-                        {integration.onToggleSync !== undefined && integration.syncEnabled !== undefined && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                              {t('integrations.autoSync', 'Auto-sync')}
-                            </span>
-                            <Switch 
-                              checked={integration.syncEnabled} 
-                              onCheckedChange={integration.onToggleSync}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <Button onClick={integration.onConnect} className="w-full sm:w-auto">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      {t('integrations.connect', 'Conectar')}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+      {/* Integrations available */}
+      {availableIntegrations.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-6 w-6 text-success" />
+            Disponibles en tu plan
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {availableIntegrations.map((integration) => (
+              <IntegrationCard
+                key={integration.id}
+                integration={integration}
+                onConnect={handleConnect}
+              />
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Tab: Salud */}
-        <TabsContent value="health">
-          <IntegrationHealthMetrics />
-        </TabsContent>
-
-        {/* Tab: Historial */}
-        <TabsContent value="logs">
-          <UnifiedSyncLog />
-        </TabsContent>
-
-        {/* Tab: Acciones Rápidas */}
-        <TabsContent value="actions">
-          <QuickActionsPanel />
-        </TabsContent>
-      </Tabs>
-
-      {/* Enlace a más información */}
-      <Card className="bg-primary/5 border-primary/10">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-center sm:text-left">
-            <p className="font-medium text-foreground">
-              {t('integrations.needMore', '¿Necesitas más integraciones?')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('integrations.suggestNew', 'Sugiérenos qué herramientas te gustaría conectar')}
-            </p>
+      {/* Locked integrations */}
+      {lockedIntegrations.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <Lock className="h-6 w-6 text-muted-foreground" />
+            Desbloquea más integraciones
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lockedIntegrations.map((integration) => (
+              <LockedIntegrationCard
+                key={integration.id}
+                integration={integration}
+                onUpgrade={() => navigate('/select-plan')}
+              />
+            ))}
           </div>
-          <Button variant="outline" onClick={() => navigate('/integraciones#suggest')}>
-            {t('integrations.suggestButton', 'Sugerir integración')}
+        </div>
+      )}
+
+      {/* Contact sales CTA */}
+      <Card className="mt-12 border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardHeader>
+          <CardTitle className="text-2xl">¿Necesitas una integración personalizada?</CardTitle>
+          <CardDescription>
+            Nuestro equipo puede desarrollar integraciones custom para tu empresa
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button size="lg" onClick={() => window.location.href = 'mailto:info@optimus-k.com'}>
+            Contactar con Ventas
+            <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   );
 };
+
+// Helper component for available integrations
+function IntegrationCard({ 
+  integration, 
+  onConnect 
+}: { 
+  integration: Integration; 
+  onConnect: (integration: Integration) => void;
+}) {
+  const [showDetails, setShowDetails] = useState(false);
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex items-start justify-between mb-2">
+          <div className="p-3 rounded-lg bg-primary/10">
+            {integration.icon}
+          </div>
+          {integration.isComingSoon && (
+            <Badge variant="secondary">Próximamente</Badge>
+          )}
+          {integration.isConnected && (
+            <Badge className="bg-success text-success-foreground">
+              <Check className="h-3 w-3 mr-1" />
+              Conectado
+            </Badge>
+          )}
+        </div>
+        <CardTitle>{integration.name}</CardTitle>
+        <CardDescription>{integration.description}</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        {showDetails ? (
+          <div className="space-y-3">
+            <div>
+              <h4 className="text-sm font-semibold mb-2">Casos de uso:</h4>
+              <ul className="space-y-1">
+                {integration.useCases.slice(0, 3).map((useCase, i) => (
+                  <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                    <span className="text-primary">→</span>
+                    <span>{useCase}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowDetails(true)}
+            className="w-full"
+          >
+            Ver detalles
+          </Button>
+        )}
+      </CardContent>
+
+      <CardFooter className="pt-0">
+        {integration.isComingSoon ? (
+          <Button disabled className="w-full">
+            Próximamente
+          </Button>
+        ) : integration.isConnected ? (
+          <Button variant="outline" className="w-full">
+            Configurar
+          </Button>
+        ) : (
+          <Button onClick={() => onConnect(integration)} className="w-full">
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Conectar
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  );
+}
+
+// Helper component for locked integrations
+function LockedIntegrationCard({ 
+  integration, 
+  onUpgrade 
+}: { 
+  integration: Integration; 
+  onUpgrade: () => void;
+}) {
+  return (
+    <Card className="opacity-75 hover:opacity-100 transition-opacity">
+      <CardHeader>
+        <div className="flex items-start justify-between mb-2">
+          <div className="p-3 rounded-lg bg-muted">
+            {integration.icon}
+          </div>
+          <Badge variant="outline" className="bg-muted/50">
+            <Lock className="h-3 w-3 mr-1" />
+            {integration.requiredPlan === 'enterprise' ? 'Enterprise' : 'Professional'}
+          </Badge>
+        </div>
+        <CardTitle className="text-muted-foreground">{integration.name}</CardTitle>
+        <CardDescription>{integration.description}</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <p className="text-xs text-muted-foreground mb-4">
+          {integration.detailedDescription}
+        </p>
+        <div className="space-y-1">
+          {integration.benefits.slice(0, 2).map((benefit, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Check className="h-3 w-3 text-primary" />
+              <span>{benefit}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+
+      <CardFooter>
+        <Button variant="outline" onClick={onUpgrade} className="w-full">
+          <ArrowRight className="h-4 w-4 mr-2" />
+          Upgrade a {integration.requiredPlan === 'enterprise' ? 'Enterprise' : 'Professional'}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
 
 export default IntegracionesDashboard;
