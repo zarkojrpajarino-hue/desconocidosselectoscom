@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
         { title: "Email marketing campaña", description: "Newsletter semanal + segmentación", hasLeader: true },
       ],
       operaciones: [
-        { title: "Optimizar proceso fulfillment", description: "Reducir tiempo preparación cestas", hasLeader: false },
+        { title: "Optimizar proceso fulfillment", description: "Reducir tiempo preparación pedidos", hasLeader: false },
         { title: "Validar proveedores nuevos", description: "3 suppliers alternativos productos clave", hasLeader: false },
         { title: "Implementar CRM", description: "Setup + capacitación equipo", hasLeader: true },
         { title: "Coordinar logística con ventas", description: "Sincronizar entregas semanales", hasLeader: true },
@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
         { title: "Reactivar leads fríos", description: "Campaña reengagement base antigua", hasLeader: false },
       ],
       ventas: [
-        { title: "Cerrar 8 cestas B2C", description: "Ventas directas consumidor final", hasLeader: false },
+        { title: "Cerrar 8 ventas B2C", description: "Ventas directas consumidor final", hasLeader: false },
         { title: "Captar 5 clientes B2B", description: "Empresas para compras recurrentes", hasLeader: false },
         { title: "Seguimiento pipeline", description: "Actualizar CRM + próximos pasos", hasLeader: false },
         { title: "Negociar contratos grandes", description: "Acuerdos corporativos > €500", hasLeader: true },
