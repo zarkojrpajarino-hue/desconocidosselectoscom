@@ -203,3 +203,9 @@ verify_jwt = false
 
 [functions.sync-from-hubspot]
 verify_jwt = false
+
+[functions.sync-from-asana]
+verify_jwt = false
+
+[functions.sync-from-trello]
+verify_jwt = false
