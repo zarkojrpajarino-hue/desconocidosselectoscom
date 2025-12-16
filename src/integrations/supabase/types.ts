@@ -4142,7 +4142,6 @@ export type Database = {
       onboarding_submissions: {
         Row: {
           account_email: string
-          account_password_hash: string
           ai_prompt_generated: string | null
           annual_revenue_range: string | null
           business_description: string
@@ -4170,7 +4169,6 @@ export type Database = {
         }
         Insert: {
           account_email: string
-          account_password_hash: string
           ai_prompt_generated?: string | null
           annual_revenue_range?: string | null
           business_description: string
@@ -4198,7 +4196,6 @@ export type Database = {
         }
         Update: {
           account_email?: string
-          account_password_hash?: string
           ai_prompt_generated?: string | null
           annual_revenue_range?: string | null
           business_description?: string
