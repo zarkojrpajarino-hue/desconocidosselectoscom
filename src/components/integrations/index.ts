@@ -7,6 +7,8 @@ export { IntegrationButton } from './IntegrationButton';
 
 // UI Components
 export { IntegrationButtonUI, IntegrationDropdownItem } from './IntegrationUI';
+export { IntegrationStatusBadge } from './IntegrationStatusBadge';
+export { IntegrationSyncLog } from './IntegrationSyncLog';
 
 // Hooks
 export { 
@@ -48,3 +50,4 @@ export type {
   AsanaTrelloExportData,
   ZapierWebhookData
 } from './types';
+export type { SyncStatus } from './IntegrationStatusBadge';
