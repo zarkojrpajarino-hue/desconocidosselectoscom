@@ -137,6 +137,28 @@ export function useBusinessPhases({ organizationId, autoGenerate = true }: UseBu
     },
   });
 
+  // Regenerate tasks from existing phases
+  const regenerateTasksMutation = useMutation({
+    mutationFn: async () => {
+      if (!organizationId) throw new Error('No organization ID');
+
+      const { data, error } = await supabase.functions.invoke('regenerate-tasks-from-phases', {
+        body: { organization_id: organizationId },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', organizationId] });
+      toast.success(`Se crearon ${data.tasks_created} tareas desde las fases`);
+    },
+    onError: (error: Error) => {
+      console.error('Error regenerating tasks:', error);
+      toast.error('Error regenerando tareas: ' + error.message);
+    },
+  });
+
   // Update phase mutation
   const updatePhaseMutation = useMutation({
     mutationFn: async ({ phaseId, updates }: { phaseId: string; updates: Record<string, unknown> }) => {
@@ -269,11 +291,13 @@ export function useBusinessPhases({ organizationId, autoGenerate = true }: UseBu
     isLoading,
     error,
     isGenerating,
+    isRegeneratingTasks: regenerateTasksMutation.isPending,
     activePhase,
     currentPhaseNumber,
     overallProgress,
     generatePhases: generatePhasesMutation.mutate,
     regeneratePhase: (phaseNumber: number) => generatePhasesMutation.mutate(phaseNumber),
+    regenerateTasks: regenerateTasksMutation.mutate,
     updatePhase: updatePhaseMutation.mutate,
     toggleChecklistItem,
     updateObjectiveProgress,
