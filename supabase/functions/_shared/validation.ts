@@ -77,14 +77,85 @@ export function validationErrorResponse(
 }
 
 // ============================================
+// Security Utilities
+// ============================================
+
+/**
+ * List of private/internal IP ranges that should be blocked for SSRF prevention
+ */
+const BLOCKED_IP_PATTERNS = [
+  /^127\./,                    // Loopback
+  /^10\./,                     // Private Class A
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // Private Class B
+  /^192\.168\./,               // Private Class C
+  /^169\.254\./,               // Link-local
+  /^0\./,                      // Current network
+  /^localhost$/i,
+  /^\.local$/i,
+  /^internal$/i,
+];
+
+/**
+ * Validates that a URL is safe (not pointing to internal/private resources)
+ */
+export function isUrlSafeForSSRF(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    
+    // Only allow http and https
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return false;
+    }
+    
+    // Check hostname against blocked patterns
+    const hostname = url.hostname.toLowerCase();
+    for (const pattern of BLOCKED_IP_PATTERNS) {
+      if (pattern.test(hostname)) {
+        return false;
+      }
+    }
+    
+    // Block common internal hostnames
+    if (['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(hostname)) {
+      return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sanitizes text content to prevent script injection
+ */
+export function sanitizeTextContent(text: string): string {
+  return text
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .trim();
+}
+
+// ============================================
 // Common Reusable Schemas
 // ============================================
+
+/**
+ * SSRF-safe URL schema - validates URL and checks for internal/private IPs
+ */
+const safeUrlSchema = z.string().url({ message: 'URL inválida' }).refine(
+  (url) => isUrlSafeForSSRF(url),
+  { message: 'URL points to internal/private network (blocked for security)' }
+);
 
 export const CommonSchemas = {
   // Basic types
   uuid: z.string().uuid({ message: 'UUID inválido' }),
   email: z.string().email({ message: 'Email inválido' }),
   url: z.string().url({ message: 'URL inválida' }),
+  safeUrl: safeUrlSchema,
   
   // Numbers
   positiveNumber: z.number().positive({ message: 'Debe ser un número positivo' }),
@@ -95,6 +166,7 @@ export const CommonSchemas = {
   nonEmptyString: z.string().min(1, { message: 'No puede estar vacío' }).max(1000),
   shortString: z.string().min(1).max(100),
   longString: z.string().max(5000),
+  sanitizedText: z.string().max(5000).transform(sanitizeTextContent),
   
   // IDs
   organizationId: z.string().uuid({ message: 'ID de organización inválido' }),

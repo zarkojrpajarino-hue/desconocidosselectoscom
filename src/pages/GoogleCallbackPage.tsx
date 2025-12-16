@@ -17,7 +17,7 @@ const GoogleCallbackPage = () => {
   const handleCallback = async () => {
     try {
       const code = searchParams.get('code');
-      const state = searchParams.get('state'); // user_id
+      const state = searchParams.get('state'); // CSRF-protected state token
       const error = searchParams.get('error');
 
       if (error) {
@@ -29,19 +29,24 @@ const GoogleCallbackPage = () => {
       }
 
       // Llamar a la edge function para completar el OAuth
-      const { error: callbackError } = await supabase.functions.invoke('google-auth-callback', {
+      // Pass state (which contains encrypted user_id) for CSRF validation
+      const { data, error: callbackError } = await supabase.functions.invoke('google-auth-callback', {
         body: {
           code,
-          user_id: state,
+          state, // Send the full state token for validation
         },
       });
 
       if (callbackError) throw callbackError;
+      if (data && !data.success) throw new Error(data.error || 'Error desconocido');
 
       // Sincronizar eventos inmediatamente
-      await supabase.functions.invoke('sync-calendar-events', {
-        body: { user_id: state },
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.functions.invoke('sync-calendar-events', {
+          body: { user_id: user.id },
+        });
+      }
 
       setStatus('success');
       setMessage('✅ Google Calendar conectado y sincronizado');

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { validateInput, validationErrorResponse, ValidationError, ApiLeadSchema, ApiTaskSchema, z } from '../_shared/validation.ts'
+import { validateInput, validationErrorResponse, ValidationError, ApiLeadSchema, ApiTaskSchema, z, isUrlSafeForSSRF, sanitizeTextContent } from '../_shared/validation.ts'
 
 // Schema for API v1 lead update (partial - all fields optional)
 const ApiLeadUpdateSchema = ApiLeadSchema.partial();
@@ -119,6 +119,11 @@ async function triggerWebhook(supabase: any, organizationId: string, event: stri
     if (!webhooks || webhooks.length === 0) return;
 
     for (const webhook of webhooks) {
+      // SSRF Protection: Validate webhook URL before making request
+      if (!isUrlSafeForSSRF(webhook.url)) {
+        console.error(`Blocked webhook ${webhook.id}: URL points to internal/private network`);
+        continue;
+      }
       const payload = {
         event,
         data,

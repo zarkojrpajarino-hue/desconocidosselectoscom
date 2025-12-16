@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { generateOAuthState, validateOAuthState } from '../_shared/oauth-csrf.ts'
 
 const SLACK_CLIENT_ID = Deno.env.get('SLACK_CLIENT_ID') || ''
 const SLACK_CLIENT_SECRET = Deno.env.get('SLACK_CLIENT_SECRET') || ''
@@ -32,7 +33,11 @@ serve(async (req) => {
       const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/slack-oauth?action=callback`
       const scopes = 'chat:write,channels:read,groups:read,team:read'
       
-      const authUrl = `https://slack.com/oauth/v2/authorize?client_id=${SLACK_CLIENT_ID}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${organizationId}`
+      // Generate secure CSRF-protected state token
+      const state = await generateOAuthState(organizationId)
+      console.log('🔐 Generated secure Slack state token for org:', organizationId)
+      
+      const authUrl = `https://slack.com/oauth/v2/authorize?client_id=${SLACK_CLIENT_ID}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`
       
       return new Response(
         JSON.stringify({ auth_url: authUrl }),
@@ -43,7 +48,7 @@ serve(async (req) => {
     // Handle OAuth callback
     if (action === 'callback') {
       const code = url.searchParams.get('code')
-      const state = url.searchParams.get('state') // Contains organization_id
+      const state = url.searchParams.get('state')
       const error = url.searchParams.get('error')
 
       if (error) {
@@ -59,6 +64,20 @@ serve(async (req) => {
           headers: { 'Location': `${APP_URL}/settings/api-keys?slack=error&message=missing_params` },
         })
       }
+
+      // Validate CSRF state token and extract organization_id
+      const stateValidation = await validateOAuthState(state)
+      
+      if (!stateValidation.valid || !stateValidation.identifier) {
+        console.error('❌ Invalid Slack state token:', stateValidation.error)
+        return new Response(null, {
+          status: 302,
+          headers: { 'Location': `${APP_URL}/settings/api-keys?slack=error&message=invalid_state_token` },
+        })
+      }
+      
+      const organizationId = stateValidation.identifier
+      console.log('✅ Slack state token validated for org:', organizationId)
 
       const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/slack-oauth?action=callback`
 
@@ -88,8 +107,6 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       )
-
-      const organizationId = state
 
       // Get channels list
       const channelsResponse = await fetch('https://slack.com/api/conversations.list?types=public_channel,private_channel&limit=200', {
