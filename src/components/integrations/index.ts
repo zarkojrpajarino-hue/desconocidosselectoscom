@@ -9,6 +9,9 @@ export { IntegrationButton } from './IntegrationButton';
 export { IntegrationButtonUI, IntegrationDropdownItem } from './IntegrationUI';
 export { IntegrationStatusBadge } from './IntegrationStatusBadge';
 export { IntegrationSyncLog } from './IntegrationSyncLog';
+export { IntegrationHealthMetrics } from './IntegrationHealthMetrics';
+export { UnifiedSyncLog } from './UnifiedSyncLog';
+export { QuickActionsPanel } from './QuickActionsPanel';
 
 // Hooks
 export { 
