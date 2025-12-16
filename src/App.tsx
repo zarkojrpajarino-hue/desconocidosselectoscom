@@ -227,6 +227,7 @@ const AppContent = () => {
           
           {/* Settings */}
           <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+          <Route path="/settings/integrations" element={<ApiKeysPage />} />
           
           {/* BI Dashboard */}
           <Route path="/bi" element={<BIDashboard />} />
