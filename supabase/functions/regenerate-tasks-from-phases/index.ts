@@ -79,41 +79,54 @@ serve(async (req) => {
     // 4. Crear tareas desde el checklist de cada fase
     const tasksToInsert: any[] = [];
 
+    console.log(`About to process ${phases.length} phases for organization ${organization_id}`);
+
     for (const phase of phases) {
-      console.log(`Processing phase ${phase.phase_number}: ${phase.phase_name}`);
+      console.log(`=== Processing phase ${phase.phase_number}: ${phase.phase_name} ===`);
+      console.log(`Phase ID: ${phase.id}`);
+      console.log(`Raw checklist type: ${typeof phase.checklist}`);
+      console.log(`Raw checklist value:`, JSON.stringify(phase.checklist).slice(0, 500));
 
       // Handle checklist - puede ser un string JSON o un array o un objeto JSONB
       let checklist: any[] = [];
       
+      if (!phase.checklist) {
+        console.log(`Checklist is null/undefined for phase ${phase.phase_number}`);
+        continue;
+      }
+      
       if (typeof phase.checklist === 'string') {
         try {
           checklist = JSON.parse(phase.checklist);
-          console.log(`Parsed checklist from string for phase ${phase.phase_number}`);
+          console.log(`Parsed checklist from string for phase ${phase.phase_number}, items: ${checklist.length}`);
         } catch (e) {
           console.error(`Error parsing checklist for phase ${phase.phase_number}:`, e);
           continue;
         }
       } else if (Array.isArray(phase.checklist)) {
         checklist = phase.checklist;
-        console.log(`Checklist is already an array for phase ${phase.phase_number}`);
-      } else if (phase.checklist && typeof phase.checklist === 'object') {
+        console.log(`Checklist is already an array for phase ${phase.phase_number}, items: ${checklist.length}`);
+      } else if (typeof phase.checklist === 'object') {
         // JSONB might come as an object, try to extract array
         checklist = Object.values(phase.checklist);
-        console.log(`Converted checklist from object for phase ${phase.phase_number}`);
+        console.log(`Converted checklist from object for phase ${phase.phase_number}, items: ${checklist.length}`);
       } else {
-        console.log(`Checklist is empty or invalid for phase ${phase.phase_number}:`, typeof phase.checklist);
+        console.log(`Checklist has unexpected type for phase ${phase.phase_number}:`, typeof phase.checklist);
         continue;
       }
 
-      console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
+      console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items to process`);
 
-      if (checklist && Array.isArray(checklist) && checklist.length > 0) {
-        checklist.forEach((item, index) => {
+      if (checklist && checklist.length > 0) {
+        for (let index = 0; index < checklist.length; index++) {
+          const item = checklist[index];
+          console.log(`  Item ${index}:`, JSON.stringify(item).slice(0, 200));
+          
           // Handle different item structures
           const taskTitle = item.task || item.title || item.name || `Tarea ${index + 1}`;
           const category = item.category || item.area || 'general';
           
-          tasksToInsert.push({
+          const taskData = {
             organization_id,
             phase_id: phase.id,
             user_id: adminUserId,
@@ -126,10 +139,15 @@ serve(async (req) => {
             estimated_hours: 2,
             is_personal: false,
             playbook: phase.playbook || {},
-          });
-        });
+          };
+          
+          tasksToInsert.push(taskData);
+          console.log(`  Created task: ${taskTitle}`);
+        }
       }
     }
+    
+    console.log(`=== Total tasks prepared for insertion: ${tasksToInsert.length} ===`);
 
     console.log(`Total tasks to insert: ${tasksToInsert.length}`);
 

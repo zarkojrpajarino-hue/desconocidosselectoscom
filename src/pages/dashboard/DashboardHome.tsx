@@ -302,14 +302,14 @@ const DashboardHome = () => {
               className="mb-2"
             />
 
-            {/* Roadmap con IA - Sección Principal */}
+            {/* Roadmap Preview - Resumen con métricas */}
             {currentOrganizationId && (
               <RoadmapPreview organizationId={currentOrganizationId} />
             )}
 
-            {/* AI Business Phases Timeline */}
+            {/* AI Business Phases Timeline - Vista completa con Tarjetas/Timeline/Kanban */}
             {currentOrganizationId && (
-              <PhaseTimeline compact />
+              <PhaseTimeline />
             )}
 
             {/* PhaseSelector removed - PhaseTimeline replaces it */}
