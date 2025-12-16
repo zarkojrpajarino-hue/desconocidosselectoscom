@@ -26,6 +26,7 @@ import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
+import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 
 interface SystemConfig {
   week_start: string;
@@ -300,6 +301,11 @@ const DashboardHome = () => {
               message="Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio."
               className="mb-2"
             />
+
+            {/* Roadmap con IA - Sección Principal */}
+            {currentOrganizationId && (
+              <RoadmapPreview organizationId={currentOrganizationId} />
+            )}
 
             {/* AI Business Phases Timeline */}
             {currentOrganizationId && (
