@@ -275,6 +275,19 @@ RESPONDE SOLO EN JSON válido sin markdown.`
           console.log(`Created ${tasksToInsert.length} tasks from phase checklists`);
         }
       }
+
+      // 10. Crear alerta smart_alert para notificar al equipo
+      await supabase.from("smart_alerts").insert({
+        alert_type: 'phases_generated',
+        severity: 'info',
+        title: '🚀 Roadmap de Negocio Generado',
+        message: `Se han creado ${insertedPhases.length} fases personalizadas con ${tasksToInsert.length} tareas para tu organización.`,
+        source: 'business_phases',
+        category: 'planning',
+        target_user_id: adminUserId,
+        actionable: true,
+        metadata: { phases_count: insertedPhases.length, tasks_count: tasksToInsert.length }
+      });
     }
 
     return new Response(

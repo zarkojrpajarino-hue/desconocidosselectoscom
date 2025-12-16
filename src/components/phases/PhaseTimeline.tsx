@@ -193,7 +193,30 @@ export function PhaseTimeline({
               <TrendingUp className="h-5 w-5 text-primary" />
               <span className="font-semibold">Progreso General</span>
             </div>
-            <span className="text-2xl font-bold text-primary">{overallProgress}%</span>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-bold text-primary">{overallProgress}%</span>
+              {isAdmin && (
+                <Button 
+                  onClick={() => generatePhases(undefined)} 
+                  disabled={isGenerating}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Regenerando...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Regenerar Todo
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
           <Progress value={overallProgress} className="h-2" />
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
