@@ -71,16 +71,20 @@ serve(async (req) => {
       accessToken = await refreshToken(outlookAccount, supabase)
     }
 
-    // Get accepted task schedules for this week
-    const weekStart = new Date()
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-    weekStart.setHours(0, 0, 0, 0)
+    // Get accepted task schedules for this week using week_start (DATE type)
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const weekStartDate = new Date(today)
+    weekStartDate.setDate(today.getDate() - dayOfWeek)
+    const weekStartString = weekStartDate.toISOString().split('T')[0] // YYYY-MM-DD format
 
     const { data: schedules, error: schedulesError } = await supabase
       .from('task_schedule')
       .select(`
         id,
         task_id,
+        week_start,
+        scheduled_day,
         scheduled_start,
         scheduled_end,
         tasks (
@@ -90,7 +94,7 @@ serve(async (req) => {
       `)
       .eq('user_id', user.id)
       .eq('status', 'accepted')
-      .gte('scheduled_start', weekStart.toISOString())
+      .gte('week_start', weekStartString)
 
     if (schedulesError) {
       throw schedulesError
@@ -105,6 +109,22 @@ serve(async (req) => {
         const taskData = Array.isArray(schedule.tasks) ? schedule.tasks[0] : schedule.tasks
         const taskTitle = taskData?.title || 'Tarea sin título'
         const taskDescription = taskData?.description || ''
+
+        // Construct full datetime from week_start + scheduled_day + time
+        const weekStartDate = new Date(schedule.week_start)
+        const scheduledDay = schedule.scheduled_day || 0
+        const eventDate = new Date(weekStartDate)
+        eventDate.setDate(weekStartDate.getDate() + scheduledDay)
+        
+        // Parse time strings (HH:MM:SS format)
+        const startTimeParts = (schedule.scheduled_start || '09:00:00').split(':')
+        const endTimeParts = (schedule.scheduled_end || '10:00:00').split(':')
+        
+        const startDateTime = new Date(eventDate)
+        startDateTime.setHours(parseInt(startTimeParts[0]), parseInt(startTimeParts[1]), 0, 0)
+        
+        const endDateTime = new Date(eventDate)
+        endDateTime.setHours(parseInt(endTimeParts[0]), parseInt(endTimeParts[1]), 0, 0)
 
         // Check if already synced
         const { data: existingMapping } = await supabase
@@ -132,11 +152,11 @@ serve(async (req) => {
                   content: taskDescription
                 },
                 start: {
-                  dateTime: schedule.scheduled_start,
+                  dateTime: startDateTime.toISOString(),
                   timeZone: 'UTC'
                 },
                 end: {
-                  dateTime: schedule.scheduled_end,
+                  dateTime: endDateTime.toISOString(),
                   timeZone: 'UTC'
                 }
               })
@@ -160,11 +180,11 @@ serve(async (req) => {
                   content: taskDescription
                 },
                 start: {
-                  dateTime: schedule.scheduled_start,
+                  dateTime: startDateTime.toISOString(),
                   timeZone: 'UTC'
                 },
                 end: {
-                  dateTime: schedule.scheduled_end,
+                  dateTime: endDateTime.toISOString(),
                   timeZone: 'UTC'
                 },
                 showAs: 'busy'
@@ -185,6 +205,8 @@ serve(async (req) => {
             
             synced++
           } else {
+            const errorText = await createResponse.text()
+            console.error('Outlook API error:', errorText)
             errors++
           }
         }
