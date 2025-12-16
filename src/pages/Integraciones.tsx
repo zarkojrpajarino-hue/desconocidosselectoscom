@@ -84,8 +84,8 @@ export default function IntegracionesPage() {
     checkGoogleCalendar();
   }, [user?.id]);
 
-  // Loading state mientras se carga auth/organization
-  if (authLoading || !user || !organizationId) {
+  // Loading state mientras se carga auth
+  if (authLoading) {
     return (
       <div className="space-y-6 p-4 md:p-6 pb-24 md:pb-6">
         <div className="flex items-center justify-between">
@@ -104,16 +104,20 @@ export default function IntegracionesPage() {
             </Card>
           ))}
         </div>
-        <Skeleton className="h-10 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <Skeleton className="h-24 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      </div>
+    );
+  }
+
+  // Si no hay usuario o organización, mostrar mensaje
+  if (!user || !organizationId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <Zap className="h-16 w-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">{t('integrations.loginRequired', 'Inicia sesión para gestionar integraciones')}</h2>
+        <p className="text-muted-foreground mb-4">{t('integrations.loginDescription', 'Necesitas estar autenticado para conectar y gestionar tus integraciones')}</p>
+        <Button onClick={() => navigate('/')}>
+          {t('common.goToHome', 'Ir al inicio')}
+        </Button>
       </div>
     );
   }
