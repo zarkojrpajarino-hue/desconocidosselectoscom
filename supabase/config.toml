@@ -209,3 +209,6 @@ verify_jwt = false
 
 [functions.sync-from-trello]
 verify_jwt = false
+
+[functions.import-calendar-events]
+verify_jwt = false
