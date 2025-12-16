@@ -117,6 +117,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      // Obtener datos del usuario de auth
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -124,14 +127,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
       
       if (!error && data) {
-        setUserProfile(data as UserProfile);
+        // Asegurar que email y full_name tengan valores válidos
+        const profile = data as UserProfile;
+        const userEmail = authUser?.email || profile.email || '';
+        const emailName = userEmail.split('@')[0] || 'Usuario';
+        
+        setUserProfile({
+          ...profile,
+          email: userEmail,
+          full_name: profile.full_name || emailName,
+          username: profile.username || emailName,
+        });
+      } else if (authUser) {
+        // Si no hay perfil en users pero hay auth user, crear perfil básico
+        const userEmail = authUser.email || '';
+        const emailName = userEmail.split('@')[0] || 'Usuario';
+        
+        setUserProfile({
+          id: userId,
+          email: userEmail,
+          full_name: authUser.user_metadata?.full_name || emailName,
+          username: emailName,
+          role: 'employee',
+          organization_id: null,
+          strategic_objectives: null,
+          created_at: null,
+          updated_at: null,
+        });
       } else if (error) {
         logger.error('Error fetching user profile:', error);
-        toast.error('Error cargando perfil de usuario');
       }
     } catch (error) {
       logger.error('Exception fetching user profile:', error);
-      toast.error('Error inesperado al cargar perfil');
     }
   };
 

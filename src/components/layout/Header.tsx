@@ -2,8 +2,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,9 @@ import {
   LogOut,
   User,
   HelpCircle,
+  Crown,
+  Zap,
+  ArrowUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -57,10 +62,15 @@ const breadcrumbMap: Record<string, string> = {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { t } = useTranslation();
-  const { userProfile, signOut } = useAuth();
+  const { userProfile, signOut, user } = useAuth();
+  const planAccess = usePlanAccess();
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme, resolvedTheme } = useTheme();
+  
+  // Nombre y email con fallbacks
+  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'Usuario';
+  const displayEmail = userProfile?.email || user?.email || '';
 
   // Generate breadcrumbs
   const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -155,25 +165,71 @@ export function Header({ onMenuClick }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 pl-2 pr-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  {userProfile?.full_name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="hidden lg:block text-sm font-medium">
-                  {userProfile?.full_name?.split(' ')[0] || 'Usuario'}
+                  {displayName.split(' ')[0]}
                 </span>
+                {/* Plan Badge en header */}
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "hidden lg:flex text-[10px] px-1.5 py-0 h-5",
+                    planAccess.isEnterprise && "border-violet-500/50 text-violet-500 bg-violet-500/10",
+                    planAccess.isProfessional && "border-primary/50 text-primary bg-primary/10",
+                    planAccess.isStarter && "border-emerald-500/50 text-emerald-500 bg-emerald-500/10",
+                    planAccess.isFree && "border-muted-foreground/50 text-muted-foreground"
+                  )}
+                >
+                  {planAccess.isEnterprise && <Crown className="h-3 w-3 mr-0.5" />}
+                  {planAccess.isProfessional && <Zap className="h-3 w-3 mr-0.5" />}
+                  {planAccess.planName}
+                </Badge>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span>{userProfile?.full_name}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold">{displayName}</span>
                   <span className="text-xs text-muted-foreground font-normal">
-                    @{userProfile?.username}
+                    {displayEmail}
                   </span>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {/* Plan Info */}
+              <div className="px-2 py-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Plan actual:</span>
+                  <Badge 
+                    className={cn(
+                      "text-xs",
+                      planAccess.isEnterprise && "bg-violet-500/20 text-violet-600 border-violet-500/30",
+                      planAccess.isProfessional && "bg-primary/20 text-primary border-primary/30",
+                      planAccess.isStarter && "bg-emerald-500/20 text-emerald-600 border-emerald-500/30",
+                      planAccess.isFree && "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {planAccess.isEnterprise && <Crown className="h-3 w-3 mr-1" />}
+                    {planAccess.isProfessional && <Zap className="h-3 w-3 mr-1" />}
+                    {planAccess.planName}
+                  </Badge>
+                </div>
+                {!planAccess.isEnterprise && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2 text-xs h-8"
+                    onClick={() => navigate('/select-plan')}
+                  >
+                    <ArrowUp className="h-3 w-3 mr-1" />
+                    Subir Plan
+                  </Button>
+                )}
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/profile')}>
                 <User className="mr-2 h-4 w-4" />
