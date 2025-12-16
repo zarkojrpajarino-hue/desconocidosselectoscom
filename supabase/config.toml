@@ -212,3 +212,9 @@ verify_jwt = false
 
 [functions.import-calendar-events]
 verify_jwt = false
+
+[functions.regenerate-tasks-from-phases]
+verify_jwt = true
+
+[functions.generate-business-phases]
+verify_jwt = true

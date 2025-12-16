@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw } from 'lucide-react';
+import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,9 +26,11 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
     phases,
     isLoading,
     isGenerating,
+    isRegeneratingTasks,
     activePhase,
     overallProgress,
     generatePhases,
+    regenerateTasks,
   } = useBusinessPhases({ organizationId: orgId });
 
   if (isLoading) {
@@ -241,12 +243,31 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
           </div>
         )}
 
-        {/* Botón para regenerar - solo admin */}
+        {/* Botones para admin */}
         {isAdmin && (
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            <Button 
+              onClick={() => regenerateTasks()} 
+              disabled={isRegeneratingTasks || isGenerating}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              {isRegeneratingTasks ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Creando tareas...
+                </>
+              ) : (
+                <>
+                  <ListTodo className="h-4 w-4" />
+                  Regenerar Tareas
+                </>
+              )}
+            </Button>
             <Button 
               onClick={() => generatePhases(undefined)} 
-              disabled={isGenerating}
+              disabled={isGenerating || isRegeneratingTasks}
               variant="outline"
               size="sm"
               className="gap-2"
