@@ -245,20 +245,77 @@ RESPONDE SOLO EN JSON válido sin markdown.`
       );
     }
 
-    // 7. Obtener admin de la organización para asignar tareas
-    const { data: adminRole } = await supabase
+    // 7. Obtener TODOS los usuarios de la organización para generar tareas personalizadas
+    const { data: orgUsers } = await supabase
       .from("user_roles")
       .select("user_id")
-      .eq("organization_id", organization_id)
-      .eq("role", "admin")
-      .limit(1)
-      .maybeSingle();
+      .eq("organization_id", organization_id);
 
-    const adminUserId = adminRole?.user_id;
+    // 7.1 Obtener team_structure para mapear usuarios a roles funcionales
+    const teamStructure: Array<{name: string, role: string, responsibilities: string}> = 
+      Array.isArray(org.team_structure) ? org.team_structure : [];
 
-    if (adminUserId && insertedPhases) {
-      console.log(`Admin found: ${adminUserId}, Phases created: ${insertedPhases.length}`);
+    // 7.2 Obtener info de usuarios para hacer match con team_structure
+    const userIds = orgUsers?.map(u => u.user_id) || [];
+    const { data: usersInfo } = await supabase
+      .from("users")
+      .select("id, full_name, email")
+      .in("id", userIds);
+
+    // 7.3 Crear mapa de usuario a rol funcional
+    const userRoleMap = new Map<string, string>();
+    
+    if (usersInfo) {
+      for (const user of usersInfo) {
+        // Buscar match en team_structure por nombre
+        const teamMember = teamStructure.find(t => 
+          t.name?.toLowerCase() === user.full_name?.toLowerCase() ||
+          t.name?.toLowerCase().includes(user.full_name?.toLowerCase() || '') ||
+          user.full_name?.toLowerCase().includes(t.name?.toLowerCase() || '')
+        );
+        
+        if (teamMember) {
+          // Normalizar el rol funcional
+          const role = teamMember.role?.toLowerCase() || '';
+          if (role.includes('ceo') || role.includes('director') || role.includes('fundador') || role.includes('founder')) {
+            userRoleMap.set(user.id, 'ceo');
+          } else if (role.includes('marketing') || role.includes('growth')) {
+            userRoleMap.set(user.id, 'marketing');
+          } else if (role.includes('venta') || role.includes('sales') || role.includes('comercial')) {
+            userRoleMap.set(user.id, 'ventas');
+          } else if (role.includes('operacion') || role.includes('operations') || role.includes('admin')) {
+            userRoleMap.set(user.id, 'operaciones');
+          } else if (role.includes('product') || role.includes('desarrollo') || role.includes('dev') || role.includes('tech')) {
+            userRoleMap.set(user.id, 'producto');
+          } else {
+            userRoleMap.set(user.id, 'general');
+          }
+        } else {
+          userRoleMap.set(user.id, 'general'); // Default si no hay match
+        }
+      }
+    }
+
+    // Si no hay usuarios, usar el admin como fallback
+    let usersToAssign = userIds;
+    if (usersToAssign.length === 0) {
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("organization_id", organization_id)
+        .eq("role", "admin")
+        .limit(1)
+        .maybeSingle();
       
+      if (adminRole?.user_id) {
+        usersToAssign = [adminRole.user_id];
+        userRoleMap.set(adminRole.user_id, 'ceo'); // Admin = CEO por defecto
+      }
+    }
+
+    console.log(`Found ${usersToAssign.length} users to assign tasks, team_structure has ${teamStructure.length} members`);
+
+    if (usersToAssign.length > 0 && insertedPhases) {
       // 8. Eliminar tareas existentes generadas por AI (con phase_id)
       const { error: deleteError } = await supabase
         .from("tasks")
@@ -270,7 +327,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         console.error("Error deleting existing tasks:", deleteError);
       }
 
-      // 9. Crear tareas reales desde el checklist de cada fase
+      // 9. Crear tareas para CADA usuario según su rol funcional
       const tasksToInsert: any[] = [];
       
       for (const phase of insertedPhases) {
@@ -294,13 +351,44 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         
         console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
         
-        if (checklist && Array.isArray(checklist)) {
-          checklist.forEach((item, index) => {
+        // Para CADA usuario, crear sus tareas personalizadas
+        for (const userId of usersToAssign) {
+          const userFunctionalRole = userRoleMap.get(userId) || 'general';
+          
+          // Filtrar tareas que corresponden al rol del usuario
+          const userTasks = checklist.filter(item => {
+            const taskRole = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
+            
+            // Si el usuario es CEO/general, recibe tareas de cualquier rol
+            if (userFunctionalRole === 'ceo' || userFunctionalRole === 'general') {
+              return true; // CEO ve todas las tareas
+            }
+            
+            // Otros usuarios solo ven tareas de su área o generales
+            return taskRole === userFunctionalRole || 
+                   taskRole === 'general' || 
+                   taskRole === 'equipo' ||
+                   (userFunctionalRole === 'marketing' && taskRole === 'marketing') ||
+                   (userFunctionalRole === 'ventas' && (taskRole === 'ventas' || taskRole === 'sales')) ||
+                   (userFunctionalRole === 'operaciones' && taskRole === 'operaciones') ||
+                   (userFunctionalRole === 'producto' && (taskRole === 'producto' || taskRole === 'product'));
+          });
+
+          // Asegurar que cada usuario tenga exactamente 12 tareas
+          const tasksForUser = userTasks.slice(0, 12);
+          
+          // Si no hay suficientes tareas específicas, agregar del pool general
+          if (tasksForUser.length < 12) {
+            const remaining = checklist.filter(item => !tasksForUser.includes(item));
+            tasksForUser.push(...remaining.slice(0, 12 - tasksForUser.length));
+          }
+
+          tasksForUser.forEach((item, index) => {
             const taskTitle = item.task || item.title || `Tarea ${index + 1}`;
             tasksToInsert.push({
               organization_id,
               phase_id: phase.id,
-              user_id: adminUserId,
+              user_id: userId,
               title: taskTitle,
               description: `Tarea de Fase ${phase.phase_number}: ${phase.phase_name}`,
               phase: phase.phase_number,
@@ -312,23 +400,33 @@ RESPONDE SOLO EN JSON válido sin markdown.`
               playbook: phase.playbook || {},
             });
           });
+          
+          console.log(`Created ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole})`);
         }
       }
 
       console.log(`Total tasks to insert: ${tasksToInsert.length}`);
 
       if (tasksToInsert.length > 0) {
-        const { data: insertedTasks, error: tasksError } = await supabase
-          .from("tasks")
-          .insert(tasksToInsert)
-          .select('id');
+        // Insertar en batches para evitar timeouts
+        const BATCH_SIZE = 50;
+        let totalInserted = 0;
+        
+        for (let i = 0; i < tasksToInsert.length; i += BATCH_SIZE) {
+          const batch = tasksToInsert.slice(i, i + BATCH_SIZE);
+          const { data: insertedTasks, error: tasksError } = await supabase
+            .from("tasks")
+            .insert(batch)
+            .select('id');
 
-        if (tasksError) {
-          console.error("Tasks insert error:", tasksError);
-          console.error("First task sample:", JSON.stringify(tasksToInsert[0]));
-        } else {
-          console.log(`Successfully created ${insertedTasks?.length || 0} tasks from phase checklists`);
+          if (tasksError) {
+            console.error(`Batch ${Math.floor(i / BATCH_SIZE) + 1} insert error:`, tasksError);
+          } else {
+            totalInserted += insertedTasks?.length || 0;
+          }
         }
+        
+        console.log(`Successfully created ${totalInserted} tasks from phase checklists`);
       } else {
         console.log("No tasks to insert - checklists may be empty");
       }
@@ -355,7 +453,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
             organization_id,
             title: `Objetivos de Fases - ${currentQuarter} ${currentYear}`,
             description: "Objetivos generados automáticamente desde las fases de negocio",
-            owner_id: adminUserId,
+            owner_id: usersToAssign[0],
             quarter: currentQuarter,
             year: currentYear,
             status: "on_track",
@@ -421,7 +519,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         message: `Se han creado ${insertedPhases.length} fases personalizadas con ${tasksToInsert.length} tareas para tu organización.`,
         source: 'business_phases',
         category: 'planning',
-        target_user_id: adminUserId,
+        target_user_id: usersToAssign[0],
         actionable: true,
         metadata: { phases_count: insertedPhases.length, tasks_count: tasksToInsert.length }
       });
@@ -432,7 +530,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         success: true, 
         phases: insertedPhases, 
         methodology,
-        tasks_created: adminUserId ? true : false
+        tasks_created: usersToAssign.length > 0
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -555,7 +653,8 @@ GENERA exactamente 4 fases con la siguiente estructura JSON:
         {
           "task": "Tarea específica y accionable",
           "completed": false,
-          "category": "marketing|ventas|producto|operaciones|equipo"
+          "category": "marketing|ventas|producto|operaciones|equipo",
+          "functional_role": "ceo|marketing|ventas|operaciones|producto|general"
         }
       ],
       "playbook": {
@@ -569,15 +668,21 @@ GENERA exactamente 4 fases con la siguiente estructura JSON:
   ]
 }
 
-REGLAS:
+REGLAS CRÍTICAS:
 1. Cada fase debe tener 3-5 objetivos MEDIBLES
-2. Cada fase debe tener 8-12 tareas del checklist
-3. Objetivos y tareas deben ser ESPECÍFICOS para este negocio
-4. Duraciones realistas (4-12 semanas por fase)
-5. Los playbooks deben tener 5-8 pasos concretos
-6. NO uses métricas genéricas, personaliza según el contexto
-7. Si hay OKRs existentes, vincula los objectives de fase usando "linked_kr_id" con el UUID del KR
-8. Responde SOLO con el JSON, sin texto adicional
+2. Cada fase debe tener EXACTAMENTE 12 tareas del checklist (ni más, ni menos)
+3. Las 12 tareas deben distribuirse entre roles funcionales:
+   - 2 tareas para CEO/Dirección (estrategia, visión, decisiones clave)
+   - 3 tareas para Marketing (campañas, contenido, marca, redes sociales)
+   - 3 tareas para Ventas (leads, llamadas, seguimiento, cierre)
+   - 2 tareas para Operaciones (procesos, eficiencia, automatización)
+   - 2 tareas para Producto (desarrollo, UX, mejoras, testing)
+4. Objetivos y tareas deben ser ESPECÍFICOS para este negocio
+5. Duraciones realistas (4-12 semanas por fase)
+6. Los playbooks deben tener 5-8 pasos concretos
+7. NO uses métricas genéricas, personaliza según el contexto
+8. Si hay OKRs existentes, vincula los objectives usando "linked_kr_id"
+9. Responde SOLO con el JSON, sin texto adicional
 `;
 }
 

@@ -28,60 +28,119 @@ serve(async (req) => {
 
     console.log(`Regenerating tasks for organization: ${organization_id}`);
 
-    // 1. Obtener admin de la organización
-    const { data: adminRole } = await supabase
+    // 1. Obtener datos de la organización (incluyendo team_structure)
+    const { data: org, error: orgError } = await supabase
+      .from("organizations")
+      .select("team_structure")
+      .eq("id", organization_id)
+      .single();
+
+    if (orgError) {
+      console.error("Error fetching organization:", orgError);
+    }
+
+    const teamStructure: Array<{name: string, role: string, responsibilities: string}> = 
+      Array.isArray(org?.team_structure) ? org.team_structure : [];
+
+    // 2. Obtener TODOS los usuarios de la organización
+    const { data: orgUsers } = await supabase
       .from("user_roles")
       .select("user_id")
-      .eq("organization_id", organization_id)
-      .eq("role", "admin")
-      .limit(1)
-      .maybeSingle();
+      .eq("organization_id", organization_id);
 
-    if (!adminRole?.user_id) {
+    const userIds = orgUsers?.map(u => u.user_id) || [];
+
+    // 3. Obtener info de usuarios para hacer match con team_structure
+    const { data: usersInfo } = await supabase
+      .from("users")
+      .select("id, full_name, email")
+      .in("id", userIds);
+
+    // 4. Crear mapa de usuario a rol funcional
+    const userRoleMap = new Map<string, string>();
+    
+    if (usersInfo && usersInfo.length > 0) {
+      for (const user of usersInfo) {
+        const teamMember = teamStructure.find(t => 
+          t.name?.toLowerCase() === user.full_name?.toLowerCase() ||
+          t.name?.toLowerCase().includes(user.full_name?.toLowerCase() || '') ||
+          user.full_name?.toLowerCase().includes(t.name?.toLowerCase() || '')
+        );
+        
+        if (teamMember) {
+          const role = teamMember.role?.toLowerCase() || '';
+          if (role.includes('ceo') || role.includes('director') || role.includes('fundador') || role.includes('founder')) {
+            userRoleMap.set(user.id, 'ceo');
+          } else if (role.includes('marketing') || role.includes('growth')) {
+            userRoleMap.set(user.id, 'marketing');
+          } else if (role.includes('venta') || role.includes('sales') || role.includes('comercial')) {
+            userRoleMap.set(user.id, 'ventas');
+          } else if (role.includes('operacion') || role.includes('operations')) {
+            userRoleMap.set(user.id, 'operaciones');
+          } else if (role.includes('product') || role.includes('desarrollo') || role.includes('dev') || role.includes('tech')) {
+            userRoleMap.set(user.id, 'producto');
+          } else {
+            userRoleMap.set(user.id, 'general');
+          }
+        } else {
+          userRoleMap.set(user.id, 'general');
+        }
+      }
+    }
+
+    // 5. Si no hay usuarios en la tabla users, crearlos desde auth.users
+    let usersToAssign = userIds.filter(id => usersInfo?.some(u => u.id === id));
+    
+    if (usersToAssign.length === 0 && userIds.length > 0) {
+      console.log("Users not found in users table, creating them...");
+      
+      for (const userId of userIds) {
+        // Verificar si ya existe
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", userId)
+          .maybeSingle();
+        
+        if (existingUser) {
+          usersToAssign.push(userId);
+          userRoleMap.set(userId, 'ceo');
+          continue;
+        }
+        
+        const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+        
+        if (authUser?.user) {
+          const { error: createUserError } = await supabase
+            .from("users")
+            .insert({
+              id: userId,
+              email: authUser.user.email,
+              full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'Usuario',
+              role: 'member'
+            });
+          
+          if (!createUserError) {
+            usersToAssign.push(userId);
+            userRoleMap.set(userId, 'ceo');
+            console.log(`Created user ${userId}`);
+          } else {
+            console.error(`Error creating user ${userId}:`, createUserError);
+          }
+        }
+      }
+    }
+
+    if (usersToAssign.length === 0) {
       return new Response(
-        JSON.stringify({ error: "No se encontró admin para la organización" }),
+        JSON.stringify({ error: "No se encontraron usuarios para asignar tareas" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const adminUserId = adminRole.user_id;
-    console.log(`Admin found: ${adminUserId}`);
+    console.log(`Found ${usersToAssign.length} users, team_structure has ${teamStructure.length} members`);
 
-    // Verificar si el usuario existe en la tabla users, si no, crearlo
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", adminUserId)
-      .maybeSingle();
-
-    if (!existingUser) {
-      console.log(`User ${adminUserId} not in users table, creating...`);
-      
-      // Obtener datos del usuario desde auth.users
-      const { data: authUser } = await supabase.auth.admin.getUserById(adminUserId);
-      
-      if (authUser?.user) {
-        const { error: createUserError } = await supabase
-          .from("users")
-          .insert({
-            id: adminUserId,
-            email: authUser.user.email,
-            full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'Usuario',
-            role: 'admin'
-          });
-        
-        if (createUserError) {
-          console.error("Error creating user:", createUserError);
-          return new Response(
-            JSON.stringify({ error: "No se pudo crear el usuario en la base de datos" }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        console.log(`User ${adminUserId} created successfully`);
-      }
-    }
-
-    // 2. Obtener fases existentes
+    // 6. Obtener fases existentes
     const { data: phases, error: phasesError } = await supabase
       .from("business_phases")
       .select("id, phase_number, phase_name, checklist, playbook")
@@ -98,8 +157,8 @@ serve(async (req) => {
 
     console.log(`Found ${phases.length} phases`);
 
-    // 3. Eliminar tareas existentes generadas por AI (con phase_id)
-    const { error: deleteError, count: deletedCount } = await supabase
+    // 7. Eliminar tareas existentes generadas por AI (con phase_id)
+    const { error: deleteError } = await supabase
       .from("tasks")
       .delete()
       .eq("organization_id", organization_id)
@@ -107,11 +166,9 @@ serve(async (req) => {
 
     if (deleteError) {
       console.error("Error deleting existing tasks:", deleteError);
-    } else {
-      console.log(`Deleted ${deletedCount || 0} existing AI-generated tasks`);
     }
 
-    // 4. Crear tareas desde el checklist de cada fase
+    // 8. Crear tareas para CADA usuario según su rol funcional
     const tasksToInsert: Array<{
       organization_id: string;
       phase_id: string;
@@ -130,8 +187,8 @@ serve(async (req) => {
     for (const phase of phases) {
       console.log(`Processing phase ${phase.phase_number}: ${phase.phase_name}`);
 
-      // Handle checklist - puede ser un string JSON o un array o un objeto JSONB
-      let checklist: Array<{ task?: string; title?: string; name?: string; description?: string; category?: string; area?: string }> = [];
+      // Handle checklist parsing
+      let checklist: Array<{ task?: string; title?: string; name?: string; description?: string; category?: string; area?: string; functional_role?: string }> = [];
       
       if (!phase.checklist) {
         console.log(`Checklist is null/undefined for phase ${phase.phase_number}`);
@@ -156,20 +213,48 @@ serve(async (req) => {
 
       console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
 
-      if (checklist && checklist.length > 0) {
-        for (let index = 0; index < checklist.length; index++) {
-          const item = checklist[index];
+      // Para CADA usuario, crear sus tareas personalizadas
+      for (const userId of usersToAssign) {
+        const userFunctionalRole = userRoleMap.get(userId) || 'general';
+        
+        // Filtrar tareas según el rol del usuario
+        const userTasks = checklist.filter(item => {
+          const taskRole = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
           
-          // Handle different item structures
+          // CEO/general recibe todas las tareas
+          if (userFunctionalRole === 'ceo' || userFunctionalRole === 'general') {
+            return true;
+          }
+          
+          // Otros usuarios reciben tareas de su área o generales
+          return taskRole === userFunctionalRole || 
+                 taskRole === 'general' || 
+                 taskRole === 'equipo' ||
+                 (userFunctionalRole === 'marketing' && taskRole === 'marketing') ||
+                 (userFunctionalRole === 'ventas' && (taskRole === 'ventas' || taskRole === 'sales')) ||
+                 (userFunctionalRole === 'operaciones' && taskRole === 'operaciones') ||
+                 (userFunctionalRole === 'producto' && (taskRole === 'producto' || taskRole === 'product'));
+        });
+
+        // Asegurar exactamente 12 tareas por usuario
+        const tasksForUser = userTasks.slice(0, 12);
+        
+        // Si no hay suficientes, completar del pool general
+        if (tasksForUser.length < 12) {
+          const remaining = checklist.filter(item => !tasksForUser.includes(item));
+          tasksForUser.push(...remaining.slice(0, 12 - tasksForUser.length));
+        }
+
+        tasksForUser.forEach((item, index) => {
           const taskTitle = item.task || item.title || item.name || `Tarea ${index + 1}`;
           const category = item.category || item.area || 'general';
           
           tasksToInsert.push({
             organization_id,
             phase_id: phase.id,
-            user_id: adminUserId,
+            user_id: userId,
             title: taskTitle,
-            description: item.description || `Tarea de ${category}`,
+            description: item.description || `Tarea de Fase ${phase.phase_number}: ${phase.phase_name}`,
             phase: phase.phase_number,
             area: category,
             order_index: index,
@@ -178,7 +263,9 @@ serve(async (req) => {
             is_personal: false,
             playbook: (phase.playbook as Record<string, unknown>) || {},
           });
-        }
+        });
+
+        console.log(`Prepared ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole})`);
       }
     }
     
@@ -195,8 +282,8 @@ serve(async (req) => {
       );
     }
 
-    // 5. Insertar tareas en lotes para evitar timeouts
-    const BATCH_SIZE = 20;
+    // 9. Insertar tareas en lotes
+    const BATCH_SIZE = 50;
     let totalCreated = 0;
     const errors: string[] = [];
 
@@ -220,18 +307,23 @@ serve(async (req) => {
 
     console.log(`Total tasks created: ${totalCreated}`);
 
-    // 6. Crear alerta para notificar
+    // 10. Crear alerta de notificación
     if (totalCreated > 0) {
       await supabase.from("smart_alerts").insert({
         alert_type: 'tasks_regenerated',
         severity: 'info',
         title: '✅ Tareas Regeneradas',
-        message: `Se han creado ${totalCreated} tareas desde las ${phases.length} fases de negocio.`,
+        message: `Se han creado ${totalCreated} tareas para ${usersToAssign.length} usuario(s) desde las ${phases.length} fases.`,
         source: 'business_phases',
         category: 'planning',
-        target_user_id: adminUserId,
+        target_user_id: usersToAssign[0],
         actionable: true,
-        metadata: { phases_count: phases.length, tasks_created: totalCreated }
+        metadata: { 
+          phases_count: phases.length, 
+          tasks_created: totalCreated,
+          users_count: usersToAssign.length,
+          tasks_per_user: Math.floor(totalCreated / usersToAssign.length)
+        }
       });
     }
 
@@ -240,6 +332,8 @@ serve(async (req) => {
         success: true,
         tasks_created: totalCreated,
         phases_processed: phases.length,
+        users_processed: usersToAssign.length,
+        tasks_per_user: Math.floor(totalCreated / usersToAssign.length),
         errors: errors.length > 0 ? errors : undefined,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
