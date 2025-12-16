@@ -197,3 +197,6 @@ verify_jwt = false
 
 [functions.create-billing-portal]
 verify_jwt = true
+
+[functions.slack-commands]
+verify_jwt = false
