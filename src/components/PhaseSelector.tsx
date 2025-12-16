@@ -11,10 +11,10 @@ interface PhaseSelectorProps {
 }
 
 const PHASES = [
-  { id: 1, label: 'Fase 1', desc: 'Validación (0-25 cestas/mes)' },
-  { id: 2, label: 'Fase 2', desc: 'Optimización (25-50 cestas/mes)' },
-  { id: 3, label: 'Fase 3', desc: 'Crecimiento (50-100 cestas/mes)' },
-  { id: 4, label: 'Fase 4', desc: 'Escalado (100-200 cestas/mes)' },
+  { id: 1, label: 'Fase 1', desc: 'Validación' },
+  { id: 2, label: 'Fase 2', desc: 'Optimización' },
+  { id: 3, label: 'Fase 3', desc: 'Crecimiento' },
+  { id: 4, label: 'Fase 4', desc: 'Escalado' },
 ];
 
 const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {

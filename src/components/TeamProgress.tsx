@@ -123,18 +123,18 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
   const remainingTasks = totalTasks - totalCompleted;
   const teamPercentage = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
 
-  // Calcular rango de cestas según la fase (cada fase tiene un rango específico)
-  const getBasketRange = (phase: number) => {
+  // Descripción de la fase actual
+  const getPhaseDescription = (phase: number) => {
     switch (phase) {
-      case 1: return '0 a 25';
-      case 2: return '25 a 50';
-      case 3: return '50 a 75';
-      case 4: return '75 a 100';
-      default: return '0 a 25';
+      case 1: return 'Validación';
+      case 2: return 'Optimización';
+      case 3: return 'Crecimiento';
+      case 4: return 'Escalado';
+      default: return 'Validación';
     }
   };
   
-  const basketsRange = getBasketRange(currentPhase);
+  const phaseDescription = getPhaseDescription(currentPhase);
 
   if (loading) {
     return (
@@ -165,7 +165,7 @@ const TeamProgress = ({ currentPhase, currentUserId }: TeamProgressProps) => {
                 {totalCompleted}/{totalTasks} tareas completadas
               </p>
               <p className="text-sm text-muted-foreground">
-                De {basketsRange} cestas
+                Fase: {phaseDescription}
               </p>
             </div>
             <div className="text-right">
