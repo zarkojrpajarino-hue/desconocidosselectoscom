@@ -8,13 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, Check, MessageSquare, Link2, Calendar, 
   ListTodo, LayoutDashboard, Zap, RefreshCw, ExternalLink,
-  CheckCircle, XCircle, Settings, AlertCircle
+  CheckCircle, XCircle, Settings, AlertCircle, Activity, History
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSlackIntegration, useHubSpotIntegration, useIntegrationTokens } from "@/hooks/integrations";
+import { IntegrationHealthMetrics, UnifiedSyncLog, QuickActionsPanel } from "@/components/integrations";
 
 interface IntegrationStatus {
   id: string;
@@ -248,85 +250,122 @@ const IntegracionesDashboard = () => {
         </Card>
       </div>
 
-      {/* Lista de integraciones */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {integrationsList.map((integration) => (
-          <Card key={integration.id} className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-lg ${integration.isConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                    {integration.icon}
-                  </div>
-                  <div>
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      {integration.name}
-                      {integration.isConnected && (
-                        <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
-                          <Check className="h-3 w-3 mr-1" />
-                          {t('integrations.active', 'Activa')}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="text-sm mt-0.5">
-                      {integration.description}
-                    </CardDescription>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {integration.loading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-9 w-24" />
-                </div>
-              ) : integration.isConnected ? (
-                <div className="space-y-3">
-                  {/* Info de última sincronización */}
-                  {integration.lastSync && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('integrations.lastSync', 'Última sync')}: {new Date(integration.lastSync).toLocaleString()}
-                    </p>
-                  )}
-                  
-                  {/* Controles */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      {integration.onSync && (
-                        <Button variant="outline" size="sm" onClick={integration.onSync}>
-                          <RefreshCw className="h-4 w-4 mr-1.5" />
-                          {t('integrations.sync', 'Sincronizar')}
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="sm" onClick={integration.onDisconnect} className="text-destructive hover:text-destructive">
-                        {t('integrations.disconnect', 'Desconectar')}
-                      </Button>
-                    </div>
-                    
-                    {integration.onToggleSync !== undefined && integration.syncEnabled !== undefined && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          {t('integrations.autoSync', 'Auto-sync')}
-                        </span>
-                        <Switch 
-                          checked={integration.syncEnabled} 
-                          onCheckedChange={integration.onToggleSync}
-                        />
+      {/* Tabs para las diferentes vistas */}
+      <Tabs defaultValue="connections" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4 h-10">
+          <TabsTrigger value="connections" className="text-xs md:text-sm">
+            <Link2 className="h-4 w-4 mr-1.5 hidden md:inline" />
+            {t('integrations.tabs.connections', 'Conexiones')}
+          </TabsTrigger>
+          <TabsTrigger value="health" className="text-xs md:text-sm">
+            <Activity className="h-4 w-4 mr-1.5 hidden md:inline" />
+            {t('integrations.tabs.health', 'Salud')}
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="text-xs md:text-sm">
+            <History className="h-4 w-4 mr-1.5 hidden md:inline" />
+            {t('integrations.tabs.logs', 'Historial')}
+          </TabsTrigger>
+          <TabsTrigger value="actions" className="text-xs md:text-sm">
+            <Zap className="h-4 w-4 mr-1.5 hidden md:inline" />
+            {t('integrations.tabs.actions', 'Acciones')}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab: Conexiones */}
+        <TabsContent value="connections" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {integrationsList.map((integration) => (
+              <Card key={integration.id} className="border-border bg-card">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-lg ${integration.isConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                        {integration.icon}
                       </div>
-                    )}
+                      <div>
+                        <CardTitle className="text-base font-semibold flex items-center gap-2">
+                          {integration.name}
+                          {integration.isConnected && (
+                            <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
+                              <Check className="h-3 w-3 mr-1" />
+                              {t('integrations.active', 'Activa')}
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <CardDescription className="text-sm mt-0.5">
+                          {integration.description}
+                        </CardDescription>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <Button onClick={integration.onConnect} className="w-full sm:w-auto">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {t('integrations.connect', 'Conectar')}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {integration.loading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-9 w-24" />
+                    </div>
+                  ) : integration.isConnected ? (
+                    <div className="space-y-3">
+                      {integration.lastSync && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('integrations.lastSync', 'Última sync')}: {new Date(integration.lastSync).toLocaleString()}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          {integration.onSync && (
+                            <Button variant="outline" size="sm" onClick={integration.onSync}>
+                              <RefreshCw className="h-4 w-4 mr-1.5" />
+                              {t('integrations.sync', 'Sincronizar')}
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="sm" onClick={integration.onDisconnect} className="text-destructive hover:text-destructive">
+                            {t('integrations.disconnect', 'Desconectar')}
+                          </Button>
+                        </div>
+                        
+                        {integration.onToggleSync !== undefined && integration.syncEnabled !== undefined && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {t('integrations.autoSync', 'Auto-sync')}
+                            </span>
+                            <Switch 
+                              checked={integration.syncEnabled} 
+                              onCheckedChange={integration.onToggleSync}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <Button onClick={integration.onConnect} className="w-full sm:w-auto">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {t('integrations.connect', 'Conectar')}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Salud */}
+        <TabsContent value="health">
+          <IntegrationHealthMetrics />
+        </TabsContent>
+
+        {/* Tab: Historial */}
+        <TabsContent value="logs">
+          <UnifiedSyncLog />
+        </TabsContent>
+
+        {/* Tab: Acciones Rápidas */}
+        <TabsContent value="actions">
+          <QuickActionsPanel />
+        </TabsContent>
+      </Tabs>
 
       {/* Enlace a más información */}
       <Card className="bg-primary/5 border-primary/10">
