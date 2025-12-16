@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ListTodo } from 'lucide-react';
+import { ListTodo, ArrowDownLeft, RefreshCw } from 'lucide-react';
 import { useAsanaIntegration } from '@/hooks/integrations';
+import { IntegrationStatusBadge, IntegrationSyncLog } from '@/components/integrations';
+import type { SyncStatus } from '@/components/integrations/IntegrationStatusBadge';
 
 interface AsanaTabProps {
   organizationId: string | null;
@@ -16,9 +18,12 @@ export function AsanaTab({ organizationId }: AsanaTabProps) {
     account, 
     loading, 
     saving,
+    syncing,
+    importing,
     connect,
     disconnect,
-    toggleSync
+    toggleSync,
+    importTasks
   } = useAsanaIntegration(organizationId);
   
   const [apiKey, setApiKey] = useState('');
@@ -76,32 +81,76 @@ export function AsanaTab({ organizationId }: AsanaTabProps) {
     );
   }
 
+  const currentStatus: SyncStatus = syncing || importing 
+    ? 'syncing' 
+    : (account.last_sync_status as SyncStatus) || 'active';
+
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center">
-              <ListTodo className="w-6 h-6 text-pink-500" />
-            </div>
-            <div>
-              <p className="font-semibold">{account.workspace_name || 'Asana Workspace'}</p>
-              <p className="text-sm text-muted-foreground">Workspace ID: {account.workspace_id}</p>
-              {account.last_sync_at && (
-                <p className="text-xs text-muted-foreground">
-                  Última sync: {new Date(account.last_sync_at).toLocaleString()}
+    <div className="space-y-4">
+      {/* Connection Status */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center">
+                <ListTodo className="w-6 h-6 text-pink-500" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">{account.workspace_name || 'Asana Workspace'}</p>
+                  <IntegrationStatusBadge 
+                    status={currentStatus} 
+                    lastSync={account.last_sync_at}
+                    showTime
+                    size="sm"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {account.project_name || `Workspace ID: ${account.workspace_id}`}
                 </p>
-              )}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={account.sync_enabled} onCheckedChange={toggleSync} />
+              <Button variant="outline" size="sm" onClick={disconnect}>
+                Desconectar
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Switch checked={account.sync_enabled} onCheckedChange={toggleSync} />
-            <Button variant="outline" size="sm" onClick={disconnect}>
-              Desconectar
+        </CardContent>
+      </Card>
+
+      {/* Import Controls */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Importar Tareas</CardTitle>
+          <CardDescription>Trae tareas desde Asana a OPTIMUS-K</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Importa las tareas de tu proyecto de Asana. Las tareas existentes se actualizarán si hay cambios.
+            </p>
+            <Button 
+              onClick={() => importTasks()} 
+              disabled={importing}
+              className="w-full"
+            >
+              <ArrowDownLeft className={`w-4 h-4 mr-2 ${importing ? 'animate-pulse' : ''}`} />
+              {importing ? 'Importando...' : 'Importar desde Asana'}
             </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Sync Log */}
+      {organizationId && (
+        <IntegrationSyncLog
+          integrationTable="external_task_mappings"
+          organizationId={organizationId}
+          title="Historial de Sincronización"
+        />
+      )}
+    </div>
   );
 }

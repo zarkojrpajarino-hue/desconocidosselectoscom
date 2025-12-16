@@ -3,23 +3,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AsanaAccount } from '@/types/integrations';
 
+interface SyncResult {
+  imported?: number;
+  updated?: number;
+  skipped?: number;
+  success?: boolean;
+}
+
 export function useAsanaIntegration(organizationId: string | null) {
   const [account, setAccount] = useState<AsanaAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const loadAccount = useCallback(async () => {
     if (!organizationId) return;
     setLoading(true);
     
     try {
-      // Use secure function that only returns connection status, not tokens
       const { data, error } = await supabase
         .rpc('get_asana_connection_status', { org_id: organizationId });
       
       if (error) throw error;
       
-      // Map the RPC result to match expected interface
       const accountData = data?.[0] ? {
         id: data[0].id,
         organization_id: data[0].organization_id,
@@ -30,8 +37,7 @@ export function useAsanaIntegration(organizationId: string | null) {
         sync_enabled: data[0].sync_enabled,
         last_sync_at: data[0].last_sync_at,
         last_sync_status: data[0].last_sync_status,
-        created_at: new Date().toISOString(), // Not exposed but required by type
-        // access_token is not exposed to client anymore
+        created_at: new Date().toISOString(),
       } as AsanaAccount : null;
       
       setAccount(accountData);
@@ -57,12 +63,8 @@ export function useAsanaIntegration(organizationId: string | null) {
     setSaving(true);
     
     try {
-      // Call edge function to validate and store credentials securely
       const { data, error } = await supabase.functions.invoke('validate-asana-token', {
-        body: { 
-          organizationId,
-          accessToken: apiKey 
-        }
+        body: { organizationId, accessToken: apiKey }
       });
 
       if (error) throw error;
@@ -115,13 +117,68 @@ export function useAsanaIntegration(organizationId: string | null) {
     }
   };
 
+  // Export task TO Asana
+  const syncTask = async (taskId: string): Promise<boolean> => {
+    if (!organizationId) return false;
+    setSyncing(true);
+    
+    try {
+      const { error } = await supabase.functions.invoke('sync-to-asana', {
+        body: { organizationId, taskId }
+      });
+      
+      if (error) throw error;
+      toast.success('Tarea exportada a Asana');
+      await loadAccount();
+      return true;
+    } catch (error) {
+      toast.error('Error al exportar a Asana');
+      return false;
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Import tasks FROM Asana
+  const importTasks = async (limit?: number): Promise<SyncResult | null> => {
+    if (!organizationId) return null;
+    setImporting(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-from-asana', {
+        body: { organizationId, limit: limit ?? 50 }
+      });
+      
+      if (error) throw error;
+      
+      const result = data as SyncResult;
+      const message = [
+        result?.imported ? `${result.imported} importadas` : null,
+        result?.updated ? `${result.updated} actualizadas` : null
+      ].filter(Boolean).join(', ');
+      
+      toast.success(`Importación completada: ${message || 'Sin cambios'}`);
+      await loadAccount();
+      return result;
+    } catch (error) {
+      toast.error('Error al importar desde Asana');
+      return null;
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return {
     account,
     loading,
     saving,
+    syncing,
+    importing,
     connect,
     disconnect,
     toggleSync,
+    syncTask,      // Export single task
+    importTasks,   // Import from Asana
     refresh: loadAccount
   };
 }

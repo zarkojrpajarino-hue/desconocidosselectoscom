@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, ArrowDownLeft } from 'lucide-react';
 import { useTrelloIntegration } from '@/hooks/integrations';
+import { IntegrationStatusBadge, IntegrationSyncLog } from '@/components/integrations';
+import type { SyncStatus } from '@/components/integrations/IntegrationStatusBadge';
 
 interface TrelloTabProps {
   organizationId: string | null;
@@ -16,9 +18,12 @@ export function TrelloTab({ organizationId }: TrelloTabProps) {
     account, 
     loading, 
     saving,
+    syncing,
+    importing,
     connect,
     disconnect,
-    toggleSync
+    toggleSync,
+    importCards
   } = useTrelloIntegration(organizationId);
   
   const [credentials, setCredentials] = useState({ apiKey: '', apiToken: '' });
@@ -84,34 +89,76 @@ export function TrelloTab({ organizationId }: TrelloTabProps) {
     );
   }
 
+  const currentStatus: SyncStatus = syncing || importing 
+    ? 'syncing' 
+    : (account.last_sync_status as SyncStatus) || 'active';
+
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-400/10 rounded-lg flex items-center justify-center">
-              <LayoutDashboard className="w-6 h-6 text-blue-400" />
+    <div className="space-y-4">
+      {/* Connection Status */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blue-400/10 rounded-lg flex items-center justify-center">
+                <LayoutDashboard className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">{account.board_name || 'Trello Board'}</p>
+                  <IntegrationStatusBadge 
+                    status={currentStatus} 
+                    lastSync={account.last_sync_at}
+                    showTime
+                    size="sm"
+                  />
+                </div>
+                {account.board_id && (
+                  <p className="text-sm text-muted-foreground">Board ID: {account.board_id}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="font-semibold">{account.board_name || 'Trello Board'}</p>
-              {account.board_id && (
-                <p className="text-sm text-muted-foreground">Board ID: {account.board_id}</p>
-              )}
-              {account.last_sync_at && (
-                <p className="text-xs text-muted-foreground">
-                  Última sync: {new Date(account.last_sync_at).toLocaleString()}
-                </p>
-              )}
+            <div className="flex items-center gap-3">
+              <Switch checked={account.sync_enabled} onCheckedChange={toggleSync} />
+              <Button variant="outline" size="sm" onClick={disconnect}>
+                Desconectar
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Switch checked={account.sync_enabled} onCheckedChange={toggleSync} />
-            <Button variant="outline" size="sm" onClick={disconnect}>
-              Desconectar
+        </CardContent>
+      </Card>
+
+      {/* Import Controls */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Importar Tarjetas</CardTitle>
+          <CardDescription>Trae tarjetas desde Trello a OPTIMUS-K</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Importa las tarjetas de tu tablero de Trello. Las tareas existentes se actualizarán si hay cambios.
+            </p>
+            <Button 
+              onClick={() => importCards()} 
+              disabled={importing}
+              className="w-full"
+            >
+              <ArrowDownLeft className={`w-4 h-4 mr-2 ${importing ? 'animate-pulse' : ''}`} />
+              {importing ? 'Importando...' : 'Importar desde Trello'}
             </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Sync Log */}
+      {organizationId && (
+        <IntegrationSyncLog
+          integrationTable="external_task_mappings"
+          organizationId={organizationId}
+          title="Historial de Sincronización"
+        />
+      )}
+    </div>
   );
 }
