@@ -136,7 +136,7 @@ const AppContent = () => {
         <Route path="/verify-email" element={<Navigate to="/#how-it-works" replace />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/integraciones" element={<Integraciones />} />
+        
         <Route path="/install" element={<InstallPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/startup" element={<OnboardingStartup />} />
@@ -231,8 +231,11 @@ const AppContent = () => {
           {/* BI Dashboard */}
           <Route path="/bi" element={<BIDashboard />} />
           
-          {/* Integraciones Dashboard */}
-          <Route path="/integraciones-dashboard" element={<IntegracionesDashboard />} />
+          {/* Integraciones - Dashboard funcional */}
+          <Route path="/integraciones" element={<IntegracionesDashboard />} />
+          
+          {/* Integraciones Landing (informativa) - para referencia */}
+          <Route path="/integraciones-info" element={<Integraciones />} />
           
           {/* Global Agenda */}
           <Route path="/agenda-global" element={<GlobalAgenda />} />
