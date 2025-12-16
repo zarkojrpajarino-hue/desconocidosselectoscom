@@ -93,7 +93,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "google/gemini-2.5-flash",
         temperature: 0.7,
         response_format: { type: "json_object" },
         messages: [
