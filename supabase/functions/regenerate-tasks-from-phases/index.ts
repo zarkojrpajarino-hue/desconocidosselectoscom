@@ -47,6 +47,40 @@ serve(async (req) => {
     const adminUserId = adminRole.user_id;
     console.log(`Admin found: ${adminUserId}`);
 
+    // Verificar si el usuario existe en la tabla users, si no, crearlo
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", adminUserId)
+      .maybeSingle();
+
+    if (!existingUser) {
+      console.log(`User ${adminUserId} not in users table, creating...`);
+      
+      // Obtener datos del usuario desde auth.users
+      const { data: authUser } = await supabase.auth.admin.getUserById(adminUserId);
+      
+      if (authUser?.user) {
+        const { error: createUserError } = await supabase
+          .from("users")
+          .insert({
+            id: adminUserId,
+            email: authUser.user.email,
+            full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'Usuario',
+            role: 'admin'
+          });
+        
+        if (createUserError) {
+          console.error("Error creating user:", createUserError);
+          return new Response(
+            JSON.stringify({ error: "No se pudo crear el usuario en la base de datos" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.log(`User ${adminUserId} created successfully`);
+      }
+    }
+
     // 2. Obtener fases existentes
     const { data: phases, error: phasesError } = await supabase
       .from("business_phases")
