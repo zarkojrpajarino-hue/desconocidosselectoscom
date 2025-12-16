@@ -17,13 +17,13 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { user_id } = await req.json();
+    const { user_id, days_ahead = 14 } = await req.json();
 
     if (!user_id) {
       throw new Error('user_id is required');
     }
 
-    console.log(`Importing calendar events for user: ${user_id}`);
+    console.log(`📥 [IMPORT] Starting import for user: ${user_id}, days_ahead: ${days_ahead}`);
 
     // Get user's Google Calendar tokens
     const { data: tokenData, error: tokenError } = await supabase
@@ -33,34 +33,61 @@ serve(async (req) => {
       .eq('is_active', true)
       .maybeSingle();
 
-    if (tokenError || !tokenData) {
-      throw new Error('Google Calendar not connected');
+    if (tokenError) {
+      console.error('❌ [IMPORT] Error fetching token:', tokenError);
+      throw new Error('Error fetching calendar token');
+    }
+
+    if (!tokenData) {
+      console.log('⚠️ [IMPORT] No active Google Calendar connection');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Google Calendar not connected',
+          code: 'NOT_CONNECTED'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     let accessToken = tokenData.access_token;
     const refreshToken = tokenData.refresh_token;
     const tokenExpiry = new Date(tokenData.token_expiry);
 
-    // Refresh token if expired
-    if (tokenExpiry < new Date()) {
-      console.log('Token expired, refreshing...');
+    // Refresh token if expired or expiring soon
+    const expiryBuffer = 5 * 60 * 1000; // 5 minutes
+    if (tokenExpiry.getTime() - Date.now() < expiryBuffer) {
+      console.log('🔄 [IMPORT] Token expiring soon, refreshing...');
       
       const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
       const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+
+      if (!clientId || !clientSecret) {
+        throw new Error('Missing Google OAuth credentials');
+      }
 
       const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          client_id: clientId!,
-          client_secret: clientSecret!,
+          client_id: clientId,
+          client_secret: clientSecret,
           refresh_token: refreshToken,
           grant_type: 'refresh_token',
         }),
       });
 
       if (!refreshResponse.ok) {
-        throw new Error('Failed to refresh token');
+        const errorData = await refreshResponse.json();
+        console.error('❌ [IMPORT] Token refresh failed:', errorData);
+        
+        // Mark token as inactive
+        await supabase
+          .from('google_calendar_tokens')
+          .update({ is_active: false })
+          .eq('user_id', user_id);
+          
+        throw new Error('Token refresh failed. Please reconnect Google Calendar.');
       }
 
       const refreshData = await refreshResponse.json();
@@ -71,115 +98,131 @@ serve(async (req) => {
         .from('google_calendar_tokens')
         .update({
           access_token: accessToken,
-          token_expiry: new Date(Date.now() + refreshData.expires_in * 1000).toISOString(),
+          token_expiry: new Date(Date.now() + (refreshData.expires_in || 3600) * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user_id);
+
+      console.log('✅ [IMPORT] Token refreshed successfully');
     }
 
-    // Fetch events from Google Calendar (next 30 days)
+    // Fetch events from Google Calendar
     const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const futureDate = new Date(now.getTime() + days_ahead * 24 * 60 * 60 * 1000);
 
-    const calendarId = tokenData.calendar_id || 'primary';
-    const eventsUrl = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
-      new URLSearchParams({
-        timeMin: now.toISOString(),
-        timeMax: thirtyDaysFromNow.toISOString(),
-        singleEvents: 'true',
-        orderBy: 'startTime',
-        maxResults: '100',
-      });
+    const eventsUrl = new URL(`https://www.googleapis.com/calendar/v3/calendars/${tokenData.calendar_id}/events`);
+    eventsUrl.searchParams.set('timeMin', now.toISOString());
+    eventsUrl.searchParams.set('timeMax', futureDate.toISOString());
+    eventsUrl.searchParams.set('singleEvents', 'true');
+    eventsUrl.searchParams.set('orderBy', 'startTime');
+    eventsUrl.searchParams.set('maxResults', '100');
 
-    const eventsResponse = await fetch(eventsUrl, {
+    console.log(`📅 [IMPORT] Fetching events from ${now.toISOString()} to ${futureDate.toISOString()}`);
+
+    const eventsResponse = await fetch(eventsUrl.toString(), {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     if (!eventsResponse.ok) {
-      const errorText = await eventsResponse.text();
-      console.error('Google Calendar API error:', errorText);
+      const errorData = await eventsResponse.json();
+      console.error('❌ [IMPORT] Failed to fetch events:', errorData);
       throw new Error('Failed to fetch calendar events');
     }
 
     const eventsData = await eventsResponse.json();
     const events = eventsData.items || [];
 
-    console.log(`Found ${events.length} events to import`);
+    console.log(`📅 [IMPORT] Found ${events.length} events to import`);
 
-    // Get user's organization
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('organization_id')
-      .eq('user_id', user_id)
-      .maybeSingle();
+    // Filter out all-day events and already synced events
+    const { data: existingEvents } = await supabase
+      .from('calendar_sync_events')
+      .select('google_event_id')
+      .eq('user_id', user_id);
 
-    if (!userRole?.organization_id) {
-      throw new Error('User has no organization');
-    }
+    const existingEventIds = new Set((existingEvents || []).map(e => e.google_event_id));
 
     let importedCount = 0;
+    let skippedCount = 0;
+    const importedEvents: any[] = [];
 
     for (const event of events) {
-      // Skip all-day events or events without proper times
+      // Skip if already synced
+      if (existingEventIds.has(event.id)) {
+        skippedCount++;
+        continue;
+      }
+
+      // Skip all-day events (they don't have dateTime)
       if (!event.start?.dateTime || !event.end?.dateTime) {
+        console.log(`⏭️ [IMPORT] Skipping all-day event: ${event.summary}`);
+        skippedCount++;
         continue;
       }
 
-      // Check if this event is already mapped
-      const { data: existingMapping } = await supabase
-        .from('calendar_sync_events')
-        .select('id')
-        .eq('google_event_id', event.id)
-        .eq('user_id', user_id)
-        .maybeSingle();
-
-      if (existingMapping) {
-        console.log(`Event ${event.id} already imported, skipping`);
+      // Skip events created by OPTIMUS-K
+      if (event.description?.includes('Sincronizado desde OPTIMUS-K')) {
+        skippedCount++;
         continue;
       }
 
-      // Create calendar_sync_event record
-      const { error: syncError } = await supabase
-        .from('calendar_sync_events')
-        .insert({
-          user_id,
-          google_event_id: event.id,
-          event_title: event.summary || 'Sin título',
-          event_description: event.description || null,
-          event_start: event.start.dateTime,
-          event_end: event.end.dateTime,
-          sync_status: 'imported',
-          last_synced_at: new Date().toISOString(),
+      try {
+        // Insert into calendar_sync_events
+        const { data: syncEvent, error: insertError } = await supabase
+          .from('calendar_sync_events')
+          .insert({
+            user_id,
+            google_event_id: event.id,
+            event_title: event.summary || 'Sin título',
+            event_start: event.start.dateTime,
+            event_end: event.end.dateTime,
+            event_description: event.description,
+            sync_status: 'synced',
+            last_synced_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error(`❌ [IMPORT] Error inserting event ${event.id}:`, insertError);
+          continue;
+        }
+
+        importedEvents.push({
+          id: syncEvent.id,
+          title: event.summary,
+          start: event.start.dateTime,
+          end: event.end.dateTime,
         });
 
-      if (syncError) {
-        console.error(`Error inserting sync event:`, syncError);
-        continue;
+        importedCount++;
+      } catch (eventError) {
+        console.error(`❌ [IMPORT] Error processing event ${event.id}:`, eventError);
       }
-
-      importedCount++;
     }
 
-    console.log(`Successfully imported ${importedCount} events`);
+    console.log(`✅ [IMPORT] Import completed. Imported: ${importedCount}, Skipped: ${skippedCount}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         imported_count: importedCount,
-        total_events: events.length,
+        skipped_count: skippedCount,
+        total_found: events.length,
+        events: importedEvents,
+        message: `${importedCount} eventos importados de Google Calendar`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error importing calendar events:', errorMessage);
+  } catch (error) {
+    console.error('❌ [IMPORT] Error importing events:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
