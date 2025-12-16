@@ -257,49 +257,80 @@ RESPONDE SOLO EN JSON válido sin markdown.`
     const adminUserId = adminRole?.user_id;
 
     if (adminUserId && insertedPhases) {
+      console.log(`Admin found: ${adminUserId}, Phases created: ${insertedPhases.length}`);
+      
       // 8. Eliminar tareas existentes generadas por AI (con phase_id)
-      await supabase
+      const { error: deleteError } = await supabase
         .from("tasks")
         .delete()
         .eq("organization_id", organization_id)
         .not("phase_id", "is", null);
+      
+      if (deleteError) {
+        console.error("Error deleting existing tasks:", deleteError);
+      }
 
       // 9. Crear tareas reales desde el checklist de cada fase
       const tasksToInsert: any[] = [];
       
       for (const phase of insertedPhases) {
-        const checklist = phase.checklist as any[];
+        console.log(`Processing phase ${phase.phase_number}: ${phase.phase_name}`);
+        
+        // Handle checklist - puede ser un string JSON o un array
+        let checklist: any[] = [];
+        if (typeof phase.checklist === 'string') {
+          try {
+            checklist = JSON.parse(phase.checklist);
+          } catch (e) {
+            console.error(`Error parsing checklist for phase ${phase.phase_number}:`, e);
+            continue;
+          }
+        } else if (Array.isArray(phase.checklist)) {
+          checklist = phase.checklist;
+        } else {
+          console.log(`Checklist is not an array for phase ${phase.phase_number}:`, typeof phase.checklist);
+          continue;
+        }
+        
+        console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
+        
         if (checklist && Array.isArray(checklist)) {
           checklist.forEach((item, index) => {
+            const taskTitle = item.task || item.title || `Tarea ${index + 1}`;
             tasksToInsert.push({
               organization_id,
               phase_id: phase.id,
               user_id: adminUserId,
-              title: item.task,
+              title: taskTitle,
               description: `Tarea de Fase ${phase.phase_number}: ${phase.phase_name}`,
               phase: phase.phase_number,
               area: item.category || 'general',
               task_category: item.category || 'operaciones',
               order_index: index,
-              estimated_hours: 2, // Estimación por defecto
+              estimated_hours: 2,
               is_personal: false,
-              playbook: phase.playbook,
+              playbook: phase.playbook || {},
             });
           });
         }
       }
 
+      console.log(`Total tasks to insert: ${tasksToInsert.length}`);
+
       if (tasksToInsert.length > 0) {
-        const { error: tasksError } = await supabase
+        const { data: insertedTasks, error: tasksError } = await supabase
           .from("tasks")
-          .insert(tasksToInsert);
+          .insert(tasksToInsert)
+          .select('id');
 
         if (tasksError) {
           console.error("Tasks insert error:", tasksError);
-          // No fallar completamente, las fases ya se crearon
+          console.error("First task sample:", JSON.stringify(tasksToInsert[0]));
         } else {
-          console.log(`Created ${tasksToInsert.length} tasks from phase checklists`);
+          console.log(`Successfully created ${insertedTasks?.length || 0} tasks from phase checklists`);
         }
+      } else {
+        console.log("No tasks to insert - checklists may be empty");
       }
 
       // 10. Crear/vincular Key Results para los objetivos de cada fase
