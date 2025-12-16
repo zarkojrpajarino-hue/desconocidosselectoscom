@@ -101,6 +101,88 @@ export function PhaseTimeline({
     );
   }
 
+  // Compact view for dashboard
+  if (compact) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Fase del Negocio
+              <Badge variant="outline" className="text-xs">
+                {phases[0]?.methodology === 'lean_startup' ? 'Lean Startup' : 'Scaling Up'}
+              </Badge>
+            </CardTitle>
+            <span className="text-xl font-bold text-primary">{overallProgress}%</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Horizontal Phase Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {phases.map((phase) => {
+              const isActive = phase.status === 'active';
+              const isCompleted = phase.status === 'completed';
+              return (
+                <div
+                  key={phase.id}
+                  className={cn(
+                    "p-3 rounded-lg border transition-all cursor-pointer",
+                    isActive && "bg-primary text-primary-foreground border-primary shadow-md",
+                    isCompleted && "bg-green-50 dark:bg-green-900/20 border-green-500",
+                    !isActive && !isCompleted && "bg-muted/50 hover:bg-muted"
+                  )}
+                  onClick={() => toggleExpanded(phase.id)}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    {isActive && <Play className="h-3 w-3" />}
+                    {isCompleted && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+                    <span className="font-semibold text-sm">Fase {phase.phase_number}</span>
+                  </div>
+                  <p className={cn(
+                    "text-xs line-clamp-2",
+                    isActive ? "text-primary-foreground/90" : "text-muted-foreground"
+                  )}>
+                    {phase.phase_name}
+                  </p>
+                  <Progress 
+                    value={phase.progress_percentage || 0} 
+                    className={cn("h-1 mt-2", isActive && "[&>div]:bg-white")}
+                  />
+                  <span className={cn(
+                    "text-xs mt-1 block",
+                    isActive ? "text-primary-foreground/80" : "text-muted-foreground"
+                  )}>
+                    {phase.progress_percentage || 0}% completado
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Active Phase Details */}
+          {activePhase && (
+            <div className="p-4 rounded-lg bg-muted/30 border">
+              <h4 className="font-semibold text-sm mb-1">
+                Fase actual: {activePhase.phase_name}
+              </h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                {activePhase.phase_description}
+              </p>
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <span>{activePhase.objectives?.length || 0} objetivos</span>
+                <span>•</span>
+                <span>{activePhase.checklist?.length || 0} tareas</span>
+                <span>•</span>
+                <span>{activePhase.duration_weeks} semanas</span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Overall Progress Header */}
