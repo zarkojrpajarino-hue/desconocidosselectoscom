@@ -5,16 +5,21 @@ import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw } from '
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { GlobalWeeklyView } from '@/components/agenda/GlobalWeeklyView';
 import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
 import { AgendaFilters, AgendaStats } from '@/components/agenda/AgendaFilters';
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
+import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function GlobalAgenda() {
   const { hasFeature } = usePlanAccess();
+  const { user } = useAuth();
   const hasAccess = hasFeature('global_agenda');
 
   const [weekStart, setWeekStart] = useState(
@@ -28,6 +33,24 @@ export default function GlobalAgenda() {
     selectedOrgs: [],
     status: 'all',
     collaborative: 'all',
+  });
+
+  // Check if user has availability for this week
+  const { data: availability, isLoading: availabilityLoading, refetch: refetchAvailability } = useQuery({
+    queryKey: ['user-availability', user?.id, weekStart],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('user_weekly_availability')
+        .select('id, submitted_at')
+        .eq('user_id', user.id)
+        .eq('week_start', weekStart)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && hasAccess,
   });
 
   const { data: stats } = useGlobalAgendaStats(weekStart);
@@ -51,11 +74,30 @@ export default function GlobalAgenda() {
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
   };
 
+  const handleAvailabilityComplete = async () => {
+    await refetchAvailability();
+    // Auto-generate schedule after availability is set
+    generateSchedule.mutate({ weekStart, forceRegenerate: true });
+  };
+
   // Show locked card if user doesn't have access
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-background p-4 md:p-6 pb-20">
         <GlobalAgendaLockedCard />
+      </div>
+    );
+  }
+
+  // Show availability questionnaire if not set for this week
+  if (!availabilityLoading && !availability && user?.id) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 pb-20">
+        <AvailabilityQuestionnaire
+          userId={user.id}
+          weekStart={weekStart}
+          onComplete={handleAvailabilityComplete}
+        />
       </div>
     );
   }
