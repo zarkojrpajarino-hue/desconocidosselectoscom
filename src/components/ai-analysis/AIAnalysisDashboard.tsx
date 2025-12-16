@@ -82,6 +82,39 @@ interface AIAnalysisDashboardProps {
 export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAnalysisDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Handle both old format (executive_summary) and new format (executive_dashboard)
+  // Use type assertion to handle legacy data structure
+  const rawData = data as unknown as Record<string, unknown>;
+  const executiveDashboard = data?.executive_dashboard || (rawData?.executive_summary as typeof data.executive_dashboard);
+  const hasValidData = executiveDashboard && (executiveDashboard.overall_score !== undefined || (executiveDashboard as unknown as Record<string, unknown>)?.overall_health !== undefined);
+
+  // Get overall score - handle different data structures
+  const overallScore = executiveDashboard?.overall_score ?? 
+    (executiveDashboard?.key_metrics?.efficiency_score ? 
+      Math.round((executiveDashboard.key_metrics.efficiency_score + 
+        executiveDashboard.key_metrics.team_performance + 
+        executiveDashboard.key_metrics.customer_satisfaction) / 3) : 0);
+  
+  // Get health status
+  const healthStatus: HealthStatus = executiveDashboard?.health_status || 
+    ((executiveDashboard as any)?.overall_health as HealthStatus) || 'warning';
+
+  if (!hasValidData) {
+    return (
+      <Card className="p-8">
+        <CardContent className="text-center">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No hay datos de análisis disponibles</h3>
+          <p className="text-muted-foreground mb-4">Genera un nuevo análisis para ver los resultados.</p>
+          <Button onClick={onRefresh} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Generar Análisis
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8 pb-12">
       {/* HERO SECTION - RESUMEN EJECUTIVO */}
@@ -90,9 +123,9 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAn
           <div className="flex items-center justify-between mb-8">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-3">
-                <h2 className="text-5xl font-bold">{data.executive_dashboard.overall_score}/100</h2>
-                <Badge className={getHealthStatusColor(data.executive_dashboard.health_status)} variant="outline">
-                  {getHealthStatusText(data.executive_dashboard.health_status)}
+                <h2 className="text-5xl font-bold">{overallScore}/100</h2>
+                <Badge className={getHealthStatusColor(healthStatus)} variant="outline">
+                  {getHealthStatusText(healthStatus)}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">Score General de Salud Empresarial</p>
@@ -115,26 +148,26 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAn
             <MiniMetricCard
               icon={<TrendingUp className="w-6 h-6" />}
               label="Ingresos"
-              value={`${data.executive_dashboard.key_metrics.revenue_trend > 0 ? '+' : ''}${data.executive_dashboard.key_metrics.revenue_trend.toFixed(1)}%`}
-              trend={data.executive_dashboard.key_metrics.revenue_trend}
+              value={`${(executiveDashboard?.key_metrics?.revenue_trend ?? 0) > 0 ? '+' : ''}${(executiveDashboard?.key_metrics?.revenue_trend ?? 0).toFixed(1)}%`}
+              trend={executiveDashboard?.key_metrics?.revenue_trend ?? 0}
               iconColor="text-success"
             />
             <MiniMetricCard
               icon={<Zap className="w-6 h-6" />}
               label="Eficiencia"
-              value={`${data.executive_dashboard.key_metrics.efficiency_score}/100`}
+              value={`${executiveDashboard?.key_metrics?.efficiency_score ?? 0}/100`}
               iconColor="text-warning"
             />
             <MiniMetricCard
               icon={<Users className="w-6 h-6" />}
               label="Equipo"
-              value={`${data.executive_dashboard.key_metrics.team_performance}/100`}
+              value={`${executiveDashboard?.key_metrics?.team_performance ?? 0}/100`}
               iconColor="text-primary"
             />
             <MiniMetricCard
               icon={<Heart className="w-6 h-6" />}
               label="Clientes"
-              value={`${data.executive_dashboard.key_metrics.customer_satisfaction}/100`}
+              value={`${executiveDashboard?.key_metrics?.customer_satisfaction ?? 0}/100`}
               iconColor="text-destructive"
             />
           </div>
@@ -145,30 +178,36 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAn
               <Sparkles className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold mb-2">Resumen Ejecutivo</h3>
-                <p className="text-lg leading-relaxed text-muted-foreground">{data.executive_dashboard.summary}</p>
+                <p className="text-lg leading-relaxed text-muted-foreground">
+                  {executiveDashboard?.summary || 
+                   (rawData?.executive_summary as Record<string, unknown>)?.key_insight as string ||
+                   'Análisis en proceso...'}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Comparación con periodo anterior */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <ComparisonMetric
-              label="Ingresos"
-              change={data.executive_dashboard.comparison_last_period.revenue_change}
-            />
-            <ComparisonMetric
-              label="Beneficio"
-              change={data.executive_dashboard.comparison_last_period.profit_change}
-            />
-            <ComparisonMetric
-              label="Productividad"
-              change={data.executive_dashboard.comparison_last_period.team_productivity_change}
-            />
-            <ComparisonMetric
-              label="Clientes"
-              change={data.executive_dashboard.comparison_last_period.customer_growth}
-            />
-          </div>
+          {executiveDashboard?.comparison_last_period && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              <ComparisonMetric
+                label="Ingresos"
+                change={executiveDashboard.comparison_last_period.revenue_change ?? 0}
+              />
+              <ComparisonMetric
+                label="Beneficio"
+                change={executiveDashboard.comparison_last_period.profit_change ?? 0}
+              />
+              <ComparisonMetric
+                label="Productividad"
+                change={executiveDashboard.comparison_last_period.team_productivity_change ?? 0}
+              />
+              <ComparisonMetric
+                label="Clientes"
+                change={executiveDashboard.comparison_last_period.customer_growth ?? 0}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
