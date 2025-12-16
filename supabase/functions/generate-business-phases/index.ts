@@ -75,6 +75,32 @@ serve(async (req) => {
       );
     }
 
+    // 1.5. Obtener OKRs existentes de la organización
+    const { data: existingObjectives } = await supabase
+      .from("objectives")
+      .select(`
+        id,
+        title,
+        description,
+        quarter,
+        year,
+        status,
+        key_results (
+          id,
+          title,
+          description,
+          metric_type,
+          start_value,
+          target_value,
+          current_value,
+          unit
+        )
+      `)
+      .eq("organization_id", organization_id);
+
+    const existingOKRs = existingObjectives || [];
+    console.log(`Found ${existingOKRs.length} existing OKRs for organization`);
+
     // 2. Determinar si es startup o empresa consolidada
     const isStartup = org.business_stage === 'startup' || 
                       org.company_size === 'solo' || 
@@ -105,7 +131,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
           },
           {
             role: "user",
-            content: buildPrompt(context, isStartup, methodology)
+            content: buildPrompt(context, isStartup, methodology, existingOKRs)
           }
         ]
       }),
@@ -276,7 +302,87 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         }
       }
 
-      // 10. Crear alerta smart_alert para notificar al equipo
+      // 10. Crear/vincular Key Results para los objetivos de cada fase
+      const currentQuarter = `Q${Math.ceil((new Date().getMonth() + 1) / 3)}` as 'Q1' | 'Q2' | 'Q3' | 'Q4';
+      const currentYear = new Date().getFullYear();
+
+      // Buscar o crear un objetivo OKR principal para vincular los KRs
+      let { data: mainObjective } = await supabase
+        .from("objectives")
+        .select("id")
+        .eq("organization_id", organization_id)
+        .eq("quarter", currentQuarter)
+        .eq("year", currentYear)
+        .limit(1)
+        .maybeSingle();
+
+      // Si no existe, crear uno
+      if (!mainObjective) {
+        const { data: newObj } = await supabase
+          .from("objectives")
+          .insert({
+            organization_id,
+            title: `Objetivos de Fases - ${currentQuarter} ${currentYear}`,
+            description: "Objetivos generados automáticamente desde las fases de negocio",
+            owner_id: adminUserId,
+            quarter: currentQuarter,
+            year: currentYear,
+            status: "on_track",
+            priority: "high",
+            category: "growth"
+          })
+          .select()
+          .single();
+        mainObjective = newObj;
+      }
+
+      if (mainObjective) {
+        // Para cada fase, crear KRs para objetivos sin linked_kr_id
+        for (const phase of insertedPhases) {
+          const objectives = phase.objectives as any[];
+          const updatedObjectives: any[] = [];
+
+          for (const obj of objectives || []) {
+            if (!obj.linked_kr_id) {
+              // Crear nuevo Key Result
+              const { data: newKR } = await supabase
+                .from("key_results")
+                .insert({
+                  objective_id: mainObjective.id,
+                  title: obj.name,
+                  description: `Fase ${phase.phase_number}: ${phase.phase_name}`,
+                  metric_type: mapMetricType(obj.metric),
+                  start_value: 0,
+                  current_value: obj.current || 0,
+                  target_value: obj.target,
+                  unit: getUnitFromMetric(obj.metric),
+                  weight: 1
+                })
+                .select()
+                .single();
+
+              if (newKR) {
+                updatedObjectives.push({ ...obj, linked_kr_id: newKR.id });
+                console.log(`Created KR: ${newKR.id} for objective: ${obj.name}`);
+              } else {
+                updatedObjectives.push(obj);
+              }
+            } else {
+              updatedObjectives.push(obj);
+            }
+          }
+
+          // Actualizar la fase con los linked_kr_id
+          if (updatedObjectives.length > 0) {
+            await supabase
+              .from("business_phases")
+              .update({ objectives: updatedObjectives })
+              .eq("id", phase.id);
+          }
+        }
+      }
+
+      // 11. Crear alerta smart_alert para notificar al equipo
       await supabase.from("smart_alerts").insert({
         alert_type: 'phases_generated',
         severity: 'info',
@@ -345,7 +451,7 @@ PROBLEMAS ACTUALES: ${org.current_problems || 'No especificados'}
 `.trim();
 }
 
-function buildPrompt(context: string, isStartup: boolean, methodology: string): string {
+function buildPrompt(context: string, isStartup: boolean, methodology: string, existingOKRs: any[]): string {
   const phaseGuidelines = isStartup ? `
 FASES PARA STARTUP (Lean Startup):
 - Fase 1: "Validación y MVP" (4-6 semanas) - Problem-Solution Fit
@@ -372,10 +478,27 @@ OBJETIVOS típicos para empresa:
 - Contrataciones
 - Reducción de costos`;
 
+  // Formatear OKRs existentes para el prompt
+  let okrsContext = "";
+  if (existingOKRs && existingOKRs.length > 0) {
+    okrsContext = `
+OKRs EXISTENTES EN LA ORGANIZACIÓN (DEBES vincular objectives a estos Key Results cuando sea relevante):
+${existingOKRs.map(obj => {
+  const krs = obj.key_results?.map((kr: any) => 
+    `  - KR ID: "${kr.id}" | "${kr.title}" | Target: ${kr.target_value} ${kr.unit || ''}`
+  ).join('\n') || '  (sin key results)';
+  return `Objetivo: "${obj.title}" (${obj.status})
+${krs}`;
+}).join('\n\n')}
+
+IMPORTANTE: Si un objetivo de fase coincide con un Key Result existente, usa su ID en "linked_kr_id".
+`;
+  }
+
   return `
 CONTEXTO DEL NEGOCIO:
 ${context}
-
+${okrsContext}
 ${phaseGuidelines}
 
 GENERA exactamente 4 fases con la siguiente estructura JSON:
@@ -393,7 +516,8 @@ GENERA exactamente 4 fases con la siguiente estructura JSON:
           "name": "Objetivo específico con número",
           "metric": "leads|revenue|users|conversions|custom",
           "target": 100,
-          "current": 0
+          "current": 0,
+          "linked_kr_id": null
         }
       ],
       "checklist": [
@@ -421,6 +545,36 @@ REGLAS:
 4. Duraciones realistas (4-12 semanas por fase)
 5. Los playbooks deben tener 5-8 pasos concretos
 6. NO uses métricas genéricas, personaliza según el contexto
-7. Responde SOLO con el JSON, sin texto adicional
+7. Si hay OKRs existentes, vincula los objectives de fase usando "linked_kr_id" con el UUID del KR
+8. Responde SOLO con el JSON, sin texto adicional
 `;
+}
+
+// Helper functions for KR creation
+function mapMetricType(metric: string): string {
+  const typeMap: Record<string, string> = {
+    'leads': 'number',
+    'revenue': 'currency',
+    'users': 'number',
+    'conversions': 'percentage',
+    'custom': 'number',
+    'percentage': 'percentage',
+    'money': 'currency',
+    'count': 'number'
+  };
+  return typeMap[metric?.toLowerCase()] || 'number';
+}
+
+function getUnitFromMetric(metric: string): string {
+  const unitMap: Record<string, string> = {
+    'leads': 'leads',
+    'revenue': '€',
+    'users': 'usuarios',
+    'conversions': '%',
+    'percentage': '%',
+    'money': '€',
+    'custom': 'unidades',
+    'count': 'unidades'
+  };
+  return unitMap[metric?.toLowerCase()] || 'unidades';
 }
