@@ -72,6 +72,8 @@ export interface OnboardingFormData {
     count: string;
     responsibilities: string;
   }>;
+  teamGrowthPlan: string;
+  availableHoursWeekly: number | null;
   
   // Paso 7: Competencia y Mercado (NUEVO)
   topCompetitors: Array<{
@@ -106,6 +108,9 @@ export interface OnboardingFormData {
   growthPriority: string;
   urgency: string;
   budgetConstraints: string;
+  // Campos para AI Phases
+  biggestChallenge: string;
+  areasToOptimize: string[];
 }
 
 const TOTAL_STEPS = 9;
@@ -164,6 +169,8 @@ const Onboarding = () => {
     buyingMotivations: ["", "", ""],
     // Paso 6
     teamStructure: [{ role: "", count: "", responsibilities: "" }],
+    teamGrowthPlan: "",
+    availableHoursWeekly: null,
     // Paso 7
     topCompetitors: [{ name: "", priceRange: "", strengths: "", weaknesses: "" }, { name: "", priceRange: "", strengths: "", weaknesses: "" }],
     marketSize: "",
@@ -190,6 +197,9 @@ const Onboarding = () => {
     growthPriority: "",
     urgency: "",
     budgetConstraints: "",
+    // Campos para AI Phases
+    biggestChallenge: "",
+    areasToOptimize: [],
   });
 
   const updateFormData = (data: Partial<OnboardingFormData>) => {
@@ -548,6 +558,13 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
           growth_priority: formData.growthPriority,
           urgency: formData.urgency,
           budget_constraints: formData.budgetConstraints,
+          // Nuevos campos para AI Phases
+          biggest_challenge: formData.biggestChallenge,
+          areas_to_optimize: formData.areasToOptimize,
+          // Campos de equipo
+          team_growth_plan: formData.teamGrowthPlan,
+          available_hours_weekly: formData.availableHoursWeekly,
+          business_stage: 'consolidated',
           contact_name: formData.contactName,
           contact_email: formData.contactEmail,
           contact_phone: formData.contactPhone,
@@ -597,7 +614,14 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
       supabase.functions.invoke('generate-workspace', {
         body: { organizationId: org.id }
       }).catch((error) => {
-        console.error('AI generation error:', error);
+        console.error('AI workspace generation error:', error);
+      });
+
+      // 9. Trigger AI Business Phases generation (async)
+      supabase.functions.invoke('generate-business-phases', {
+        body: { organizationId: org.id }
+      }).catch((error) => {
+        console.error('AI business phases generation error:', error);
       });
 
       // 9. Redirect to select-plan para que el usuario elija su organización

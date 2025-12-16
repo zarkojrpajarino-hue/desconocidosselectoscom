@@ -25,6 +25,7 @@ import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
+import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 
 interface SystemConfig {
   week_start: string;
@@ -300,7 +301,12 @@ const DashboardHome = () => {
               className="mb-2"
             />
 
-            {/* Phase Selector - Only for Admins */}
+            {/* AI Business Phases Timeline */}
+            {currentOrganizationId && (
+              <PhaseTimeline compact />
+            )}
+
+            {/* Phase Selector - Only for Admins (legacy) */}
             {isAdmin && systemConfig && (
               <PhaseSelector
                 currentPhase={systemConfig.current_phase}
