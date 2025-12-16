@@ -30,11 +30,15 @@ interface Section {
 }
 
 const Home = () => {
-  const { userProfile, currentOrganizationId, userOrganizations, switchOrganization } = useAuth();
+  const { userProfile, currentOrganizationId, userOrganizations, user, switchOrganization } = useAuth();
   const planAccess = usePlanAccess();
   const navigate = useNavigate();
   
   const currentOrganization = userOrganizations.find(org => org.organization_id === currentOrganizationId);
+  
+  // Nombre y email con fallbacks
+  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'Usuario';
+  const displayEmail = userProfile?.email || user?.email || '';
 
   const sections: Section[] = [
     {
@@ -126,12 +130,12 @@ const Home = () => {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 md:gap-6">
                 <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-primary flex items-center justify-center text-xl md:text-2xl font-bold text-white shadow-lg flex-shrink-0">
-                    {userProfile?.full_name?.charAt(0) || 'U'}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h1 className="text-xl md:text-3xl font-bold text-foreground truncate">
-                        Bienvenido {userProfile?.full_name || 'Usuario'}
+                        Bienvenido {displayName}
                       </h1>
                       <Badge 
                         variant="outline" 
@@ -146,7 +150,11 @@ const Home = () => {
                         {planAccess.planName}
                       </Badge>
                     </div>
-                    <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">@{userProfile?.username}</p>
+                    {displayEmail && (
+                      <p className="text-xs md:text-sm text-muted-foreground mb-1 truncate">
+                        📧 {displayEmail}
+                      </p>
+                    )}
                     {currentOrganization && (
                       <div className="flex items-center gap-1 text-xs md:text-sm mt-1">
                         <Building2 className="h-3 w-3 flex-shrink-0" />

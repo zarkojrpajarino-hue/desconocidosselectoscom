@@ -283,7 +283,7 @@ function NavItem({
 }
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
-  const { userProfile, currentOrganizationId, userOrganizations, signOut } = useAuth();
+  const { userProfile, currentOrganizationId, userOrganizations, signOut, user } = useAuth();
   const planAccess = usePlanAccess();
   const navigate = useNavigate();
   
@@ -417,16 +417,16 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         )}>
           <Avatar className="h-9 w-9 border-2 border-sidebar-accent/20">
             <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-              {userProfile?.full_name?.charAt(0) || 'U'}
+              {(userProfile?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-sidebar-foreground truncate">
-                {userProfile?.full_name || 'Usuario'}
+                {userProfile?.full_name || user?.email?.split('@')[0] || 'Usuario'}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                @{userProfile?.username}
+                {userProfile?.email || user?.email || ''}
               </p>
             </div>
           )}
