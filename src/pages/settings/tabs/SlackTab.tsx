@@ -9,9 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MessageSquare, Check, X } from 'lucide-react';
+import { MessageSquare, Check, X, Send, TestTube, Terminal } from 'lucide-react';
 import { useSlackIntegration } from '@/hooks/integrations';
 import { SLACK_EVENT_TYPES } from '@/types/integrations';
+import { IntegrationStatusBadge } from '@/components/integrations';
 
 interface SlackTabProps {
   organizationId: string | null;
@@ -24,12 +25,23 @@ export function SlackTab({ organizationId }: SlackTabProps) {
     mappings, 
     loading, 
     connecting,
+    sending,
     connect,
     disconnect,
     toggleWorkspace,
     updateMapping,
-    toggleMapping
+    toggleMapping,
+    sendTestNotification,
+    isConnected
   } = useSlackIntegration(organizationId);
+
+  const getConnectionStatus = () => {
+    if (loading) return 'pending';
+    if (!isConnected) return 'disconnected';
+    if (sending) return 'syncing';
+    if (workspace?.enabled) return 'active';
+    return 'partial';
+  };
 
   if (loading) {
     return (
@@ -73,9 +85,7 @@ export function SlackTab({ organizationId }: SlackTabProps) {
               <div>
                 <p className="font-semibold">{workspace.team_name}</p>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Badge variant="outline" className="text-green-500 border-green-500">
-                    <Check className="w-3 h-3 mr-1" /> Conectado
-                  </Badge>
+                  <IntegrationStatusBadge status={getConnectionStatus()} />
                   <span>{workspace.total_messages_sent} mensajes enviados</span>
                 </div>
               </div>
@@ -92,6 +102,67 @@ export function SlackTab({ organizationId }: SlackTabProps) {
                 Desconectar
               </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Slash Commands Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Terminal className="w-5 h-5" />
+            Comandos Slash Disponibles
+          </CardTitle>
+          <CardDescription>
+            Usa estos comandos directamente en Slack para acceder a OPTIMUS-K
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Leads & CRM</p>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p><code className="bg-muted px-1 rounded">/leads</code> - Lista de leads</p>
+                <p><code className="bg-muted px-1 rounded">/leads hot</code> - Leads calientes</p>
+                <p><code className="bg-muted px-1 rounded">/leads stats</code> - Estadísticas</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Tareas</p>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p><code className="bg-muted px-1 rounded">/tasks</code> - Tareas de hoy</p>
+                <p><code className="bg-muted px-1 rounded">/tasks pending</code> - Pendientes</p>
+                <p><code className="bg-muted px-1 rounded">/tasks week</code> - Resumen semanal</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Equipo & Reportes</p>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p><code className="bg-muted px-1 rounded">/team</code> - Rendimiento equipo</p>
+                <p><code className="bg-muted px-1 rounded">/report daily</code> - Reporte diario</p>
+                <p><code className="bg-muted px-1 rounded">/report weekly</code> - Reporte semanal</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">OKRs & Métricas</p>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p><code className="bg-muted px-1 rounded">/okrs</code> - OKRs activos</p>
+                <p><code className="bg-muted px-1 rounded">/metrics</code> - Métricas del mes</p>
+                <p><code className="bg-muted px-1 rounded">/sync</code> - Estado integraciones</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={sendTestNotification}
+              disabled={sending}
+            >
+              <TestTube className="w-4 h-4 mr-2" />
+              {sending ? 'Enviando...' : 'Enviar Notificación de Prueba'}
+            </Button>
           </div>
         </CardContent>
       </Card>

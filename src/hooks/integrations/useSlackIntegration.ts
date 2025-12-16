@@ -3,12 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SlackWorkspace, SlackChannel, SlackEventMapping } from '@/types/integrations';
 
+interface SendNotificationOptions {
+  eventType: string;
+  message: string;
+  blocks?: unknown[];
+}
+
 export function useSlackIntegration(organizationId: string | null) {
   const [workspace, setWorkspace] = useState<SlackWorkspace | null>(null);
   const [channels, setChannels] = useState<SlackChannel[]>([]);
   const [mappings, setMappings] = useState<SlackEventMapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const loadSlackData = useCallback(async () => {
     if (!organizationId) return;
@@ -133,17 +140,59 @@ export function useSlackIntegration(organizationId: string | null) {
     }
   };
 
+  // Send a notification to Slack
+  const sendNotification = async ({ eventType, message, blocks }: SendNotificationOptions) => {
+    if (!workspace || !workspace.enabled) {
+      toast.error('Slack no está conectado o está desactivado');
+      return false;
+    }
+
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('slack-notify', {
+        body: {
+          organization_id: organizationId,
+          event_type: eventType,
+          message,
+          blocks,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Notificación enviada a Slack');
+      return true;
+    } catch (error) {
+      toast.error('Error al enviar notificación');
+      return false;
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // Test notification
+  const sendTestNotification = async () => {
+    return sendNotification({
+      eventType: 'test',
+      message: '🧪 *Notificación de prueba*\n\n¡Tu integración con Slack está funcionando correctamente!',
+    });
+  };
+
   return {
     workspace,
     channels,
     mappings,
     loading,
     connecting,
+    sending,
     connect,
     disconnect,
     toggleWorkspace,
     updateMapping,
     toggleMapping,
-    refresh: loadSlackData
+    sendNotification,
+    sendTestNotification,
+    refresh: loadSlackData,
+    isConnected: !!workspace,
   };
 }
