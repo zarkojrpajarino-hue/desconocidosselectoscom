@@ -130,6 +130,12 @@ serve(async (req) => {
       case '/metrics':
         return await handleMetricsCommand(supabase, organizationId)
       
+      case '/team':
+        return await handleTeamCommand(supabase, organizationId, payload.text)
+      
+      case '/report':
+        return await handleReportCommand(supabase, organizationId, payload.text)
+      
       case '/optimusk':
       case '/ok':
         return await handleHelpCommand()
@@ -583,11 +589,177 @@ async function handleHelpCommand(): Promise<Response> {
     `• \`/tasks\` - Tareas de hoy\n` +
     `• \`/tasks pending\` - Pendientes\n` +
     `• \`/tasks week\` - Resumen semanal\n\n` +
+    `*Equipo:*\n` +
+    `• \`/team\` - Rendimiento del equipo\n` +
+    `• \`/team [nombre]\` - Stats de un miembro\n\n` +
+    `*Reportes:*\n` +
+    `• \`/report daily\` - Reporte diario\n` +
+    `• \`/report weekly\` - Reporte semanal\n\n` +
     `*OKRs y Métricas:*\n` +
     `• \`/okrs\` - OKRs activos\n` +
     `• \`/metrics\` - Métricas del mes\n\n` +
     `*Sincronización:*\n` +
     `• \`/sync\` - Estado integraciones\n` +
     `• \`/sync hubspot\` - Sincronizar HubSpot`
+  )
+}
+
+// /team command handler
+async function handleTeamCommand(
+  supabase: SupabaseClientAny,
+  organizationId: string,
+  text: string
+): Promise<Response> {
+  const searchName = text.trim().toLowerCase()
+
+  // Get team members with their task stats
+  const { data: members } = await supabase
+    .from('user_roles')
+    .select(`
+      user_id,
+      role,
+      users!inner (
+        id,
+        full_name,
+        email
+      )
+    `)
+    .eq('organization_id', organizationId)
+
+  if (!members || members.length === 0) {
+    return slackResponse('👥 No hay miembros en el equipo')
+  }
+
+  // If searching for specific member
+  if (searchName) {
+    // deno-lint-ignore no-explicit-any
+    const member = members.find((m: any) => 
+      m.users?.full_name?.toLowerCase().includes(searchName)
+    )
+    
+    if (!member) {
+      return slackResponse(`❌ No se encontró a "${text}"`)
+    }
+
+    // Get member's task completions this week
+    const weekStart = new Date()
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+    
+    const { data: completions } = await supabase
+      .from('task_completions')
+      .select('id, validated_by_leader')
+      .eq('user_id', member.user_id)
+      .gte('completed_at', weekStart.toISOString())
+
+    const total = completions?.length || 0
+    const validated = completions?.filter((c: { validated_by_leader?: boolean }) => c.validated_by_leader).length || 0
+
+    // deno-lint-ignore no-explicit-any
+    const userData = member.users as any
+    return slackResponse(
+      `👤 *${userData.full_name}*\n` +
+      `📧 ${userData.email}\n` +
+      `🎭 Rol: ${member.role}\n\n` +
+      `📊 *Esta semana:*\n` +
+      `• Tareas completadas: ${total}\n` +
+      `• Validadas: ${validated}\n` +
+      `• Tasa: ${total > 0 ? Math.round((validated / total) * 100) : 0}%`
+    )
+  }
+
+  // Overview of all team members
+  const blocks = [
+    {
+      type: 'header',
+      text: { type: 'plain_text', text: `👥 Equipo (${members.length} miembros)` }
+    },
+    { type: 'divider' },
+  ]
+
+  // deno-lint-ignore no-explicit-any
+  for (const member of members.slice(0, 10) as any[]) {
+    const roleEmoji = member.role === 'admin' ? '👑' : member.role === 'leader' ? '⭐' : '👤'
+    const userData = member.users
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `${roleEmoji} *${userData?.full_name || 'Sin nombre'}*\n${member.role}`
+      }
+    })
+  }
+
+  return slackResponse(`👥 ${members.length} miembros`, blocks)
+}
+
+// /report command handler
+async function handleReportCommand(
+  supabase: SupabaseClientAny,
+  organizationId: string,
+  text: string
+): Promise<Response> {
+  const reportType = text.trim().toLowerCase() || 'daily'
+
+  const today = new Date()
+  let startDate: Date
+  let periodLabel: string
+
+  if (reportType === 'weekly') {
+    startDate = new Date(today)
+    startDate.setDate(today.getDate() - 7)
+    periodLabel = 'Últimos 7 días'
+  } else {
+    startDate = new Date(today)
+    startDate.setHours(0, 0, 0, 0)
+    periodLabel = 'Hoy'
+  }
+
+  // Gather data
+  const [tasks, leads, metrics] = await Promise.all([
+    supabase
+      .from('task_schedule')
+      .select('status')
+      .eq('organization_id', organizationId)
+      .gte('start_time', startDate.toISOString()),
+    supabase
+      .from('leads')
+      .select('stage, estimated_value')
+      .eq('organization_id', organizationId)
+      .gte('created_at', startDate.toISOString()),
+    supabase
+      .from('business_metrics')
+      .select('revenue, leads_generated')
+      .eq('organization_id', organizationId)
+      .gte('metric_date', startDate.toISOString().split('T')[0])
+      .order('metric_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  ])
+
+  const taskData = tasks.data || []
+  const leadData = leads.data || []
+  const metricsData = metrics.data
+
+  const totalTasks = taskData.length
+  const completedTasks = taskData.filter((t: { status?: string }) => t.status === 'completed').length
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+  const newLeads = leadData.length
+  const pipelineValue = leadData.reduce((sum: number, l: { estimated_value?: number }) => sum + (l.estimated_value || 0), 0)
+
+  const revenue = metricsData?.revenue || 0
+
+  const reportEmoji = reportType === 'weekly' ? '📅' : '📆'
+
+  return slackResponse(
+    `${reportEmoji} *Reporte ${reportType === 'weekly' ? 'Semanal' : 'Diario'}*\n` +
+    `_${periodLabel}_\n\n` +
+    `*📋 Tareas*\n` +
+    `• Completadas: ${completedTasks}/${totalTasks} (${completionRate}%)\n\n` +
+    `*🎯 Leads*\n` +
+    `• Nuevos: ${newLeads}\n` +
+    `• Valor pipeline: €${pipelineValue.toLocaleString()}\n\n` +
+    `*💰 Revenue*\n` +
+    `• Total: €${revenue.toLocaleString()}`
   )
 }
