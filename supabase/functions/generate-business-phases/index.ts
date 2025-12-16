@@ -206,9 +206,10 @@ RESPONDE SOLO EN JSON válido sin markdown.`
       };
     });
 
-    const { error: insertError } = await supabase
+    const { data: insertedPhases, error: insertError } = await supabase
       .from("business_phases")
-      .insert(phasesToInsert);
+      .insert(phasesToInsert)
+      .select();
 
     if (insertError) {
       console.error("Insert error:", insertError);
@@ -218,8 +219,71 @@ RESPONDE SOLO EN JSON válido sin markdown.`
       );
     }
 
+    // 7. Obtener admin de la organización para asignar tareas
+    const { data: adminRole } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("organization_id", organization_id)
+      .eq("role", "admin")
+      .limit(1)
+      .maybeSingle();
+
+    const adminUserId = adminRole?.user_id;
+
+    if (adminUserId && insertedPhases) {
+      // 8. Eliminar tareas existentes generadas por AI (con phase_id)
+      await supabase
+        .from("tasks")
+        .delete()
+        .eq("organization_id", organization_id)
+        .not("phase_id", "is", null);
+
+      // 9. Crear tareas reales desde el checklist de cada fase
+      const tasksToInsert: any[] = [];
+      
+      for (const phase of insertedPhases) {
+        const checklist = phase.checklist as any[];
+        if (checklist && Array.isArray(checklist)) {
+          checklist.forEach((item, index) => {
+            tasksToInsert.push({
+              organization_id,
+              phase_id: phase.id,
+              user_id: adminUserId,
+              title: item.task,
+              description: `Tarea de Fase ${phase.phase_number}: ${phase.phase_name}`,
+              phase: phase.phase_number,
+              area: item.category || 'general',
+              task_category: item.category || 'operaciones',
+              order_index: index,
+              estimated_hours: 2, // Estimación por defecto
+              is_personal: false,
+              playbook: phase.playbook,
+            });
+          });
+        }
+      }
+
+      if (tasksToInsert.length > 0) {
+        const { error: tasksError } = await supabase
+          .from("tasks")
+          .insert(tasksToInsert);
+
+        if (tasksError) {
+          console.error("Tasks insert error:", tasksError);
+          // No fallar completamente, las fases ya se crearon
+        } else {
+          console.log(`Created ${tasksToInsert.length} tasks from phase checklists`);
+        }
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, phases: phasesToInsert, methodology }),
+      JSON.stringify({ 
+        success: true, 
+        phases: insertedPhases, 
+        methodology,
+        tasks_created: adminUserId ? true : false
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
