@@ -14,7 +14,11 @@ serve(async (req) => {
     const { user_id } = await req.json();
 
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID')!;
-    const REDIRECT_URI = `${req.headers.get('origin')}/auth/google/callback`;
+    const origin = req.headers.get('origin');
+    const REDIRECT_URI = `${origin}/auth/google/callback`;
+    
+    console.log('📍 Origin:', origin);
+    console.log('📍 Redirect URI:', REDIRECT_URI);
 
     const scopes = [
       'https://www.googleapis.com/auth/calendar',
