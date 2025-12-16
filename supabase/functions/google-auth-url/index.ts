@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { generateOAuthState } from '../_shared/oauth-csrf.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,12 +14,20 @@ serve(async (req) => {
   try {
     const { user_id } = await req.json();
 
+    if (!user_id) {
+      throw new Error('user_id is required');
+    }
+
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID')!;
     const origin = req.headers.get('origin');
     const REDIRECT_URI = `${origin}/auth/google/callback`;
     
     console.log('📍 Origin:', origin);
     console.log('📍 Redirect URI:', REDIRECT_URI);
+
+    // Generate secure CSRF-protected state token
+    const state = await generateOAuthState(user_id);
+    console.log('🔐 Generated secure state token for user:', user_id);
 
     const scopes = [
       'https://www.googleapis.com/auth/calendar',
@@ -32,7 +41,7 @@ serve(async (req) => {
     authUrl.searchParams.set('scope', scopes);
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'consent');
-    authUrl.searchParams.set('state', user_id); // Pasar user_id en state
+    authUrl.searchParams.set('state', state); // Secure CSRF token
 
     console.log('🔗 Generated auth URL for user:', user_id);
 
@@ -40,10 +49,11 @@ serve(async (req) => {
       JSON.stringify({ auth_url: authUrl.toString() }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error: any) {
-    console.error('❌ Error generating auth URL:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Error generating auth URL:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

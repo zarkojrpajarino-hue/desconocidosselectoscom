@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateOAuthState } from '../_shared/oauth-csrf.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,11 +18,22 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const { code, user_id } = await req.json();
+    const { code, state } = await req.json();
 
-    if (!code || !user_id) {
-      throw new Error('Missing required parameters: code and user_id');
+    if (!code || !state) {
+      throw new Error('Missing required parameters: code and state');
     }
+
+    // Validate CSRF state token and extract user_id
+    const stateValidation = await validateOAuthState(state);
+    
+    if (!stateValidation.valid || !stateValidation.identifier) {
+      console.error('❌ [CALLBACK] Invalid state token:', stateValidation.error);
+      throw new Error(`Invalid or expired state token: ${stateValidation.error}`);
+    }
+    
+    const user_id = stateValidation.identifier;
+    console.log('✅ [CALLBACK] State token validated for user:', user_id);
 
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
     const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
@@ -94,7 +106,6 @@ serve(async (req) => {
     tokenExpiry.setSeconds(tokenExpiry.getSeconds() + (tokens.expires_in || 3600));
 
     // Usar el refresh_token existente si Google no devuelve uno nuevo
-    // (Google solo devuelve refresh_token en la primera autorización o con prompt=consent)
     const refreshTokenToSave = tokens.refresh_token || existingToken?.refresh_token;
 
     if (!refreshTokenToSave) {
