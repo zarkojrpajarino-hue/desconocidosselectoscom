@@ -9,7 +9,7 @@ import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb,
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
-import PhaseSelector from '@/components/PhaseSelector';
+// PhaseSelector removed - replaced by PhaseTimeline
 import WorkModeSelector from '@/components/WorkModeSelector';
 import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
@@ -306,13 +306,7 @@ const DashboardHome = () => {
               <PhaseTimeline compact />
             )}
 
-            {/* Phase Selector - Only for Admins (legacy) */}
-            {isAdmin && systemConfig && (
-              <PhaseSelector
-                currentPhase={systemConfig.current_phase}
-                onPhaseChange={fetchSystemConfig}
-              />
-            )}
+            {/* PhaseSelector removed - PhaseTimeline replaces it */}
 
             {/* Countdown */}
             <CountdownTimer 
