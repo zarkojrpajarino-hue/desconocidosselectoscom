@@ -262,8 +262,12 @@ RESPONDE SOLO EN JSON válido sin markdown.`
       .select("id, full_name, email")
       .in("id", userIds);
 
-    // 7.3 Crear mapa de usuario a rol funcional
+    // 7.3 Crear mapa de usuario a rol funcional (usando los 10 roles de PREDEFINED_ROLES)
+    // Roles disponibles: admin, marketing, ventas, finanzas, operaciones, producto, rrhh, legal, soporte, custom
     const userRoleMap = new Map<string, string>();
+    
+    // También necesitamos un mapa inverso: rol -> usuario (el "experto" de cada área para tareas colaborativas)
+    const roleToUserMap = new Map<string, string>(); // rol -> userId del experto
     
     if (usersInfo) {
       for (const user of usersInfo) {
@@ -274,27 +278,44 @@ RESPONDE SOLO EN JSON válido sin markdown.`
           user.full_name?.toLowerCase().includes(t.name?.toLowerCase() || '')
         );
         
+        let assignedRole = 'general';
+        
         if (teamMember) {
-          // Normalizar el rol funcional
+          // Normalizar el rol funcional a uno de los 10 roles
           const role = teamMember.role?.toLowerCase() || '';
-          if (role.includes('ceo') || role.includes('director') || role.includes('fundador') || role.includes('founder')) {
-            userRoleMap.set(user.id, 'ceo');
-          } else if (role.includes('marketing') || role.includes('growth')) {
-            userRoleMap.set(user.id, 'marketing');
+          if (role.includes('ceo') || role.includes('director') || role.includes('fundador') || role.includes('founder') || role.includes('admin')) {
+            assignedRole = 'admin';
+          } else if (role.includes('marketing') || role.includes('growth') || role.includes('redes') || role.includes('social')) {
+            assignedRole = 'marketing';
           } else if (role.includes('venta') || role.includes('sales') || role.includes('comercial')) {
-            userRoleMap.set(user.id, 'ventas');
-          } else if (role.includes('operacion') || role.includes('operations') || role.includes('admin')) {
-            userRoleMap.set(user.id, 'operaciones');
-          } else if (role.includes('product') || role.includes('desarrollo') || role.includes('dev') || role.includes('tech')) {
-            userRoleMap.set(user.id, 'producto');
+            assignedRole = 'ventas';
+          } else if (role.includes('finanza') || role.includes('finance') || role.includes('contab') || role.includes('accounting')) {
+            assignedRole = 'finanzas';
+          } else if (role.includes('operacion') || role.includes('operations') || role.includes('logist')) {
+            assignedRole = 'operaciones';
+          } else if (role.includes('product') || role.includes('desarrollo') || role.includes('dev') || role.includes('tech') || role.includes('ux')) {
+            assignedRole = 'producto';
+          } else if (role.includes('rrhh') || role.includes('recurso') || role.includes('talento') || role.includes('hr') || role.includes('people')) {
+            assignedRole = 'rrhh';
+          } else if (role.includes('legal') || role.includes('jurídic') || role.includes('compliance')) {
+            assignedRole = 'legal';
+          } else if (role.includes('soporte') || role.includes('support') || role.includes('cliente') || role.includes('customer')) {
+            assignedRole = 'soporte';
           } else {
-            userRoleMap.set(user.id, 'general');
+            assignedRole = 'custom';
           }
-        } else {
-          userRoleMap.set(user.id, 'general'); // Default si no hay match
+        }
+        
+        userRoleMap.set(user.id, assignedRole);
+        
+        // El primer usuario con cada rol se convierte en el "experto" de esa área
+        if (!roleToUserMap.has(assignedRole)) {
+          roleToUserMap.set(assignedRole, user.id);
         }
       }
     }
+    
+    console.log(`Role mapping created: ${userRoleMap.size} users mapped, ${roleToUserMap.size} role experts identified`);
 
     // Si no hay usuarios, usar el admin como fallback
     let usersToAssign = userIds;
@@ -351,27 +372,24 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         
         console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
         
-        // Para CADA usuario, crear sus tareas personalizadas
+        // Para CADA usuario, crear sus 12 tareas personalizadas con 70/30 colaborativo/individual
         for (const userId of usersToAssign) {
           const userFunctionalRole = userRoleMap.get(userId) || 'general';
           
-          // Filtrar tareas que corresponden al rol del usuario
+          // Filtrar tareas que corresponden al rol del usuario o son generales
           const userTasks = checklist.filter(item => {
             const taskRole = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
             
-            // Si el usuario es CEO/general, recibe tareas de cualquier rol
-            if (userFunctionalRole === 'ceo' || userFunctionalRole === 'general') {
-              return true; // CEO ve todas las tareas
+            // Si el usuario es admin/general, recibe tareas de cualquier rol
+            if (userFunctionalRole === 'admin' || userFunctionalRole === 'general') {
+              return true;
             }
             
-            // Otros usuarios solo ven tareas de su área o generales
+            // Otros usuarios ven tareas de su área o generales
             return taskRole === userFunctionalRole || 
                    taskRole === 'general' || 
                    taskRole === 'equipo' ||
-                   (userFunctionalRole === 'marketing' && taskRole === 'marketing') ||
-                   (userFunctionalRole === 'ventas' && (taskRole === 'ventas' || taskRole === 'sales')) ||
-                   (userFunctionalRole === 'operaciones' && taskRole === 'operaciones') ||
-                   (userFunctionalRole === 'producto' && (taskRole === 'producto' || taskRole === 'product'));
+                   taskRole.includes(userFunctionalRole);
           });
 
           // Asegurar que cada usuario tenga exactamente 12 tareas
@@ -383,25 +401,63 @@ RESPONDE SOLO EN JSON válido sin markdown.`
             tasksForUser.push(...remaining.slice(0, 12 - tasksForUser.length));
           }
 
+          // IMPLEMENTAR 70/30: 70% colaborativas (8-9), 30% individuales (3-4)
+          const COLLABORATIVE_PERCENTAGE = 0.7;
+          const collaborativeCount = Math.round(tasksForUser.length * COLLABORATIVE_PERCENTAGE); // 8-9 de 12
+
           tasksForUser.forEach((item, index) => {
             const taskTitle = item.task || item.title || `Tarea ${index + 1}`;
+            const taskCategory = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
+            
+            // Determinar si esta tarea es colaborativa o individual
+            const isCollaborative = index < collaborativeCount; // Primeras 8-9 son colaborativas
+            
+            // Para tareas colaborativas, encontrar el experto del área (líder)
+            let leaderId = null;
+            if (isCollaborative) {
+              // El líder es el experto del área de la tarea
+              // Mapear categoría de tarea a rol funcional
+              let leaderRole = taskCategory;
+              if (taskCategory === 'sales') leaderRole = 'ventas';
+              if (taskCategory === 'product') leaderRole = 'producto';
+              if (taskCategory === 'support') leaderRole = 'soporte';
+              if (taskCategory === 'hr') leaderRole = 'rrhh';
+              if (taskCategory === 'finance') leaderRole = 'finanzas';
+              
+              // Buscar el experto de esa área
+              const expertId = roleToUserMap.get(leaderRole);
+              
+              // Si hay un experto Y no es el mismo usuario, asignarlo como líder
+              if (expertId && expertId !== userId) {
+                leaderId = expertId;
+              } else {
+                // Si el usuario ES el experto del área, buscar otro experto o un admin
+                leaderId = roleToUserMap.get('admin') || usersToAssign.find(id => id !== userId) || null;
+              }
+            }
+            // Para tareas individuales (30%), leader_id queda null - el usuario trabaja solo
+
             tasksToInsert.push({
               organization_id,
               phase_id: phase.id,
               user_id: userId,
+              leader_id: leaderId, // null para individuales, expertId para colaborativas
               title: taskTitle,
-              description: `Tarea de Fase ${phase.phase_number}: ${phase.phase_name}`,
+              description: isCollaborative 
+                ? `Tarea colaborativa de Fase ${phase.phase_number}: ${phase.phase_name}. Trabaja con tu líder de ${taskCategory} para completarla.`
+                : `Tarea individual de Fase ${phase.phase_number}: ${phase.phase_name}. Tarea de tu especialidad.`,
               phase: phase.phase_number,
-              area: item.category || 'general',
-              task_category: item.category || 'operaciones',
+              area: taskCategory,
+              task_category: taskCategory || 'operaciones',
               order_index: index,
-              estimated_hours: 2,
-              is_personal: false,
+              estimated_hours: isCollaborative ? 3 : 2, // Colaborativas requieren más tiempo
+              is_personal: !isCollaborative, // Individual = personal
               playbook: phase.playbook || {},
             });
           });
           
-          console.log(`Created ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole})`);
+          const individualCount = tasksForUser.length - collaborativeCount;
+          console.log(`Created ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole}): ${collaborativeCount} collaborative, ${individualCount} individual`);
         }
       }
 
@@ -671,12 +727,16 @@ GENERA exactamente 4 fases con la siguiente estructura JSON:
 REGLAS CRÍTICAS:
 1. Cada fase debe tener 3-5 objetivos MEDIBLES
 2. Cada fase debe tener EXACTAMENTE 12 tareas del checklist (ni más, ni menos)
-3. Las 12 tareas deben distribuirse entre roles funcionales:
-   - 2 tareas para CEO/Dirección (estrategia, visión, decisiones clave)
-   - 3 tareas para Marketing (campañas, contenido, marca, redes sociales)
-   - 3 tareas para Ventas (leads, llamadas, seguimiento, cierre)
-   - 2 tareas para Operaciones (procesos, eficiencia, automatización)
-   - 2 tareas para Producto (desarrollo, UX, mejoras, testing)
+3. Las 12 tareas deben tener functional_role variado para cubrir diferentes áreas:
+   - admin (dirección, estrategia)
+   - marketing (campañas, contenido, redes)
+   - ventas (leads, pipeline, cierre)
+   - finanzas (control, presupuestos)
+   - operaciones (procesos, eficiencia)
+   - producto (desarrollo, UX)
+   - rrhh (equipo, cultura)
+   - soporte (cliente, incidencias)
+   - general (tareas transversales)
 4. Objetivos y tareas deben ser ESPECÍFICOS para este negocio
 5. Duraciones realistas (4-12 semanas por fase)
 6. Los playbooks deben tener 5-8 pasos concretos
