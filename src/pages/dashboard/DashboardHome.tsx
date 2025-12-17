@@ -429,25 +429,7 @@ const DashboardHome = () => {
             {/* Progress Bar */}
             <ProgressBar completedTasks={fullyCompletedCount} totalTasks={tasks.length} />
 
-            {/* Mensaje de Transición */}
-            {isTransition && (
-              <Card className="shadow-card border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-                <CardContent className="flex items-center gap-4 py-6">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <Clock className="h-6 w-6 text-amber-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">La semana ha terminado</h3>
-                    <p className="text-muted-foreground">
-                      La nueva semana comienza hoy a las 13:30. 
-                      Prepara tu disponibilidad para la semana del {format(getNextWednesdayStart(), "d 'de' MMMM", { locale: es })}.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tareas Atrasadas - Colapsable */}
+            {/* Tareas Atrasadas - SIEMPRE VISIBLE si hay tareas atrasadas */}
             {overdueTasks.length > 0 && (
               <Collapsible open={overdueTasksOpen} onOpenChange={setOverdueTasksOpen}>
                 <Card className="shadow-card border-destructive/30 bg-destructive/5">
@@ -492,6 +474,24 @@ const DashboardHome = () => {
                   </CollapsibleContent>
                 </Card>
               </Collapsible>
+            )}
+
+            {/* Mensaje de Transición */}
+            {isTransition && (
+              <Card className="shadow-card border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+                <CardContent className="flex items-center gap-4 py-6">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">La semana ha terminado</h3>
+                    <p className="text-muted-foreground">
+                      La nueva semana comienza hoy a las 13:30. 
+                      Prepara tu disponibilidad para la semana del {format(getNextWednesdayStart(), "d 'de' MMMM", { locale: es })}.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
             {/* Mis Tareas Esta Semana - Solo cuando NO estamos en transición */}
