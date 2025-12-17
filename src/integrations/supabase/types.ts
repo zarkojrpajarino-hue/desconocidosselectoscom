@@ -3832,6 +3832,7 @@ export type Database = {
           organization_id: string | null
           owner_user_id: string | null
           phase: number | null
+          playbook: Json | null
           quarter: string
           revenue_impact: number | null
           status: string
@@ -3850,6 +3851,7 @@ export type Database = {
           organization_id?: string | null
           owner_user_id?: string | null
           phase?: number | null
+          playbook?: Json | null
           quarter: string
           revenue_impact?: number | null
           status?: string
@@ -3868,6 +3870,7 @@ export type Database = {
           organization_id?: string | null
           owner_user_id?: string | null
           phase?: number | null
+          playbook?: Json | null
           quarter?: string
           revenue_impact?: number | null
           status?: string

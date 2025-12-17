@@ -23,6 +23,16 @@ import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
+import { OKRPlaybook } from './okrs/OKRPlaybook';
+
+interface PlaybookData {
+  title: string;
+  description: string;
+  steps: string[];
+  tips: string[];
+  resources?: string[];
+  daily_focus?: string[];
+}
 
 interface KeyResultDB {
   id: string;
@@ -58,6 +68,7 @@ interface Objective {
   on_track_krs: number;
   at_risk_krs: number;
   behind_krs: number;
+  playbook?: PlaybookData | null;
 }
 
 const OKRsDashboard = () => {
@@ -109,7 +120,7 @@ const OKRsDashboard = () => {
       // MULTI-TENANCY: Filter by organization_id
       let query = supabase
         .from('objectives')
-        .select('*')
+        .select('*, playbook')
         .eq('owner_user_id', user?.id)
         .ilike('quarter', `%${currentWeekStart}%`);
 
@@ -170,7 +181,8 @@ const OKRsDashboard = () => {
             achieved_krs,
             on_track_krs,
             at_risk_krs,
-            behind_krs
+            behind_krs,
+            playbook: obj.playbook ? (obj.playbook as unknown as PlaybookData) : null
           };
         })
       );
@@ -518,6 +530,15 @@ const OKRsDashboard = () => {
                     </CardContent>
                   </Card>
                 ))}
+
+                {/* Playbook del OKR */}
+                {objective.playbook && (
+                  <OKRPlaybook 
+                    playbook={objective.playbook} 
+                    objectiveTitle={objective.title}
+                    className="mt-4"
+                  />
+                )}
               </CardContent>
             </Card>
           ))}
