@@ -756,10 +756,8 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
                 type="calendar"
                 action="sync"
                 data={{
-                  title: task.title,
-                  description: task.description || '',
-                  start_time: new Date().toISOString(),
-                  end_time: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+                  task_id: task.id,
+                  user_id: userId
                 }}
                 label="Calendario"
                 size="sm"
