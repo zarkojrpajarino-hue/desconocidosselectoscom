@@ -207,37 +207,30 @@ const DashboardHome = () => {
   const checkAvailabilityStatus = async () => {
     if (!user) return;
     try {
-      // Calcular próximo miércoles
+      // Usar las funciones de weekUtils para obtener la semana actual
+      const currentWeekStart = getCurrentWeekStart(new Date());
+      const currentWeekDeadline = getCurrentWeekDeadline(new Date());
       const today = new Date();
-      const dayOfWeek = today.getDay();
-      let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
+      
+      const weekStartStr = currentWeekStart.toISOString().split('T')[0];
+      setNextWeekStart(weekStartStr);
+      setAvailabilityDeadline(currentWeekDeadline);
 
-      // Si hoy es miércoles y ya pasó la 13:30, siguiente miércoles
-      if (dayOfWeek === 3 && today.getHours() >= 13 && today.getMinutes() >= 30) {
-        daysUntilWednesday = 7;
-      }
-      const nextWed = new Date(today);
-      nextWed.setDate(today.getDate() + daysUntilWednesday);
-      nextWed.setHours(13, 30, 0, 0);
-      setNextWeekStart(nextWed.toISOString().split('T')[0]);
-
-      // Calcular deadline (Lunes 13:00 de esa semana)
-      const deadline = new Date(nextWed);
-      deadline.setDate(nextWed.getDate() - 2); // 2 días antes = Lunes
-      deadline.setHours(13, 0, 0, 0);
-      setAvailabilityDeadline(deadline);
-
-      // Verificar si ya pasó el deadline
-      if (today > deadline) {
-        // Ya pasó el deadline, no bloquear
+      // Verificar si ya pasó el deadline (Miércoles 10:30)
+      if (today > currentWeekDeadline) {
+        // Ya pasó el deadline de esta semana, no bloquear
         setShowAvailabilityBlock(false);
         return;
       }
 
-      // Verificar si usuario completó disponibilidad
-      const {
-        data
-      } = await supabase.from('user_weekly_availability').select('submitted_at').eq('user_id', user.id).eq('week_start', nextWed.toISOString().split('T')[0]).maybeSingle();
+      // Verificar si usuario completó disponibilidad para la semana actual
+      const { data } = await supabase
+        .from('user_weekly_availability')
+        .select('submitted_at')
+        .eq('user_id', user.id)
+        .eq('week_start', weekStartStr)
+        .maybeSingle();
+        
       if (!data || !data.submitted_at) {
         // No ha completado, mostrar bloqueo
         setShowAvailabilityBlock(true);

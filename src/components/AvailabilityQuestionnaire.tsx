@@ -139,7 +139,7 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
         </CardTitle>
         <CardDescription>
           Semana del {new Date(weekStart).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-          {' '}- Plazo hasta <strong>Lunes 13:30</strong>
+          {' '}- Plazo hasta <strong>Miércoles 10:30</strong>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -250,11 +250,10 @@ const AvailabilityQuestionnaire = ({ userId, weekStart, onComplete }: Availabili
             <div className="text-sm text-blue-900 dark:text-blue-100 space-y-1">
               <p className="font-medium">📋 Ciclo de la Agenda:</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li><strong>Hasta Lunes 13:30:</strong> Plazo para rellenar disponibilidad</li>
-                <li><strong>Lunes 13:01:</strong> IA genera agendas coordinadas (automático)</li>
-                <li><strong>Lunes 13:30 - Miércoles 13:29:</strong> Puedes revisar y sugerir cambios</li>
-                <li><strong>Miércoles 10:30:</strong> Se cierra la semana anterior</li>
-                <li><strong>Miércoles 13:30:</strong> Se activa la nueva agenda</li>
+                <li><strong>Miércoles 13:30:</strong> Comienza la nueva semana</li>
+                <li><strong>Hasta Miércoles 10:30:</strong> Plazo para rellenar disponibilidad</li>
+                <li><strong>Miércoles 10:30:</strong> Se cierra la semana</li>
+                <li><strong>Miércoles 10:30 - 13:30:</strong> Período de transición</li>
               </ul>
             </div>
           </div>

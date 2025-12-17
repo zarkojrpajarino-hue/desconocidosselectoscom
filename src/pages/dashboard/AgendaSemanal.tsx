@@ -184,7 +184,7 @@ const AgendaSemanal = () => {
             </h3>
             <p className="text-muted-foreground max-w-md mx-auto">
               Para generar tu agenda semanal, primero necesitas rellenar tus horarios disponibles.
-              El plazo finaliza el <strong>Lunes a las 13:30</strong>.
+              El plazo finaliza el <strong>Miércoles a las 10:30</strong>.
             </p>
           </div>
           <Button
