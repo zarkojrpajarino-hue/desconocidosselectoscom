@@ -20,7 +20,7 @@ interface TaskRecord {
   title: string;
   is_personal: boolean;
   organization_id: string | null;
-  estimated_duration?: number;
+  estimated_hours?: number;
 }
 
 interface AvailabilityRecord {
@@ -126,7 +126,7 @@ serve(async (req) => {
     
     let tasksQuery = supabase
       .from('tasks')
-      .select('id, title, is_personal, organization_id, estimated_duration')
+      .select('id, title, is_personal, organization_id, estimated_hours')
       .eq('user_id', userId);
 
     if (settings.show_personal_tasks && linkedOrgIds.length > 0) {
@@ -207,7 +207,8 @@ async function generateCombinedSlots(
   const daysOfWeek = ['wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'monday', 'tuesday'];
 
   for (const task of tasks) {
-    const duration = task.estimated_duration || 60;
+    // Convert estimated_hours to minutes, default to 60 minutes
+    const duration = task.estimated_hours ? task.estimated_hours * 60 : 60;
     let slotFound = false;
 
     for (let dayOffset = 0; dayOffset < 7 && !slotFound; dayOffset++) {
