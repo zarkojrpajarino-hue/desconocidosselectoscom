@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, User, MapPin, Building2, Users, Bell } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Building2, Users, Bell, Package } from 'lucide-react';
 import UserProfile from '@/components/UserProfile';
 import UserOrganizations from '@/components/UserOrganizations';
 import OrganizationUsers from '@/components/OrganizationUsers';
+import ProductsManager from '@/components/ProductsManager';
 import { NotificationSettings } from '@/components/mobile/NotificationSettings';
 import { useOnboardingTour } from '@/hooks/useOnboardingTour';
 import { useIsMobileDevice } from '@/hooks/useDeviceType';
@@ -85,7 +86,7 @@ const Profile = () => {
 
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         <Tabs defaultValue="profile" className="space-y-4 md:space-y-6">
-          <TabsList className={`flex overflow-x-auto w-full max-w-xl gap-1 ${isMobile ? '' : isAdmin ? 'grid grid-cols-4' : 'grid grid-cols-3'}`}>
+          <TabsList className="flex overflow-x-auto w-full max-w-2xl gap-1">
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Mi Perfil</span>
@@ -95,6 +96,11 @@ const Profile = () => {
               <Building2 className="w-4 h-4" />
               <span className="hidden sm:inline">Organizaciones</span>
               <span className="sm:hidden">Orgs</span>
+            </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="w-4 h-4" />
+              <span className="hidden sm:inline">Productos</span>
+              <span className="sm:hidden">Prods</span>
             </TabsTrigger>
             {isAdmin && !isMobile && (
               <TabsTrigger value="team" className="gap-2">
@@ -122,6 +128,10 @@ const Profile = () => {
 
           <TabsContent value="organizations">
             <UserOrganizations />
+          </TabsContent>
+
+          <TabsContent value="products">
+            <ProductsManager />
           </TabsContent>
 
           {isAdmin && (
