@@ -37,6 +37,7 @@ export default function OrganizationUsers() {
   const [users, setUsers] = useState<OrganizationUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [hasTeam, setHasTeam] = useState<boolean | null>(null);
 
   const isAdmin = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
@@ -45,48 +46,71 @@ export default function OrganizationUsers() {
   useEffect(() => {
     if (currentOrganizationId) {
       fetchOrganizationUsers();
+      fetchOrganizationSettings();
     }
   }, [currentOrganizationId]);
+
+  const fetchOrganizationSettings = async () => {
+    if (!currentOrganizationId) return;
+    const { data } = await supabase
+      .from('organizations')
+      .select('has_team')
+      .eq('id', currentOrganizationId)
+      .single();
+    if (data) setHasTeam(data.has_team ?? false);
+  };
 
   const fetchOrganizationUsers = async () => {
     if (!currentOrganizationId) return;
 
     try {
+      // First get user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          users!inner(id, email, full_name)
-        `)
+        .select('user_id, role, created_at')
         .eq('organization_id', currentOrganizationId);
 
       if (rolesError) throw rolesError;
 
-      interface UserRoleData {
-        user_id: string;
-        role: string;
-        created_at: string;
-        users: { id: string; email: string; full_name: string };
+      if (!rolesData || rolesData.length === 0) {
+        setUsers([]);
+        setIsLoading(false);
+        return;
       }
 
+      // Get user IDs
+      const userIds = rolesData.map(r => r.user_id);
+
+      // Fetch users data separately
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .in('id', userIds);
+
+      if (usersError) throw usersError;
+
+      // Create a map for quick lookup
+      const usersMap = new Map(usersData?.map(u => [u.id, u]) || []);
+
+      // Combine data with task counts
       const usersWithTasks = await Promise.all(
-        ((rolesData || []) as unknown as UserRoleData[]).map(async (roleData) => {
+        rolesData.map(async (roleData) => {
           const { count } = await supabase
             .from('task_completions')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', roleData.user_id)
             .eq('validated_by_leader', true);
 
+          const userData = usersMap.get(roleData.user_id);
+
           return {
             user_id: roleData.user_id,
             role: roleData.role,
             created_at: roleData.created_at,
             user: {
-              id: roleData.users.id,
-              email: roleData.users.email,
-              full_name: roleData.users.full_name
+              id: roleData.user_id,
+              email: userData?.email || 'Sin email',
+              full_name: userData?.full_name || 'Usuario'
             },
             tasks_completed: count || 0
           };
@@ -152,6 +176,35 @@ export default function OrganizationUsers() {
       default: return 'Miembro';
     }
   };
+
+  // Show individual work mode message
+  if (hasTeam === false) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserIcon className="w-5 h-5 text-primary" />
+            Modo de Trabajo Individual
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Tienes activo el <strong>trabajo individual</strong> en la configuración de trabajo.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Para cambiar a modo equipo, ve a la configuración de trabajo en tu Dashboard.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = '/dashboard/home'}
+            className="gap-2"
+          >
+            Ir a Configuración de Trabajo
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!isAdmin) {
     return (

@@ -321,7 +321,7 @@ const UserProfile = () => {
             {/* Info */}
             <div className="flex-1 text-center sm:text-left min-w-0">
               <h2 className="text-xl md:text-3xl font-bold mb-1 truncate">{userProfile?.full_name}</h2>
-              <p className="text-sm text-muted-foreground mb-2">@{userProfile?.username}</p>
+              <p className="text-sm text-muted-foreground mb-2">{user?.email}</p>
               {currentOrganization && (
                 <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
                   <Building2 className="h-4 w-4 text-primary shrink-0" />
