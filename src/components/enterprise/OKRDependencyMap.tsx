@@ -4,14 +4,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Target, ArrowRight, Users, Link2, 
-  AlertTriangle, CheckCircle2, Plus 
+  AlertTriangle, CheckCircle2, Plus, Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface OKRDependencyMapProps {
   type?: 'organizational' | 'weekly';
@@ -32,130 +38,192 @@ interface DependencyLink {
   from_title: string;
   to_title: string;
   dependency_type: string;
+  description?: string;
   status: 'healthy' | 'at_risk' | 'blocked';
 }
 
 export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapProps) {
+  const { t } = useTranslation();
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [links, setLinks] = useState<DependencyLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Modal state for creating dependencies
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [sourceObjId, setSourceObjId] = useState('');
+  const [targetObjId, setTargetObjId] = useState('');
+  const [dependencyType, setDependencyType] = useState('blocks');
+  const [description, setDescription] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    async function fetchDependencies() {
-      if (!organizationId) return;
-      try {
-        setLoading(true);
+  const fetchDependencies = async () => {
+    if (!organizationId) return;
+    try {
+      setLoading(true);
 
-        // Construir query según tipo
-        let objectivesQuery = supabase
-          .from('objectives')
-          .select(`
-            id,
-            title,
-            status,
-            owner:owner_user_id (full_name),
-            key_results (current_value, target_value)
-          `)
+      let objectivesQuery = supabase
+        .from('objectives')
+        .select(`
+          id,
+          title,
+          status,
+          owner:owner_user_id (full_name),
+          key_results (current_value, target_value)
+        `)
+        .eq('organization_id', organizationId)
+        .eq('status', 'active');
+
+      if (type === 'organizational') {
+        objectivesQuery = objectivesQuery.is('phase', null).not('quarter', 'ilike', 'Semana%');
+      } else {
+        if (user?.id) {
+          objectivesQuery = objectivesQuery
+            .eq('owner_user_id', user.id)
+            .ilike('quarter', 'Semana%');
+        }
+      }
+
+      const { data: objectivesData, error: objError } = await objectivesQuery;
+
+      if (objError) throw objError;
+
+      interface RawObjectiveData {
+        id: string;
+        title: string;
+        status: string;
+        owner?: { full_name?: string };
+        key_results?: Array<{ current_value?: number; target_value?: number }>;
+      }
+      
+      const formattedObjectives: Objective[] = ((objectivesData || []) as unknown as RawObjectiveData[]).map((obj) => {
+        const keyResults = obj.key_results || [];
+        const avgProgress = keyResults.length > 0
+          ? Math.round(keyResults.reduce((sum: number, kr) => {
+              const current = kr.current_value || 0;
+              const target = kr.target_value || 1;
+              return sum + Math.min(100, (current / target) * 100);
+            }, 0) / keyResults.length)
+          : 0;
+
+        return {
+          id: obj.id,
+          title: obj.title,
+          progress: avgProgress,
+          status: obj.status,
+          owner_name: obj.owner?.full_name || 'Sin asignar',
+        };
+      });
+
+      setObjectives(formattedObjectives);
+
+      // Obtener dependencias REALES
+      const objectiveIds = formattedObjectives.map(o => o.id);
+      
+      if (objectiveIds.length > 0) {
+        const { data: dependenciesData, error: depError } = await supabase
+          .from('okr_dependencies')
+          .select('*')
           .eq('organization_id', organizationId)
-          .eq('status', 'active');
+          .or(`source_objective_id.in.(${objectiveIds.join(',')}),target_objective_id.in.(${objectiveIds.join(',')})`);
 
-        if (type === 'organizational') {
-          objectivesQuery = objectivesQuery.is('phase', null);
-        } else {
-          if (user?.id) {
-            objectivesQuery = objectivesQuery
-              .eq('owner_user_id', user.id)
-              .ilike('quarter', 'Semana%');
-          }
-        }
+        if (depError) throw depError;
 
-        const { data: objectivesData, error: objError } = await objectivesQuery;
-
-        if (objError) throw objError;
-
-        interface RawObjectiveData {
+        const realLinks: DependencyLink[] = (dependenciesData || []).map((dep: {
           id: string;
-          title: string;
-          status: string;
-          owner?: { full_name?: string };
-          key_results?: Array<{ current_value?: number; target_value?: number }>;
-        }
-        
-        const formattedObjectives: Objective[] = ((objectivesData || []) as unknown as RawObjectiveData[]).map((obj) => {
-          const keyResults = obj.key_results || [];
-          const avgProgress = keyResults.length > 0
-            ? Math.round(keyResults.reduce((sum: number, kr) => {
-                const current = kr.current_value || 0;
-                const target = kr.target_value || 1;
-                return sum + Math.min(100, (current / target) * 100);
-              }, 0) / keyResults.length)
-            : 0;
+          source_objective_id: string;
+          target_objective_id: string;
+          dependency_type: string;
+          description?: string;
+        }) => {
+          const fromObj = formattedObjectives.find(o => o.id === dep.source_objective_id);
+          const toObj = formattedObjectives.find(o => o.id === dep.target_objective_id);
+          
+          let status: DependencyLink['status'] = 'healthy';
+          if (fromObj) {
+            if (fromObj.progress < 30) status = 'blocked';
+            else if (fromObj.progress < 60) status = 'at_risk';
+          }
 
           return {
-            id: obj.id,
-            title: obj.title,
-            progress: avgProgress,
-            status: obj.status,
-            owner_name: obj.owner?.full_name || 'Sin asignar',
+            id: dep.id,
+            from: dep.source_objective_id,
+            to: dep.target_objective_id,
+            from_title: fromObj?.title || 'Objetivo no encontrado',
+            to_title: toObj?.title || 'Objetivo no encontrado',
+            dependency_type: dep.dependency_type,
+            description: dep.description,
+            status,
           };
         });
 
-        setObjectives(formattedObjectives);
-
-        // Obtener dependencias REALES de la tabla okr_dependencies
-        const objectiveIds = formattedObjectives.map(o => o.id);
-        
-        if (objectiveIds.length > 0) {
-          const { data: dependenciesData, error: depError } = await supabase
-            .from('okr_dependencies')
-            .select('*')
-            .eq('organization_id', organizationId)
-            .or(`source_objective_id.in.(${objectiveIds.join(',')}),target_objective_id.in.(${objectiveIds.join(',')})`);
-
-          if (depError) throw depError;
-
-          const realLinks: DependencyLink[] = (dependenciesData || []).map((dep: {
-            id: string;
-            source_objective_id: string;
-            target_objective_id: string;
-            dependency_type: string;
-          }) => {
-            const fromObj = formattedObjectives.find(o => o.id === dep.source_objective_id);
-            const toObj = formattedObjectives.find(o => o.id === dep.target_objective_id);
-            
-            let status: DependencyLink['status'] = 'healthy';
-            if (fromObj) {
-              if (fromObj.progress < 30) status = 'blocked';
-              else if (fromObj.progress < 60) status = 'at_risk';
-            }
-
-            return {
-              id: dep.id,
-              from: dep.source_objective_id,
-              to: dep.target_objective_id,
-              from_title: fromObj?.title || 'Objetivo no encontrado',
-              to_title: toObj?.title || 'Objetivo no encontrado',
-              dependency_type: dep.dependency_type,
-              status,
-            };
-          });
-
-          setLinks(realLinks);
-        } else {
-          setLinks([]);
-        }
-
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
+        setLinks(realLinks);
+      } else {
+        setLinks([]);
       }
+
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchDependencies();
   }, [organizationId, user?.id, type]);
+
+  const handleCreateDependency = async () => {
+    if (!sourceObjId || !targetObjId || sourceObjId === targetObjId) {
+      toast.error('Selecciona dos objetivos diferentes');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('okr_dependencies')
+        .insert({
+          source_objective_id: sourceObjId,
+          target_objective_id: targetObjId,
+          dependency_type: dependencyType,
+          description: description || null,
+          organization_id: organizationId,
+          created_by: user?.id
+        });
+
+      if (error) throw error;
+
+      toast.success('Dependencia creada correctamente');
+      setShowAddModal(false);
+      setSourceObjId('');
+      setTargetObjId('');
+      setDescription('');
+      fetchDependencies();
+    } catch (err) {
+      toast.error('Error al crear dependencia');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteDependency = async (depId: string) => {
+    try {
+      const { error } = await supabase
+        .from('okr_dependencies')
+        .delete()
+        .eq('id', depId);
+
+      if (error) throw error;
+
+      toast.success('Dependencia eliminada');
+      fetchDependencies();
+    } catch (err) {
+      toast.error('Error al eliminar dependencia');
+    }
+  };
 
   if (loading) {
     return (
@@ -190,32 +258,129 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
     blocks: 'Bloquea',
     enables: 'Habilita',
     relates_to: 'Relacionado',
+    depends_on: 'Depende de',
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl md:text-2xl font-bold">
             Mapa de Dependencias {type === 'weekly' ? 'Semanales' : 'Organizacionales'}
           </h2>
           <p className="text-muted-foreground">Visualiza cómo se relacionan tus OKRs</p>
         </div>
-        <div className="flex gap-4 text-sm">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-emerald-600">{healthyLinks}</p>
-            <p className="text-muted-foreground">Saludables</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-amber-600">{atRiskLinks}</p>
-            <p className="text-muted-foreground">En Riesgo</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-rose-600">{blockedLinks}</p>
-            <p className="text-muted-foreground">Bloqueadas</p>
-          </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchDependencies}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualizar
+          </Button>
+          <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+            <DialogTrigger asChild>
+              <Button size="sm" disabled={objectives.length < 2}>
+                <Plus className="w-4 h-4 mr-2" />
+                Nueva Dependencia
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Crear Dependencia entre OKRs</DialogTitle>
+                <DialogDescription>
+                  Define cómo un objetivo afecta o depende de otro
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Objetivo Origen</Label>
+                  <Select value={sourceObjId} onValueChange={setSourceObjId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el objetivo origen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {objectives.map(obj => (
+                        <SelectItem key={obj.id} value={obj.id}>
+                          {obj.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Tipo de Relación</Label>
+                  <Select value={dependencyType} onValueChange={setDependencyType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="blocks">Bloquea (debe completarse primero)</SelectItem>
+                      <SelectItem value="enables">Habilita (facilita el progreso)</SelectItem>
+                      <SelectItem value="depends_on">Depende de</SelectItem>
+                      <SelectItem value="relates_to">Relacionado (sin bloqueo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Objetivo Destino</Label>
+                  <Select value={targetObjId} onValueChange={setTargetObjId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona el objetivo destino" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {objectives.filter(obj => obj.id !== sourceObjId).map(obj => (
+                        <SelectItem key={obj.id} value={obj.id}>
+                          {obj.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Descripción (opcional)</Label>
+                  <Textarea 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe la relación entre estos objetivos..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowAddModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleCreateDependency} disabled={saving || !sourceObjId || !targetObjId}>
+                  {saving ? 'Guardando...' : 'Crear Dependencia'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
+      </div>
+
+      {/* Stats */}
+      <div className="flex flex-wrap gap-4 text-sm">
+        <Card className="flex-1 min-w-[100px]">
+          <CardContent className="pt-4 text-center">
+            <p className="text-2xl font-bold text-emerald-600">{healthyLinks}</p>
+            <p className="text-muted-foreground text-xs">Saludables</p>
+          </CardContent>
+        </Card>
+        <Card className="flex-1 min-w-[100px]">
+          <CardContent className="pt-4 text-center">
+            <p className="text-2xl font-bold text-amber-600">{atRiskLinks}</p>
+            <p className="text-muted-foreground text-xs">En Riesgo</p>
+          </CardContent>
+        </Card>
+        <Card className="flex-1 min-w-[100px]">
+          <CardContent className="pt-4 text-center">
+            <p className="text-2xl font-bold text-rose-600">{blockedLinks}</p>
+            <p className="text-muted-foreground text-xs">Bloqueadas</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Legend */}
@@ -224,15 +389,15 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-emerald-500/20 border border-emerald-500" />
-              <span>Dependencia saludable (&gt;60% progreso)</span>
+              <span>Saludable (&gt;60%)</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-amber-500/20 border border-amber-500" />
-              <span>En riesgo (30-60% progreso)</span>
+              <span>En riesgo (30-60%)</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-rose-500/20 border border-rose-500" />
-              <span>Bloqueada (&lt;30% progreso)</span>
+              <span>Bloqueada (&lt;30%)</span>
             </div>
           </div>
         </CardContent>
@@ -241,12 +406,18 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
       {/* Dependency Links */}
       {links.length === 0 ? (
         <Card>
-          <CardContent className="pt-6 text-center">
+          <CardContent className="pt-6 text-center py-12">
             <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No hay dependencias configuradas</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Las dependencias ayudan a identificar cuellos de botella entre objetivos
+            <p className="text-lg font-medium mb-2">No hay dependencias configuradas</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Las dependencias ayudan a identificar cuellos de botella y planificar mejor
             </p>
+            {objectives.length >= 2 && (
+              <Button onClick={() => setShowAddModal(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Crear Primera Dependencia
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -259,7 +430,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
                   <div className="flex-1 p-4 rounded-lg bg-background">
                     <div className="flex items-center gap-2 mb-2">
                       <Target className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">{link.from_title}</span>
+                      <span className="font-medium text-sm line-clamp-2">{link.from_title}</span>
                     </div>
                     {(() => {
                       const fromObj = objectives.find(o => o.id === link.from);
@@ -279,7 +450,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
                   </div>
 
                   {/* Arrow */}
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-1 shrink-0">
                     <ArrowRight className={`h-6 w-6 ${
                       link.status === 'healthy' ? 'text-emerald-500' :
                       link.status === 'at_risk' ? 'text-amber-500' : 'text-rose-500'
@@ -299,7 +470,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
                   <div className="flex-1 p-4 rounded-lg bg-background">
                     <div className="flex items-center gap-2 mb-2">
                       <Target className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">{link.to_title}</span>
+                      <span className="font-medium text-sm line-clamp-2">{link.to_title}</span>
                     </div>
                     {(() => {
                       const toObj = objectives.find(o => o.id === link.to);
@@ -317,19 +488,36 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
                       ) : null;
                     })()}
                   </div>
+
+                  {/* Delete button */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDeleteDependency(link.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
+
+                {/* Description */}
+                {link.description && (
+                  <p className="mt-3 text-sm text-muted-foreground border-t pt-3">
+                    {link.description}
+                  </p>
+                )}
 
                 {/* Status Message */}
                 {link.status !== 'healthy' && (
                   <div className={`mt-4 p-3 rounded-md flex items-start gap-2 ${
-                    link.status === 'at_risk' ? 'bg-amber-500/10 text-amber-700' : 'bg-rose-500/10 text-rose-700'
+                    link.status === 'at_risk' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'bg-rose-500/10 text-rose-700 dark:text-rose-400'
                   }`}>
                     <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <div className="text-sm">
                       {link.status === 'at_risk' ? (
-                        <p>El objetivo "{link.from_title}" está retrasado, lo que puede afectar a "{link.to_title}".</p>
+                        <p>El objetivo origen está retrasado, lo que puede afectar al objetivo destino.</p>
                       ) : (
-                        <p>El objetivo "{link.from_title}" está muy retrasado y está bloqueando el progreso de "{link.to_title}".</p>
+                        <p>El objetivo origen está muy retrasado y está bloqueando el progreso del destino.</p>
                       )}
                     </div>
                   </div>
