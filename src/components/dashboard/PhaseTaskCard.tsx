@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { 
   Sparkles, 
   Clock, 
@@ -10,16 +9,16 @@ import {
   Users, 
   CheckCircle2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Undo2
 } from 'lucide-react';
 import { TimeTracker } from '@/components/tasks/TimeTracker';
 import { TimeLogsModal } from '@/components/tasks/TimeLogsModal';
 import { AIResourcesPanel } from '@/components/tasks/ai-resources';
 import { TaskSwapModal } from '@/components/TaskSwapModal';
+import { TaskCompletionModal } from '@/components/tasks/TaskCompletionModal';
 import { IntegrationButton } from '@/components/IntegrationButton';
-import type { AIResourceType } from '@/types/ai-resources.types';
-
-import { PhaseTask } from '@/hooks/usePhaseWeeklyTasks';
+import type { PhaseTask } from '@/hooks/usePhaseWeeklyTasks';
 
 interface PhaseTaskCardProps {
   task: PhaseTask & { organization_id?: string | null };
@@ -44,14 +43,26 @@ export function PhaseTaskCard({
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [timeLogsOpen, setTimeLogsOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [completionModalOpen, setCompletionModalOpen] = useState(false);
   
   const isCompleted = task.is_completed;
   const canSwap = !isCompleted && !isLocked && task.user_id === userId;
 
-  const handleToggle = () => {
-    if (!isLocked) {
-      onComplete(task.id, !isCompleted);
+  // Open completion modal instead of direct toggle
+  const handleCheckboxClick = () => {
+    if (isLocked) return;
+    
+    if (isCompleted) {
+      // Direct unmark - no modal needed
+      onComplete(task.id, false);
+    } else {
+      // Open completion modal with requirements
+      setCompletionModalOpen(true);
     }
+  };
+
+  const handleCompletionSuccess = () => {
+    // Refresh is handled by the modal
   };
 
   return (
@@ -67,7 +78,7 @@ export function PhaseTaskCard({
         <div className="flex items-start gap-3 p-3 md:p-4">
           <Checkbox
             checked={isCompleted}
-            onCheckedChange={handleToggle}
+            onCheckedChange={handleCheckboxClick}
             className="mt-1 h-5 w-5"
             disabled={isLocked}
           />
@@ -107,28 +118,44 @@ export function PhaseTaskCard({
             </div>
           </div>
 
-          {/* Swap Button */}
-          {canSwap && remainingSwaps > 0 && (
+          {/* Actions */}
+          <div className="flex items-center gap-1">
+            {/* Unmark button for completed tasks */}
+            {isCompleted && !isLocked && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onComplete(task.id, false)}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Undo2 className="w-3 h-3 mr-1" />
+                Desmarcar
+              </Button>
+            )}
+            
+            {/* Swap Button */}
+            {canSwap && remainingSwaps > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSwapModalOpen(true)}
+                className="shrink-0 h-8"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden md:inline ml-1">Cambiar</span>
+              </Button>
+            )}
+            
+            {/* Expand/Collapse */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => setSwapModalOpen(true)}
-              className="shrink-0"
+              onClick={() => setExpanded(!expanded)}
+              className="shrink-0 h-8 w-8 p-0"
             >
-              <RefreshCw className="w-4 h-4" />
-              <span className="hidden md:inline ml-1">Cambiar</span>
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
-          )}
-          
-          {/* Expand/Collapse */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="shrink-0 h-8 w-8 p-0"
-          >
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </Button>
+          </div>
         </div>
         
         {/* Expanded Content */}
@@ -226,6 +253,15 @@ export function PhaseTaskCard({
         onOpenChange={setTimeLogsOpen}
         taskId={task.id}
         taskTitle={task.title}
+      />
+      
+      <TaskCompletionModal
+        open={completionModalOpen}
+        onOpenChange={setCompletionModalOpen}
+        taskId={task.id}
+        taskTitle={task.title}
+        taskDescription={task.description || ''}
+        onComplete={handleCompletionSuccess}
       />
       
       {swapModalOpen && (

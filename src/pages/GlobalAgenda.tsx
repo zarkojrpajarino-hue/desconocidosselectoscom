@@ -1,26 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { format, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays, Cog, Clock, User, Users } from 'lucide-react';
+import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, CalendarDays, Cog, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { GlobalWeeklyView } from '@/components/agenda/GlobalWeeklyView';
 import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
-import { AgendaFilters, AgendaStats } from '@/components/agenda/AgendaFilters';
+import { AgendaFilters } from '@/components/agenda/AgendaFilters';
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
 import { WorkConfigReadOnly } from '@/components/agenda/WorkConfigReadOnly';
-import { IndividualAgendaView } from '@/components/agenda/IndividualAgendaView';
-import { TeamAgendaView } from '@/components/agenda/TeamAgendaView';
-import { AvailabilityOptionalCard } from '@/components/agenda/AvailabilityOptionalCard';
-import WeeklyAgenda from '@/components/WeeklyAgenda';
+import { ProfessionalAgendaView } from '@/components/agenda/ProfessionalAgendaView';
 import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
-import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
+import { useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
@@ -65,25 +60,6 @@ export default function GlobalAgenda() {
     enabled: !!currentOrganizationId,
   });
 
-  // Check if user has availability for this week (optional now, not blocking)
-  const { data: availability, refetch: refetchAvailability } = useQuery({
-    queryKey: ['user-availability', user?.id, weekStart],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('user_weekly_availability')
-        .select('id, submitted_at')
-        .eq('user_id', user.id)
-        .eq('week_start', weekStart)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id && hasAccess,
-  });
-
-  const { data: stats } = useGlobalAgendaStats(weekStart);
   const generateSchedule = useGenerateGlobalSchedule();
 
   const hasTeam = orgSettings?.has_team ?? false;
@@ -176,22 +152,7 @@ export default function GlobalAgenda() {
       {/* Google Calendar Connect */}
       {user && <GoogleCalendarConnect userId={user.id} />}
 
-      {/* Optional Availability Card - Only for teams and if not set */}
-      {hasTeam && !availability && user?.id && (
-        <AvailabilityOptionalCard 
-          userId={user.id} 
-          weekStart={weekStart}
-          onComplete={() => {
-            refetchAvailability();
-            generateSchedule.mutate({ weekStart, forceRegenerate: true });
-          }}
-        />
-      )}
-
-      {/* Stats */}
-      {stats && <AgendaStats stats={stats} />}
-
-      {/* Week Navigation */}
+      {/* Week Navigation with New Task button */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border border-border rounded-lg p-4">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
@@ -223,7 +184,7 @@ export default function GlobalAgenda() {
         </div>
       </div>
 
-      {/* Main Content - Different views based on has_team */}
+      {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="agenda" className="flex items-center gap-2">
@@ -237,18 +198,12 @@ export default function GlobalAgenda() {
         </TabsList>
 
         <TabsContent value="agenda">
-          {hasTeam ? (
-            <TeamAgendaView 
-              weekStart={weekStart} 
-              filters={activeFilters}
-              collaborativePercentage={collaborativePercentage}
-            />
-          ) : (
-            <IndividualAgendaView 
-              weekStart={weekStart}
-              filters={activeFilters}
-            />
-          )}
+          <ProfessionalAgendaView 
+            weekStart={weekStart} 
+            filters={activeFilters}
+            hasTeam={hasTeam}
+            collaborativePercentage={collaborativePercentage}
+          />
         </TabsContent>
 
         <TabsContent value="config">
