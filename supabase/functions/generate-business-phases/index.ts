@@ -645,6 +645,12 @@ RESPONDE SOLO EN JSON válido sin markdown.`
 });
 
 function buildContext(org: any, isStartup: boolean): string {
+  // Contexto del tamaño del equipo para personalización
+  const teamSizeContext = org.team_size ? `
+TAMAÑO DEL EQUIPO: ${org.team_size} personas
+ADAPTACIÓN DE TAREAS:
+${getTeamSizeAdaptation(org.team_size)}` : '';
+
   if (isStartup) {
     return `
 TIPO: Startup / Empresa Nueva
@@ -659,6 +665,7 @@ RECURSOS DISPONIBLES: ${JSON.stringify(org.available_resources) || 'Limitados'}
 EQUIPO: ${JSON.stringify(org.team_structure) || 'Solo fundadores'}
 PROPUESTA DE VALOR: ${org.value_proposition || 'No especificada'}
 CLIENTES OBJETIVO: ${org.target_customers || 'No especificado'}
+${teamSizeContext}
 `.trim();
   }
 
@@ -666,7 +673,8 @@ CLIENTES OBJETIVO: ${org.target_customers || 'No especificado'}
 TIPO: Empresa Consolidada
 INDUSTRIA: ${org.industry || 'No especificada'}
 DESCRIPCIÓN: ${org.business_description || 'No especificada'}
-TAMAÑO: ${org.company_size || 'No especificado'}
+TAMAÑO EMPRESA: ${org.company_size || 'No especificado'}
+TAMAÑO EQUIPO: ${org.team_size || 'No especificado'}
 INGRESOS ANUALES: ${org.annual_revenue_range || org.monthly_revenue_range || 'No especificado'}
 PRODUCTO/SERVICIO: ${JSON.stringify(org.products_services) || 'No especificado'}
 OBJETIVO 6-12 MESES: ${org.main_goal_6months || org.main_objectives || 'Crecer'}
@@ -676,7 +684,49 @@ EQUIPO: ${JSON.stringify(org.team_structure) || 'No especificado'}
 OBJETIVO FACTURACIÓN 12M: €${org.revenue_goal_12_months || 'No especificado'}
 OBJETIVO CLIENTES 12M: ${org.customers_goal_12_months || 'No especificado'}
 PROBLEMAS ACTUALES: ${org.current_problems || 'No especificados'}
+${teamSizeContext}
 `.trim();
+}
+
+function getTeamSizeAdaptation(teamSize: string): string {
+  const size = teamSize?.toLowerCase() || '';
+  
+  if (size === '1' || size.includes('solo')) {
+    return `- PERSONA SOLA: Genera tareas GENERALISTAS que una sola persona pueda ejecutar
+- Combina múltiples áreas funcionales en tareas únicas
+- Prioriza tareas de alto impacto con bajo esfuerzo
+- NO generes tareas que requieran delegación`;
+  }
+  
+  if (size === '1-5' || size.includes('2-5') || size.includes('1-5')) {
+    return `- EQUIPO PEQUEÑO (1-5): Genera tareas con especialización BÁSICA
+- Cada persona puede cubrir 2-3 áreas funcionales
+- Incluye tareas colaborativas entre miembros
+- Balance entre generalistas y especialistas`;
+  }
+  
+  if (size === '6-10' || size.includes('6-10')) {
+    return `- EQUIPO MEDIANO (6-10): Genera tareas con ESPECIALIZACIÓN por área
+- Cada área funcional tiene responsable dedicado
+- Incluye tareas de coordinación entre departamentos
+- Mayor granularidad en las tareas`;
+  }
+  
+  if (size === '11-20' || size.includes('11-20')) {
+    return `- EQUIPO GRANDE (11-20): Genera tareas MUY ESPECÍFICAS por rol
+- Especialización completa por área funcional
+- Incluye tareas de gestión y liderazgo
+- Dependencias claras entre equipos`;
+  }
+  
+  if (size.includes('21') || size.includes('30') || size.includes('50') || size.includes('100')) {
+    return `- EMPRESA (20+): Genera tareas DEPARTAMENTALES específicas
+- Alta especialización con múltiples niveles jerárquicos
+- Incluye tareas de coordinación inter-departamental
+- Enfoque en procesos escalables y sistematizados`;
+  }
+  
+  return `- Adapta las tareas al contexto específico del equipo`;
 }
 
 function buildPrompt(context: string, isStartup: boolean, methodology: string, existingOKRs: any[]): string {
