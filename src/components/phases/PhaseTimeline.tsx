@@ -3,13 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
-  ChevronDown, ChevronRight, Target, CheckSquare, BookOpen, 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { 
+  ChevronDown, ChevronRight, Target, BookOpen, 
   Sparkles, RefreshCw, Play, Clock, TrendingUp, Rocket,
-  AlertCircle, CheckCircle2, Circle
+  AlertCircle, CheckCircle2, Circle, AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBusinessPhases, BusinessPhase } from '@/hooks/useBusinessPhases';
@@ -42,12 +49,18 @@ export function PhaseTimeline({
     overallProgress,
     generatePhases,
     regeneratePhase,
-    toggleChecklistItem,
     updateObjectiveProgress,
     activatePhase,
   } = useBusinessPhases({ organizationId: currentOrganizationId });
 
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
+  const [activateConfirmDialog, setActivateConfirmDialog] = useState<{
+    open: boolean;
+    phaseNumber: number;
+    phaseName: string;
+    currentProgress: number;
+    pendingTasks: string[];
+  } | null>(null);
 
   const toggleExpanded = (phaseId: string) => {
     setExpandedPhases(prev => {
@@ -59,6 +72,28 @@ export function PhaseTimeline({
       }
       return next;
     });
+  };
+
+  const handleActivatePhase = (phase: BusinessPhase) => {
+    const pendingTasks = phase.checklist
+      .filter(item => !item.completed)
+      .map(item => item.task)
+      .slice(0, 5); // Mostrar máximo 5 tareas pendientes
+
+    setActivateConfirmDialog({
+      open: true,
+      phaseNumber: phase.phase_number,
+      phaseName: phase.phase_name,
+      currentProgress: phase.progress_percentage || 0,
+      pendingTasks,
+    });
+  };
+
+  const confirmActivatePhase = () => {
+    if (activateConfirmDialog) {
+      activatePhase(activateConfirmDialog.phaseNumber);
+      setActivateConfirmDialog(null);
+    }
   };
 
   if (isLoading) {
@@ -195,8 +230,6 @@ export function PhaseTimeline({
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span>{activePhase.objectives?.length || 0} objetivos</span>
                 <span>•</span>
-                <span>{activePhase.checklist?.length || 0} tareas</span>
-                <span>•</span>
                 <span>{activePhase.duration_weeks} semanas</span>
               </div>
             </div>
@@ -208,6 +241,58 @@ export function PhaseTimeline({
 
   return (
     <div className="space-y-6">
+      {/* Dialog de confirmación para activar fase */}
+      <Dialog open={activateConfirmDialog?.open || false} onOpenChange={(open) => !open && setActivateConfirmDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              ¿Activar Fase {activateConfirmDialog?.phaseNumber}?
+            </DialogTitle>
+            <DialogDescription className="space-y-3">
+              <p>
+                Estás a punto de activar la fase <strong>{activateConfirmDialog?.phaseName}</strong>.
+              </p>
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="font-medium text-amber-600 dark:text-amber-400 mb-2">
+                  Progreso actual: {activateConfirmDialog?.currentProgress}%
+                </p>
+                {activateConfirmDialog && activateConfirmDialog.pendingTasks.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Tareas pendientes del checklist:</p>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {activateConfirmDialog.pendingTasks.map((task, i) => (
+                        <li key={i} className="flex items-center gap-1">
+                          <Circle className="h-2 w-2" />
+                          {task}
+                        </li>
+                      ))}
+                      {activateConfirmDialog.currentProgress < 100 && (
+                        <li className="text-amber-600 dark:text-amber-400 font-medium mt-2">
+                          ... y más tareas por completar
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm">
+                ¿Estás seguro de que deseas avanzar sin completar el checklist actual?
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActivateConfirmDialog(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmActivatePhase} className="gap-2">
+              <Play className="h-4 w-4" />
+              Sí, Activar Fase
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Overall Progress Header */}
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
         <CardContent className="py-4">
@@ -264,9 +349,8 @@ export function PhaseTimeline({
               phase={phase}
               isExpanded={expandedPhases.has(phase.id)}
               onToggleExpand={() => toggleExpanded(phase.id)}
-              onToggleTask={(index) => toggleChecklistItem(phase.id, index)}
               onUpdateObjective={(index, value) => updateObjectiveProgress(phase.id, index, value)}
-              onActivate={() => activatePhase(phase.phase_number)}
+              onActivate={() => handleActivatePhase(phase)}
               onRegenerate={() => regeneratePhase(phase.phase_number)}
               isAdmin={isAdmin}
               showPlaybooks={showPlaybooks}
@@ -279,28 +363,24 @@ export function PhaseTimeline({
           <TimelineView 
             phases={phases} 
             activePhase={activePhase}
-            onActivate={activatePhase}
+            onActivate={handleActivatePhase}
             isAdmin={isAdmin}
           />
         </TabsContent>
 
         <TabsContent value="kanban">
-          <KanbanView 
-            phases={phases}
-            onToggleTask={toggleChecklistItem}
-          />
+          <KanbanView phases={phases} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-// Phase Card Component
+// Phase Card Component - Solo objetivos, sin checklist
 interface PhaseCardProps {
   phase: BusinessPhase;
   isExpanded: boolean;
   onToggleExpand: () => void;
-  onToggleTask: (index: number) => void;
   onUpdateObjective: (index: number, value: number) => void;
   onActivate: () => void;
   onRegenerate: () => void;
@@ -313,13 +393,11 @@ function PhaseCard({
   phase,
   isExpanded,
   onToggleExpand,
-  onToggleTask,
   onUpdateObjective,
   onActivate,
   onRegenerate,
   isAdmin,
   showPlaybooks,
-  compact,
 }: PhaseCardProps) {
   const statusConfig = {
     pending: { color: 'bg-muted text-muted-foreground', icon: Circle, label: 'Pendiente' },
@@ -330,7 +408,6 @@ function PhaseCard({
 
   const config = statusConfig[phase.status];
   const StatusIcon = config.icon;
-  const completedTasks = phase.checklist.filter(t => t.completed).length;
   const completedObjectives = phase.objectives.filter(o => o.current >= o.target).length;
 
   return (
@@ -380,7 +457,6 @@ function PhaseCard({
             <Progress value={phase.progress_percentage || 0} className="h-2" />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{completedObjectives}/{phase.objectives.length} objetivos</span>
-              <span>{completedTasks}/{phase.checklist.length} tareas</span>
               {phase.duration_weeks && (
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
@@ -393,7 +469,7 @@ function PhaseCard({
 
         <CollapsibleContent>
           <CardContent className="pt-4 space-y-6">
-            {/* Objectives Section */}
+            {/* Objectives Section - Mantenido */}
             <div>
               <h4 className="font-semibold flex items-center gap-2 mb-3">
                 <Target className="h-4 w-4 text-primary" />
@@ -424,43 +500,7 @@ function PhaseCard({
               </div>
             </div>
 
-            {/* Checklist Section */}
-            <div>
-              <h4 className="font-semibold flex items-center gap-2 mb-3">
-                <CheckSquare className="h-4 w-4 text-primary" />
-                Checklist ({completedTasks}/{phase.checklist.length})
-              </h4>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {phase.checklist.map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={cn(
-                      "flex items-start gap-3 p-2 rounded-lg transition-colors",
-                      item.completed ? "bg-muted/50" : "hover:bg-muted/30"
-                    )}
-                  >
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() => onToggleTask(index)}
-                      disabled={phase.status === 'pending'}
-                    />
-                    <div className="flex-1">
-                      <span className={cn(
-                        "text-sm",
-                        item.completed && "line-through text-muted-foreground"
-                      )}>
-                        {item.task}
-                      </span>
-                      {item.category && (
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {item.category}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Checklist Section ELIMINADO - Ahora solo se muestra en RoadmapPreview */}
 
             {/* Playbook Section */}
             {showPlaybooks && phase.playbook && (
@@ -493,7 +533,7 @@ function PhaseCard({
               </div>
             )}
 
-            {/* Actions */}
+            {/* Actions - SOLO ADMIN puede activar fase */}
             {isAdmin && (
               <div className="flex gap-2 pt-4 border-t">
                 {phase.status === 'pending' && (
@@ -526,7 +566,7 @@ function TimelineView({
 }: { 
   phases: BusinessPhase[];
   activePhase: BusinessPhase | undefined;
-  onActivate: (phaseNumber: number) => void;
+  onActivate: (phase: BusinessPhase) => void;
   isAdmin: boolean;
 }) {
   return (
@@ -537,6 +577,7 @@ function TimelineView({
       {phases.map((phase, index) => {
         const isActive = phase.status === 'active';
         const isCompleted = phase.status === 'completed';
+        const canActivate = phase.status === 'pending' && index === (activePhase?.phase_number || 0);
         
         return (
           <div key={phase.id} className="relative pb-8 last:pb-0">
@@ -565,12 +606,12 @@ function TimelineView({
               </p>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>{phase.objectives.length} objetivos</span>
-                <span>{phase.checklist.length} tareas</span>
                 <span>{phase.progress_percentage || 0}% completado</span>
               </div>
-              {isAdmin && phase.status === 'pending' && index === (activePhase?.phase_number || 0) && (
+              {/* SOLO ADMIN puede activar fase */}
+              {isAdmin && canActivate && (
                 <Button 
-                  onClick={() => onActivate(phase.phase_number)} 
+                  onClick={() => onActivate(phase)} 
                   size="sm" 
                   className="mt-2"
                 >
@@ -585,13 +626,11 @@ function TimelineView({
   );
 }
 
-// Kanban View Component
+// Kanban View Component - Solo objetivos, sin tareas
 function KanbanView({ 
   phases,
-  onToggleTask,
 }: { 
   phases: BusinessPhase[];
-  onToggleTask: (phaseId: string, index: number) => void;
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -607,20 +646,27 @@ function KanbanView({
             <CardDescription className="text-xs">{phase.phase_name}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 max-h-80 overflow-y-auto">
-            {phase.checklist.map((item, index) => (
-              <div 
-                key={index}
-                className={cn(
-                  "p-2 rounded border text-xs cursor-pointer transition-colors",
-                  item.completed 
-                    ? "bg-muted/50 text-muted-foreground line-through" 
-                    : "hover:bg-muted/30"
-                )}
-                onClick={() => onToggleTask(phase.id, index)}
-              >
-                {item.task}
-              </div>
-            ))}
+            <h5 className="text-xs font-medium text-muted-foreground mb-2">Objetivos</h5>
+            {phase.objectives.map((obj, index) => {
+              const isComplete = obj.current >= obj.target;
+              return (
+                <div 
+                  key={index}
+                  className={cn(
+                    "p-2 rounded border text-xs",
+                    isComplete 
+                      ? "bg-green-50 dark:bg-green-900/20 text-muted-foreground border-green-500/30" 
+                      : "bg-background"
+                  )}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={cn(isComplete && "line-through")}>{obj.name}</span>
+                    {isComplete && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+                  </div>
+                  <Progress value={Math.min((obj.current / obj.target) * 100, 100)} className="h-1" />
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       ))}

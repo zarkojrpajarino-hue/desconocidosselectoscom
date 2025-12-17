@@ -11,10 +11,12 @@ interface WorkModeSelectorProps {
   onModeChange: () => void;
 }
 
-const WORK_MODES = [
-  { id: 'conservador', label: '🐢 Conservador', tasks: 5, hours: '2-3h' },
-  { id: 'moderado', label: '🚶 Moderado', tasks: 8, hours: '4-5h' },
-  { id: 'agresivo', label: '🚀 Agresivo', tasks: 12, hours: '6-8h' },
+// Los modos ahora son multiplicadores sobre el cálculo adaptativo de tareas
+// Se guarda el mode y se usa el multiplicador en el backend
+export const WORK_MODES = [
+  { id: 'conservador', label: 'Conservador', emoji: '🐢', multiplier: 0.75, description: 'Ritmo relajado' },
+  { id: 'moderado', label: 'Moderado', emoji: '🚶', multiplier: 1.0, description: 'Ritmo equilibrado' },
+  { id: 'agresivo', label: 'Agresivo', emoji: '🚀', multiplier: 1.35, description: 'Ritmo intenso' },
 ];
 
 const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelectorProps) => {
@@ -28,42 +30,6 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       const mode = WORK_MODES.find(m => m.id === modeId);
       if (!mode) return;
 
-      // RESTRICCIÓN: Verificar tareas completadas antes de cambiar a modo menor
-      // Primero obtener la fase actual
-      const { data: config } = await supabase
-        .from('system_config')
-        .select('current_phase')
-        .single();
-
-      const currentPhase = config?.current_phase || 1;
-
-      // Obtener IDs de tareas de la fase actual
-      const { data: phaseTasks } = await supabase
-        .from('tasks')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('phase', currentPhase);
-
-      const phaseTaskIds = phaseTasks?.map(t => t.id) || [];
-
-      // Contar solo completaciones de esta fase
-      const { data: completedTasks } = await supabase
-        .from('task_completions')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('validated_by_leader', true)
-        .in('task_id', phaseTaskIds);
-
-      const completedCount = completedTasks?.length || 0;
-
-      if (completedCount > mode.tasks) {
-        toast.error('No puedes cambiar a este modo', {
-          description: `Ya has completado ${completedCount} tareas. Este modo solo permite ${mode.tasks} tareas.`
-        });
-        setLoading(false);
-        return;
-      }
-
       // Get current week start and deadline using utility functions
       const weekStart = getCurrentWeekStart();
       const deadline = getCurrentWeekDeadline();
@@ -76,20 +42,22 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
         .eq('week_start', weekStart.toISOString())
         .maybeSingle();
 
+      // El task_limit ahora es un placeholder - el cálculo real ocurre en el backend
+      // Guardamos un valor base que será multiplicado por el sistema adaptativo
+      const baseTaskLimit = Math.round(10 * mode.multiplier); // 10 como base, se ajusta con multiplicador
+
       let error;
       if (existingData) {
-        // Update existing record
         const updateResult = await supabase
           .from('user_weekly_data')
           .update({
             mode: modeId,
-            task_limit: mode.tasks,
+            task_limit: baseTaskLimit,
             week_deadline: deadline.toISOString()
           })
           .eq('id', existingData.id);
         error = updateResult.error;
       } else {
-        // Insert new record
         const insertResult = await supabase
           .from('user_weekly_data')
           .insert({
@@ -97,7 +65,7 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
             week_start: weekStart.toISOString(),
             week_deadline: deadline.toISOString(),
             mode: modeId,
-            task_limit: mode.tasks
+            task_limit: baseTaskLimit
           });
         error = insertResult.error;
       }
@@ -113,6 +81,14 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
 
       const userName = userData?.full_name || userData?.username || 'Usuario';
 
+      // Obtener la fase actual
+      const { data: config } = await supabase
+        .from('system_config')
+        .select('current_phase')
+        .single();
+
+      const currentPhase = config?.current_phase || 1;
+
       // Obtener todos los líderes de este usuario
       const { data: tasksWithLeaders } = await supabase
         .from('tasks')
@@ -124,17 +100,16 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       // Obtener IDs únicos de líderes
       const leaderIds = [...new Set(tasksWithLeaders?.map(t => t.leader_id).filter(Boolean) || [])];
 
-      // Calcular diferencia de tareas
+      // Obtener modo anterior
       const oldMode = WORK_MODES.find(m => m.id === currentMode);
-      const taskDifference = mode.tasks - (oldMode?.tasks || 0);
 
       // Crear notificaciones para cada líder
-      if (leaderIds.length > 0 && taskDifference !== 0) {
+      if (leaderIds.length > 0 && oldMode?.id !== mode.id) {
         const alerts = leaderIds.map(leaderId => ({
           alert_type: 'mode_change',
           severity: 'important',
           title: '⚙️ Cambio de Modo de Trabajo',
-          message: `${userName} cambió de ${oldMode?.label || 'modo anterior'} (${oldMode?.tasks || 0} tareas) a ${mode.label} (${mode.tasks} tareas). Esto significa que tendrás ${Math.abs(taskDifference)} ${taskDifference > 0 ? 'nuevas' : 'menos'} tareas para validar.`,
+          message: `${userName} cambió de ${oldMode?.label || 'modo anterior'} (×${oldMode?.multiplier || 1}) a ${mode.label} (×${mode.multiplier}). La carga de trabajo se ajustará proporcionalmente.`,
           source: 'tasks',
           category: 'workload',
           target_user_id: leaderId,
@@ -147,7 +122,7 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
       }
 
       toast.success('Modo de trabajo actualizado', {
-        description: `Ahora trabajas en modo ${mode.label}${leaderIds.length > 0 ? `. Se notificó a ${leaderIds.length} líder(es).` : ''}`
+        description: `Ahora trabajas en modo ${mode.label} (×${mode.multiplier})${leaderIds.length > 0 ? `. Se notificó a ${leaderIds.length} líder(es).` : ''}`
       });
       onModeChange();
     } catch (error) {
@@ -177,15 +152,18 @@ const WorkModeSelector = ({ userId, currentMode, onModeChange }: WorkModeSelecto
                   : ''
               }`}
             >
-              <span className="text-2xl md:text-3xl">{mode.label.split(' ')[0]}</span>
-              <span className="font-semibold text-sm md:text-base">{mode.label.split(' ')[1]}</span>
+              <span className="text-2xl md:text-3xl">{mode.emoji}</span>
+              <span className="font-semibold text-sm md:text-base">{mode.label}</span>
               <div className="text-xs opacity-80">
-                <div>{mode.tasks} tareas/semana</div>
-                <div>{mode.hours}</div>
+                <div className="font-bold text-base">×{mode.multiplier}</div>
+                <div>{mode.description}</div>
               </div>
             </Button>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground mt-3 text-center">
+          El multiplicador se aplica sobre el cálculo adaptativo de tareas basado en tu contexto empresarial.
+        </p>
       </CardContent>
     </Card>
   );
