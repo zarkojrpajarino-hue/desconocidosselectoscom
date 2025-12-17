@@ -19,15 +19,33 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface WorkPreferencesModalProps {
   onPreferencesChange?: () => void;
 }
 
+const TEAM_SIZE_OPTIONS = [
+  { value: '1-5', label: '1-5 personas' },
+  { value: '6-10', label: '6-10 personas' },
+  { value: '11-20', label: '11-20 personas' },
+  { value: '21-30', label: '21-30 personas' },
+  { value: '31-50', label: '31-50 personas' },
+  { value: '51-100', label: '51-100 personas' },
+  { value: '100+', label: 'Más de 100 personas' },
+];
+
 export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesModalProps) {
   const { t } = useTranslation();
   const { user, currentOrganizationId, userOrganizations } = useAuth();
   const [hasTeam, setHasTeam] = useState(false);
+  const [teamSize, setTeamSize] = useState<string>('1-5');
   const [collaborativePercentage, setCollaborativePercentage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,7 +66,6 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
     if (!currentOrganizationId) return;
     
     try {
-      // Cargar configuración de la organización (establecida por admin)
       const { data, error } = await supabase
         .from('organizations')
         .select('*')
@@ -61,6 +78,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const orgData = data as any;
         setHasTeam(orgData.has_team ?? false);
+        setTeamSize(orgData.team_size ?? '1-5');
         setCollaborativePercentage(orgData.collaborative_percentage ?? 0);
       }
     } catch (error) {
@@ -85,6 +103,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         .from('organizations')
         .update({
           has_team: hasTeam,
+          team_size: hasTeam ? teamSize : null,
           collaborative_percentage: hasTeam ? collaborativePercentage : 0,
         } as any)
         .eq('id', currentOrganizationId);
@@ -93,7 +112,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
 
       toast.success('Configuración de trabajo guardada', {
         description: hasTeam 
-          ? `${collaborativePercentage}% colaborativas, ${100 - collaborativePercentage}% individuales`
+          ? `Equipo de ${teamSize} · ${collaborativePercentage}% colaborativas`
           : 'Modo individual activado'
       });
       
@@ -111,6 +130,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
     setHasTeam(value);
     if (!value) {
       setCollaborativePercentage(0);
+      setTeamSize('1-5');
     } else {
       setCollaborativePercentage(70);
     }
@@ -172,6 +192,36 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             disabled={!isAdmin}
           />
         </div>
+
+        {/* Team Size Selector (only if has team) */}
+        {hasTeam && (
+          <div className="p-4 bg-muted/30 rounded-lg border border-border ml-4 animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <Label className="text-sm font-medium">¿Con cuántas personas cuenta su equipo?</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Esto nos ayuda a personalizar las fases y tareas
+                </p>
+              </div>
+            </div>
+            <Select 
+              value={teamSize} 
+              onValueChange={(value) => isAdmin && setTeamSize(value)}
+              disabled={!isAdmin}
+            >
+              <SelectTrigger className="w-full bg-background">
+                <SelectValue placeholder="Selecciona el tamaño del equipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {TEAM_SIZE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Distribution Slider (only if has team) */}
         {hasTeam && (
