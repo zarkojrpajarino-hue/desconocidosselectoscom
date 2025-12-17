@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, TrendingUp, AlertCircle, Trophy, Edit3, ChevronDown, Target, BarChart3, Building2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, TrendingUp, AlertCircle, Trophy, Edit3, ChevronDown, Target, BarChart3, Building2, Eye } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useMetricsReminder } from '@/hooks/useMetricsReminder';
@@ -25,6 +27,8 @@ const BusinessMetrics = () => {
   
   const [activeTab, setActiveTab] = useState<string>('my-metrics');
   const [isKpiInfoOpen, setIsKpiInfoOpen] = useState(false);
+  const [showDemoData, setShowDemoData] = useState(true);
+  const [hasRealData, setHasRealData] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -57,6 +61,19 @@ const BusinessMetrics = () => {
               <h1 className="text-base sm:text-lg md:text-2xl font-bold truncate">KPIs del Negocio</h1>
             </div>
             <div className="flex items-center gap-1 md:gap-2 shrink-0">
+              {!hasRealData && (
+                <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="kpi-demo-toggle" className="text-xs text-muted-foreground hidden md:inline">
+                    Demo
+                  </Label>
+                  <Switch
+                    id="kpi-demo-toggle"
+                    checked={showDemoData}
+                    onCheckedChange={setShowDemoData}
+                  />
+                </div>
+              )}
               <SectionTourButton sectionId="business-metrics" className="hidden md:flex" />
               <Button variant="outline" onClick={() => navigate('/metrics')} className="gap-1 p-2 md:px-3" size="sm">
                 <ArrowLeft className="h-4 w-4" />

@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw, CheckCircle2, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw, CheckCircle2, AlertTriangle, TrendingUp, Eye } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/OKRsDashboard';
@@ -21,6 +24,15 @@ import {
   OKRRetrospective,
 } from '@/components/enterprise';
 
+// Demo data for empty states
+const DEMO_OKR_STATS = {
+  totalOKRs: 8,
+  completedOKRs: 3,
+  inProgressOKRs: 4,
+  atRiskOKRs: 1,
+  overallProgress: 67
+};
+
 const OKRsPage = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -28,6 +40,7 @@ const OKRsPage = () => {
   const [isOkrInfoOpen, setIsOkrInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('weekly');
   const [objectives, setObjectives] = useState<ObjectiveData[]>([]);
+  const [showDemoData, setShowDemoData] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -52,8 +65,14 @@ const OKRsPage = () => {
     }
   };
 
+  const hasRealData = objectives.length > 0;
+
   // Calcular estadísticas de OKRs
   const okrStats = useMemo(() => {
+    if (!hasRealData && showDemoData) {
+      return DEMO_OKR_STATS;
+    }
+    
     const totalOKRs = objectives.length;
     const completedOKRs = objectives.filter((o: ObjectiveData) => 
       o.key_results?.length && o.key_results.every((kr) => (kr.current_value || 0) >= (kr.target_value || 1))
@@ -78,7 +97,7 @@ const OKRsPage = () => {
       : 0;
 
     return { totalOKRs, completedOKRs, inProgressOKRs, atRiskOKRs, overallProgress };
-  }, [objectives]);
+  }, [objectives, hasRealData, showDemoData]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -110,6 +129,19 @@ const OKRsPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            {!hasRealData && (
+              <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+                <Eye className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="okr-demo-toggle" className="text-xs text-muted-foreground hidden md:inline">
+                  Demo
+                </Label>
+                <Switch
+                  id="okr-demo-toggle"
+                  checked={showDemoData}
+                  onCheckedChange={setShowDemoData}
+                />
+              </div>
+            )}
             <SectionTourButton sectionId="okrs" className="hidden md:flex" />
             <Button variant="secondary" onClick={() => navigate('/okrs/organization')} className="gap-1 p-2 md:px-3" size="sm">
               <Building2 className="h-4 w-4" />
