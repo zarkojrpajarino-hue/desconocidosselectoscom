@@ -8,8 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, User, Info, ArrowLeftRight, Shield, Lightbulb,
-  HelpCircle, CheckCircle2, AlertCircle
+  Users, User, Info, Lock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,27 +26,34 @@ interface WorkPreferencesModalProps {
 
 export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesModalProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, currentOrganizationId, userOrganizations } = useAuth();
   const [hasTeam, setHasTeam] = useState(false);
   const [collaborativePercentage, setCollaborativePercentage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Verificar si el usuario es admin
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
+
   useEffect(() => {
-    if (user?.id) {
+    if (currentOrganizationId) {
       loadPreferences();
     }
-  }, [user?.id]);
+  }, [currentOrganizationId]);
 
   const loadPreferences = async () => {
-    if (!user?.id) return;
+    if (!currentOrganizationId) return;
     
     try {
+      // Cargar configuración de la organización (establecida por admin)
       const { data, error } = await supabase
-        .from('user_global_agenda_settings')
+        .from('organizations')
         .select('has_team, collaborative_percentage')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .eq('id', currentOrganizationId)
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
 
@@ -63,22 +69,26 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
   };
 
   const savePreferences = async () => {
-    if (!user?.id) return;
+    if (!isAdmin) {
+      toast.error('Solo el administrador puede modificar la configuración');
+      return;
+    }
+
+    if (!currentOrganizationId) return;
     
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('user_global_agenda_settings')
-        .upsert({
-          user_id: user.id,
+        .from('organizations')
+        .update({
           has_team: hasTeam,
           collaborative_percentage: hasTeam ? collaborativePercentage : 0,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        })
+        .eq('id', currentOrganizationId);
 
       if (error) throw error;
 
-      toast.success('Preferencias guardadas', {
+      toast.success('Configuración de trabajo guardada', {
         description: hasTeam 
           ? `${collaborativePercentage}% colaborativas, ${100 - collaborativePercentage}% individuales`
           : 'Modo individual activado'
@@ -87,18 +97,19 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
       onPreferencesChange?.();
     } catch (error) {
       console.error('Error saving preferences:', error);
-      toast.error('Error al guardar preferencias');
+      toast.error('Error al guardar configuración');
     } finally {
       setSaving(false);
     }
   };
 
   const handleTeamToggle = (value: boolean) => {
+    if (!isAdmin) return;
     setHasTeam(value);
     if (!value) {
       setCollaborativePercentage(0);
     } else {
-      setCollaborativePercentage(70); // Default 70% colaborativas
+      setCollaborativePercentage(70);
     }
   };
 
@@ -123,9 +134,17 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         <CardTitle className="text-base md:text-lg flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
           Configuración de Trabajo
+          {!isAdmin && (
+            <Badge variant="secondary" className="ml-2 gap-1">
+              <Lock className="w-3 h-3" />
+              Solo lectura
+            </Badge>
+          )}
         </CardTitle>
         <CardDescription>
-          Personaliza cómo se distribuyen tus tareas semanales
+          {isAdmin 
+            ? 'Establece cómo trabaja tu equipo. Esta configuración aplica a todos los miembros.'
+            : 'Configuración establecida por el administrador de tu organización.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -136,17 +155,18 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
               {hasTeam ? <Users className="w-5 h-5 text-primary" /> : <User className="w-5 h-5 text-muted-foreground" />}
             </div>
             <div>
-              <Label className="text-sm font-medium">¿Cuentas con un equipo?</Label>
+              <Label className="text-sm font-medium">¿La organización cuenta con equipo?</Label>
               <p className="text-xs text-muted-foreground">
                 {hasTeam 
-                  ? 'Trabajas con otras personas en tu organización' 
-                  : 'Trabajas de forma individual (autónomo)'}
+                  ? 'Trabajo colaborativo con otros miembros' 
+                  : 'Trabajo individual (autónomo/emprendedor)'}
               </p>
             </div>
           </div>
           <Switch
             checked={hasTeam}
             onCheckedChange={handleTeamToggle}
+            disabled={!isAdmin}
           />
         </div>
 
@@ -156,17 +176,18 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">Distribución de tareas</Label>
               <Badge variant="outline" className="text-xs">
-                Personalizable cada semana
+                {isAdmin ? 'Configurable' : 'Establecido por admin'}
               </Badge>
             </div>
             
             <div className="space-y-3">
               <Slider
                 value={[collaborativePercentage]}
-                onValueChange={(value) => setCollaborativePercentage(value[0])}
+                onValueChange={(value) => isAdmin && setCollaborativePercentage(value[0])}
                 max={100}
                 step={10}
                 className="w-full"
+                disabled={!isAdmin}
               />
               
               <div className="flex justify-between gap-4">
@@ -197,8 +218,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
               Modo Individual Activado
             </div>
             <p className="text-xs text-muted-foreground">
-              Todas tus tareas serán individuales, adaptadas a tu rol y objetivos.
-              La IA generará tareas específicas para tu situación como autónomo o emprendedor individual.
+              Todas las tareas serán individuales, adaptadas al rol y objetivos de cada miembro.
             </p>
           </div>
         )}
@@ -216,13 +236,12 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             </AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground space-y-2">
               <p>
-                Las <strong>tareas colaborativas</strong> tienen un <strong>líder asignado</strong> de tu equipo 
+                Las <strong>tareas colaborativas</strong> tienen un <strong>líder asignado</strong> 
                 que es experto en esa área funcional.
               </p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>El líder te guía y valida tu trabajo</li>
-                <li>Aprendes de expertos en cada área</li>
-                <li>Fomenta el trabajo en equipo</li>
+                <li>El líder guía y valida el trabajo</li>
+                <li>Fomenta el aprendizaje entre áreas</li>
                 <li>Mejora la calidad del resultado</li>
               </ul>
             </AccordionContent>
@@ -237,71 +256,34 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             </AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground space-y-2">
               <p>
-                Las <strong>tareas individuales</strong> son completamente tuyas, sin supervisión de líder.
+                Las <strong>tareas individuales</strong> son completamente autónomas.
               </p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Trabajas a tu propio ritmo</li>
                 <li>Total autonomía en la ejecución</li>
                 <li>Ideal para tareas de tu especialidad</li>
-                <li>Se marcan completas cuando tú decides</li>
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="leaders">
-            <AccordionTrigger className="text-sm hover:no-underline">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-green-500" />
-                ¿Cómo funcionan los líderes?
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground space-y-2">
-              <p>
-                Cada área funcional (Marketing, Ventas, Operaciones, etc.) puede tener un <strong>líder experto</strong>.
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Los líderes validan tareas de su área</li>
-                <li>Reciben notificaciones cuando completas tareas</li>
-                <li>Pueden aprobar o solicitar mejoras</li>
-                <li>Contribuyen a tu puntuación y progreso</li>
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="swaps">
-            <AccordionTrigger className="text-sm hover:no-underline">
-              <div className="flex items-center gap-2">
-                <ArrowLeftRight className="w-4 h-4 text-orange-500" />
-                ¿Qué son los swaps de tareas?
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground space-y-2">
-              <p>
-                Los <strong>swaps</strong> te permiten intercambiar una tarea por otra si no puedes completarla.
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Limita los swaps por semana según tu modo</li>
-                <li>Debes indicar el motivo del cambio</li>
-                <li>La IA te sugiere alternativas equivalentes</li>
-                <li>Mantiene el equilibrio de tu carga de trabajo</li>
               </ul>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
-        {/* Save Button */}
-        <Button
-          onClick={savePreferences}
-          disabled={saving}
-          className="w-full bg-gradient-primary"
-        >
-          {saving ? 'Guardando...' : 'Guardar Preferencias'}
-        </Button>
-
-        <p className="text-xs text-center text-muted-foreground">
-          <Info className="w-3 h-3 inline mr-1" />
-          Puedes cambiar estas preferencias en cualquier momento
-        </p>
+        {/* Save Button - only for admin */}
+        {isAdmin ? (
+          <Button
+            onClick={savePreferences}
+            disabled={saving}
+            className="w-full bg-gradient-primary"
+          >
+            {saving ? 'Guardando...' : 'Guardar Configuración'}
+          </Button>
+        ) : (
+          <div className="p-3 bg-muted/50 rounded-lg text-center">
+            <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <Info className="w-4 h-4" />
+              Solo el administrador puede modificar esta configuración
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
