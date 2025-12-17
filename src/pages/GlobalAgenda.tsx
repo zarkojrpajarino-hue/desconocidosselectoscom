@@ -159,11 +159,6 @@ export default function GlobalAgenda() {
             Regenerar
           </Button>
 
-          <Button onClick={() => setShowCreateTask(true)} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Tarea
-          </Button>
-
           <Sheet open={showSettings} onOpenChange={setShowSettings}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
@@ -219,7 +214,13 @@ export default function GlobalAgenda() {
           </Button>
         </div>
 
-        <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setShowCreateTask(true)} size="sm" variant="default">
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Tarea
+          </Button>
+          <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
+        </div>
       </div>
 
       {/* Main Content - Different views based on has_team */}

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Clock, Target, Zap } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, Clock, Target, Zap, Circle } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import type { AgendaFilters } from '@/hooks/useGlobalAgenda';
 
 interface IndividualAgendaViewProps {
@@ -14,7 +15,8 @@ interface IndividualAgendaViewProps {
 }
 
 export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaViewProps) {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch user's tasks for this week
   const { data: tasks, isLoading } = useQuery({
@@ -54,6 +56,66 @@ export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaVie
   const completedCount = tasks?.filter(t => t.status === 'completed').length || 0;
   const totalCount = tasks?.length || 0;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  // Toggle task completion
+  const handleToggleComplete = async (taskId: string, currentStatus: string) => {
+    if (!user?.id || !currentOrganizationId) return;
+    
+    const isCompleted = currentStatus === 'completed';
+    
+    try {
+      if (isCompleted) {
+        // Desmarcar - eliminar completion
+        const { error } = await supabase
+          .from('task_completions')
+          .delete()
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        // Actualizar status en task_schedule
+        await supabase
+          .from('task_schedule')
+          .update({ status: 'pending' })
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        toast.info('Tarea marcada como pendiente');
+      } else {
+        // Marcar como completada
+        const { error } = await supabase
+          .from('task_completions')
+          .upsert({
+            task_id: taskId,
+            user_id: user.id,
+            organization_id: currentOrganizationId,
+            completed_by_user: true,
+            validated_by_leader: true, // Auto-validate en modo individual
+            completed_at: new Date().toISOString(),
+          }, {
+            onConflict: 'task_id,user_id'
+          });
+        
+        if (error) throw error;
+        
+        // Actualizar status en task_schedule
+        await supabase
+          .from('task_schedule')
+          .update({ status: 'completed' })
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        toast.success('¡Tarea completada!');
+      }
+      
+      // Refrescar datos
+      queryClient.invalidateQueries({ queryKey: ['individual-agenda-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['global-agenda-stats'] });
+    } catch (error) {
+      toast.error('Error al actualizar la tarea');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -152,13 +214,20 @@ export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaVie
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
-                        task.status === 'completed' 
-                          ? 'bg-success text-success-foreground' 
-                          : 'border-2 border-muted-foreground'
-                      }`}>
-                        {task.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
-                      </div>
+                      <button
+                        onClick={() => handleToggleComplete(task.task_id, task.status)}
+                        className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-colors cursor-pointer ${
+                          task.status === 'completed' 
+                            ? 'bg-success text-success-foreground hover:bg-success/80' 
+                            : 'border-2 border-muted-foreground hover:border-primary hover:bg-primary/10'
+                        }`}
+                      >
+                        {task.status === 'completed' ? (
+                          <CheckCircle2 className="w-3 h-3" />
+                        ) : (
+                          <Circle className="w-3 h-3 opacity-0 group-hover:opacity-100" />
+                        )}
+                      </button>
                       <div className="flex-1 min-w-0">
                         <p className={`font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                           {task.tasks?.title || 'Tarea sin título'}

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Clock, Users, User, Target } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, Clock, Users, User, Target, Circle } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import type { AgendaFilters } from '@/hooks/useGlobalAgenda';
 
 interface TeamAgendaViewProps {
@@ -15,7 +16,8 @@ interface TeamAgendaViewProps {
 }
 
 export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: TeamAgendaViewProps) {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch user's tasks for this week
   const { data: tasks, isLoading } = useQuery({
@@ -48,6 +50,69 @@ export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: 
   const totalCount = tasks?.length || 0;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  // Toggle task completion
+  const handleToggleComplete = async (taskId: string, currentStatus: string, isCollaborative: boolean) => {
+    if (!user?.id || !currentOrganizationId) return;
+    
+    const isCompleted = currentStatus === 'completed';
+    
+    try {
+      if (isCompleted) {
+        // Desmarcar - eliminar completion
+        const { error } = await supabase
+          .from('task_completions')
+          .delete()
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        await supabase
+          .from('task_schedule')
+          .update({ status: 'pending' })
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        toast.info('Tarea marcada como pendiente');
+      } else {
+        // Marcar como completada
+        // En modo colectivo, las colaborativas requieren validación del líder
+        const { error } = await supabase
+          .from('task_completions')
+          .upsert({
+            task_id: taskId,
+            user_id: user.id,
+            organization_id: currentOrganizationId,
+            completed_by_user: true,
+            validated_by_leader: !isCollaborative, // Solo auto-validate si NO es colaborativa
+            completed_at: new Date().toISOString(),
+          }, {
+            onConflict: 'task_id,user_id'
+          });
+        
+        if (error) throw error;
+        
+        // Si es colaborativa, el status queda pending hasta que líder valide
+        await supabase
+          .from('task_schedule')
+          .update({ status: isCollaborative ? 'pending' : 'completed' })
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        if (isCollaborative) {
+          toast.success('Tarea enviada al líder para validación');
+        } else {
+          toast.success('¡Tarea completada!');
+        }
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['team-agenda-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['global-agenda-stats'] });
+    } catch (error) {
+      toast.error('Error al actualizar la tarea');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -67,13 +132,20 @@ export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: 
       }`}
     >
       <div className="flex items-start gap-3">
-        <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
-          task.status === 'completed' 
-            ? 'bg-success text-success-foreground' 
-            : 'border-2 border-muted-foreground'
-        }`}>
-          {task.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
-        </div>
+        <button
+          onClick={() => handleToggleComplete(task.task_id, task.status, isCollaborative)}
+          className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-colors cursor-pointer ${
+            task.status === 'completed' 
+              ? 'bg-success text-success-foreground hover:bg-success/80' 
+              : 'border-2 border-muted-foreground hover:border-primary hover:bg-primary/10'
+          }`}
+        >
+          {task.status === 'completed' ? (
+            <CheckCircle2 className="w-3 h-3" />
+          ) : (
+            <Circle className="w-3 h-3 opacity-0" />
+          )}
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className={`font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
