@@ -14,16 +14,20 @@ import {
   Calendar,
   BarChart3,
   Sparkles,
-  Edit
+  Edit,
+  Lock,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OKRProgressModal } from './OKRProgressModal';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { useBackendValidation } from '@/hooks/useBackendValidation';
+import { useWeeklyOKRGeneration } from '@/hooks/useWeeklyOKRGeneration';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
 import { OKRPlaybook } from './okrs/OKRPlaybook';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PlaybookData {
   title: string;
@@ -75,6 +79,7 @@ const OKRsDashboard = () => {
   const { user, userProfile, currentOrganizationId } = useAuth();
   const { canAddOkr, plan, okrCount, limits } = useSubscriptionLimits();
   const { canAddOkr: validateOkrBackend, validating } = useBackendValidation();
+  const weeklyOKR = useWeeklyOKRGeneration();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
@@ -254,7 +259,13 @@ const OKRsDashboard = () => {
   };
 
   const handleGenerateWeeklyOKR = async () => {
-    // Validación frontend primero (rápida)
+    // Validación de límite semanal (1 generación por semana)
+    if (!weeklyOKR.canGenerate) {
+      toast.error(weeklyOKR.getBlockedMessage());
+      return;
+    }
+
+    // Validación frontend de plan (rápida)
     const { allowed } = canAddOkr();
     if (!allowed) {
       setShowUpgradeModal(true);
@@ -283,6 +294,8 @@ const OKRsDashboard = () => {
 
       toast.success(`✨ OKR semanal generado con ${aiResult.count} Key Results`);
       fetchOKRs();
+      // Actualizar el estado del hook
+      weeklyOKR.refreshStatus();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al generar OKR semanal';
       logger.error('Error generating weekly OKR:', error);
@@ -330,17 +343,63 @@ const OKRsDashboard = () => {
             Actualizar
           </Button>
 
-          <Button
-            size="sm"
-            onClick={handleGenerateWeeklyOKR}
-            disabled={generatingWithAI}
-            className="gap-2"
-          >
-            <Sparkles className="w-4 h-4" />
-            {generatingWithAI ? 'Generando...' : 'Generar OKR Semanal con IA'}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateWeeklyOKR}
+                    disabled={generatingWithAI || weeklyOKR.loading || !weeklyOKR.canGenerate}
+                    className="gap-2"
+                  >
+                    {!weeklyOKR.canGenerate ? (
+                      <Lock className="w-4 h-4" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    {generatingWithAI 
+                      ? 'Generando...' 
+                      : weeklyOKR.canRegenerateEnterprise 
+                        ? 'Regenerar OKRs (Enterprise)'
+                        : weeklyOKR.hasGeneratedThisWeek 
+                          ? 'OKRs Generados'
+                          : 'Generar OKR Semanal con IA'}
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {!weeklyOKR.canGenerate && (
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <p className="text-sm">{weeklyOKR.getBlockedMessage()}</p>
+                  </div>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
+
+      {/* Info de límite semanal */}
+      {weeklyOKR.hasGeneratedThisWeek && (
+        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+          <Info className="w-4 h-4 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            {weeklyOKR.plan === 'enterprise' ? (
+              weeklyOKR.allOKRsCompleted ? (
+                <span className="text-primary font-medium">
+                  ¡Completaste todos tus OKRs! Puedes generar nuevos esta semana.
+                </span>
+              ) : (
+                <>Completa todos tus OKRs para poder generar nuevos esta semana <Badge variant="outline" className="ml-1">Enterprise</Badge></>
+              )
+            ) : (
+              <>1 generación por semana. Próxima generación disponible la siguiente semana.</>
+            )}
+          </p>
+        </div>
+      )}
 
       {objectives.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
