@@ -21,7 +21,7 @@ import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
-import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
+
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
@@ -344,9 +344,6 @@ const DashboardHome = () => {
                 swapLimit={limit}
               />
             </div>
-
-            {/* Google Calendar Connect */}
-            {user && <GoogleCalendarConnect userId={user.id} />}
 
             {/* Sync All Card */}
             <Card className="shadow-card border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
