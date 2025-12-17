@@ -27,7 +27,7 @@ import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
-import { WorkPreferencesModal } from '@/components/agenda/WorkPreferencesModal';
+import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
 interface SystemConfig {
   week_start: string;
   current_phase: number;
@@ -279,6 +279,9 @@ const DashboardHome = () => {
                 </CollapsibleContent>
               </Collapsible>}
 
+            {/* Work Preferences - Collapsible and MANDATORY */}
+            <WorkPreferencesCollapsible onPreferencesChange={fetchUserWeeklyData} />
+
             {/* PhaseSelector removed - PhaseTimeline replaces it */}
 
             {/* Countdown */}
@@ -325,14 +328,8 @@ const DashboardHome = () => {
               </CardContent>
             </Card>
 
-            {/* Team Progress */}
+            {/* Team Progress - Now available for ALL users */}
             <TeamProgress currentPhase={systemConfig?.current_phase || 1} currentUserId={user?.id} />
-
-            {/* Swaps Info Card */}
-            {userWeeklyData?.mode}
-
-            {/* Work Preferences Modal */}
-            <WorkPreferencesModal onPreferencesChange={fetchUserWeeklyData} />
 
             {/* Work Mode Selector */}
             <WorkModeSelector userId={user?.id} currentMode={userWeeklyData?.mode} onModeChange={fetchUserWeeklyData} />
