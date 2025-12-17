@@ -117,7 +117,7 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {phases.map((phase) => {
             const isActive = phase.status === 'active';
             const isCompleted = phase.status === 'completed';
@@ -126,16 +126,16 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
               (phase.phase_number === 1 || phases.find(p => p.phase_number === phase.phase_number - 1)?.status === 'completed');
             
             return (
-              <Button
+              <div
                 key={phase.id}
                 onClick={() => canActivate && handlePhaseChange(phase.phase_number)}
-                variant={isActive ? 'default' : 'outline'}
-                disabled={!canActivate && !isActive}
                 className={cn(
-                  "h-auto py-4 flex flex-col gap-2 relative",
-                  isActive && "bg-gradient-primary hover:opacity-90 ring-2 ring-primary/20",
-                  isCompleted && "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800",
-                  !canActivate && !isActive && !isCompleted && "opacity-60"
+                  "p-3 md:p-4 rounded-xl border-2 flex flex-col gap-2 relative transition-all cursor-default min-h-[120px]",
+                  isActive && "bg-gradient-primary text-primary-foreground ring-2 ring-primary/30 shadow-lg",
+                  isCompleted && "bg-green-50 border-green-300 dark:bg-green-950/30 dark:border-green-700",
+                  !isActive && !isCompleted && "bg-card border-border",
+                  canActivate && "cursor-pointer hover:border-primary/50 hover:shadow-md",
+                  !canActivate && !isActive && !isCompleted && "opacity-50"
                 )}
               >
                 {isCompleted && (
@@ -143,29 +143,37 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
                 )}
                 
                 {isActivating ? (
-                  <>
+                  <div className="flex flex-col items-center justify-center h-full gap-2">
                     <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
                     <span className="font-bold text-sm">Activando...</span>
-                  </>
+                  </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2">
-                      {isActive && <Play className="h-4 w-4" />}
-                      <span className="font-bold text-lg">Fase {phase.phase_number}</span>
+                    <div className="flex items-center gap-1.5">
+                      {isActive && <Play className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />}
+                      <span className="font-bold text-base md:text-lg">Fase {phase.phase_number}</span>
                     </div>
-                    <span className="text-xs opacity-80 text-center line-clamp-1">
+                    <p className={cn(
+                      "text-xs md:text-sm leading-tight line-clamp-2 flex-1",
+                      isActive ? "text-primary-foreground/80" : "text-muted-foreground"
+                    )}>
                       {phase.phase_name}
-                    </span>
-                    <Progress 
-                      value={phase.progress_percentage || 0} 
-                      className="h-1 w-full mt-1" 
-                    />
-                    <span className="text-xs opacity-60">
-                      {phase.progress_percentage || 0}% completado
-                    </span>
+                    </p>
+                    <div className="mt-auto">
+                      <Progress 
+                        value={phase.progress_percentage || 0} 
+                        className="h-1.5 w-full" 
+                      />
+                      <span className={cn(
+                        "text-xs mt-1 block",
+                        isActive ? "text-primary-foreground/70" : "text-muted-foreground"
+                      )}>
+                        {phase.progress_percentage || 0}% completado
+                      </span>
+                    </div>
                   </>
                 )}
-              </Button>
+              </div>
             );
           })}
         </div>
