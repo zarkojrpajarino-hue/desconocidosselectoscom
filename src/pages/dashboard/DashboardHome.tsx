@@ -27,6 +27,7 @@ import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
+import { WorkPreferencesModal } from '@/components/agenda/WorkPreferencesModal';
 
 interface SystemConfig {
   week_start: string;
@@ -439,6 +440,9 @@ const DashboardHome = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Work Preferences Modal */}
+            <WorkPreferencesModal onPreferencesChange={fetchUserWeeklyData} />
 
             {/* Work Mode Selector */}
             <WorkModeSelector

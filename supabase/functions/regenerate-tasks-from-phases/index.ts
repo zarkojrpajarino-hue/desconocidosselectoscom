@@ -236,14 +236,25 @@ serve(async (req) => {
                  (userFunctionalRole === 'producto' && (taskRole === 'producto' || taskRole === 'product'));
         });
 
-        // Asegurar exactamente 12 tareas por usuario
-        const tasksForUser = userTasks.slice(0, 12);
-        
-        // Si no hay suficientes, completar del pool general
-        if (tasksForUser.length < 12) {
-          const remaining = checklist.filter(item => !tasksForUser.includes(item));
-          tasksForUser.push(...remaining.slice(0, 12 - tasksForUser.length));
-        }
+          // ASEGURAR EXACTAMENTE 12 TAREAS por usuario
+          const TARGET_TASKS = 12;
+          let tasksForUser = userTasks.slice(0, TARGET_TASKS);
+          
+          // Si no hay suficientes tareas específicas, agregar del pool general hasta llegar a 12
+          if (tasksForUser.length < TARGET_TASKS) {
+            const remaining = checklist.filter(item => !tasksForUser.includes(item));
+            tasksForUser.push(...remaining.slice(0, TARGET_TASKS - tasksForUser.length));
+          }
+          
+          // Si aún faltan tareas (checklist muy corto), duplicar con variaciones
+          while (tasksForUser.length < TARGET_TASKS && checklist.length > 0) {
+            const baseTask = checklist[tasksForUser.length % checklist.length];
+            tasksForUser.push({
+              ...baseTask,
+              task: `${baseTask.task || baseTask.title || 'Tarea'} (avanzado ${tasksForUser.length + 1})`,
+              functional_role: baseTask.functional_role || userFunctionalRole || 'general'
+            });
+          }
 
         tasksForUser.forEach((item, index) => {
           const taskTitle = item.task || item.title || item.name || `Tarea ${index + 1}`;

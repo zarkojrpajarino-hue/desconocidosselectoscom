@@ -767,10 +767,10 @@ GENERA exactamente 4 fases con la siguiente estructura JSON:
   ]
 }
 
-REGLAS CRÍTICAS:
+REGLAS CRÍTICAS - MUY IMPORTANTE:
 1. Cada fase debe tener 3-5 objetivos MEDIBLES
-2. Cada fase debe tener EXACTAMENTE 12 tareas del checklist (ni más, ni menos)
-3. Las 12 tareas deben tener functional_role variado para cubrir diferentes áreas:
+2. ⚠️ CRÍTICO: Cada fase DEBE tener EXACTAMENTE 12 tareas en el checklist - NO 10, NO 8, EXACTAMENTE 12 tareas. Cuenta las tareas antes de responder.
+3. Las 12 tareas OBLIGATORIAS deben tener functional_role variado para cubrir diferentes áreas:
    - admin (dirección, estrategia)
    - marketing (campañas, contenido, redes)
    - ventas (leads, pipeline, cierre)
