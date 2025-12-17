@@ -13,6 +13,7 @@ import { SocialPostsDisplay } from './SocialPostsDisplay';
 import { DesignBriefDisplay } from './DesignBriefDisplay';
 import { OutreachTemplatesDisplay } from './OutreachTemplatesDisplay';
 import { EmailSequencesDisplay } from './EmailSequencesDisplay';
+import { TaskResourcesDisplay } from './TaskResourcesDisplay';
 
 interface AIResourcesPanelProps {
   taskId: string;
@@ -117,6 +118,8 @@ export const AIResourcesPanel = ({
         return <OutreachTemplatesDisplay templates={(resources.outreach_templates as never[]) || []} />;
       case 'email_sequences':
         return <EmailSequencesDisplay sequences={(resources.email_sequences as never[]) || []} />;
+      case 'task_resources':
+        return <TaskResourcesDisplay resources={resources} />;
       default:
         return (
           <div className="bg-muted p-4 rounded-lg">
@@ -136,7 +139,8 @@ export const AIResourcesPanel = ({
       'social_posts': 'Posts de Redes',
       'design_brief': 'Brief de Diseño',
       'outreach_templates': 'Templates de Outreach',
-      'email_sequences': 'Secuencias de Email'
+      'email_sequences': 'Secuencias de Email',
+      'task_resources': 'Recursos para la Tarea'
     };
     return labels[type] || type;
   };

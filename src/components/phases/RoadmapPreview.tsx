@@ -243,6 +243,29 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
           </div>
         )}
 
+        {/* Methodology Explanation */}
+        {activePhase && (
+          <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
+            <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Metodología: {activePhase.methodology === 'lean_startup' ? 'Lean Startup' : 'Scaling Up'}
+            </h4>
+            {activePhase.methodology === 'lean_startup' ? (
+              <p className="text-xs text-muted-foreground">
+                <strong>Lean Startup</strong> (Eric Ries) es una metodología que reduce el riesgo de nuevos negocios mediante ciclos rápidos de <em>Construir-Medir-Aprender</em>. 
+                En lugar de planificar todo por adelantado, se validan hipótesis con prototipos mínimos (MVP), se miden resultados reales y se pivotea según los datos. 
+                Es especialmente efectiva para startups porque minimiza el desperdicio de recursos en ideas no validadas.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                <strong>Scaling Up</strong> (Verne Harnish) es una metodología probada para escalar empresas consolidadas de forma sostenible. 
+                Se enfoca en 4 decisiones críticas: <em>Personas, Estrategia, Ejecución y Efectivo</em>. 
+                Proporciona herramientas como OKRs trimestrales, ritmo de reuniones y dashboards de KPIs para mantener alineado al equipo mientras crece el negocio.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Botones para admin */}
         {isAdmin && (
           <div className="mt-4 flex flex-wrap justify-end gap-2">

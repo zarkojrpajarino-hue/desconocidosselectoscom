@@ -428,6 +428,73 @@ Nota: Estos son perfiles FICTICIOS pero representativos de lo que deberías busc
 
 Responde SOLO con JSON válido, sin markdown ni explicaciones adicionales.`;
 
+    case 'task_resources':
+      return `${baseContext}
+
+# TU MISIÓN
+
+Genera recursos ESPECÍFICOS y ÚTILES para completar esta tarea. Analiza el título y descripción de la tarea para determinar qué tipo de recursos serían más valiosos.
+
+# ESTRUCTURA DE RESPUESTA
+
+Genera recursos que ayuden a completar la tarea con éxito. Incluye:
+
+1. **Guía paso a paso** - Pasos concretos para ejecutar la tarea
+2. **Plantillas o ejemplos** - Templates relevantes que se puedan usar
+3. **Tips profesionales** - Consejos de expertos para hacer el trabajo mejor
+4. **Herramientas recomendadas** - Software o recursos útiles
+5. **Checklist de calidad** - Lista de verificación para asegurar buenos resultados
+
+# OUTPUT JSON
+
+{
+  "task_title": "${taskTitle}",
+  "step_by_step_guide": [
+    {
+      "step_number": 1,
+      "title": "...",
+      "description": "...",
+      "estimated_time_minutes": 30,
+      "tips": ["..."]
+    }
+  ],
+  "templates": [
+    {
+      "name": "...",
+      "description": "...",
+      "content": "...",
+      "how_to_use": "..."
+    }
+  ],
+  "professional_tips": [
+    {
+      "tip": "...",
+      "why_it_works": "...",
+      "example": "..."
+    }
+  ],
+  "recommended_tools": [
+    {
+      "name": "...",
+      "category": "...",
+      "why_recommended": "...",
+      "pricing": "..."
+    }
+  ],
+  "quality_checklist": [
+    {
+      "item": "...",
+      "description": "...",
+      "priority": "high|medium|low"
+    }
+  ],
+  "estimated_total_time_hours": 2,
+  "difficulty_level": "fácil|medio|difícil",
+  "expected_outcome": "..."
+}
+
+Responde SOLO con JSON válido, sin markdown ni explicaciones adicionales.`;
+
     default:
       return `${baseContext}
 

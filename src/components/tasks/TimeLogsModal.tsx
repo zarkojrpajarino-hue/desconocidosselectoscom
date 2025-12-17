@@ -49,15 +49,15 @@ export function TimeLogsModal({ open, onOpenChange, taskId, taskTitle }: TimeLog
           <p className="text-sm text-muted-foreground truncate">{taskTitle}</p>
         </DialogHeader>
 
-        {/* Summary */}
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-          <div>
-            <span className="text-sm text-muted-foreground">Total Registrado</span>
-            <p className="text-xl font-bold">{formatTotalTime(totalMinutes)}</p>
+        {/* Summary - Improved styling */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
+            <span className="text-xs text-muted-foreground block mb-1">Total Registrado</span>
+            <p className="text-2xl font-bold text-primary">{formatTotalTime(totalMinutes)}</p>
           </div>
-          <div className="text-right">
-            <span className="text-sm text-muted-foreground">Sesiones</span>
-            <p className="text-xl font-bold">{logs.length}</p>
+          <div className="p-4 bg-violet-500/10 rounded-xl border border-violet-500/20">
+            <span className="text-xs text-muted-foreground block mb-1">Sesiones</span>
+            <p className="text-2xl font-bold text-violet-500">{logs.length}</p>
           </div>
         </div>
 

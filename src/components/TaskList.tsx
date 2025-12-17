@@ -702,18 +702,18 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
             </p>
           </details>
 
-          {/* Botón Generar con IA - Solo para tareas de marketing/contenido */}
-          {!isCompleted && task.area && ['marketing', 'contenido', 'ventas', 'redes', 'diseño'].some(a => task.area?.toLowerCase().includes(a)) && (
+          {/* Botón Generar con IA - Disponible para TODAS las tareas */}
+          {!isCompleted && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
-                const resourceType = getResourceTypeFromArea(task.area);
+                // Usar tipo genérico que genera recursos basados en la tarea
                 setAiPanelTask({
                   id: task.id,
                   title: task.title,
                   description: task.description || '',
-                  resourceType
+                  resourceType: 'task_resources'
                 });
                 setAiPanelOpen(true);
               }}
