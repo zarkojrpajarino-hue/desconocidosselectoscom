@@ -33,7 +33,11 @@ const COLORS = [
   'hsl(25, 95%, 53%)',
 ];
 
-export function BudgetTracking() {
+interface BudgetTrackingProps {
+  showDemoData?: boolean;
+}
+
+export function BudgetTracking({ showDemoData = false }: BudgetTrackingProps) {
   const { organizationId } = useCurrentOrganization();
   const { data, loading, error } = useBudgetComparison(organizationId);
 

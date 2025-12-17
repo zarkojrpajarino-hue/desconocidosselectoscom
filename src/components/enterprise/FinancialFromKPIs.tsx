@@ -10,7 +10,11 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/currencyUtils';
 
-export function FinancialFromKPIs() {
+interface FinancialFromKPIsProps {
+  showDemoData?: boolean;
+}
+
+export function FinancialFromKPIs({ showDemoData = false }: FinancialFromKPIsProps) {
   const { organizationId } = useCurrentOrganization();
   const { data, loading, error } = useFinancialFromKPIs(organizationId);
 

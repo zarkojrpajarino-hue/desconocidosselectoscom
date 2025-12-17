@@ -42,7 +42,11 @@ const kpiLabels: Record<string, string> = {
   nps: 'NPS',
 };
 
-export function KPITargetsManager() {
+interface KPITargetsManagerProps {
+  showDemoData?: boolean;
+}
+
+export function KPITargetsManager({ showDemoData = false }: KPITargetsManagerProps) {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<KPITarget[]>([]);
   const [loading, setLoading] = useState(true);

@@ -38,6 +38,7 @@ const FinancialPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFinancialInfoOpen, setIsFinancialInfoOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showDemoData, setShowDemoData] = useState(true);
 
   // Obtener el rol actual del usuario en la organización seleccionada
   const currentUserRole = userOrganizations.find(
@@ -54,6 +55,8 @@ const FinancialPage = () => {
     toggleFinancialVisibility,
     isHiddenForTeam 
   } = useFinancialData();
+
+  const hasRealData = (transactions?.length ?? 0) > 0;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -120,6 +123,20 @@ const FinancialPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-1 md:gap-2 shrink-0">
+              {/* Toggle de datos demo */}
+              {!hasRealData && (
+                <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="financial-demo" className="text-xs text-muted-foreground hidden md:inline">
+                    Demo
+                  </Label>
+                  <Switch
+                    id="financial-demo"
+                    checked={showDemoData}
+                    onCheckedChange={setShowDemoData}
+                  />
+                </div>
+              )}
               {/* Toggle de visibilidad financiera - solo para admin */}
               {isAdmin && (
                 <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
@@ -130,7 +147,7 @@ const FinancialPage = () => {
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
                     )}
                     <Label htmlFor="financial-visibility" className="text-xs text-muted-foreground hidden md:inline">
-                      Visible al equipo
+                      Visible
                     </Label>
                   </div>
                   <Switch
@@ -354,23 +371,23 @@ const FinancialPage = () => {
           </TabsContent>
 
           <TabsContent value="projections" className="mt-6">
-            <FinancialFromKPIs />
+            <FinancialFromKPIs showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="cashflow" className="mt-6">
-            <CashFlowForecast />
+            <CashFlowForecast showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="budget" className="mt-6">
-            <BudgetTracking />
+            <BudgetTracking showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="ratios" className="mt-6">
-            <FinancialRatios />
+            <FinancialRatios showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="products" className="mt-6">
-            <ProductProfitability />
+            <ProductProfitability showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
         </Tabs>
 

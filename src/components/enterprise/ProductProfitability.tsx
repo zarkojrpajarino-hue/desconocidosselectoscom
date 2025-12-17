@@ -41,12 +41,16 @@ const DEMO_PRODUCTS: ProductData[] = [
   { product_name: 'Formación', revenue: 8000, cost: 7200, margin: 800, margin_percentage: 10, units_sold: 16, status: 'break_even' },
 ];
 
-export function ProductProfitability() {
+interface ProductProfitabilityProps {
+  showDemoData?: boolean;
+}
+
+export function ProductProfitability({ showDemoData: externalShowDemo }: ProductProfitabilityProps) {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [showDemoData, setShowDemoData] = useState(true);
+  const [showDemoData, setShowDemoData] = useState(externalShowDemo ?? true);
 
   useEffect(() => {
     async function fetchProductData() {

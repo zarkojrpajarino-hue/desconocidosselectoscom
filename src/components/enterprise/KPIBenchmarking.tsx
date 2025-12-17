@@ -47,7 +47,11 @@ const positionConfig = {
   below_avg: { color: 'text-rose-600', bg: 'bg-rose-500/10', icon: TrendingDown, label: 'Bajo Promedio' },
 };
 
-export function KPIBenchmarking() {
+interface KPIBenchmarkingProps {
+  showDemoData?: boolean;
+}
+
+export function KPIBenchmarking({ showDemoData = false }: KPIBenchmarkingProps) {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<Benchmark[]>([]);
   const [loading, setLoading] = useState(true);
