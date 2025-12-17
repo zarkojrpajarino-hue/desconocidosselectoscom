@@ -1,29 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Target, CheckCircle2, XCircle, TrendingUp,
-  TrendingDown, Lightbulb, AlertTriangle, Award,
+  Lightbulb, AlertTriangle, Award,
   Calendar, ThumbsUp, ThumbsDown 
 } from 'lucide-react';
+
+interface OKRRetrospectiveProps {
+  type?: 'organizational' | 'weekly';
+}
 
 interface ObjectiveSummary {
   id: string;
   title: string;
+  quarter: string;
   final_progress: number;
   status: 'achieved' | 'partial' | 'missed';
   key_results_achieved: number;
   key_results_total: number;
-  lessons_learned?: string;
 }
 
-interface QuarterStats {
+interface PeriodStats {
   total_objectives: number;
   achieved: number;
   partial: number;
@@ -31,13 +35,14 @@ interface QuarterStats {
   average_progress: number;
 }
 
-export function OKRRetrospective() {
+export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectiveProps) {
   const { organizationId } = useCurrentOrganization();
+  const { user } = useAuth();
   const [objectives, setObjectives] = useState<ObjectiveSummary[]>([]);
-  const [stats, setStats] = useState<QuarterStats | null>(null);
+  const [stats, setStats] = useState<PeriodStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [selectedQuarter, setSelectedQuarter] = useState<string>('');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('');
 
   useEffect(() => {
     async function fetchRetrospective() {
@@ -45,30 +50,56 @@ export function OKRRetrospective() {
       try {
         setLoading(true);
 
-        // Calcular trimestre anterior
         const now = new Date();
-        const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
-        const prevQuarter = currentQuarter === 1 ? 4 : currentQuarter - 1;
-        const prevYear = currentQuarter === 1 ? now.getFullYear() - 1 : now.getFullYear();
-        setSelectedQuarter(`Q${prevQuarter} ${prevYear}`);
-
-        // Obtener objetivos ORGANIZACIONALES (phase IS NULL) del trimestre anterior
-        const { data: objectivesData, error: objError } = await supabase
+        
+        let query = supabase
           .from('objectives')
           .select(`
             id,
             title,
+            quarter,
             status,
             key_results (current_value, target_value, status)
           `)
-          .eq('organization_id', organizationId)
-          .eq('quarter', `Q${prevQuarter}`)
-          .eq('year', prevYear)
-          .is('phase', null);
+          .eq('organization_id', organizationId);
+
+        if (type === 'organizational') {
+          // Calcular trimestre anterior
+          const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
+          const prevQuarter = currentQuarter === 1 ? 4 : currentQuarter - 1;
+          const prevYear = currentQuarter === 1 ? now.getFullYear() - 1 : now.getFullYear();
+          setSelectedPeriod(`Q${prevQuarter} ${prevYear}`);
+
+          query = query
+            .eq('quarter', `Q${prevQuarter}`)
+            .eq('year', prevYear)
+            .is('phase', null);
+        } else {
+          // OKRs semanales: obtener semanas anteriores del usuario
+          setSelectedPeriod('Semanas Anteriores');
+          
+          if (user?.id) {
+            query = query
+              .eq('owner_user_id', user.id)
+              .ilike('quarter', 'Semana%')
+              .order('created_at', { ascending: false })
+              .limit(20);
+          }
+        }
+
+        const { data: objectivesData, error: objError } = await query;
 
         if (objError) throw objError;
 
-        const summaries: ObjectiveSummary[] = (objectivesData || []).map((obj: { id: string; title: string; owner?: { full_name?: string }; key_results?: Array<{ current_value?: number; target_value?: number }> }) => {
+        const summaries: ObjectiveSummary[] = (objectivesData || []).map((obj: { 
+          id: string; 
+          title: string; 
+          quarter: string;
+          key_results?: Array<{ 
+            current_value?: number; 
+            target_value?: number 
+          }> 
+        }) => {
           const keyResults = obj.key_results || [];
           const totalKRs = keyResults.length;
           const achievedKRs = keyResults.filter((kr) => {
@@ -92,6 +123,7 @@ export function OKRRetrospective() {
           return {
             id: obj.id,
             title: obj.title,
+            quarter: obj.quarter,
             final_progress: avgProgress,
             status,
             key_results_achieved: achievedKRs,
@@ -124,7 +156,7 @@ export function OKRRetrospective() {
       }
     }
     fetchRetrospective();
-  }, [organizationId]);
+  }, [organizationId, user?.id, type]);
 
   if (loading) {
     return (
@@ -161,10 +193,12 @@ export function OKRRetrospective() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Retrospectiva de OKRs</h2>
+          <h2 className="text-xl md:text-2xl font-bold">
+            Retrospectiva de OKRs {type === 'weekly' ? 'Semanales' : 'Organizacionales'}
+          </h2>
           <p className="text-muted-foreground flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            {selectedQuarter}
+            {selectedPeriod}
           </p>
         </div>
       </div>
@@ -216,7 +250,11 @@ export function OKRRetrospective() {
         <Card>
           <CardContent className="pt-6 text-center">
             <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No hay OKRs del trimestre anterior</p>
+            <p className="text-muted-foreground">
+              {type === 'organizational' 
+                ? 'No hay OKRs organizacionales del período anterior'
+                : 'No hay OKRs semanales anteriores'}
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -230,7 +268,14 @@ export function OKRRetrospective() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <CardTitle className="text-lg">{obj.title}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{obj.title}</CardTitle>
+                        {type === 'weekly' && (
+                          <Badge variant="secondary" className="text-xs">
+                            {obj.quarter}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {obj.key_results_achieved}/{obj.key_results_total} Key Results completados
                       </p>
@@ -292,13 +337,13 @@ export function OKRRetrospective() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-amber-500" />
-            Lecciones del Trimestre
+            Lecciones del {type === 'weekly' ? 'Período' : 'Trimestre'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded-lg bg-emerald-500/10">
-              <h4 className="font-medium text-emerald-700 mb-2 flex items-center gap-2">
+              <h4 className="font-medium text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2">
                 <Award className="h-4 w-4" />
                 Éxitos a Celebrar
               </h4>
@@ -313,7 +358,7 @@ export function OKRRetrospective() {
               </ul>
             </div>
             <div className="p-4 rounded-lg bg-amber-500/10">
-              <h4 className="font-medium text-amber-700 mb-2 flex items-center gap-2">
+              <h4 className="font-medium text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 Áreas de Mejora
               </h4>
@@ -332,7 +377,7 @@ export function OKRRetrospective() {
           {/* Notes Section */}
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Notas adicionales para el próximo trimestre
+              Notas adicionales para el próximo {type === 'weekly' ? 'período' : 'trimestre'}
             </label>
             <Textarea 
               placeholder="Documenta aprendizajes, decisiones importantes, y recomendaciones para el equipo..."

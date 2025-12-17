@@ -3986,6 +3986,89 @@ export type Database = {
           },
         ]
       }
+      okr_dependencies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dependency_type: string
+          description: string | null
+          id: string
+          organization_id: string
+          source_objective_id: string
+          target_objective_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dependency_type?: string
+          description?: string | null
+          id?: string
+          organization_id: string
+          source_objective_id: string
+          target_objective_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dependency_type?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+          source_objective_id?: string
+          target_objective_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_dependencies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_source_objective_id_fkey"
+            columns: ["source_objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_source_objective_id_fkey"
+            columns: ["source_objective_id"]
+            isOneToOne: false
+            referencedRelation: "okr_financial_summary"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_source_objective_id_fkey"
+            columns: ["source_objective_id"]
+            isOneToOne: false
+            referencedRelation: "okrs_with_progress"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_target_objective_id_fkey"
+            columns: ["target_objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_target_objective_id_fkey"
+            columns: ["target_objective_id"]
+            isOneToOne: false
+            referencedRelation: "okr_financial_summary"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "okr_dependencies_target_objective_id_fkey"
+            columns: ["target_objective_id"]
+            isOneToOne: false
+            referencedRelation: "okrs_with_progress"
+            referencedColumns: ["objective_id"]
+          },
+        ]
+      }
       okr_evidences: {
         Row: {
           created_at: string | null
