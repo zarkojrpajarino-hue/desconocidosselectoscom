@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo } from 'lucide-react';
+import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
@@ -211,35 +211,76 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
           </div>
         </div>
 
-        {/* Fase activa destacada */}
+        {/* Fase activa destacada con checklist */}
         {activePhase && (
-          <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Target className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-sm">Fase Activa: {activePhase.phase_name}</h4>
-                  <Badge variant="secondary" className="text-[10px]">
-                    {activePhase.duration_weeks} semanas
-                  </Badge>
+          <div className="mt-6 space-y-4">
+            {/* Header de fase activa */}
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Target className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {activePhase.phase_description}
-                </p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Target className="h-3 w-3" />
-                    {activePhase.objectives?.length || 0} objetivos
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {activePhase.checklist?.filter(t => t.completed)?.length || 0}/{activePhase.checklist?.length || 0} tareas
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-sm">Fase Activa: {activePhase.phase_name}</h4>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {activePhase.duration_weeks} semanas
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {activePhase.phase_description}
+                  </p>
+                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      {activePhase.objectives?.length || 0} objetivos
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <ListTodo className="h-3 w-3" />
+                      {activePhase.checklist?.filter(t => t.completed)?.length || 0}/{activePhase.checklist?.length || 0} tareas
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
+            
+            {/* Checklist de la fase activa */}
+            {activePhase.checklist && activePhase.checklist.length > 0 && (
+              <div className="p-4 rounded-lg border bg-muted/30">
+                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <ListTodo className="h-4 w-4 text-primary" />
+                  Checklist de Fase ({activePhase.checklist.filter(t => t.completed).length}/{activePhase.checklist.length})
+                </h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {activePhase.checklist.map((item, index) => (
+                    <div 
+                      key={index}
+                      className={`flex items-start gap-3 p-2 rounded-lg transition-colors ${
+                        item.completed ? 'bg-emerald-500/10' : 'bg-background/50'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
+                        item.completed 
+                          ? 'bg-emerald-500 border-emerald-500 text-white' 
+                          : 'border-muted-foreground/30'
+                      }`}>
+                        {item.completed && <CheckCircle className="h-3 w-3" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {item.task}
+                        </span>
+                        {item.category && (
+                          <Badge variant="outline" className="ml-2 text-[10px]">
+                            {item.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
