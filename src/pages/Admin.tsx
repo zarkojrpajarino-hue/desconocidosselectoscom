@@ -194,70 +194,91 @@ const Admin = () => {
     
     try {
       // Obtener usuarios de la organización actual via user_roles
-      const { data: orgUsers } = await supabase
+      const { data: orgRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          user_id,
-          role,
-          users!inner(id, full_name, username, email)
-        `)
+        .select('user_id, role')
         .eq('organization_id', currentOrganizationId);
 
-      if (!orgUsers) return;
+      if (rolesError || !orgRoles || orgRoles.length === 0) {
+        console.error('Error fetching org roles:', rolesError);
+        setTeamStats([]);
+        return;
+      }
+
+      // Obtener datos de usuarios por separado
+      const userIds = orgRoles.map(r => r.user_id);
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, full_name, username, email')
+        .in('id', userIds);
+
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+      }
+
+      const usersMap = new Map(usersData?.map(u => [u.id, u]) || []);
 
       const enrichedStats: UserStats[] = await Promise.all(
-        orgUsers.map(async (orgUser) => {
-          const user = orgUser.users as unknown as { id: string; full_name: string; username: string; email: string };
+        orgRoles.map(async (orgRole) => {
+          const user = usersMap.get(orgRole.user_id);
           
-          let tasksQuery = supabase
+          const { data: tasks } = await supabase
             .from('tasks')
             .select('id')
-            .eq('user_id', user.id)
+            .eq('user_id', orgRole.user_id)
             .eq('organization_id', currentOrganizationId);
 
-          let completionsQuery = supabase
-            .from('task_completions')
-            .select('id, validated_by_leader, completed_at, tasks!inner(organization_id)')
-            .eq('user_id', user.id)
-            .eq('tasks.organization_id', currentOrganizationId);
+          // Solo obtener completions de tareas de esta organización
+          const taskIds = tasks?.map(t => t.id) || [];
+          
+          let completedTasks = 0;
+          let validatedTasks = 0;
+          
+          if (taskIds.length > 0) {
+            let completionsQuery = supabase
+              .from('task_completions')
+              .select('id, validated_by_leader, completed_at, task_id')
+              .eq('user_id', orgRole.user_id)
+              .in('task_id', taskIds);
 
-          // Aplicar filtros de fecha si están definidos
-          if (dateFrom) {
-            completionsQuery = completionsQuery.gte('completed_at', dateFrom.toISOString());
-          }
-          if (dateTo) {
-            completionsQuery = completionsQuery.lte('completed_at', dateTo.toISOString());
-          }
+            // Aplicar filtros de fecha si están definidos
+            if (dateFrom) {
+              completionsQuery = completionsQuery.gte('completed_at', dateFrom.toISOString());
+            }
+            if (dateTo) {
+              completionsQuery = completionsQuery.lte('completed_at', dateTo.toISOString());
+            }
 
-          const { data: tasks } = await tasksQuery;
-          const { data: completions } = await completionsQuery;
+            const { data: completions } = await completionsQuery;
+            
+            completedTasks = completions?.length || 0;
+            validatedTasks = completions?.filter(c => c.validated_by_leader === true).length || 0;
+          }
 
           const { data: achievements } = await supabase
             .from('user_achievements')
             .select('total_points')
-            .eq('user_id', user.id)
+            .eq('user_id', orgRole.user_id)
             .maybeSingle();
 
           const { data: weeklyData } = await supabase
             .from('user_weekly_data')
             .select('mode, task_limit')
-            .eq('user_id', user.id)
+            .eq('user_id', orgRole.user_id)
             .order('week_start', { ascending: false })
             .limit(1)
             .maybeSingle();
 
           const totalTasks = tasks?.length || 0;
-          const completedTasks = completions?.length || 0;
-          const validatedTasks = completions?.filter(c => c.validated_by_leader === true).length || 0;
           const totalPoints = achievements?.total_points || 0;
           const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
           return {
-            id: user.id,
-            full_name: user.full_name || 'Usuario',
-            username: user.username || '',
-            email: user.email || '',
-            role: orgUser.role,
+            id: orgRole.user_id,
+            full_name: user?.full_name || 'Usuario',
+            username: user?.username || '',
+            email: user?.email || '',
+            role: orgRole.role,
             totalTasks,
             completedTasks,
             validatedTasks,
