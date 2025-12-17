@@ -42,36 +42,51 @@ export function PhaseWeeklyTasks() {
     
     try {
       if (completed) {
-        // Crear completion
-        const { error } = await supabase
+        // This case is now handled by TaskCompletionModal
+        // But keep for backwards compatibility
+        const { data: existing } = await supabase
           .from('task_completions')
-          .upsert({
-            task_id: taskId,
-            user_id: user.id,
-            organization_id: currentOrganizationId,
-            completed_by_user: true,
-            validated_by_leader: true, // Auto-validate for now
-            completed_at: new Date().toISOString(),
-          }, {
-            onConflict: 'task_id,user_id'
-          });
+          .select('id')
+          .eq('task_id', taskId)
+          .eq('user_id', user.id)
+          .maybeSingle();
         
-        if (error) throw error;
+        if (existing) {
+          await supabase
+            .from('task_completions')
+            .update({
+              completed_by_user: true,
+              validated_by_leader: true,
+              completed_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+        } else {
+          await supabase
+            .from('task_completions')
+            .insert({
+              task_id: taskId,
+              user_id: user.id,
+              organization_id: currentOrganizationId,
+              completed_by_user: true,
+              validated_by_leader: true,
+              completed_at: new Date().toISOString(),
+            });
+        }
         toast.success('¡Tarea completada!');
       } else {
-        // Eliminar completion
-        const { error } = await supabase
+        // Unmark - delete completion record completely
+        await supabase
           .from('task_completions')
           .delete()
           .eq('task_id', taskId)
           .eq('user_id', user.id);
         
-        if (error) throw error;
         toast.info('Tarea marcada como pendiente');
       }
       
-      // Refrescar datos
-      queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+      // Force refresh
+      await queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+      await queryClient.refetchQueries({ queryKey: ['phase-weekly-tasks'] });
     } catch (error) {
       console.error('Error updating task:', error);
       toast.error('Error al actualizar la tarea');
