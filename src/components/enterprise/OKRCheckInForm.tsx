@@ -15,17 +15,22 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface OKRCheckInFormProps {
+  type?: 'organizational' | 'weekly';
+}
+
 interface KeyResult {
   id: string;
   title: string;
   current_value: number;
   target_value: number;
   objective_title: string;
+  quarter: string;
   new_value?: number;
   comment?: string;
 }
 
-export function OKRCheckInForm() {
+export function OKRCheckInForm({ type = 'organizational' }: OKRCheckInFormProps) {
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
   const [data, setData] = useState<KeyResult[]>([]);
@@ -39,23 +44,41 @@ export function OKRCheckInForm() {
       try {
         setLoading(true);
 
-        // Obtener key results ORGANIZACIONALES (phase IS NULL) del usuario actual
-        const { data: objectives, error: objError } = await supabase
+        let query = supabase
           .from('objectives')
           .select(`
             id,
             title,
+            quarter,
             key_results (*)
           `)
           .eq('organization_id', organizationId)
           .eq('owner_user_id', user.id)
-          .eq('status', 'active')
-          .is('phase', null);
+          .eq('status', 'active');
+
+        if (type === 'organizational') {
+          // OKRs organizacionales: sin fase
+          query = query.is('phase', null);
+        } else {
+          // OKRs semanales: quarter empieza con "Semana"
+          query = query.ilike('quarter', 'Semana%');
+        }
+
+        const { data: objectives, error: objError } = await query;
 
         if (objError) throw objError;
 
         const keyResults: KeyResult[] = [];
-        (objectives || []).forEach((obj: { title: string; key_results?: Array<{ id: string; title: string; current_value?: number; target_value?: number }> }) => {
+        (objectives || []).forEach((obj: { 
+          title: string; 
+          quarter: string;
+          key_results?: Array<{ 
+            id: string; 
+            title: string; 
+            current_value?: number; 
+            target_value?: number 
+          }> 
+        }) => {
           (obj.key_results || []).forEach((kr) => {
             keyResults.push({
               id: kr.id,
@@ -63,6 +86,7 @@ export function OKRCheckInForm() {
               current_value: kr.current_value || 0,
               target_value: kr.target_value || 1,
               objective_title: obj.title,
+              quarter: obj.quarter,
               new_value: kr.current_value || 0,
               comment: '',
             });
@@ -77,7 +101,7 @@ export function OKRCheckInForm() {
       }
     }
     fetchKeyResults();
-  }, [organizationId, user?.id]);
+  }, [organizationId, user?.id, type]);
 
   function handleValueChange(krId: string, value: number) {
     setData(prev => prev.map(kr => 
@@ -167,9 +191,11 @@ export function OKRCheckInForm() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Check-in de OKRs</h2>
+          <h2 className="text-xl md:text-2xl font-bold">
+            Check-in de OKRs {type === 'weekly' ? 'Semanales' : 'Organizacionales'}
+          </h2>
           <p className="text-muted-foreground flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Actualiza el progreso de tus Key Results
@@ -196,9 +222,15 @@ export function OKRCheckInForm() {
         <Card>
           <CardContent className="pt-6 text-center">
             <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No tienes Key Results asignados</p>
+            <p className="text-muted-foreground">
+              {type === 'organizational' 
+                ? 'No tienes Key Results organizacionales asignados'
+                : 'No tienes Key Results semanales'}
+            </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Contacta a tu administrador para asignarte objetivos
+              {type === 'organizational' 
+                ? 'Contacta a tu administrador para asignarte objetivos'
+                : 'Genera tus OKRs semanales desde la página principal de OKRs'}
             </p>
           </CardContent>
         </Card>
@@ -213,7 +245,14 @@ export function OKRCheckInForm() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">{kr.objective_title}</p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        {kr.objective_title}
+                        {type === 'weekly' && (
+                          <Badge variant="secondary" className="text-xs">
+                            {kr.quarter}
+                          </Badge>
+                        )}
+                      </p>
                       <CardTitle className="text-lg">{kr.title}</CardTitle>
                     </div>
                     <Badge variant={progress >= 100 ? 'default' : 'outline'}>
@@ -271,8 +310,10 @@ export function OKRCheckInForm() {
                       <TrendingUp className="h-4 w-4" />
                       <span>
                         Cambio: {kr.current_value} → {kr.new_value} 
-                        ({kr.new_value! > kr.current_value ? '+' : ''}
-                        {((kr.new_value! - kr.current_value) / kr.current_value * 100).toFixed(1)}%)
+                        {kr.current_value > 0 && (
+                          <> ({kr.new_value! > kr.current_value ? '+' : ''}
+                          {((kr.new_value! - kr.current_value) / kr.current_value * 100).toFixed(1)}%)</>
+                        )}
                       </span>
                     </div>
                   )}
