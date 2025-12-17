@@ -8807,6 +8807,10 @@ export type Database = {
         Args: { target_month: string }
         Returns: undefined
       }
+      user_belongs_to_organization: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       user_completed_availability: {
         Args: { p_user_id: string }
         Returns: boolean
