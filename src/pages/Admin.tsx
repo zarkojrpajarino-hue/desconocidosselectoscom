@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users, CheckCircle, Trophy, TrendingUp, RefreshCw, ArrowUpDown, Filter, Calendar as CalendarIcon, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Users, CheckCircle, Trophy, TrendingUp, RefreshCw, ArrowUpDown, Filter, Calendar as CalendarIcon, TrendingDown, Eye, EyeOff, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import PhaseSelector from '@/components/PhaseSelector';
 import NotificationBell from '@/components/NotificationBell';
@@ -73,6 +75,9 @@ const Admin = () => {
   const [sortBy, setSortBy] = useState<'progress' | 'points' | 'tasks'>('progress');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
+  // Visibility settings
+  const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
+  
   // Filtros avanzados
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterMode, setFilterMode] = useState<string>('all');
@@ -94,24 +99,57 @@ const Admin = () => {
   )?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
 
+  // Fetch visibility setting
   useEffect(() => {
-    if (!loading && !isAdmin) {
+    const fetchVisibility = async () => {
+      if (!currentOrganizationId) return;
+      const { data } = await supabase
+        .from('organizations')
+        .select('admin_visibility_team')
+        .eq('id', currentOrganizationId)
+        .single();
+      if (data) {
+        setAdminVisibilityTeam(data.admin_visibility_team ?? false);
+      }
+    };
+    fetchVisibility();
+  }, [currentOrganizationId]);
+
+  // Check access: admin always, non-admin only if visibility is enabled
+  useEffect(() => {
+    if (!loading && !isAdmin && !adminVisibilityTeam) {
       navigate('/dashboard');
     }
-  }, [isAdmin, loading, navigate]);
+  }, [isAdmin, loading, navigate, adminVisibilityTeam]);
 
   useEffect(() => {
-    if (isAdmin && currentOrganizationId) {
+    if (currentOrganizationId && (isAdmin || adminVisibilityTeam)) {
       fetchData();
     }
-  }, [isAdmin, currentOrganizationId]);
+  }, [isAdmin, currentOrganizationId, adminVisibilityTeam]);
 
   // Recargar heatmap cuando cambia el usuario seleccionado
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin || adminVisibilityTeam) {
       fetchHeatmapData();
     }
-  }, [selectedUserId, isAdmin]);
+  }, [selectedUserId, isAdmin, adminVisibilityTeam]);
+
+  const toggleAdminVisibility = async () => {
+    if (!isAdmin || !currentOrganizationId) return;
+    const newValue = !adminVisibilityTeam;
+    const { error } = await supabase
+      .from('organizations')
+      .update({ admin_visibility_team: newValue })
+      .eq('id', currentOrganizationId);
+    
+    if (error) {
+      toast.error('Error al cambiar visibilidad');
+      return;
+    }
+    setAdminVisibilityTeam(newValue);
+    toast.success(newValue ? 'Panel visible para el equipo' : 'Panel oculto para el equipo');
+  };
 
   const fetchSystemConfig = async () => {
     const { data } = await supabase
@@ -487,16 +525,39 @@ const Admin = () => {
             >
               <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                Admin
-              </h1>
-              <p className="text-[10px] md:text-sm text-muted-foreground hidden sm:block">
-                Gestión del equipo
-              </p>
+            <div className="min-w-0 flex items-center gap-2">
+              <div>
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                  Admin
+                </h1>
+                <p className="text-[10px] md:text-sm text-muted-foreground hidden sm:block">
+                  Gestión del equipo
+                </p>
+              </div>
+              {!isAdmin && (
+                <Badge variant="secondary" className="gap-1">
+                  <Lock className="h-3 w-3" />
+                  Solo lectura
+                </Badge>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            {isAdmin && (
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50 mr-2">
+                <Label htmlFor="team-visibility" className="text-xs hidden sm:block">
+                  {adminVisibilityTeam ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                </Label>
+                <Switch
+                  id="team-visibility"
+                  checked={adminVisibilityTeam}
+                  onCheckedChange={toggleAdminVisibility}
+                />
+                <span className="text-xs text-muted-foreground hidden md:block">
+                  {adminVisibilityTeam ? 'Visible' : 'Oculto'}
+                </span>
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"
