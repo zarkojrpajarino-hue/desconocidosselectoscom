@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Brain, Lock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Brain, Lock, AlertCircle, Sparkles, FileCheck, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
 import { AIAnalysisDashboard } from '@/components/ai-analysis/AIAnalysisDashboard';
+import { PreAnalysisDataReview } from '@/components/ai-analysis/PreAnalysisDataReview';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
@@ -20,6 +20,7 @@ const AIAnalysis = () => {
   const { canUseAiAnalysis, plan, aiAnalysisCount, limits } = useSubscriptionLimits();
   const { canUseAiAnalysis: validateAiBackend, validating } = useBackendValidation();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showPreAnalysisModal, setShowPreAnalysisModal] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,7 +34,8 @@ const AIAnalysis = () => {
     autoLoad: true,
   });
 
-  const handleGenerateAnalysis = async () => {
+  // Iniciar el flujo de generación - mostrar modal primero
+  const handleStartGeneration = async () => {
     // Validación frontend primero (rápida)
     const { allowed } = canUseAiAnalysis();
     if (!allowed) {
@@ -49,7 +51,14 @@ const AIAnalysis = () => {
       return;
     }
 
-    await analysis.generateAnalysis();
+    // Mostrar modal de revisión de datos
+    setShowPreAnalysisModal(true);
+  };
+
+  // Proceder con la generación después de revisar datos
+  const handleProceedWithGeneration = async (additionalData: Record<string, unknown>) => {
+    setShowPreAnalysisModal(false);
+    await analysis.generateAnalysis(additionalData);
   };
 
   if (loading || !currentOrganizationId) {
@@ -103,13 +112,13 @@ const AIAnalysis = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <AlertCircle className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <AlertCircle className="w-6 h-6 text-amber-500 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
-                  <p className="font-semibold text-amber-900">
+                  <p className="font-semibold text-foreground">
                     Has alcanzado el límite de {limits.max_ai_analysis_per_month} análisis IA este mes
                   </p>
-                  <p className="text-sm text-amber-800">
+                  <p className="text-sm text-muted-foreground">
                     Mejora tu plan para obtener más análisis mensuales con IA.
                   </p>
                 </div>
@@ -127,31 +136,107 @@ const AIAnalysis = () => {
         ) : analysis.data ? (
           <AIAnalysisDashboard
             data={analysis.data}
-            onRefresh={handleGenerateAnalysis}
+            onRefresh={handleStartGeneration}
             onExport={(format) => analysis.exportAnalysis(format)}
             loading={analysis.loading}
           />
         ) : (
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Generar Análisis con IA</CardTitle>
-              <CardDescription>
-                Analiza el rendimiento completo de tu empresa
-                {remaining !== -1 && ` (${remaining} análisis restantes este mes)`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <Card className="max-w-3xl mx-auto overflow-hidden">
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 md:p-8">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-2xl md:text-3xl mb-2">Análisis Empresarial con IA</CardTitle>
+                  <CardDescription className="text-base md:text-lg">
+                    Obtén un análisis completo y personalizado de tu negocio
+                    {remaining !== -1 && ` (${remaining} análisis restantes)`}
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+
+            <CardContent className="p-6 md:p-8 space-y-6">
+              {/* Features del análisis */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <FileCheck className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">Revisión de Datos</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Verifica y actualiza la información antes del análisis
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <BarChart3 className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">8 Secciones</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Finanzas, crecimiento, equipo, mercado y más
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
+                  <Brain className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm">IA Avanzada</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Recomendaciones específicas para tu negocio
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Qué incluye */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                  El análisis incluye:
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                  {[
+                    'Salud Financiera',
+                    'Análisis de Crecimiento',
+                    'Rendimiento del Equipo',
+                    'Estrategia Empresarial',
+                    'Estudio de Mercado',
+                    'Proyecciones Futuras',
+                    'Opinión Honesta',
+                    'Benchmarking',
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-2 text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <Button 
-                onClick={handleGenerateAnalysis}
+                onClick={handleStartGeneration}
                 disabled={analysis.loading}
-                className="w-full"
+                size="lg"
+                className="w-full text-lg py-6 gap-3"
               >
-                {analysis.loading ? 'Generando análisis...' : 'Generar Análisis'}
+                <Sparkles className="w-5 h-5" />
+                {analysis.loading ? 'Generando análisis...' : 'Comenzar Análisis con IA'}
               </Button>
+
+              <p className="text-xs text-center text-muted-foreground">
+                Antes de generar, podrás revisar y actualizar los datos que la IA utilizará
+              </p>
             </CardContent>
           </Card>
         )}
       </main>
+
+      {/* Modal de revisión pre-análisis */}
+      <PreAnalysisDataReview
+        open={showPreAnalysisModal}
+        onOpenChange={setShowPreAnalysisModal}
+        onProceed={handleProceedWithGeneration}
+      />
 
       <UpgradeModal
         open={showUpgradeModal}

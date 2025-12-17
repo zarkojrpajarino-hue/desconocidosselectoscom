@@ -23,13 +23,18 @@ serve(async (req) => {
     const { 
       organizationId, 
       includeCompetitors = true,
-      additionalQuestions = {} 
+      additionalData = {}
     } = await req.json();
+    
+    // Extract additional data from pre-analysis modal
+    const { answers = {}, updatedMetrics = {}, context = {} } = additionalData;
     
     logger.setContext({ organizationId });
     logger.info('analysis_started', { 
       includeCompetitors,
-      hasAdditionalQuestions: Object.keys(additionalQuestions).length > 0,
+      hasAdditionalData: Object.keys(additionalData).length > 0,
+      answersCount: Object.keys(answers).length,
+      hasUpdatedMetrics: Object.keys(updatedMetrics).length > 0,
       ...extractRequestInfo(req)
     });
 
@@ -202,7 +207,7 @@ serve(async (req) => {
       competitors: competitors || [],
       buyerPersonas: buyerPersonas || [],
       countryData,
-      additionalQuestions,
+      additionalData: { answers, updatedMetrics, context },
       includeCompetitors
     });
 
@@ -570,10 +575,14 @@ function buildComprehensivePrompt(input: {
   competitors: Record<string, unknown>[];
   buyerPersonas: Record<string, unknown>[];
   countryData: Record<string, unknown> | null;
-  additionalQuestions: Record<string, unknown>;
+  additionalData: {
+    answers: Record<string, unknown>;
+    updatedMetrics: Record<string, unknown>;
+    context: Record<string, unknown>;
+  };
   includeCompetitors: boolean;
 }): string {
-  const { organization, metrics, competitors, buyerPersonas, countryData, additionalQuestions } = input;
+  const { organization, metrics, competitors, buyerPersonas, countryData, additionalData } = input;
 
   const orgName = (organization as { name?: string }).name || 'Empresa';
   const industry = (organization as { industry?: string }).industry || 'General';
@@ -626,12 +635,25 @@ ${buyerPersonas.map((p) => `
 `).join('')}`;
   }
 
-  let additionalQuestionsSection = '';
-  if (Object.keys(additionalQuestions).length > 0) {
-    additionalQuestionsSection = `
-RESPUESTAS ADICIONALES DEL USUARIO:
-${Object.entries(additionalQuestions).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
-`;
+  let additionalDataSection = '';
+  const { answers = {}, updatedMetrics = {}, context = {} } = additionalData;
+  
+  if (Object.keys(answers).length > 0 || Object.keys(updatedMetrics).length > 0 || Object.keys(context).length > 0) {
+    const answersPart = Object.keys(answers).length > 0 
+      ? `RESPUESTAS DEL USUARIO:\n${Object.entries(answers).map(([key, value]) => `- ${key}: ${value}`).join('\n')}\n` 
+      : '';
+    
+    const metricsPart = Object.keys(updatedMetrics).length > 0
+      ? `MÉTRICAS ACTUALIZADAS:\n${Object.entries(updatedMetrics).map(([key, value]) => `- ${key}: ${value}`).join('\n')}\n`
+      : '';
+    
+    const contextPart = Object.keys(context).length > 0
+      ? `CONTEXTO ADICIONAL:\n- Urgencia: ${(context as { urgency?: string }).urgency || 'medium'}\n- Áreas de enfoque: ${((context as { focusAreas?: string[] }).focusAreas || []).join(', ')}\n- Preguntas específicas: ${((context as { specificQuestions?: string[] }).specificQuestions || []).join(', ')}\n`
+      : '';
+    
+    additionalDataSection = `
+INFORMACIÓN ADICIONAL PROPORCIONADA POR EL USUARIO:
+${answersPart}${metricsPart}${contextPart}`;
   }
 
   return `Genera un análisis empresarial COMPLETO y PROFESIONAL para:
@@ -686,7 +708,7 @@ Ventaja Competitiva: ${competitiveAdvantage}
 ${competitorSection}
 ${marketSection}
 ${personasSection}
-${additionalQuestionsSection}
+${additionalDataSection}
 
 ===== INSTRUCCIONES PARA EL JSON =====
 Responde ÚNICAMENTE con JSON válido. Sin markdown. Sin explicaciones.
