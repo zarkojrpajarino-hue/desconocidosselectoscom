@@ -175,25 +175,36 @@ const Admin = () => {
   };
 
   const fetchTeamStats = async () => {
+    if (!currentOrganizationId) return;
+    
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('*')
-        .order('full_name');
+      // Obtener usuarios de la organización actual via user_roles
+      const { data: orgUsers } = await supabase
+        .from('user_roles')
+        .select(`
+          user_id,
+          role,
+          users!inner(id, full_name, username, email)
+        `)
+        .eq('organization_id', currentOrganizationId);
 
-      if (!users) return;
+      if (!orgUsers) return;
 
       const enrichedStats: UserStats[] = await Promise.all(
-        users.map(async (user) => {
+        orgUsers.map(async (orgUser) => {
+          const user = orgUser.users as unknown as { id: string; full_name: string; username: string; email: string };
+          
           let tasksQuery = supabase
             .from('tasks')
             .select('id')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .eq('organization_id', currentOrganizationId);
 
           let completionsQuery = supabase
             .from('task_completions')
-            .select('id, validated_by_leader, completed_at')
-            .eq('user_id', user.id);
+            .select('id, validated_by_leader, completed_at, tasks!inner(organization_id)')
+            .eq('user_id', user.id)
+            .eq('tasks.organization_id', currentOrganizationId);
 
           // Aplicar filtros de fecha si están definidos
           if (dateFrom) {
@@ -228,10 +239,10 @@ const Admin = () => {
 
           return {
             id: user.id,
-            full_name: user.full_name,
-            username: user.username,
-            email: user.email,
-            role: user.role,
+            full_name: user.full_name || 'Usuario',
+            username: user.username || '',
+            email: user.email || '',
+            role: orgUser.role,
             totalTasks,
             completedTasks,
             validatedTasks,
@@ -251,6 +262,8 @@ const Admin = () => {
   };
 
   const fetchWeeklyProgress = async () => {
+    if (!currentOrganizationId) return;
+    
     try {
       const weeks = [];
       for (let i = 5; i >= 0; i--) {
@@ -259,21 +272,26 @@ const Admin = () => {
 
         const { data: completions } = await supabase
           .from('task_completions')
-          .select('id, validated_by_leader, completed_at')
+          .select('id, validated_by_leader, completed_at, tasks!inner(organization_id)')
+          .eq('tasks.organization_id', currentOrganizationId)
           .gte('completed_at', weekStart.toISOString())
           .lte('completed_at', weekEnd.toISOString());
 
         const { data: points } = await supabase
           .from('points_history')
-          .select('points')
+          .select('points, user_id')
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString());
+
+        // Filtrar puntos por usuarios de la organización
+        const orgUserIds = teamStats.map(u => u.id);
+        const orgPoints = points?.filter(p => orgUserIds.includes(p.user_id)) || [];
 
         weeks.push({
           week: format(weekStart, 'dd MMM', { locale: es }),
           completed: completions?.length || 0,
           validated: completions?.filter(c => c.validated_by_leader === true).length || 0,
-          points: points?.reduce((sum, p) => sum + p.points, 0) || 0,
+          points: orgPoints.reduce((sum, p) => sum + p.points, 0) || 0,
         });
       }
 
@@ -284,6 +302,8 @@ const Admin = () => {
   };
 
   const fetchWeekComparison = async () => {
+    if (!currentOrganizationId) return;
+    
     try {
       const comparisons = [];
       
@@ -291,14 +311,15 @@ const Admin = () => {
         const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
         const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
-        // Tareas completadas
+        // Tareas completadas de la organización
         const { data: completions } = await supabase
           .from('task_completions')
-          .select('user_id, completed_at')
+          .select('user_id, completed_at, tasks!inner(organization_id)')
+          .eq('tasks.organization_id', currentOrganizationId)
           .gte('completed_at', weekStart.toISOString())
           .lte('completed_at', weekEnd.toISOString());
 
-        // Progreso promedio de usuarios activos
+        // Progreso promedio de usuarios activos de la organización
         const activeUserIds = [...new Set(completions?.map(c => c.user_id) || [])];
         let avgProgress = 0;
         
@@ -308,12 +329,14 @@ const Admin = () => {
               const { data: tasks } = await supabase
                 .from('tasks')
                 .select('id')
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .eq('organization_id', currentOrganizationId);
 
               const { data: userCompletions } = await supabase
                 .from('task_completions')
-                .select('id')
+                .select('id, tasks!inner(organization_id)')
                 .eq('user_id', userId)
+                .eq('tasks.organization_id', currentOrganizationId)
                 .lte('completed_at', weekEnd.toISOString());
 
               const total = tasks?.length || 0;
@@ -325,18 +348,21 @@ const Admin = () => {
           avgProgress = progressValues.reduce((sum, p) => sum + p, 0) / progressValues.length;
         }
 
-        // Puntos totales
+        // Puntos totales de usuarios de la organización
         const { data: points } = await supabase
           .from('points_history')
-          .select('points')
+          .select('points, user_id')
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString());
+
+        const orgUserIds = teamStats.map(u => u.id);
+        const orgPoints = points?.filter(p => orgUserIds.includes(p.user_id)) || [];
 
         comparisons.push({
           week: format(weekStart, 'dd MMM', { locale: es }),
           tasksCompleted: completions?.length || 0,
           avgProgress: Math.round(avgProgress),
-          totalPoints: points?.reduce((sum, p) => sum + p.points, 0) || 0,
+          totalPoints: orgPoints.reduce((sum, p) => sum + p.points, 0) || 0,
           activeUsers: activeUserIds.length,
         });
       }
@@ -348,16 +374,19 @@ const Admin = () => {
   };
 
   const fetchHeatmapData = async () => {
+    if (!currentOrganizationId) return;
+    
     try {
       const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
       const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
       
-      // Obtener todas las tareas completadas en las últimas 4 semanas
+      // Obtener todas las tareas completadas en las últimas 4 semanas de la organización
       const fourWeeksAgo = subWeeks(new Date(), 4);
       
       let query = supabase
         .from('task_completions')
-        .select('completed_at, user_id')
+        .select('completed_at, user_id, tasks!inner(organization_id)')
+        .eq('tasks.organization_id', currentOrganizationId)
         .gte('completed_at', fourWeeksAgo.toISOString())
         .not('completed_at', 'is', null);
       

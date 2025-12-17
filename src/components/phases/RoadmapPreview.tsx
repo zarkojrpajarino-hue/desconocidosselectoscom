@@ -462,47 +462,49 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
           open={activateConfirmDialog?.open || false} 
           onOpenChange={(open) => !open && setActivateConfirmDialog(null)}
         >
-          <DialogContent>
-            <DialogHeader>
+          <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
                 ¿Cambiar a {activateConfirmDialog?.phaseName}?
               </DialogTitle>
-              <DialogDescription className="space-y-4 pt-4">
-                <p>
-                  Estás a punto de avanzar a la <strong>Fase {activateConfirmDialog?.phaseNumber}</strong>.
-                </p>
-                
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <p className="text-sm font-medium text-amber-600">
-                    Progreso actual de la fase activa: {activateConfirmDialog?.currentProgress}%
-                  </p>
-                </div>
-
-                {activateConfirmDialog?.pendingTasks && activateConfirmDialog.pendingTasks.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Tareas pendientes en la fase actual:</p>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      {activateConfirmDialog.pendingTasks.map((task, i) => (
-                        <li key={i} className="truncate">{task}</li>
-                      ))}
-                      {activateConfirmDialog.pendingTasks.length === 5 && (
-                        <li className="text-muted-foreground/60">... y más</li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-                <p className="text-sm text-muted-foreground">
-                  Esta acción marcará la fase actual como completada y activará la nueva fase.
-                </p>
-              </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            
+            <div className="flex-1 overflow-y-auto space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                Estás a punto de avanzar a la <strong className="text-foreground">Fase {activateConfirmDialog?.phaseNumber}</strong>.
+              </p>
+              
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                  Progreso actual de la fase activa: {activateConfirmDialog?.currentProgress}%
+                </p>
+              </div>
+
+              {activateConfirmDialog?.pendingTasks && activateConfirmDialog.pendingTasks.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Tareas pendientes en la fase actual:</p>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 max-h-40 overflow-y-auto pr-2">
+                    {activateConfirmDialog.pendingTasks.map((task, i) => (
+                      <li key={i} className="leading-relaxed">{task}</li>
+                    ))}
+                    {activateConfirmDialog.pendingTasks.length === 5 && (
+                      <li className="text-muted-foreground/60 italic">... y más</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              <p className="text-sm text-muted-foreground border-t pt-4">
+                Esta acción marcará la fase actual como completada y activará la nueva fase.
+              </p>
+            </div>
+            
+            <DialogFooter className="flex-shrink-0 gap-2 sm:gap-0">
               <Button variant="outline" onClick={() => setActivateConfirmDialog(null)}>
                 Cancelar
               </Button>
-              <Button onClick={confirmActivatePhase} className="gap-2">
+              <Button onClick={confirmActivatePhase} className="gap-2 bg-gradient-to-r from-primary to-violet-500">
                 <Play className="h-4 w-4" />
                 Sí, Cambiar de Fase
               </Button>
