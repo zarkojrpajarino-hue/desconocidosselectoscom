@@ -128,14 +128,97 @@ const TeamProgress = ({
   };
   const phaseDescription = getPhaseDescription(currentPhase);
   if (loading) {
-    return <Card className="shadow-card">
+    return (
+      <Card className="shadow-card">
         <CardContent className="pt-6">
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </CardContent>
-      </Card>;
+      </Card>
+    );
   }
-  return;
+
+  return (
+    <Card className="shadow-card">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base md:text-lg">Progreso del Equipo</CardTitle>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="gap-1"
+          >
+            {isExpanded ? (
+              <>
+                <span className="text-xs">Ocultar</span>
+                <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                <span className="text-xs">Ver todos</span>
+                <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Team Summary */}
+        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Fase {currentPhase}: {phaseDescription}</span>
+            </div>
+            <span className="text-lg font-bold text-primary">{teamPercentage}%</span>
+          </div>
+          <Progress value={teamPercentage} className="h-2 mb-2" />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{totalCompleted} completadas</span>
+            <span>{remainingTasks} pendientes</span>
+          </div>
+        </div>
+
+        {/* Individual Progress */}
+        {isExpanded && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">Progreso individual</p>
+            {teamData.map((member) => {
+              const isCurrentUser = member.id === currentUserId;
+              const userRole = rolesMap?.get(member.id);
+              const formattedName = formatUserWithRole(member.full_name, userRole?.role_name || null);
+              
+              return (
+                <div
+                  key={member.id}
+                  className={`p-3 rounded-lg border ${
+                    isCurrentUser 
+                      ? 'bg-primary/5 border-primary/20' 
+                      : 'bg-background border-border'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-sm font-medium truncate ${isCurrentUser ? 'text-primary' : ''}`}>
+                      {isCurrentUser ? '👤 ' : ''}{formattedName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {member.completed}/{member.total}
+                    </span>
+                  </div>
+                  <Progress value={member.percentage} className="h-1.5" />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 };
+
 export default TeamProgress;
