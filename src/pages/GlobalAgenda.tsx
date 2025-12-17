@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { format, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays, Cog } from 'lucide-react';
+import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays, Cog, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { GlobalWeeklyView } from '@/components/agenda/GlobalWeeklyView';
@@ -19,6 +20,28 @@ import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';
+import { getCurrentWeekStart, getCurrentWeekDeadline, getNextWednesdayStart } from '@/lib/weekUtils';
+
+// Check if we're in the transition period (Wednesday 10:30 - 13:30)
+const isInTransitionPeriod = (): boolean => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  
+  if (dayOfWeek !== 3) return false; // Only on Wednesday
+  
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTime = currentHour * 60 + currentMinute;
+  
+  // Transition: 10:30 (630 min) to 13:30 (810 min)
+  return currentTime >= 630 && currentTime < 810;
+};
+
+// Get the correct week start based on custom rules
+const getCorrectWeekStart = (): string => {
+  const weekStart = getCurrentWeekStart(new Date());
+  return format(weekStart, 'yyyy-MM-dd');
+};
 
 export default function GlobalAgenda() {
   const { hasFeature } = usePlanAccess();
@@ -26,11 +49,10 @@ export default function GlobalAgenda() {
   const hasAccess = hasFeature('global_agenda');
 
   const [activeTab, setActiveTab] = useState('global');
-  const [weekStart, setWeekStart] = useState(
-    format(startOfWeek(new Date(), { weekStartsOn: 3 }), 'yyyy-MM-dd')
-  );
+  const [weekStart, setWeekStart] = useState(getCorrectWeekStart());
   const [showSettings, setShowSettings] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [isTransition, setIsTransition] = useState(isInTransitionPeriod());
   const [activeFilters, setActiveFilters] = useState<FiltersType>({
     showPersonal: true,
     showOrganizational: true,
@@ -38,6 +60,18 @@ export default function GlobalAgenda() {
     status: 'all',
     collaborative: 'all',
   });
+
+  // Update transition state every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransition(isInTransitionPeriod());
+      // Also update week start if transition ended
+      if (!isInTransitionPeriod()) {
+        setWeekStart(getCorrectWeekStart());
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Check if user has availability for this week
   const { data: availability, isLoading: availabilityLoading, refetch: refetchAvailability } = useQuery({
@@ -62,16 +96,16 @@ export default function GlobalAgenda() {
 
   const goToPreviousWeek = () => {
     const prev = subWeeks(new Date(weekStart), 1);
-    setWeekStart(format(startOfWeek(prev, { weekStartsOn: 3 }), 'yyyy-MM-dd'));
+    setWeekStart(format(prev, 'yyyy-MM-dd'));
   };
 
   const goToNextWeek = () => {
     const next = addWeeks(new Date(weekStart), 1);
-    setWeekStart(format(startOfWeek(next, { weekStartsOn: 3 }), 'yyyy-MM-dd'));
+    setWeekStart(format(next, 'yyyy-MM-dd'));
   };
 
   const goToCurrentWeek = () => {
-    setWeekStart(format(startOfWeek(new Date(), { weekStartsOn: 3 }), 'yyyy-MM-dd'));
+    setWeekStart(getCorrectWeekStart());
   };
 
   const handleRegenerate = () => {
@@ -93,8 +127,8 @@ export default function GlobalAgenda() {
     );
   }
 
-  // Show availability questionnaire if not set for this week
-  if (!availabilityLoading && !availability && user?.id) {
+  // Show availability questionnaire if not set for this week (only if not in transition)
+  if (!isTransition && !availabilityLoading && !availability && user?.id) {
     return (
       <div className="min-h-screen bg-background p-4 md:p-6 pb-20">
         <AvailabilityQuestionnaire
@@ -102,6 +136,36 @@ export default function GlobalAgenda() {
           weekStart={weekStart}
           onComplete={handleAvailabilityComplete}
         />
+      </div>
+    );
+  }
+
+  // Show transition message if between weeks (Wednesday 10:30 - 13:30)
+  if (isTransition) {
+    const nextWeekStart = getNextWednesdayStart();
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 pb-20 flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">
+              La semana ha terminado
+            </h2>
+            <p className="text-muted-foreground">
+              La nueva semana comienza hoy a las 13:30.
+            </p>
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                Próxima semana: <span className="font-medium text-foreground">{format(nextWeekStart, "d 'de' MMMM", { locale: es })}</span>
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Podrás configurar tu disponibilidad cuando comience la nueva semana.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
