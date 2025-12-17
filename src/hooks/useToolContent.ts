@@ -78,10 +78,14 @@ export const useToolContent = (toolType: ToolType) => {
   }, [user, currentOrganizationId, toolType]); // ✅ CORREGIDO: Agregado currentOrganizationId a dependencies
 
   const generateContent = async () => {
-    if (!isAdmin) {
-      toast.error('Solo los administradores pueden generar contenido');
+    // Si ya existe contenido, solo admin puede regenerar
+    if (content && !isAdmin) {
+      toast.error('Solo el administrador puede regenerar el contenido');
       return;
     }
+
+    // Si no existe contenido, cualquiera puede generar
+    // Si existe contenido, solo admin puede regenerar (ya verificado arriba)
 
     setGenerating(true);
 
@@ -106,12 +110,16 @@ export const useToolContent = (toolType: ToolType) => {
     }
   };
 
+  // Determina si el usuario puede generar
+  const canGenerate = !content || isAdmin;
+
   return {
     content: content?.content,
     loading,
     generating,
     generateContent,
     hasContent: !!content,
-    isAdmin
+    isAdmin,
+    canGenerate // Si no hay contenido, cualquiera puede generar; si hay, solo admin regenera
   };
 };

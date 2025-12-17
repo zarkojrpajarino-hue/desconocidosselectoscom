@@ -12,31 +12,33 @@ interface WorkPreferencesCollapsibleProps {
 }
 
 export function WorkPreferencesCollapsible({ onPreferencesChange }: WorkPreferencesCollapsibleProps) {
-  const { user } = useAuth();
+  const { currentOrganizationId } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.id) {
+    if (currentOrganizationId) {
       checkConfiguration();
     }
-  }, [user?.id]);
+  }, [currentOrganizationId]);
 
   const checkConfiguration = async () => {
-    if (!user?.id) return;
+    if (!currentOrganizationId) return;
     
     try {
       const { data, error } = await supabase
-        .from('user_global_agenda_settings')
-        .select('has_team, collaborative_percentage')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .from('organizations')
+        .select('*')
+        .eq('id', currentOrganizationId)
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
 
-      // Consider configured if there's any record with has_team set
-      setIsConfigured(data !== null && data.has_team !== null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const orgData = data as any;
+      // Consider configured if has_team has been explicitly set (true or false)
+      setIsConfigured(orgData?.has_team !== null && orgData?.has_team !== undefined);
     } catch (error) {
       console.error('Error checking work preferences:', error);
     } finally {
@@ -94,8 +96,8 @@ export function WorkPreferencesCollapsible({ onPreferencesChange }: WorkPreferen
               </div>
               <span className="text-xs text-muted-foreground">
                 {!isConfigured 
-                  ? 'Debes configurar antes de generar tareas' 
-                  : 'Define cómo trabajas: solo o en equipo'}
+                  ? 'El admin debe configurar antes de generar tareas' 
+                  : 'Define cómo trabaja el equipo: solo o colaborativo'}
               </span>
             </div>
           </div>

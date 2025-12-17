@@ -4476,6 +4476,7 @@ export type Database = {
           business_type: string | null
           buying_motivations: Json | null
           churn_reasons: Json | null
+          collaborative_percentage: number | null
           company_size: string
           competitive_advantage: string | null
           contact_email: string
@@ -4493,9 +4494,11 @@ export type Database = {
           customer_retention_rate: number | null
           customers_goal_12_months: number | null
           decision_makers: string | null
+          financial_visibility_team: boolean | null
           founded_year: number | null
           geographic_market: Json | null
           growth_priority: string | null
+          has_team: boolean | null
           icp_criteria: string | null
           id: string
           industry: string
@@ -4557,6 +4560,7 @@ export type Database = {
           business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
+          collaborative_percentage?: number | null
           company_size: string
           competitive_advantage?: string | null
           contact_email: string
@@ -4574,9 +4578,11 @@ export type Database = {
           customer_retention_rate?: number | null
           customers_goal_12_months?: number | null
           decision_makers?: string | null
+          financial_visibility_team?: boolean | null
           founded_year?: number | null
           geographic_market?: Json | null
           growth_priority?: string | null
+          has_team?: boolean | null
           icp_criteria?: string | null
           id?: string
           industry: string
@@ -4638,6 +4644,7 @@ export type Database = {
           business_type?: string | null
           buying_motivations?: Json | null
           churn_reasons?: Json | null
+          collaborative_percentage?: number | null
           company_size?: string
           competitive_advantage?: string | null
           contact_email?: string
@@ -4655,9 +4662,11 @@ export type Database = {
           customer_retention_rate?: number | null
           customers_goal_12_months?: number | null
           decision_makers?: string | null
+          financial_visibility_team?: boolean | null
           founded_year?: number | null
           geographic_market?: Json | null
           growth_priority?: string | null
+          has_team?: boolean | null
           icp_criteria?: string | null
           id?: string
           industry?: string

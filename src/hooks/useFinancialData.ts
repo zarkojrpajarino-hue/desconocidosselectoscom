@@ -16,15 +16,83 @@ interface Transaction {
 /**
  * Hook for managing financial data
  * Handles revenue, expenses, and marketing spend
+ * Respects financial_visibility_team setting from organization
  */
 export const useFinancialData = () => {
-  const { currentOrganizationId } = useAuth();
+  const { currentOrganizationId, userOrganizations } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [financialVisibility, setFinancialVisibility] = useState(true);
+  const [isHiddenForTeam, setIsHiddenForTeam] = useState(false);
+
+  // Verificar si el usuario es admin
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
+
+  const fetchFinancialVisibility = async () => {
+    if (!currentOrganizationId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', currentOrganizationId)
+        .single();
+
+      if (error) throw error;
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const orgData = data as any;
+      const visibility = orgData.financial_visibility_team ?? true;
+      setFinancialVisibility(visibility);
+      
+      // Si no es admin y la visibilidad está desactivada, marcar como oculto
+      if (!isAdmin && !visibility) {
+        setIsHiddenForTeam(true);
+      }
+    } catch (err) {
+      console.error('Error fetching financial visibility:', err);
+    }
+  };
+
+  const toggleFinancialVisibility = async (visible: boolean) => {
+    if (!isAdmin || !currentOrganizationId) {
+      toast.error('Solo el administrador puede cambiar esta configuración');
+      return;
+    }
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase
+        .from('organizations')
+        .update({ financial_visibility_team: visible } as any)
+        .eq('id', currentOrganizationId);
+
+      if (error) throw error;
+
+      setFinancialVisibility(visible);
+      toast.success(visible 
+        ? 'Datos financieros visibles para el equipo' 
+        : 'Datos financieros ocultos para el equipo'
+      );
+    } catch (err) {
+      console.error('Error updating financial visibility:', err);
+      toast.error('Error al actualizar configuración');
+    }
+  };
 
   const fetchTransactions = async () => {
     if (!currentOrganizationId) return;
+    
+    // Si está oculto para el equipo (y no es admin), no cargar datos
+    if (isHiddenForTeam && !isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -125,14 +193,25 @@ export const useFinancialData = () => {
 
   useEffect(() => {
     if (currentOrganizationId) {
+      fetchFinancialVisibility();
+    }
+  }, [currentOrganizationId, isAdmin]);
+
+  useEffect(() => {
+    if (currentOrganizationId && !isHiddenForTeam) {
       fetchTransactions();
     }
-  }, [currentOrganizationId]);
+  }, [currentOrganizationId, isHiddenForTeam]);
 
   return {
     transactions,
     loading,
     error,
     refetch: fetchTransactions,
+    // Admin controls
+    isAdmin,
+    financialVisibility,
+    toggleFinancialVisibility,
+    isHiddenForTeam,
   };
 };

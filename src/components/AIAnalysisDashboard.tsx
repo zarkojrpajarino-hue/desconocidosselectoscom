@@ -158,22 +158,65 @@ interface AnalysisData {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = {}) => {
-  const { currentOrganizationId } = useAuth();
+  const { currentOrganizationId, userOrganizations } = useAuth();
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('money');
   const [showConfidentialInfo, setShowConfidentialInfo] = useState(true);
+  const [noAnalysisExists, setNoAnalysisExists] = useState(false);
+
+  // Verificar si el usuario es admin
+  const currentUserRole = userOrganizations.find(
+    org => org.organization_id === currentOrganizationId
+  )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
 
   useEffect(() => {
     if (currentOrganizationId) {
-      fetchAnalysis();
+      loadExistingAnalysis();
     }
   }, [currentOrganizationId]);
 
-  const fetchAnalysis = async (forceRefresh = false) => {
+  // Cargar análisis existente sin regenerar
+  const loadExistingAnalysis = async () => {
     setLoading(true);
     try {
-      // ✅ CORREGIDO: Usar currentOrganizationId del contexto
+      if (!currentOrganizationId) throw new Error('No organization selected');
+
+      // Buscar análisis existente en la base de datos
+      const { data: existingAnalysis, error } = await supabase
+        .from('ai_analysis_results')
+        .select('analysis_data, created_at')
+        .eq('organization_id', currentOrganizationId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (existingAnalysis?.analysis_data) {
+        setData(existingAnalysis.analysis_data as unknown as AnalysisData);
+        setNoAnalysisExists(false);
+      } else {
+        setNoAnalysisExists(true);
+      }
+    } catch (error) {
+      console.error('Error loading analysis:', error);
+      setNoAnalysisExists(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generar nuevo análisis (solo admin)
+  const generateAnalysis = async () => {
+    if (!isAdmin) {
+      toast.error('Solo el administrador puede generar el análisis');
+      return;
+    }
+
+    setLoading(true);
+    try {
       if (!currentOrganizationId) throw new Error('No organization selected');
 
       const { data: analysisData, error } = await supabase.functions.invoke('analyze-project-data-v3', {
@@ -185,17 +228,16 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
 
       if (error) throw error;
 
-      // v3 devuelve { success, analysis, savedId }
       setData(analysisData.analysis || analysisData);
-      toast.success('Análisis actualizado');
+      setNoAnalysisExists(false);
+      toast.success('Análisis generado exitosamente');
       
-      // Notificar que se completó el análisis
       if (onAnalysisComplete) {
         onAnalysisComplete();
       }
     } catch (error) {
-      console.error('Error fetching analysis:', error);
-      toast.error('Error al cargar análisis');
+      console.error('Error generating analysis:', error);
+      toast.error('Error al generar análisis');
     } finally {
       setLoading(false);
     }
@@ -205,15 +247,62 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
     toast.info(`Generando PDF ${type}...`);
   };
 
-  if (loading || !data) {
+  // Si no es admin y no hay análisis, mostrar mensaje
+  if (!loading && noAnalysisExists && !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+              <Lock className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold">Análisis no disponible</h3>
+            <p className="text-muted-foreground">
+              El administrador aún no ha generado el análisis con IA del negocio. 
+              Solicita que lo genere para poder verlo.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <RefreshCw className="w-12 h-12 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Analizando tu proyecto con IA...</p>
+          <p className="text-muted-foreground">Cargando análisis...</p>
         </div>
       </div>
     );
+  }
+
+  // Si es admin y no hay análisis, mostrar botón para generar
+  if (noAnalysisExists && isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <Target className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">Genera tu primer análisis</h3>
+            <p className="text-muted-foreground">
+              Usa la IA para analizar tu negocio y obtener recomendaciones personalizadas.
+            </p>
+            <Button onClick={generateAnalysis} className="gap-2">
+              <Zap className="w-4 h-4" />
+              Generar Análisis con IA
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
   }
 
   return (
@@ -243,11 +332,13 @@ const AIAnalysisDashboard = ({ onAnalysisComplete }: AIAnalysisDashboardProps = 
           <Button
             variant="outline"
             size="sm"
-            onClick={() => fetchAnalysis(true)}
+            onClick={generateAnalysis}
             className="gap-2"
+            disabled={!isAdmin}
+            title={!isAdmin ? 'Solo el administrador puede regenerar el análisis' : ''}
           >
             <RefreshCw className="w-4 h-4" />
-            Actualizar
+            {isAdmin ? 'Actualizar' : 'Solo admin'}
           </Button>
 
           <Button
