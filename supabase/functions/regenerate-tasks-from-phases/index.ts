@@ -7,6 +7,199 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// ============================================
+// SISTEMA ADAPTATIVO DE TAREAS - VERSIÓN 10/10
+// Basado en Lean Startup + Scaling Up
+// ============================================
+
+const PHASE_COMPLEXITY = {
+  lean_startup: {
+    phase_1_build: 45,
+    phase_2_measure: 35,
+    phase_3_learn: 40,
+    phase_4_scale: 55
+  },
+  scaling_up: {
+    phase_1_people: 50,
+    phase_2_strategy: 42,
+    phase_3_execution: 60,
+    phase_4_cash: 45
+  }
+};
+
+const MATURITY_MULTIPLIER: Record<string, number> = {
+  idea: 0.5,
+  mvp_development: 0.8,
+  validating: 1.0,
+  early_traction: 1.2,
+  growth: 1.4,
+  consolidated: 1.3,
+  mature: 1.5,
+  building: 0.8,
+  traction: 1.2,
+  scaling: 1.4,
+  established: 1.3
+};
+
+function getTeamMultiplier(teamSize: number): number {
+  if (teamSize === 1) return 1.3;
+  if (teamSize <= 3) return 1.0;
+  if (teamSize <= 10) return 0.9;
+  if (teamSize <= 30) return 0.85;
+  if (teamSize <= 100) return 0.8;
+  return 0.8;
+}
+
+const INDUSTRY_MULTIPLIER: Record<string, number> = {
+  saas: 1.0,
+  technology: 1.0,
+  ecommerce: 1.1,
+  fintech: 1.3,
+  healthtech: 1.4,
+  marketplace: 1.2,
+  consulting: 0.9,
+  agency: 0.95,
+  retail: 1.1,
+  manufacturing: 1.3,
+  education: 1.0,
+  food_beverage: 1.05,
+  real_estate: 1.1,
+  logistics: 1.2,
+  generic: 1.0
+};
+
+const RESOURCES_MULTIPLIER: Record<string, number> = {
+  bootstrapped: 0.8,
+  pre_seed: 0.9,
+  seed: 1.0,
+  series_a: 1.1,
+  funded: 1.2,
+  corporate: 1.3,
+  self_funded: 0.8
+};
+
+const AVAILABILITY_MULTIPLIER: Record<string, number> = {
+  part_time: 0.6,
+  full_time: 1.0,
+  overtime: 1.2
+};
+
+const WORK_MODE_MULTIPLIER: Record<string, number> = {
+  conservative: 0.75,
+  conservador: 0.75,
+  moderate: 1.0,
+  moderado: 1.0,
+  aggressive: 1.35,
+  agresivo: 1.35
+};
+
+interface AdaptiveTaskResult {
+  totalTasks: number;
+  tasksPerPerson: number;
+  breakdown: {
+    baseComplexity: number;
+    maturityMult: number;
+    teamMult: number;
+    industryMult: number;
+    resourcesMult: number;
+    availabilityMult: number;
+    workModeMult: number;
+    finalComplexity: number;
+  };
+}
+
+function getPhaseKey(methodology: string, phaseNumber: number): string {
+  const slugs: Record<string, string[]> = {
+    lean_startup: ['build', 'measure', 'learn', 'scale'],
+    scaling_up: ['people', 'strategy', 'execution', 'cash']
+  };
+  const slug = slugs[methodology]?.[phaseNumber - 1] || 'build';
+  return `phase_${phaseNumber}_${slug}`;
+}
+
+function calculateAdaptiveTasks(input: {
+  methodology: 'lean_startup' | 'scaling_up';
+  phaseNumber: number;
+  businessMaturity: string;
+  teamSize: number;
+  industry: string;
+  fundingStage: string;
+  teamAvailability: string;
+  workMode: string;
+}): AdaptiveTaskResult {
+  // 1. Base de complejidad de la fase
+  const phaseKey = getPhaseKey(input.methodology, input.phaseNumber);
+  const methodologyPhases = PHASE_COMPLEXITY[input.methodology] as Record<string, number>;
+  const baseComplexity = methodologyPhases[phaseKey] || 45;
+
+  // 2. Obtener multiplicadores
+  const maturityMult = MATURITY_MULTIPLIER[input.businessMaturity?.toLowerCase()] || 1.0;
+  const teamMult = getTeamMultiplier(input.teamSize);
+  const industryMult = INDUSTRY_MULTIPLIER[input.industry?.toLowerCase()] || 1.0;
+  const resourcesMult = RESOURCES_MULTIPLIER[input.fundingStage?.toLowerCase()] || 1.0;
+  const availabilityMult = AVAILABILITY_MULTIPLIER[input.teamAvailability?.toLowerCase()] || 1.0;
+  const workModeMult = WORK_MODE_MULTIPLIER[input.workMode?.toLowerCase()] || 1.0;
+
+  // 3. Calcular complejidad ajustada
+  let complexity = baseComplexity;
+  complexity *= maturityMult;
+  complexity *= teamMult;
+  complexity *= industryMult;
+  complexity *= resourcesMult;
+  complexity *= availabilityMult;
+
+  const finalComplexity = complexity;
+
+  // 4. Convertir a tareas (4 puntos = 1 tarea)
+  let totalTasks = complexity / 4;
+
+  // 5. Aplicar modo de trabajo
+  totalTasks *= workModeMult;
+
+  // 6. GUARDRAILS - límites saludables
+  const minTasks = Math.max(4, Math.ceil(input.teamSize * 1.5));
+  const maxTasks = Math.min(25, input.teamSize * 8);
+  totalTasks = Math.max(minTasks, Math.min(maxTasks, totalTasks));
+  totalTasks = Math.round(totalTasks);
+
+  // 7. Tareas por persona (mínimo 1, máximo 12)
+  let tasksPerPerson = totalTasks / input.teamSize;
+  tasksPerPerson = Math.max(1, Math.min(12, tasksPerPerson));
+  tasksPerPerson = Math.round(tasksPerPerson * 10) / 10;
+
+  return {
+    totalTasks,
+    tasksPerPerson,
+    breakdown: {
+      baseComplexity,
+      maturityMult,
+      teamMult,
+      industryMult,
+      resourcesMult,
+      availabilityMult,
+      workModeMult,
+      finalComplexity
+    }
+  };
+}
+
+function parseTeamSize(teamSize: string | number | undefined): number {
+  if (typeof teamSize === 'number') return teamSize;
+  if (!teamSize) return 1;
+  
+  const sizeMap: Record<string, number> = {
+    '1': 1, 'solo': 1,
+    '2-5': 3, '1-5': 3, 'small': 5,
+    '6-10': 8, 'medium': 15,
+    '11-20': 15, '21-30': 25,
+    '21-50': 35, '31-50': 40,
+    '51-100': 75, 'large': 100,
+    '100+': 150
+  };
+  
+  return sizeMap[teamSize.toLowerCase()] || parseInt(teamSize) || 5;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,10 +221,10 @@ serve(async (req) => {
 
     console.log(`Regenerating tasks for organization: ${organization_id}`);
 
-    // 1. Obtener datos de la organización (incluyendo team_structure)
+    // 1. Obtener datos COMPLETOS de la organización
     const { data: org, error: orgError } = await supabase
       .from("organizations")
-      .select("team_structure")
+      .select("team_structure, is_startup, industry, team_size, business_stage, funding_stage")
       .eq("id", organization_id)
       .single();
 
@@ -42,6 +235,14 @@ serve(async (req) => {
     const teamStructure: Array<{name: string, role: string, responsibilities: string}> = 
       Array.isArray(org?.team_structure) ? org.team_structure : [];
 
+    // Determinar metodología
+    const methodology: 'lean_startup' | 'scaling_up' = org?.is_startup !== false ? 'lean_startup' : 'scaling_up';
+    
+    // Parsear tamaño de equipo
+    const teamSize = parseTeamSize(org?.team_size);
+
+    console.log(`Organization context: methodology=${methodology}, teamSize=${teamSize}, industry=${org?.industry}, maturity=${org?.business_stage}`);
+
     // 2. Obtener TODOS los usuarios de la organización
     const { data: orgUsers } = await supabase
       .from("user_roles")
@@ -49,6 +250,7 @@ serve(async (req) => {
       .eq("organization_id", organization_id);
 
     const userIds = orgUsers?.map(u => u.user_id) || [];
+    const actualTeamSize = Math.max(userIds.length, teamSize);
 
     // 3. Obtener info de usuarios para hacer match con team_structure
     const { data: usersInfo } = await supabase
@@ -95,7 +297,6 @@ serve(async (req) => {
       console.log("Users not found in users table, creating them...");
       
       for (const userId of userIds) {
-        // Verificar si ya existe
         const { data: existingUser } = await supabase
           .from("users")
           .select("id")
@@ -143,7 +344,7 @@ serve(async (req) => {
     // 6. Obtener fases existentes
     const { data: phases, error: phasesError } = await supabase
       .from("business_phases")
-      .select("id, phase_number, phase_name, checklist, playbook")
+      .select("id, phase_number, phase_name, checklist, playbook, duration_weeks")
       .eq("organization_id", organization_id)
       .order("phase_number");
 
@@ -168,7 +369,7 @@ serve(async (req) => {
       console.error("Error deleting existing tasks:", deleteError);
     }
 
-    // 8. Crear tareas para CADA usuario según su rol funcional
+    // 8. SISTEMA ADAPTATIVO: Calcular tareas para CADA FASE
     const tasksToInsert: Array<{
       organization_id: string;
       phase_id: string;
@@ -184,8 +385,37 @@ serve(async (req) => {
       playbook: Record<string, unknown>;
     }> = [];
 
+    // Obtener preferencias de modo de trabajo del primer usuario (admin)
+    const { data: userWeeklyData } = await supabase
+      .from("user_weekly_data")
+      .select("mode")
+      .eq("user_id", usersToAssign[0])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const workMode = userWeeklyData?.mode || 'moderado';
+
     for (const phase of phases) {
       console.log(`Processing phase ${phase.phase_number}: ${phase.phase_name}`);
+
+      // CALCULAR TAREAS ADAPTATIVAS PARA ESTA FASE
+      const adaptiveResult = calculateAdaptiveTasks({
+        methodology,
+        phaseNumber: phase.phase_number,
+        businessMaturity: org?.business_stage || 'validating',
+        teamSize: actualTeamSize,
+        industry: org?.industry || 'generic',
+        fundingStage: org?.funding_stage || 'bootstrapped',
+        teamAvailability: 'full_time',
+        workMode
+      });
+
+      console.log(`Adaptive calculation for phase ${phase.phase_number}:`, {
+        totalTasks: adaptiveResult.totalTasks,
+        tasksPerPerson: adaptiveResult.tasksPerPerson,
+        breakdown: adaptiveResult.breakdown
+      });
 
       // Handle checklist parsing
       let checklist: Array<{ task?: string; title?: string; name?: string; description?: string; category?: string; area?: string; functional_role?: string }> = [];
@@ -213,6 +443,9 @@ serve(async (req) => {
 
       console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
 
+      // TARGET de tareas por persona basado en cálculo adaptativo
+      const TARGET_TASKS_PER_PERSON = Math.round(adaptiveResult.tasksPerPerson);
+
       // Para CADA usuario, crear sus tareas personalizadas
       for (const userId of usersToAssign) {
         const userFunctionalRole = userRoleMap.get(userId) || 'general';
@@ -221,12 +454,10 @@ serve(async (req) => {
         const userTasks = checklist.filter(item => {
           const taskRole = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
           
-          // CEO/general recibe todas las tareas
           if (userFunctionalRole === 'ceo' || userFunctionalRole === 'general') {
             return true;
           }
           
-          // Otros usuarios reciben tareas de su área o generales
           return taskRole === userFunctionalRole || 
                  taskRole === 'general' || 
                  taskRole === 'equipo' ||
@@ -236,25 +467,24 @@ serve(async (req) => {
                  (userFunctionalRole === 'producto' && (taskRole === 'producto' || taskRole === 'product'));
         });
 
-          // ASEGURAR EXACTAMENTE 12 TAREAS por usuario
-          const TARGET_TASKS = 12;
-          let tasksForUser = userTasks.slice(0, TARGET_TASKS);
-          
-          // Si no hay suficientes tareas específicas, agregar del pool general hasta llegar a 12
-          if (tasksForUser.length < TARGET_TASKS) {
-            const remaining = checklist.filter(item => !tasksForUser.includes(item));
-            tasksForUser.push(...remaining.slice(0, TARGET_TASKS - tasksForUser.length));
-          }
-          
-          // Si aún faltan tareas (checklist muy corto), duplicar con variaciones
-          while (tasksForUser.length < TARGET_TASKS && checklist.length > 0) {
-            const baseTask = checklist[tasksForUser.length % checklist.length];
-            tasksForUser.push({
-              ...baseTask,
-              task: `${baseTask.task || baseTask.title || 'Tarea'} (avanzado ${tasksForUser.length + 1})`,
-              functional_role: baseTask.functional_role || userFunctionalRole || 'general'
-            });
-          }
+        // USAR TARGET ADAPTATIVO en lugar de 12 fijo
+        let tasksForUser = userTasks.slice(0, TARGET_TASKS_PER_PERSON);
+        
+        // Si no hay suficientes tareas específicas, agregar del pool general
+        if (tasksForUser.length < TARGET_TASKS_PER_PERSON) {
+          const remaining = checklist.filter(item => !tasksForUser.includes(item));
+          tasksForUser.push(...remaining.slice(0, TARGET_TASKS_PER_PERSON - tasksForUser.length));
+        }
+        
+        // Si aún faltan tareas (checklist muy corto), duplicar con variaciones
+        while (tasksForUser.length < TARGET_TASKS_PER_PERSON && checklist.length > 0) {
+          const baseTask = checklist[tasksForUser.length % checklist.length];
+          tasksForUser.push({
+            ...baseTask,
+            task: `${baseTask.task || baseTask.title || 'Tarea'} (avanzado ${tasksForUser.length + 1})`,
+            functional_role: baseTask.functional_role || userFunctionalRole || 'general'
+          });
+        }
 
         tasksForUser.forEach((item, index) => {
           const taskTitle = item.task || item.title || item.name || `Tarea ${index + 1}`;
@@ -276,7 +506,7 @@ serve(async (req) => {
           });
         });
 
-        console.log(`Prepared ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole})`);
+        console.log(`Prepared ${tasksForUser.length} tasks for user ${userId} (role: ${userFunctionalRole}, target: ${TARGET_TASKS_PER_PERSON})`);
       }
     }
     
@@ -318,13 +548,14 @@ serve(async (req) => {
 
     console.log(`Total tasks created: ${totalCreated}`);
 
-    // 10. Crear alerta de notificación
+    // 10. Crear alerta de notificación con info del sistema adaptativo
     if (totalCreated > 0) {
+      const tasksPerUser = Math.round(totalCreated / usersToAssign.length);
       await supabase.from("smart_alerts").insert({
         alert_type: 'tasks_regenerated',
         severity: 'info',
-        title: '✅ Tareas Regeneradas',
-        message: `Se han creado ${totalCreated} tareas para ${usersToAssign.length} usuario(s) desde las ${phases.length} fases.`,
+        title: '✅ Tareas Regeneradas (Sistema Adaptativo)',
+        message: `Se han creado ${totalCreated} tareas para ${usersToAssign.length} usuario(s). ${tasksPerUser} tareas/persona basado en: ${methodology === 'lean_startup' ? 'Lean Startup' : 'Scaling Up'}, equipo de ${actualTeamSize}, modo ${workMode}.`,
         source: 'business_phases',
         category: 'planning',
         target_user_id: usersToAssign[0],
@@ -333,7 +564,11 @@ serve(async (req) => {
           phases_count: phases.length, 
           tasks_created: totalCreated,
           users_count: usersToAssign.length,
-          tasks_per_user: Math.floor(totalCreated / usersToAssign.length)
+          tasks_per_user: tasksPerUser,
+          methodology,
+          team_size: actualTeamSize,
+          work_mode: workMode,
+          adaptive_system: 'v10'
         }
       });
     }
@@ -344,7 +579,13 @@ serve(async (req) => {
         tasks_created: totalCreated,
         phases_processed: phases.length,
         users_processed: usersToAssign.length,
-        tasks_per_user: Math.floor(totalCreated / usersToAssign.length),
+        tasks_per_user: Math.round(totalCreated / usersToAssign.length),
+        adaptive_system: {
+          methodology,
+          team_size: actualTeamSize,
+          work_mode: workMode,
+          version: 'v10'
+        },
         errors: errors.length > 0 ? errors : undefined,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

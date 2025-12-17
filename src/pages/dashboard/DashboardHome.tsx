@@ -494,25 +494,33 @@ const DashboardHome = () => {
               </Collapsible>
             )}
 
-            {/* Mis Tareas Esta Semana - Colapsable */}
+            {/* Mis Tareas Esta Semana / Tareas Pendientes - Colapsable */}
             <Collapsible open={tasksThisWeekOpen} onOpenChange={setTasksThisWeekOpen}>
               <Card className="shadow-card">
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isTransition ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
+                          {isTransition ? (
+                            <AlertTriangle className="h-5 w-5 text-amber-500" />
+                          ) : (
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          )}
                         </div>
                         <div>
-                          <CardTitle>Mis Tareas Esta Semana</CardTitle>
+                          <CardTitle>
+                            {isTransition ? 'Tareas Pendientes' : 'Mis Tareas Esta Semana'}
+                          </CardTitle>
                           <CardDescription>
-                            Tareas asignadas a ti en esta fase
+                            {isTransition 
+                              ? 'Tareas pendientes de semanas anteriores' 
+                              : 'Tareas asignadas a ti en esta fase'}
                           </CardDescription>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{tasks.length}</Badge>
+                        <Badge variant={isTransition ? "destructive" : "secondary"}>{tasks.length}</Badge>
                         <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${tasksThisWeekOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
