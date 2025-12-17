@@ -82,7 +82,8 @@ const TeamProgress = ({
           }).in('id', taskIds).eq('phase', currentPhase);
           completedCount = count || 0;
         }
-        const total = totalCount || 12;
+        // NO usar fallback hardcodeado - usar el total real de tareas
+        const total = totalCount || 0;
         const completed = completedCount || 0;
         const percentage = total > 0 ? Math.round(completed / total * 100) : 0;
         return {
@@ -180,7 +181,7 @@ const TeamProgress = ({
           <Progress value={teamPercentage} className="h-2 mb-2" />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{totalCompleted} completadas</span>
-            <span>{remainingTasks} pendientes</span>
+            <span>{remainingTasks > 0 ? `${remainingTasks} pendientes` : 'Sin tareas asignadas'}</span>
           </div>
         </div>
 
