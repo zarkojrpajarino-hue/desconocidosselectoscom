@@ -2,14 +2,18 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withRateLimit, rateLimitResponse } from "../_shared/rateLimiter.ts";
 import { createLogger, extractRequestInfo } from "../_shared/structuredLogger.ts";
+import { handleError, createErrorResponse } from "../_shared/errorHandler.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const FUNCTION_NAME = 'analyze-project-data-v3';
+
 serve(async (req) => {
-  const logger = createLogger('analyze-project-data-v3');
+  const logger = createLogger(FUNCTION_NAME);
+  const requestId = logger.getRequestId();
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,7 +22,6 @@ serve(async (req) => {
   try {
     const { organizationId, includeCompetitors = false } = await req.json();
     
-    // Set logger context
     logger.setContext({ organizationId });
     logger.info('analysis_started', { 
       includeCompetitors,
@@ -27,14 +30,11 @@ serve(async (req) => {
 
     if (!organizationId) {
       logger.warn('missing_organization_id');
-      return new Response(
-        JSON.stringify({ error: 'organizationId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('organizationId is required', 400, corsHeaders);
     }
 
     // Rate limiting: 5 requests per minute per organization
-    const rateLimit = withRateLimit(organizationId, 'analyze-project-data-v3', {
+    const rateLimit = withRateLimit(organizationId, FUNCTION_NAME, {
       maxRequests: 5,
       windowMs: 60000
     });
@@ -59,10 +59,7 @@ serve(async (req) => {
 
     if (orgError || !organization) {
       logger.error('organization_not_found', orgError);
-      return new Response(
-        JSON.stringify({ error: 'Organization not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Organization not found', 404, corsHeaders);
     }
 
     // Fetch financial data
@@ -181,7 +178,6 @@ serve(async (req) => {
     // Parse AI response
     let analysisData;
     try {
-      // Remove markdown code blocks if present
       const cleanedContent = aiContent
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
@@ -189,11 +185,10 @@ serve(async (req) => {
       analysisData = JSON.parse(cleanedContent);
     } catch (parseError) {
       logger.error('ai_response_parse_error', parseError, { rawContentPreview: aiContent.slice(0, 200) });
-      // Return a structured fallback
       analysisData = generateFallbackAnalysis(organization, revenueData || [], expenseData || [], leads || [], competitors || []);
     }
 
-    // Store analysis result in database using the existing analysis_data column
+    // Store analysis result in database
     const { data: savedAnalysis, error: saveError } = await supabase
       .from('ai_analysis_results')
       .insert({
@@ -206,7 +201,6 @@ serve(async (req) => {
 
     if (saveError) {
       logger.error('save_analysis_error', saveError);
-      // Still return the analysis even if save fails
     }
 
     // Update organization's last analysis timestamp
@@ -224,30 +218,39 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         analysis: analysisData,
-        savedId: savedAnalysis?.id
+        savedId: savedAnalysis?.id,
+        requestId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: unknown) {
     logger.error('analysis_failed', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/analyze-project-data-v3',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Internal server error',
+      500,
+      corsHeaders
     );
   }
 });
 
 interface AnalysisInput {
-  organization: any;
-  revenueData: any[];
-  expenseData: any[];
-  teamMembers: any[];
-  leads: any[];
-  objectives: any[];
-  businessMetrics: any[];
-  competitors: any[];
+  organization: Record<string, unknown>;
+  revenueData: Record<string, unknown>[];
+  expenseData: Record<string, unknown>[];
+  teamMembers: Record<string, unknown>[];
+  leads: Record<string, unknown>[];
+  objectives: Record<string, unknown>[];
+  businessMetrics: Record<string, unknown>[];
+  competitors: Record<string, unknown>[];
   includeCompetitors: boolean;
 }
 
@@ -264,12 +267,11 @@ function buildAnalysisPrompt(input: AnalysisInput): string {
     includeCompetitors
   } = input;
 
-  // Calculate key metrics
-  const totalRevenue = revenueData.reduce((sum, r) => sum + (r.amount || 0), 0);
-  const totalExpenses = expenseData.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const totalRevenue = revenueData.reduce((sum, r) => sum + ((r as { amount?: number }).amount || 0), 0);
+  const totalExpenses = expenseData.reduce((sum, e) => sum + ((e as { amount?: number }).amount || 0), 0);
   const margin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100).toFixed(1) : 0;
   
-  const wonLeads = leads.filter(l => l.stage === 'won' || l.pipeline_stage === 'closed_won').length;
+  const wonLeads = leads.filter(l => (l as { stage?: string }).stage === 'won' || (l as { pipeline_stage?: string }).pipeline_stage === 'closed_won').length;
   const totalLeads = leads.length;
   const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
 
@@ -277,10 +279,10 @@ function buildAnalysisPrompt(input: AnalysisInput): string {
   if (includeCompetitors && competitors.length > 0) {
     competitorSection = `
 COMPETIDORES REGISTRADOS:
-${competitors.map(c => `- ${c.name}: ${c.description || 'Sin descripción'}
-  Fortalezas: ${c.strengths?.join(', ') || 'No especificadas'}
-  Debilidades: ${c.weaknesses?.join(', ') || 'No especificadas'}
-  Posición: ${c.market_position || 'Desconocida'}`).join('\n')}
+${competitors.map(c => `- ${(c as { name?: string }).name}: ${(c as { description?: string }).description || 'Sin descripción'}
+  Fortalezas: ${((c as { strengths?: string[] }).strengths || []).join(', ') || 'No especificadas'}
+  Debilidades: ${((c as { weaknesses?: string[] }).weaknesses || []).join(', ') || 'No especificadas'}
+  Posición: ${(c as { market_position?: string }).market_position || 'Desconocida'}`).join('\n')}
 
 Incluye en tu análisis una sección "competitive_analysis" con:
 - positioning: posicionamiento recomendado
@@ -291,10 +293,10 @@ Incluye en tu análisis una sección "competitive_analysis" con:
 
   return `Analiza los siguientes datos empresariales y genera un análisis estratégico completo.
 
-EMPRESA: ${organization.name}
-INDUSTRIA: ${organization.industry}
-TAMAÑO: ${organization.company_size}
-DESCRIPCIÓN: ${organization.business_description}
+EMPRESA: ${(organization as { name?: string }).name}
+INDUSTRIA: ${(organization as { industry?: string }).industry}
+TAMAÑO: ${(organization as { company_size?: string }).company_size}
+DESCRIPCIÓN: ${(organization as { business_description?: string }).business_description}
 
 MÉTRICAS FINANCIERAS:
 - Ingresos totales: €${totalRevenue.toLocaleString()}
@@ -307,11 +309,11 @@ MÉTRICAS CRM:
 - Total leads: ${totalLeads}
 - Leads ganados: ${wonLeads}
 - Tasa de conversión: ${conversionRate}%
-- Pipeline value: €${leads.reduce((sum, l) => sum + (l.estimated_value || 0), 0).toLocaleString()}
+- Pipeline value: €${leads.reduce((sum, l) => sum + ((l as { estimated_value?: number }).estimated_value || 0), 0).toLocaleString()}
 
 EQUIPO:
 - Miembros: ${teamMembers.length}
-- Roles: ${teamMembers.map(t => t.role).join(', ')}
+- Roles: ${teamMembers.map(t => (t as { role?: string }).role).join(', ')}
 
 OKRs ACTIVOS: ${objectives.length}
 ${competitorSection}
@@ -370,20 +372,20 @@ Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta:
 }
 
 function generateFallbackAnalysis(
-  organization: any,
-  revenueData: any[],
-  expenseData: any[],
-  leads: any[],
-  competitors: any[] | null
-): any {
-  const totalRevenue = revenueData.reduce((sum, r) => sum + (r.amount || 0), 0);
-  const totalExpenses = expenseData.reduce((sum, e) => sum + (e.amount || 0), 0);
+  organization: Record<string, unknown>,
+  revenueData: Record<string, unknown>[],
+  expenseData: Record<string, unknown>[],
+  leads: Record<string, unknown>[],
+  competitors: Record<string, unknown>[] | null
+): Record<string, unknown> {
+  const totalRevenue = revenueData.reduce((sum, r) => sum + ((r as { amount?: number }).amount || 0), 0);
+  const totalExpenses = expenseData.reduce((sum, e) => sum + ((e as { amount?: number }).amount || 0), 0);
   const margin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue * 100) : 0;
 
-  const baseAnalysis: any = {
+  const baseAnalysis: Record<string, unknown> = {
     executive_summary: {
       overall_health: margin > 20 ? 'good' : margin > 0 ? 'warning' : 'critical',
-      key_insight: `${organization.name} tiene un margen del ${margin.toFixed(1)}%`,
+      key_insight: `${(organization as { name?: string }).name} tiene un margen del ${margin.toFixed(1)}%`,
       immediate_action: margin < 20 ? 'Revisar estructura de costos' : 'Mantener crecimiento actual'
     },
     financial_health: {
@@ -433,7 +435,7 @@ function generateFallbackAnalysis(
   if (competitors && competitors.length > 0) {
     baseAnalysis.competitive_analysis = {
       positioning: 'Definir propuesta de valor única',
-      threats: competitors.map(c => `Competencia de ${c.name}`).slice(0, 2),
+      threats: competitors.map(c => `Competencia de ${(c as { name?: string }).name}`).slice(0, 2),
       opportunities: ['Diferenciación por servicio', 'Nicho de mercado'],
       differentiation: ['Mejorar experiencia del cliente', 'Especialización']
     };

@@ -1,11 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handleError, createErrorResponse } from "../_shared/errorHandler.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const FUNCTION_NAME = 'validate-plan-limits';
 
 // Plan limits configuration
 const PLAN_LIMITS: Record<string, {
@@ -48,18 +51,16 @@ interface ValidationResult {
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Missing authorization header', 401, corsHeaders);
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -69,10 +70,7 @@ serve(async (req) => {
     const { organizationId, limitType } = await req.json();
 
     if (!organizationId || !limitType) {
-      return new Response(
-        JSON.stringify({ error: 'Missing organizationId or limitType' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return createErrorResponse('Missing organizationId or limitType', 400, corsHeaders);
     }
 
     // Get organization plan
@@ -83,9 +81,9 @@ serve(async (req) => {
       .single();
 
     if (orgError || !org) {
-      console.error('Organization fetch error:', orgError);
+      console.error(`[${FUNCTION_NAME}] Organization fetch error:`, orgError);
       return new Response(
-        JSON.stringify({ allowed: false, message: 'Organization not found' }),
+        JSON.stringify({ allowed: false, message: 'Organization not found', requestId }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -185,16 +183,13 @@ serve(async (req) => {
       }
       
       default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid limitType. Use: leads, users, okrs, ai_analysis' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return createErrorResponse('Invalid limitType. Use: leads, users, okrs, ai_analysis', 400, corsHeaders);
     }
 
-    console.log(`Limit check: ${limitType} for org ${organizationId} - allowed: ${result.allowed}`);
+    console.log(`[${FUNCTION_NAME}] Limit check: ${limitType} for org ${organizationId} - allowed: ${result.allowed} (requestId: ${requestId})`);
 
     return new Response(
-      JSON.stringify(result),
+      JSON.stringify({ ...result, requestId }),
       { 
         status: result.allowed ? 200 : 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -202,10 +197,17 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error validating limit:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error', details: String(error) }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/validate-plan-limits',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Internal server error',
+      500,
+      corsHeaders
     );
   }
 });

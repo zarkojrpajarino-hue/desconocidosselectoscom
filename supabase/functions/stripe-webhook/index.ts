@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { handleError, createErrorResponse } from "../_shared/errorHandler.ts";
 
 const stripe = new Stripe(Deno.env.get('SECRET_KEY_stripe')!, {
   apiVersion: '2024-11-20.acacia',
@@ -14,6 +15,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const FUNCTION_NAME = 'stripe-webhook';
+
 // Helper: Map price_id to plan
 function getPlanFromPriceId(priceId: string): string {
   const starterPrice = Deno.env.get('STRIPE_PRICE_STARTER');
@@ -24,7 +27,7 @@ function getPlanFromPriceId(priceId: string): string {
   if (priceId === professionalPrice) return 'professional';
   if (priceId === enterprisePrice) return 'enterprise';
   
-  console.warn(`[stripe-webhook] Unknown price_id: ${priceId}, defaulting to starter`);
+  console.warn(`[${FUNCTION_NAME}] Unknown price_id: ${priceId}, defaulting to starter`);
   return 'starter';
 }
 
@@ -33,12 +36,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
   const signature = req.headers.get('stripe-signature');
   const webhookSecret = Deno.env.get('WEEBHOOK_SECRET_STRIPE')!;
   
   if (!signature || !webhookSecret) {
-    console.error('[stripe-webhook] ❌ Missing signature or secret');
-    return new Response('Missing signature or secret', { status: 400 });
+    console.error(`[${FUNCTION_NAME}] ❌ Missing signature or secret (requestId: ${requestId})`);
+    return createErrorResponse('Missing signature or secret', 400, corsHeaders);
   }
 
   try {
@@ -53,7 +57,7 @@ serve(async (req) => {
       cryptoProvider
     );
 
-    console.log(`[stripe-webhook] 📨 Event received: ${event.type}`);
+    console.log(`[${FUNCTION_NAME}] 📨 Event received: ${event.type} (requestId: ${requestId})`);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -62,28 +66,25 @@ serve(async (req) => {
 
     // Handle different event types
     switch (event.type) {
-      // ✅ NUEVO: Primer evento cuando un usuario paga
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         
-        console.log(`[stripe-webhook] 💳 Checkout completed: ${session.id}`);
+        console.log(`[${FUNCTION_NAME}] 💳 Checkout completed: ${session.id}`);
         
         const orgId = session.metadata?.organization_id;
         if (!orgId) {
-          console.error('[stripe-webhook] ❌ No organization_id in metadata');
+          console.error(`[${FUNCTION_NAME}] ❌ No organization_id in metadata`);
           break;
         }
 
-        // Obtener la subscripción recién creada
         const subscriptionId = session.subscription as string;
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         
         const priceId = subscription.items.data[0].price.id;
         const newPlan = getPlanFromPriceId(priceId);
 
-        console.log(`[stripe-webhook] 🎯 Activating plan "${newPlan}" for org: ${orgId}`);
+        console.log(`[${FUNCTION_NAME}] 🎯 Activating plan "${newPlan}" for org: ${orgId}`);
 
-        // Update organization
         const { error: updateError } = await supabase
           .from('organizations')
           .update({
@@ -93,16 +94,15 @@ serve(async (req) => {
             plan: newPlan,
             subscription_status: subscription.status,
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            trial_ends_at: null, // Ya no está en trial
+            trial_ends_at: null,
           })
           .eq('id', orgId);
 
         if (updateError) {
-          console.error('[stripe-webhook] ❌ Update error:', updateError);
+          console.error(`[${FUNCTION_NAME}] ❌ Update error:`, updateError);
           break;
         }
 
-        // Log event
         await supabase
           .from('subscription_events')
           .insert({
@@ -118,7 +118,7 @@ serve(async (req) => {
             },
           });
 
-        console.log(`[stripe-webhook] ✅ Organization ${orgId} activated with plan: ${newPlan}`);
+        console.log(`[${FUNCTION_NAME}] ✅ Organization ${orgId} activated with plan: ${newPlan}`);
         break;
       }
 
@@ -126,9 +126,8 @@ serve(async (req) => {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         
-        console.log(`[stripe-webhook] 🔄 Processing subscription: ${subscription.id}`);
+        console.log(`[${FUNCTION_NAME}] 🔄 Processing subscription: ${subscription.id}`);
         
-        // Find organization by customer_id
         const { data: org, error: orgError } = await supabase
           .from('organizations')
           .select('id, plan')
@@ -136,17 +135,15 @@ serve(async (req) => {
           .single();
 
         if (orgError || !org) {
-          console.error('[stripe-webhook] ❌ Organization not found for customer:', subscription.customer);
+          console.error(`[${FUNCTION_NAME}] ❌ Organization not found for customer:`, subscription.customer);
           break;
         }
 
-        // Determine plan from price_id
         const priceId = subscription.items.data[0].price.id;
         const newPlan = getPlanFromPriceId(priceId);
 
-        console.log(`[stripe-webhook] 📝 Updating org ${org.id} to plan: ${newPlan}, status: ${subscription.status}`);
+        console.log(`[${FUNCTION_NAME}] 📝 Updating org ${org.id} to plan: ${newPlan}, status: ${subscription.status}`);
 
-        // Update organization
         const { error: updateError } = await supabase
           .from('organizations')
           .update({
@@ -162,10 +159,9 @@ serve(async (req) => {
           .eq('id', org.id);
 
         if (updateError) {
-          console.error('[stripe-webhook] ❌ Update error:', updateError);
+          console.error(`[${FUNCTION_NAME}] ❌ Update error:`, updateError);
         }
 
-        // Log event
         await supabase
           .from('subscription_events')
           .insert({
@@ -182,14 +178,14 @@ serve(async (req) => {
             },
           });
 
-        console.log(`[stripe-webhook] ✅ Organization updated successfully`);
+        console.log(`[${FUNCTION_NAME}] ✅ Organization updated successfully`);
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
 
-        console.log(`[stripe-webhook] 🗑️ Subscription deleted: ${subscription.id}`);
+        console.log(`[${FUNCTION_NAME}] 🗑️ Subscription deleted: ${subscription.id}`);
 
         const { data: org } = await supabase
           .from('organizations')
@@ -217,16 +213,15 @@ serve(async (req) => {
               new_status: 'canceled',
             });
 
-          console.log(`[stripe-webhook] ✅ Subscription canceled for org: ${org.id}`);
+          console.log(`[${FUNCTION_NAME}] ✅ Subscription canceled for org: ${org.id}`);
         }
         break;
       }
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        console.log(`[stripe-webhook] ✅ Payment succeeded: ${invoice.id} for ${invoice.amount_paid / 100}€`);
+        console.log(`[${FUNCTION_NAME}] ✅ Payment succeeded: ${invoice.id} for ${invoice.amount_paid / 100}€`);
         
-        // ✅ MEJORADO: Reactivar inmediatamente si estaba past_due
         if (invoice.subscription) {
           const { data: org } = await supabase
             .from('organizations')
@@ -240,7 +235,6 @@ serve(async (req) => {
               .update({ subscription_status: 'active' })
               .eq('id', org.id);
 
-            // Log evento
             await supabase
               .from('subscription_events')
               .insert({
@@ -255,18 +249,16 @@ serve(async (req) => {
                 },
               });
 
-            console.log(`[stripe-webhook] ✅ Reactivated org ${org.id} from past_due to active`);
+            console.log(`[${FUNCTION_NAME}] ✅ Reactivated org ${org.id} from past_due to active`);
           }
         }
-        
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        console.log(`[stripe-webhook] ⚠️ Payment failed: ${invoice.id}`);
+        console.log(`[${FUNCTION_NAME}] ⚠️ Payment failed: ${invoice.id}`);
         
-        // Update subscription status
         if (invoice.subscription) {
           const { data: org } = await supabase
             .from('organizations')
@@ -280,7 +272,6 @@ serve(async (req) => {
               .update({ subscription_status: 'past_due' })
               .eq('id', org.id);
 
-            // ✅ MEJORADO: Log evento en subscription_events
             await supabase
               .from('subscription_events')
               .insert({
@@ -297,32 +288,36 @@ serve(async (req) => {
                 },
               });
 
-            console.log(`[stripe-webhook] ⚠️ Marked org ${org.id} as past_due and logged event`);
+            console.log(`[${FUNCTION_NAME}] ⚠️ Marked org ${org.id} as past_due and logged event`);
           }
         }
         break;
       }
 
       default:
-        console.log(`[stripe-webhook] ℹ️ Unhandled event type: ${event.type}`);
+        console.log(`[${FUNCTION_NAME}] ℹ️ Unhandled event type: ${event.type}`);
     }
 
     return new Response(
-      JSON.stringify({ received: true, event: event.type }),
+      JSON.stringify({ received: true, event: event.type, requestId }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
     );
 
-  } catch (err: any) {
-    console.error('[stripe-webhook] ❌ Error:', err.message);
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+  } catch (error) {
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/stripe-webhook',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Webhook processing error',
+      400,
+      corsHeaders
     );
   }
 });

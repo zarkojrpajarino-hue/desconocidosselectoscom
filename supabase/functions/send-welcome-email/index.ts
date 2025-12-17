@@ -1,13 +1,13 @@
 // supabase/functions/send-welcome-email/index.ts
 /**
- * Send Welcome Email - CORREGIDO
- * Usa templates reutilizables con branding OPTIMUS-K
+ * Send Welcome Email - with Error Handler
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
 import { validateInput, WelcomeEmailSchema, validationErrorResponse, ValidationError } from '../_shared/validation.ts';
 import { welcomeEmail, emailConfig } from '../_shared/email-templates.ts';
+import { handleError, createErrorResponse } from '../_shared/errorHandler.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -16,10 +16,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const FUNCTION_NAME = 'send-welcome-email';
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const requestId = crypto.randomUUID();
 
   try {
     // Validate CRON_SECRET for automated triggers
@@ -43,7 +47,6 @@ const handler = async (req: Request): Promise<Response> => {
       
       const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
       if (!authError && user) {
-        // Check if user is admin
         const { data: roleData } = await supabaseAuth
           .from('user_roles')
           .select('role')
@@ -56,11 +59,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     if (!isCronCall && !isAdminCall) {
-      console.error('Unauthorized: Missing valid CRON_SECRET or admin authentication');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
+      console.error(`[${FUNCTION_NAME}] Unauthorized: Missing valid CRON_SECRET or admin authentication (requestId: ${requestId})`);
+      return createErrorResponse('Unauthorized', 401, corsHeaders);
     }
 
     // Validate input using schema
@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (userError || !user) {
-      throw new Error('Usuario no encontrado');
+      return createErrorResponse('Usuario no encontrado', 404, corsHeaders);
     }
 
     // Generate unsubscribe token
@@ -110,9 +110,9 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     });
 
-    console.log('Email de bienvenida enviado:', emailResponse);
+    console.log(`[${FUNCTION_NAME}] ✅ Email de bienvenida enviado (requestId: ${requestId}):`, emailResponse);
 
-    // Log email sent event - use proper async/await pattern
+    // Log email sent event
     try {
       const emailId = (emailResponse as { id?: string }).id || null;
       await supabaseAdmin
@@ -125,10 +125,10 @@ const handler = async (req: Request): Promise<Response> => {
           status: 'sent'
         });
     } catch (logError) {
-      console.error('Error logging email:', logError);
+      console.error(`[${FUNCTION_NAME}] Error logging email:`, logError);
     }
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ ...emailResponse, requestId }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -141,14 +141,17 @@ const handler = async (req: Request): Promise<Response> => {
       return validationErrorResponse(error, corsHeaders);
     }
     
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error enviando email de bienvenida:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/send-welcome-email',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500,
+      corsHeaders
     );
   }
 };
