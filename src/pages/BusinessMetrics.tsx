@@ -17,6 +17,7 @@ import {
   KPITargetsManager,
   KPIChangeAnalysis,
   KPIBenchmarking,
+  KPIDataFlowPanel,
 } from '@/components/enterprise';
 
 const BusinessMetrics = () => {
@@ -149,6 +150,9 @@ const BusinessMetrics = () => {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Panel de Flujo de Datos KPIs */}
+        <KPIDataFlowPanel className="mb-6" />
 
         {/* Tabs - Mobile scrollable */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>

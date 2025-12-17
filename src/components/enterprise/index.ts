@@ -20,6 +20,7 @@ export { PipelineForecast } from './PipelineForecast';
 export { KPITargetsManager } from './KPITargetsManager';
 export { KPIChangeAnalysis } from './KPIChangeAnalysis';
 export { KPIBenchmarking } from './KPIBenchmarking';
+export { KPIDataFlowPanel } from './KPIDataFlowPanel';
 
 // OKRs
 export { OKRQuarterlyView } from './OKRQuarterlyView';
