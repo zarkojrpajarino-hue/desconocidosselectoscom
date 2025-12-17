@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, TrendingDown, PieChart, BarChart3, Package, PiggyBank, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, DollarSign, Plus, AlertCircle, ChevronDown, TrendingUp, TrendingDown, PieChart, BarChart3, Package, PiggyBank, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import FinancialDashboard from '@/components/FinancialDashboard';
@@ -41,9 +43,17 @@ const FinancialPage = () => {
   const currentUserRole = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
   )?.role || 'member';
+  const isAdmin = currentUserRole === 'admin';
   const canViewTransactions = currentUserRole === 'admin' || currentUserRole === 'leader';
 
-  const { transactions, loading: transactionsLoading, refetch } = useFinancialData();
+  const { 
+    transactions, 
+    loading: transactionsLoading, 
+    refetch,
+    financialVisibility,
+    toggleFinancialVisibility,
+    isHiddenForTeam 
+  } = useFinancialData();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -56,6 +66,31 @@ const FinancialPage = () => {
     setRefreshKey(prev => prev + 1);
     toast.success('Transacción guardada correctamente');
   };
+
+  // Si los datos financieros están ocultos para este usuario
+  if (isHiddenForTeam && !isAdmin) {
+    return (
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <DollarSign className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold">Datos financieros restringidos</h3>
+              <p className="text-muted-foreground">
+                El administrador ha restringido la visibilidad de los datos financieros para el equipo.
+              </p>
+              <Button variant="outline" onClick={() => navigate('/dashboard/home')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver al Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || transactionsLoading) {
     return (
@@ -85,6 +120,26 @@ const FinancialPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-1 md:gap-2 shrink-0">
+              {/* Toggle de visibilidad financiera - solo para admin */}
+              {isAdmin && (
+                <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-1.5">
+                    {financialVisibility ? (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <Label htmlFor="financial-visibility" className="text-xs text-muted-foreground hidden md:inline">
+                      Visible al equipo
+                    </Label>
+                  </div>
+                  <Switch
+                    id="financial-visibility"
+                    checked={financialVisibility}
+                    onCheckedChange={toggleFinancialVisibility}
+                  />
+                </div>
+              )}
               <SectionTourButton sectionId="financial" className="hidden md:flex" />
               <Button
                 variant="outline"

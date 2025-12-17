@@ -183,6 +183,21 @@ export default function JoinOrganization() {
         role: 'member'
       }, { onConflict: 'id' });
 
+      // Auto-generar tareas para el nuevo usuario
+      try {
+        await supabase.functions.invoke('generate-user-tasks', {
+          body: { 
+            userId: userId,
+            organizationId: invitation.organization_id,
+            userRole: selectedRole
+          }
+        });
+        console.log('Tasks auto-generated for new user');
+      } catch (taskError) {
+        console.error('Error auto-generating tasks:', taskError);
+        // No bloquear el flujo si falla la generación de tareas
+      }
+
       toast.success(`¡Bienvenido a ${invitation.organization.name}!`);
       navigate('/dashboard/home');
 

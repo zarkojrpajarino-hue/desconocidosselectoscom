@@ -51,15 +51,17 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
       // Cargar configuración de la organización (establecida por admin)
       const { data, error } = await supabase
         .from('organizations')
-        .select('has_team, collaborative_percentage')
+        .select('*')
         .eq('id', currentOrganizationId)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
-        setHasTeam(data.has_team ?? false);
-        setCollaborativePercentage(data.collaborative_percentage ?? 0);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orgData = data as any;
+        setHasTeam(orgData.has_team ?? false);
+        setCollaborativePercentage(orgData.collaborative_percentage ?? 0);
       }
     } catch (error) {
       console.error('Error loading work preferences:', error);
@@ -78,12 +80,13 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
     
     setSaving(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase
         .from('organizations')
         .update({
           has_team: hasTeam,
           collaborative_percentage: hasTeam ? collaborativePercentage : 0,
-        })
+        } as any)
         .eq('id', currentOrganizationId);
 
       if (error) throw error;
