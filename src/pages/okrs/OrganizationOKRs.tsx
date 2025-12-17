@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OKRProgressModal } from '@/components/OKRProgressModal';
+import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 
 interface KeyResult {
   id: string;
@@ -334,6 +335,20 @@ const OrganizationOKRs = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Progreso General - Fases y Objetivos del Negocio */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center">
+                <Target className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Progreso General</h2>
+                <p className="text-sm text-muted-foreground">Fases, objetivos y tareas del negocio</p>
+              </div>
+            </div>
+            <PhaseTimeline />
+          </div>
 
           {/* KPIs Summary */}
           {objectives.length > 0 && (

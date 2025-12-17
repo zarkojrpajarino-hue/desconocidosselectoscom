@@ -24,7 +24,7 @@ import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWednesdayStart } fr
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
-import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
+
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
 import { format } from 'date-fns';
@@ -82,7 +82,7 @@ const DashboardHome = () => {
   const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const [roadmapOpen, setRoadmapOpen] = useState(false);
-  const [progressOpen, setProgressOpen] = useState(false);
+  
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
   const [hasTeam, setHasTeam] = useState(true);
   const [isTransition, setIsTransition] = useState(isInTransitionPeriod());
@@ -350,26 +350,7 @@ const DashboardHome = () => {
                 </CollapsibleContent>
               </Collapsible>}
 
-            {/* AI Business Phases Timeline - Collapsible */}
-            {currentOrganizationId && <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-violet-500/5 to-indigo-500/5 border-violet-500/20 hover:bg-violet-500/10">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center">
-                        <Lightbulb className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="text-left">
-                        <span className="font-semibold block">Progreso General</span>
-                        <span className="text-xs text-muted-foreground">Fases, objetivos y tareas del negocio</span>
-                      </div>
-                    </div>
-                    <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${progressOpen ? 'rotate-180' : ''}`} />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2">
-                  <PhaseTimeline />
-                </CollapsibleContent>
-              </Collapsible>}
+            {/* Progreso General movido a /okrs/organization */}
 
             {/* Work Preferences - Collapsible and MANDATORY */}
             <WorkPreferencesCollapsible onPreferencesChange={fetchUserWeeklyData} />
