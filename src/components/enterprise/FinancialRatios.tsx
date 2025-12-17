@@ -24,7 +24,11 @@ const statusConfig = {
   poor: { color: 'text-rose-600', bg: 'bg-rose-500/10', icon: XCircle, label: 'Malo' },
 };
 
-export function FinancialRatios() {
+interface FinancialRatiosProps {
+  showDemoData?: boolean;
+}
+
+export function FinancialRatios({ showDemoData = false }: FinancialRatiosProps) {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<FinancialRatio[]>([]);
   const [loading, setLoading] = useState(true);

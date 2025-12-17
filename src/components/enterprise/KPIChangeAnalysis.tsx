@@ -69,7 +69,11 @@ const factorSuggestions: Record<string, string[]> = {
   ],
 };
 
-export function KPIChangeAnalysis() {
+interface KPIChangeAnalysisProps {
+  showDemoData?: boolean;
+}
+
+export function KPIChangeAnalysis({ showDemoData = false }: KPIChangeAnalysisProps) {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<KPIChange[]>([]);
   const [loading, setLoading] = useState(true);

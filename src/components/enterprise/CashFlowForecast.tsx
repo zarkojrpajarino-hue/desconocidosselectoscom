@@ -23,7 +23,11 @@ import {
   Legend
 } from 'recharts';
 
-export function CashFlowForecast() {
+interface CashFlowForecastProps {
+  showDemoData?: boolean;
+}
+
+export function CashFlowForecast({ showDemoData = false }: CashFlowForecastProps) {
   const { organizationId } = useCurrentOrganization();
   const [months, setMonths] = useState<6 | 12>(6);
   const { data, loading, error, isUsingDemoData } = useCashFlowForecast(organizationId, months);

@@ -101,10 +101,38 @@ const BusinessMetrics = () => {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                <div className="bg-gradient-to-br from-emerald-500/10 via-background to-background border border-emerald-500/20 rounded-xl p-6 text-sm text-muted-foreground space-y-2">
-                  <p><strong className="text-foreground">KPI = Key Performance Indicator</strong> - Métricas operativas del día a día.</p>
-                  <p><strong className="text-foreground">🎯 Qué miden:</strong> Ventas, leads, conversiones, NPS, costes, etc.</p>
-                  <p><strong className="text-foreground">💡 Diferencia con OKRs:</strong> KPIs miden operación actual, OKRs definen objetivos futuros.</p>
+                <div className="bg-gradient-to-br from-emerald-500/10 via-background to-background border border-emerald-500/20 rounded-xl p-6 text-sm text-muted-foreground space-y-4">
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">🎯 ¿Qué son los KPIs?</p>
+                    <p><strong className="text-foreground">KPI = Key Performance Indicator</strong> - Métricas operativas del día a día que miden el rendimiento de tu negocio.</p>
+                  </div>
+                  
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">📊 ¿Cómo funcionan?</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li><strong>Mis Métricas:</strong> Aquí introduces tus datos de ventas, marketing, operaciones y cliente cada semana/mes.</li>
+                      <li><strong>Ranking:</strong> Compara tu rendimiento con otros usuarios de tu equipo.</li>
+                      <li><strong>Metas:</strong> Define objetivos para cada KPI y sigue tu progreso hacia ellos.</li>
+                      <li><strong>Cambios:</strong> Analiza variaciones en tus métricas y entiende qué factores influyen.</li>
+                      <li><strong>Benchmark:</strong> Compara tus KPIs con promedios de la industria y mejores prácticas.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-foreground mb-1">🔗 ¿Dónde se usan estos datos?</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li><strong>Finanzas → Proyecciones:</strong> Tus ingresos, costes y CAC alimentan las proyecciones financieras.</li>
+                      <li><strong>CRM → Forecast:</strong> Leads y conversiones afectan las proyecciones del pipeline.</li>
+                      <li><strong>Análisis IA:</strong> Todos tus KPIs son analizados por la IA para darte recomendaciones personalizadas.</li>
+                      <li><strong>Dashboard:</strong> Los KPIs clave aparecen en tu resumen ejecutivo.</li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-500/20">
+                    <p className="text-xs text-muted-foreground">
+                      💡 <strong>Tip:</strong> Actualiza tus métricas al menos 1 vez por semana para obtener análisis más precisos y recomendaciones relevantes.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </CollapsibleContent>
@@ -156,15 +184,15 @@ const BusinessMetrics = () => {
           </TabsContent>
 
           <TabsContent value="targets">
-            <KPITargetsManager />
+            <KPITargetsManager showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="changes">
-            <KPIChangeAnalysis />
+            <KPIChangeAnalysis showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
 
           <TabsContent value="benchmark">
-            <KPIBenchmarking />
+            <KPIBenchmarking showDemoData={showDemoData && !hasRealData} />
           </TabsContent>
         </Tabs>
       </main>

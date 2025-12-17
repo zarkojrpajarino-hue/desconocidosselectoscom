@@ -118,25 +118,28 @@ const CRMHub = () => {
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-3 md:px-6 py-3 md:py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {/* Title Section */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg flex-shrink-0">
                 <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">
-                  CRM Hub
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg md:text-2xl font-bold text-foreground">
+                  Centro de Inteligencia Comercial
                 </h1>
-                <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                  Centro de inteligencia comercial
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  CRM Hub - Gestión de leads y pipeline
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            
+            {/* Actions Section */}
+            <div className="flex items-center gap-2 flex-wrap justify-end">
               {!hasRealData && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="demo-toggle" className="text-xs text-muted-foreground hidden md:inline">
+                  <Eye className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <Label htmlFor="demo-toggle" className="text-xs text-muted-foreground whitespace-nowrap">
                     Datos demo
                   </Label>
                   <Switch
@@ -155,9 +158,9 @@ const CRMHub = () => {
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Pipeline</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/metrics')} className="gap-2 hidden sm:flex">
+              <Button variant="outline" size="sm" onClick={() => navigate('/metrics')} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                Volver
+                <span className="hidden sm:inline">Volver</span>
               </Button>
             </div>
           </div>
