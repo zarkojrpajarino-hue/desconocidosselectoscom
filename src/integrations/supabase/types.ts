@@ -7278,8 +7278,10 @@ export type Database = {
       }
       user_global_agenda_settings: {
         Row: {
+          collaborative_percentage: number | null
           created_at: string | null
           default_view: string | null
+          has_team: boolean | null
           id: string
           linked_organization_ids: string[] | null
           org_color_map: Json | null
@@ -7290,8 +7292,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          collaborative_percentage?: number | null
           created_at?: string | null
           default_view?: string | null
+          has_team?: boolean | null
           id?: string
           linked_organization_ids?: string[] | null
           org_color_map?: Json | null
@@ -7302,8 +7306,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          collaborative_percentage?: number | null
           created_at?: string | null
           default_view?: string | null
+          has_team?: boolean | null
           id?: string
           linked_organization_ids?: string[] | null
           org_color_map?: Json | null
@@ -8551,8 +8557,10 @@ export type Database = {
       initialize_global_agenda_settings: {
         Args: { p_user_id: string }
         Returns: {
+          collaborative_percentage: number | null
           created_at: string | null
           default_view: string | null
+          has_team: boolean | null
           id: string
           linked_organization_ids: string[] | null
           org_color_map: Json | null

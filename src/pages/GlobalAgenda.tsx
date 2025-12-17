@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -12,7 +12,10 @@ import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
 import { AgendaFilters, AgendaStats } from '@/components/agenda/AgendaFilters';
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
+import { WorkPreferencesModal } from '@/components/agenda/WorkPreferencesModal';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
+import WeeklyAgenda from '@/components/WeeklyAgenda';
+import WorkModeSelector from '@/components/WorkModeSelector';
 import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,11 +25,13 @@ export default function GlobalAgenda() {
   const { user } = useAuth();
   const hasAccess = hasFeature('global_agenda');
 
+  const [activeTab, setActiveTab] = useState('weekly');
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 3 }), 'yyyy-MM-dd')
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [workMode, setWorkMode] = useState<string | undefined>(undefined);
   const [activeFilters, setActiveFilters] = useState<FiltersType>({
     showPersonal: true,
     showOrganizational: true,
@@ -53,6 +58,30 @@ export default function GlobalAgenda() {
     enabled: !!user?.id && hasAccess,
   });
 
+  // Fetch work mode
+  const { data: weeklyData, refetch: refetchWorkMode } = useQuery({
+    queryKey: ['user-weekly-data', user?.id, weekStart],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('user_weekly_data')
+        .select('mode, task_limit')
+        .eq('user_id', user.id)
+        .eq('week_start', new Date(weekStart).toISOString())
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    enabled: !!user?.id && hasAccess,
+  });
+
+  useEffect(() => {
+    if (weeklyData?.mode) {
+      setWorkMode(weeklyData.mode);
+    }
+  }, [weeklyData]);
+
   const { data: stats } = useGlobalAgendaStats(weekStart);
   const generateSchedule = useGenerateGlobalSchedule();
 
@@ -78,6 +107,10 @@ export default function GlobalAgenda() {
     await refetchAvailability();
     // Auto-generate schedule after availability is set
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
+  };
+
+  const handleWorkModeChange = () => {
+    refetchWorkMode();
   };
 
   // Show locked card if user doesn't have access
@@ -109,10 +142,10 @@ export default function GlobalAgenda() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
             <Calendar className="w-7 h-7 text-primary" />
-            Agenda Global
+            Mi Agenda
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona tareas de todas tus organizaciones + personales
+            Gestiona tu agenda semanal y global de todas tus organizaciones
           </p>
         </div>
 
@@ -146,6 +179,16 @@ export default function GlobalAgenda() {
         </div>
       </div>
 
+      {/* Work Preferences Modal */}
+      <WorkPreferencesModal onPreferencesChange={handleWorkModeChange} />
+
+      {/* Work Mode Selector */}
+      <WorkModeSelector 
+        userId={user?.id} 
+        currentMode={workMode} 
+        onModeChange={handleWorkModeChange} 
+      />
+
       {/* Stats */}
       {stats && <AgendaStats stats={stats} />}
 
@@ -175,16 +218,30 @@ export default function GlobalAgenda() {
         <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
       </div>
 
-      {/* Main Content */}
-      <Tabs defaultValue="week" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="week">
-            <Calendar className="w-4 h-4 mr-2" />
-            Vista Semanal
+      {/* Main Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="weekly" className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4" />
+            Agenda Semanal
+          </TabsTrigger>
+          <TabsTrigger value="global" className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Agenda Global
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="week">
+        <TabsContent value="weekly">
+          {user?.id && (
+            <WeeklyAgenda
+              userId={user.id}
+              weekStart={weekStart}
+              isLocked={false}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="global">
           <GlobalWeeklyView weekStart={weekStart} filters={activeFilters} />
         </TabsContent>
       </Tabs>

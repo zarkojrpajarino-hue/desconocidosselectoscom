@@ -348,6 +348,23 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         console.error("Error deleting existing tasks:", deleteError);
       }
 
+      // 8.1 Obtener preferencias de trabajo de cada usuario
+      const { data: userPreferences } = await supabase
+        .from("user_global_agenda_settings")
+        .select("user_id, has_team, collaborative_percentage")
+        .in("user_id", usersToAssign);
+
+      // Crear mapa de preferencias
+      const userPrefsMap = new Map<string, { has_team: boolean, collaborative_percentage: number }>();
+      userPreferences?.forEach(pref => {
+        userPrefsMap.set(pref.user_id, {
+          has_team: pref.has_team ?? false,
+          collaborative_percentage: pref.collaborative_percentage ?? 0
+        });
+      });
+
+      console.log(`Loaded work preferences for ${userPrefsMap.size} users`);
+
       // 9. Crear tareas para CADA usuario según su rol funcional
       const tasksToInsert: any[] = [];
       
@@ -372,9 +389,12 @@ RESPONDE SOLO EN JSON válido sin markdown.`
         
         console.log(`Phase ${phase.phase_number} has ${checklist.length} checklist items`);
         
-        // Para CADA usuario, crear sus 12 tareas personalizadas con 70/30 colaborativo/individual
+        // Para CADA usuario, crear sus 12 tareas personalizadas según sus preferencias
         for (const userId of usersToAssign) {
           const userFunctionalRole = userRoleMap.get(userId) || 'general';
+          
+          // Obtener preferencias del usuario (default: individual si no tiene configuración)
+          const userPrefs = userPrefsMap.get(userId) || { has_team: false, collaborative_percentage: 0 };
           
           // Filtrar tareas que corresponden al rol del usuario o son generales
           const userTasks = checklist.filter(item => {
@@ -392,31 +412,54 @@ RESPONDE SOLO EN JSON válido sin markdown.`
                    taskRole.includes(userFunctionalRole);
           });
 
-          // Asegurar que cada usuario tenga exactamente 12 tareas
-          const tasksForUser = userTasks.slice(0, 12);
+          // ASEGURAR EXACTAMENTE 12 TAREAS por usuario
+          const TARGET_TASKS = 12;
+          let tasksForUser = userTasks.slice(0, TARGET_TASKS);
           
-          // Si no hay suficientes tareas específicas, agregar del pool general
-          if (tasksForUser.length < 12) {
+          // Si no hay suficientes tareas específicas, agregar del pool general hasta llegar a 12
+          if (tasksForUser.length < TARGET_TASKS) {
             const remaining = checklist.filter(item => !tasksForUser.includes(item));
-            tasksForUser.push(...remaining.slice(0, 12 - tasksForUser.length));
+            // Shuffle remaining para variedad
+            const shuffled = remaining.sort(() => Math.random() - 0.5);
+            tasksForUser.push(...shuffled.slice(0, TARGET_TASKS - tasksForUser.length));
           }
 
-          // IMPLEMENTAR 70/30: 70% colaborativas (8-9), 30% individuales (3-4)
-          const COLLABORATIVE_PERCENTAGE = 0.7;
-          const collaborativeCount = Math.round(tasksForUser.length * COLLABORATIVE_PERCENTAGE); // 8-9 de 12
+          // Si aún faltan tareas (checklist muy corto), duplicar con variaciones
+          while (tasksForUser.length < TARGET_TASKS && checklist.length > 0) {
+            const baseTask = checklist[tasksForUser.length % checklist.length];
+            tasksForUser.push({
+              ...baseTask,
+              task: `${baseTask.task || baseTask.title} (avanzado)`,
+              functional_role: baseTask.functional_role || 'general'
+            });
+          }
+
+          // USAR PREFERENCIAS DEL USUARIO para distribuir colaborativas/individuales
+          let collaborativePercentage = 0;
+          
+          if (userPrefs.has_team) {
+            // Usuario tiene equipo: usar su porcentaje configurado
+            collaborativePercentage = userPrefs.collaborative_percentage / 100;
+          } else {
+            // Usuario individual/autónomo: 0% colaborativas, 100% individuales
+            collaborativePercentage = 0;
+          }
+          
+          const collaborativeCount = Math.round(tasksForUser.length * collaborativePercentage);
+          
+          console.log(`User ${userId}: has_team=${userPrefs.has_team}, collab=${collaborativePercentage * 100}%, creating ${collaborativeCount} collaborative + ${tasksForUser.length - collaborativeCount} individual tasks`);
 
           tasksForUser.forEach((item, index) => {
             const taskTitle = item.task || item.title || `Tarea ${index + 1}`;
             const taskCategory = item.functional_role?.toLowerCase() || item.category?.toLowerCase() || 'general';
             
-            // Determinar si esta tarea es colaborativa o individual
-            const isCollaborative = index < collaborativeCount; // Primeras 8-9 son colaborativas
+            // Determinar si esta tarea es colaborativa o individual según preferencias
+            const isCollaborative = userPrefs.has_team && index < collaborativeCount;
             
             // Para tareas colaborativas, encontrar el experto del área (líder)
             let leaderId = null;
             if (isCollaborative) {
               // El líder es el experto del área de la tarea
-              // Mapear categoría de tarea a rol funcional
               let leaderRole = taskCategory;
               if (taskCategory === 'sales') leaderRole = 'ventas';
               if (taskCategory === 'product') leaderRole = 'producto';
@@ -435,7 +478,7 @@ RESPONDE SOLO EN JSON válido sin markdown.`
                 leaderId = roleToUserMap.get('admin') || usersToAssign.find(id => id !== userId) || null;
               }
             }
-            // Para tareas individuales (30%), leader_id queda null - el usuario trabaja solo
+            // Para tareas individuales, leader_id queda null - el usuario trabaja solo
 
             tasksToInsert.push({
               organization_id,

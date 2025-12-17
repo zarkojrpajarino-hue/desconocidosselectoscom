@@ -162,7 +162,7 @@ const AppContent = () => {
           {/* Dashboard con sub-rutas */}
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="home" element={<DashboardHome />} />
-            <Route path="agenda" element={<AgendaSemanal />} />
+            <Route path="agenda" element={<Navigate to="/agenda-global" replace />} />
             <Route path="gamification" element={<DashboardGamification />} />
             <Route path="notifications" element={<DashboardNotifications />} />
           </Route>
