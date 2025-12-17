@@ -58,76 +58,92 @@ export function KPIBenchmarking({ showDemoData = false }: KPIBenchmarkingProps) 
   const [error, setError] = useState<Error | null>(null);
   const [industry, setIndustry] = useState<string>('');
 
+  // Demo data
+  const demoData: Benchmark[] = [
+    { kpi_metric: 'conversion_rate', your_value: 12.5, industry_average: 8.5, top_25_percentile: 12, top_10_percentile: 15, position: 'above_top25' },
+    { kpi_metric: 'ltv_cac_ratio', your_value: 7.5, industry_average: 3.5, top_25_percentile: 5, top_10_percentile: 8, position: 'above_top10' },
+    { kpi_metric: 'gross_margin', your_value: 62, industry_average: 55, top_25_percentile: 65, top_10_percentile: 75, position: 'above_avg' },
+    { kpi_metric: 'churn_rate', your_value: 4.2, industry_average: 5.5, top_25_percentile: 3.5, top_10_percentile: 2, position: 'above_avg' },
+    { kpi_metric: 'nps', your_value: 65, industry_average: 45, top_25_percentile: 60, top_10_percentile: 75, position: 'above_top25' },
+  ];
+
   useEffect(() => {
-    async function fetchBenchmarks() {
-      if (!organizationId) return;
-      try {
-        setLoading(true);
-
-        // Obtener industria de la organización
-        const { data: org } = await supabase
-          .from('organizations')
-          .select('industry')
-          .eq('id', organizationId)
-          .single();
-
-        setIndustry(org?.industry || 'general');
-
-        // Obtener benchmarks de industria
-        const { data: benchmarks, error: benchError } = await supabase
-          .from('kpi_benchmarks')
-          .select('*')
-          .eq('industry', org?.industry || 'general');
-
-        if (benchError) throw benchError;
-
-        // Obtener valores actuales de la organización
-        const { data: currentMetrics } = await supabase
-          .from('financial_metrics')
-          .select('*')
-          .eq('organization_id', organizationId)
-          .order('month', { ascending: false })
-          .limit(1)
-          .maybeSingle(); // ✅ CORREGIDO: maybeSingle() es mejor que single() con limit()
-
-        interface RawBenchmark {
-          kpi_metric: string;
-          average_value: number | null;
-          top_25_percentile: number | null;
-          top_10_percentile: number | null;
-        }
-
-        // Construir comparación
-        const comparisonData: Benchmark[] = ((benchmarks || []) as RawBenchmark[]).map((bench) => {
-          const yourValue = getMetricValue(currentMetrics, bench.kpi_metric);
-          const avg = bench.average_value || 0;
-          const top25 = bench.top_25_percentile || avg * 1.3;
-          const top10 = bench.top_10_percentile || avg * 1.6;
-
-          let position: Benchmark['position'] = 'below_avg';
-          if (yourValue >= top10) position = 'above_top10';
-          else if (yourValue >= top25) position = 'above_top25';
-          else if (yourValue >= avg) position = 'above_avg';
-
-          return {
-            kpi_metric: bench.kpi_metric,
-            your_value: yourValue,
-            industry_average: avg,
-            top_25_percentile: top25,
-            top_10_percentile: top10,
-            position,
-          };
-        });
-
-        setData(comparisonData);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
+    if (showDemoData) {
+      setData(demoData);
+      setIndustry('tecnología');
+      setLoading(false);
+      return;
     }
     fetchBenchmarks();
-  }, [organizationId]);
+  }, [organizationId, showDemoData]);
+
+  async function fetchBenchmarks() {
+    if (!organizationId) return;
+    try {
+      setLoading(true);
+
+      // Obtener industria de la organización
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('industry')
+        .eq('id', organizationId)
+        .single();
+
+      setIndustry(org?.industry || 'general');
+
+      // Obtener benchmarks de industria
+      const { data: benchmarks, error: benchError } = await supabase
+        .from('kpi_benchmarks')
+        .select('*')
+        .eq('industry', org?.industry || 'general');
+
+      if (benchError) throw benchError;
+
+      // Obtener valores actuales de la organización
+      const { data: currentMetrics } = await supabase
+        .from('financial_metrics')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .order('month', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      interface RawBenchmark {
+        kpi_metric: string;
+        average_value: number | null;
+        top_25_percentile: number | null;
+        top_10_percentile: number | null;
+      }
+
+      // Construir comparación
+      const comparisonData: Benchmark[] = ((benchmarks || []) as RawBenchmark[]).map((bench) => {
+        const yourValue = getMetricValue(currentMetrics, bench.kpi_metric);
+        const avg = bench.average_value || 0;
+        const top25 = bench.top_25_percentile || avg * 1.3;
+        const top10 = bench.top_10_percentile || avg * 1.6;
+
+        let position: Benchmark['position'] = 'below_avg';
+        if (yourValue >= top10) position = 'above_top10';
+        else if (yourValue >= top25) position = 'above_top25';
+        else if (yourValue >= avg) position = 'above_avg';
+
+        return {
+          kpi_metric: bench.kpi_metric,
+          your_value: yourValue,
+          industry_average: avg,
+          top_25_percentile: top25,
+          top_10_percentile: top10,
+          position,
+        };
+      });
+
+      setData(comparisonData);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   interface FinancialMetrics {
     margin_percentage?: number;

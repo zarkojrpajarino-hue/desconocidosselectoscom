@@ -54,9 +54,24 @@ export function KPITargetsManager({ showDemoData = false }: KPITargetsManagerPro
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
 
+  // Demo data
+  const demoData: KPITarget[] = [
+    { id: '1', kpi_metric: 'revenue', target_value: 150000, current_value: 125000, period_type: 'monthly', target_date: null, progress: 83, status: 'on_track' },
+    { id: '2', kpi_metric: 'leads', target_value: 500, current_value: 420, period_type: 'monthly', target_date: null, progress: 84, status: 'on_track' },
+    { id: '3', kpi_metric: 'conversion_rate', target_value: 15, current_value: 12.5, period_type: 'monthly', target_date: null, progress: 83, status: 'at_risk' },
+    { id: '4', kpi_metric: 'cac', target_value: 200, current_value: 280, period_type: 'monthly', target_date: null, progress: 71, status: 'behind' },
+    { id: '5', kpi_metric: 'ltv', target_value: 2000, current_value: 2400, period_type: 'quarterly', target_date: null, progress: 120, status: 'achieved' },
+    { id: '6', kpi_metric: 'nps', target_value: 70, current_value: 65, period_type: 'quarterly', target_date: null, progress: 93, status: 'on_track' },
+  ];
+
   useEffect(() => {
+    if (showDemoData) {
+      setData(demoData);
+      setLoading(false);
+      return;
+    }
     fetchTargets();
-  }, [organizationId]);
+  }, [organizationId, showDemoData]);
 
   async function fetchTargets() {
     if (!organizationId) return;

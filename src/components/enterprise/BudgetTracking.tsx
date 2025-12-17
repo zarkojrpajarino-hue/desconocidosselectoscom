@@ -39,9 +39,20 @@ interface BudgetTrackingProps {
 
 export function BudgetTracking({ showDemoData = false }: BudgetTrackingProps) {
   const { organizationId } = useCurrentOrganization();
-  const { data, loading, error } = useBudgetComparison(organizationId);
+  const { data: realData, loading, error } = useBudgetComparison(organizationId);
 
-  if (loading) {
+  // Demo data
+  const demoData = [
+    { category: 'Marketing', budgeted_amount: 15000, actual_amount: 12500, variance_amount: 2500, variance_percentage: 16.7, status: 'under_budget' as const },
+    { category: 'Operaciones', budgeted_amount: 25000, actual_amount: 27000, variance_amount: -2000, variance_percentage: -8, status: 'over_budget' as const },
+    { category: 'Tecnología', budgeted_amount: 10000, actual_amount: 9800, variance_amount: 200, variance_percentage: 2, status: 'on_budget' as const },
+    { category: 'Personal', budgeted_amount: 45000, actual_amount: 44500, variance_amount: 500, variance_percentage: 1.1, status: 'on_budget' as const },
+    { category: 'Ventas', budgeted_amount: 8000, actual_amount: 11000, variance_amount: -3000, variance_percentage: -37.5, status: 'over_budget' as const },
+  ];
+
+  const budgetData = showDemoData ? demoData : (realData || []);
+
+  if (loading && !showDemoData) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
@@ -55,7 +66,7 @@ export function BudgetTracking({ showDemoData = false }: BudgetTrackingProps) {
     );
   }
 
-  if (error) {
+  if (error && !showDemoData) {
     return (
       <Card className="border-destructive/50 bg-destructive/5">
         <CardContent className="pt-6">
@@ -66,8 +77,6 @@ export function BudgetTracking({ showDemoData = false }: BudgetTrackingProps) {
       </Card>
     );
   }
-
-  const budgetData = data || [];
 
   // Calcular totales
   const totalBudgeted = budgetData.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0);

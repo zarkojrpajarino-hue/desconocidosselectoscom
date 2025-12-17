@@ -40,7 +40,7 @@ interface KPIDataFlowPanelProps {
 export function KPIDataFlowPanel({ className }: KPIDataFlowPanelProps) {
   const { t } = useTranslation();
   const { currentOrganizationId } = useAuth();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [flowStats, setFlowStats] = useState({
     kpisRegistered: 0,
     revenuesSynced: 0,
