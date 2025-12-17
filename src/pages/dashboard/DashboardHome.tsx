@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap, ChevronDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
-// PhaseSelector removed - replaced by PhaseTimeline
 import WorkModeSelector from '@/components/WorkModeSelector';
 import ProgressBar from '@/components/ProgressBar';
 import TaskList from '@/components/TaskList';
@@ -21,13 +20,29 @@ import NotificationBell from '@/components/NotificationBell';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
-import { getCurrentWeekDeadline } from '@/lib/weekUtils';
+import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWednesdayStart } from '@/lib/weekUtils';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+// Verificar si estamos en periodo de transición (miércoles 10:30 - 13:30)
+const isInTransitionPeriod = (): boolean => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  if (dayOfWeek !== 3) return false; // Solo miércoles
+  
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const transitionStart = 10 * 60 + 30; // 10:30
+  const transitionEnd = 13 * 60 + 30;   // 13:30
+  
+  return currentMinutes >= transitionStart && currentMinutes < transitionEnd;
+};
+
 interface SystemConfig {
   week_start: string;
   current_phase: number;
@@ -70,10 +85,68 @@ const DashboardHome = () => {
   const [progressOpen, setProgressOpen] = useState(false);
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
   const [hasTeam, setHasTeam] = useState(true);
+  const [isTransition, setIsTransition] = useState(isInTransitionPeriod());
+  const [tasksThisWeekOpen, setTasksThisWeekOpen] = useState(true);
+  const [overdueTasksOpen, setOverdueTasksOpen] = useState(true);
+  const [overdueTasks, setOverdueTasks] = useState<TaskItem[]>([]);
   const {
     remainingSwaps,
     limit
   } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
+
+  // Detectar periodo de transición cada minuto
+  useEffect(() => {
+    const checkTransition = () => {
+      setIsTransition(isInTransitionPeriod());
+    };
+    const interval = setInterval(checkTransition, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cargar tareas atrasadas (de semanas anteriores no completadas)
+  useEffect(() => {
+    const fetchOverdueTasks = async () => {
+      if (!user || !currentOrganizationId) return;
+      
+      const currentWeekStart = getCurrentWeekStart();
+      
+      // Obtener tareas del schedule de semanas anteriores que no están completadas
+      const { data: overdueSchedule } = await supabase
+        .from('task_schedule')
+        .select(`
+          task_id,
+          tasks (id, title, description, area, phase, estimated_hours)
+        `)
+        .eq('user_id', user.id)
+        .lt('week_start', currentWeekStart.toISOString().split('T')[0])
+        .neq('status', 'completed');
+      
+      if (overdueSchedule) {
+        // Filtrar tareas únicas que no están completadas
+        const taskIds = overdueSchedule.map(s => s.task_id);
+        
+        // Verificar cuáles realmente no están completadas
+        const { data: completedIds } = await supabase
+          .from('task_completions')
+          .select('task_id')
+          .in('task_id', taskIds)
+          .eq('validated_by_leader', true);
+        
+        const completedSet = new Set(completedIds?.map(c => c.task_id) || []);
+        
+        const uniqueOverdue = overdueSchedule
+          .filter(s => s.tasks && !completedSet.has(s.task_id))
+          .map(s => s.tasks as TaskItem)
+          .filter((task, index, self) => 
+            index === self.findIndex(t => t.id === task.id)
+          );
+        
+        setOverdueTasks(uniqueOverdue);
+      }
+    };
+    
+    fetchOverdueTasks();
+  }, [user, currentOrganizationId]);
 
   // Obtener el rol actual del usuario en la organización seleccionada
   const currentUserRole = userOrganizations.find(org => org.organization_id === currentOrganizationId)?.role || 'member';
@@ -356,18 +429,102 @@ const DashboardHome = () => {
             {/* Progress Bar */}
             <ProgressBar completedTasks={fullyCompletedCount} totalTasks={tasks.length} />
 
-            {/* Task List */}
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Mis Tareas Esta Semana</CardTitle>
-                <CardDescription>
-                  Tareas asignadas a ti en esta fase
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TaskList userId={user?.id} currentPhase={systemConfig?.current_phase} isLocked={isWeekLocked} mode={userWeeklyData?.mode || 'moderado'} taskLimit={userWeeklyData?.task_limit} />
-              </CardContent>
-            </Card>
+            {/* Mensaje de Transición */}
+            {isTransition && (
+              <Card className="shadow-card border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+                <CardContent className="flex items-center gap-4 py-6">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">La semana ha terminado</h3>
+                    <p className="text-muted-foreground">
+                      La nueva semana comienza hoy a las 13:30. 
+                      Prepara tu disponibilidad para la semana del {format(getNextWednesdayStart(), "d 'de' MMMM", { locale: es })}.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tareas Atrasadas - Colapsable */}
+            {overdueTasks.length > 0 && (
+              <Collapsible open={overdueTasksOpen} onOpenChange={setOverdueTasksOpen}>
+                <Card className="shadow-card border-destructive/30 bg-destructive/5">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer hover:bg-destructive/5 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-destructive">Tareas Atrasadas</CardTitle>
+                            <CardDescription>
+                              {overdueTasks.length} tarea{overdueTasks.length !== 1 ? 's' : ''} pendiente{overdueTasks.length !== 1 ? 's' : ''} de semanas anteriores
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="destructive">{overdueTasks.length}</Badge>
+                          <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${overdueTasksOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        {overdueTasks.map((task) => (
+                          <div key={task.id} className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-destructive/20">
+                            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{task.title}</p>
+                              {task.area && <p className="text-xs text-muted-foreground">{String(task.area)}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-4 p-2 bg-destructive/10 rounded">
+                        ⚠️ Estas tareas son obligatorias y se acumularán hasta que las completes.
+                      </p>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            )}
+
+            {/* Mis Tareas Esta Semana - Colapsable */}
+            <Collapsible open={tasksThisWeekOpen} onOpenChange={setTasksThisWeekOpen}>
+              <Card className="shadow-card">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle>Mis Tareas Esta Semana</CardTitle>
+                          <CardDescription>
+                            Tareas asignadas a ti en esta fase
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{tasks.length}</Badge>
+                        <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${tasksThisWeekOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0">
+                    <TaskList userId={user?.id} currentPhase={systemConfig?.current_phase} isLocked={isWeekLocked} mode={userWeeklyData?.mode || 'moderado'} taskLimit={userWeeklyData?.task_limit} />
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           </>}
       </main>
     </>;
