@@ -161,13 +161,28 @@ const Admin = () => {
     if (data) setSystemConfig(data);
   };
 
+  // Helper para obtener IDs de usuarios de la organización
+  const getOrgUserIds = async (): Promise<string[]> => {
+    if (!currentOrganizationId) return [];
+    
+    const { data } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('organization_id', currentOrganizationId);
+    
+    return data?.map(r => r.user_id) || [];
+  };
+
   const fetchData = async () => {
     setIsRefreshing(true);
     try {
+      // Primero obtenemos los IDs de usuarios de la org para usar en todas las funciones
+      const orgUserIds = await getOrgUserIds();
+      
       await fetchSystemConfig();
       await fetchTeamStats();
-      await fetchWeeklyProgress();
-      await fetchWeekComparison();
+      await fetchWeeklyProgress(orgUserIds);
+      await fetchWeekComparison(orgUserIds);
       await fetchHeatmapData();
     } finally {
       setIsRefreshing(false);
@@ -261,7 +276,7 @@ const Admin = () => {
     }
   };
 
-  const fetchWeeklyProgress = async () => {
+  const fetchWeeklyProgress = async (orgUserIds: string[]) => {
     if (!currentOrganizationId) return;
     
     try {
@@ -283,8 +298,7 @@ const Admin = () => {
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString());
 
-        // Filtrar puntos por usuarios de la organización
-        const orgUserIds = teamStats.map(u => u.id);
+        // Filtrar puntos por usuarios de la organización (usando IDs pasados como parámetro)
         const orgPoints = points?.filter(p => orgUserIds.includes(p.user_id)) || [];
 
         weeks.push({
@@ -301,7 +315,7 @@ const Admin = () => {
     }
   };
 
-  const fetchWeekComparison = async () => {
+  const fetchWeekComparison = async (orgUserIds: string[]) => {
     if (!currentOrganizationId) return;
     
     try {
@@ -355,7 +369,7 @@ const Admin = () => {
           .gte('created_at', weekStart.toISOString())
           .lte('created_at', weekEnd.toISOString());
 
-        const orgUserIds = teamStats.map(u => u.id);
+        // Filtrar puntos usando los IDs pasados como parámetro
         const orgPoints = points?.filter(p => orgUserIds.includes(p.user_id)) || [];
 
         comparisons.push({
