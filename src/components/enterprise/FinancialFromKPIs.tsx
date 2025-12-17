@@ -16,9 +16,38 @@ interface FinancialFromKPIsProps {
 
 export function FinancialFromKPIs({ showDemoData = false }: FinancialFromKPIsProps) {
   const { organizationId } = useCurrentOrganization();
-  const { data, loading, error } = useFinancialFromKPIs(organizationId);
+  const { data: realData, loading, error } = useFinancialFromKPIs(organizationId);
 
-  if (loading) {
+  // Demo data
+  const demoData = {
+    period: 'Proyección Mensual - Demo',
+    projected_revenue: 125000,
+    projected_expenses: 78000,
+    projected_profit: 47000,
+    confidence: 78,
+    breakdown: {
+      revenue_from_pipeline: 45000,
+      revenue_from_recurring: 55000,
+      revenue_from_new_customers: 25000,
+    },
+    metrics: {
+      calculated_cac: 320,
+      expected_cac: 250,
+      ltv: 2400,
+      ltv_cac_ratio: 7.5,
+      gross_margin: 62,
+      burn_rate: 78000,
+      runway_months: 18,
+    },
+    alerts: [
+      { severity: 'warning' as const, message: 'CAC por encima del objetivo', recommendation: 'Optimizar canales de adquisición' },
+      { severity: 'info' as const, message: 'Runway saludable de 18 meses', recommendation: 'Considerar inversión en crecimiento' },
+    ],
+  };
+
+  const data = showDemoData ? demoData : realData;
+
+  if (loading && !showDemoData) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
@@ -31,7 +60,7 @@ export function FinancialFromKPIs({ showDemoData = false }: FinancialFromKPIsPro
     );
   }
 
-  if (error || !data) {
+  if ((error || !data) && !showDemoData) {
     return (
       <Card className="border-destructive/50 bg-destructive/5">
         <CardContent className="pt-6">
@@ -42,6 +71,8 @@ export function FinancialFromKPIs({ showDemoData = false }: FinancialFromKPIsPro
       </Card>
     );
   }
+
+  if (!data) return null;
 
   const metrics = data.metrics;
   const isHealthy = metrics.runway_months > 12 && metrics.ltv_cac_ratio >= 3;

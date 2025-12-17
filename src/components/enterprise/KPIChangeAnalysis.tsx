@@ -79,7 +79,21 @@ export function KPIChangeAnalysis({ showDemoData = false }: KPIChangeAnalysisPro
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Demo data
+  const demoData: KPIChange[] = [
+    { id: '1', kpi_metric: 'revenue', old_value: 95000, new_value: 125000, change_percentage: 31.6, changed_at: new Date().toISOString(), contributing_factors: ['Nuevos clientes adquiridos', 'Campaña de marketing exitosa'] },
+    { id: '2', kpi_metric: 'leads', old_value: 350, new_value: 420, change_percentage: 20, changed_at: new Date().toISOString(), contributing_factors: ['Mayor inversión en publicidad', 'Contenido viral en redes'] },
+    { id: '3', kpi_metric: 'cac', old_value: 220, new_value: 280, change_percentage: 27.3, changed_at: new Date().toISOString(), contributing_factors: ['Mayor competencia en ads', 'Cambio en estrategia de marketing'] },
+    { id: '4', kpi_metric: 'conversion_rate', old_value: 10.5, new_value: 12.5, change_percentage: 19, changed_at: new Date().toISOString(), contributing_factors: ['Mejora en proceso de ventas', 'Calidad de leads mejorada'] },
+  ];
+
   useEffect(() => {
+    if (showDemoData) {
+      setData(demoData);
+      setLoading(false);
+      return;
+    }
+
     async function fetchChanges() {
       if (!organizationId) return;
       try {
@@ -122,8 +136,9 @@ export function KPIChangeAnalysis({ showDemoData = false }: KPIChangeAnalysisPro
         setLoading(false);
       }
     }
+    
     fetchChanges();
-  }, [organizationId]);
+  }, [organizationId, showDemoData]);
 
   if (loading) {
     return (
