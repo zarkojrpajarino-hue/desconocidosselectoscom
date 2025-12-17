@@ -4535,6 +4535,7 @@ export type Database = {
           stripe_subscription_id: string | null
           subscription_status: string | null
           target_customers: string
+          team_size: string | null
           team_structure: Json
           timezone: string | null
           top_competitors: Json | null
@@ -4620,6 +4621,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_status?: string | null
           target_customers: string
+          team_size?: string | null
           team_structure?: Json
           timezone?: string | null
           top_competitors?: Json | null
@@ -4705,6 +4707,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_status?: string | null
           target_customers?: string
+          team_size?: string | null
           team_structure?: Json
           timezone?: string | null
           top_competitors?: Json | null
