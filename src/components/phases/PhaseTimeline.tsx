@@ -542,21 +542,13 @@ function PhaseCard({
               </div>
             )}
 
-            {/* Actions - SOLO ADMIN puede activar la SIGUIENTE fase */}
-            {isAdmin && (
+            {/* Actions - Solo regenerar, el botón de cambiar fase está en RoadmapPreview */}
+            {isAdmin && (phase.regeneration_count || 0) < 2 && (
               <div className="flex gap-2 pt-4 border-t">
-                {phase.status === 'pending' && isNextPhase && (
-                  <Button onClick={onActivate} size="sm" className="gap-2">
-                    <Play className="h-4 w-4" />
-                    Cambiar a Esta Fase
-                  </Button>
-                )}
-                {(phase.regeneration_count || 0) < 2 && (
-                  <Button onClick={onRegenerate} variant="outline" size="sm" className="gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Regenerar ({2 - (phase.regeneration_count || 0)} restantes)
-                  </Button>
-                )}
+                <Button onClick={onRegenerate} variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Regenerar ({2 - (phase.regeneration_count || 0)} restantes)
+                </Button>
               </div>
             )}
           </CardContent>
@@ -617,16 +609,7 @@ function TimelineView({
                 <span>{phase.objectives.length} objetivos</span>
                 <span>{phase.progress_percentage || 0}% completado</span>
               </div>
-              {/* SOLO ADMIN puede activar fase */}
-              {isAdmin && canActivate && (
-                <Button 
-                  onClick={() => onActivate(phase)} 
-                  size="sm" 
-                  className="mt-2"
-                >
-                  Activar Fase
-                </Button>
-              )}
+              {/* Botón de cambiar fase movido a RoadmapPreview */}
             </div>
           </div>
         );
