@@ -96,6 +96,7 @@ serve(async (req) => {
     const userTasks = (scheduledTasks || [])
       .filter(st => st.tasks && typeof st.tasks === 'object' && !Array.isArray(st.tasks))
       .map(st => {
+        // deno-lint-ignore no-explicit-any
         const task = st.tasks as any;
         return {
           id: task.id,
@@ -144,36 +145,35 @@ PRIORIDAD MÁXIMA: Los OKRs deben estar alineados con los objetivos estratégico
 Objetivos estratégicos: ${user.strategic_objectives || 'No definidos - usa tareas como referencia'}
 
 Tu tarea es:
-1. Generar 1 Objetivo (Objective) principal para esta semana que:
-   - ESTÉ DIRECTAMENTE ALINEADO con los objetivos estratégicos del rol
-   - Englobe el trabajo del usuario de esta semana
-   - Contribuya al avance de los objetivos estratégicos
-2. Generar entre 3 y 5 Key Results (KRs) PERSONALIZADOS que:
-   - Estén relacionados tanto con las TAREAS ESPECÍFICAS de esta semana como con los objetivos estratégicos
-   - Consideren su rol (${user.role}) y tipo de tareas (propias, colaborativas, líder)
-   - Sean medibles y específicos
-   - Sean alcanzables en UNA SEMANA
-   - Reflejen cómo las tareas contribuyen a los objetivos estratégicos del rol
+1. Generar 1 Objetivo (Objective) principal para esta semana
+2. Generar entre 3 y 5 Key Results (KRs) PERSONALIZADOS
+3. Generar un PLAYBOOK profesional con pasos y tips para lograr el objetivo
 
 El Objetivo debe tener:
 - title: Objetivo principal de la semana (máx 100 caracteres)
 - description: Por qué este objetivo es importante esta semana (máx 300 caracteres)
 
 Cada Key Result debe tener:
-- title: Título claro y accionable relacionado con las tareas (máx 100 caracteres)
+- title: Título claro y accionable (máx 100 caracteres)
 - description: Qué se medirá específicamente (máx 300 caracteres)
-- metric_type: tipo de métrica ("número", "porcentaje", "cantidad", etc.)
+- metric_type: tipo de métrica
 - start_value: valor inicial (generalmente 0)
-- target_value: valor objetivo realista para ESTA SEMANA (número)
-- unit: unidad de medida ("tareas completadas", "%", "validaciones", "colaboraciones", etc.)
+- target_value: valor objetivo realista para ESTA SEMANA
+- unit: unidad de medida
+
+El Playbook debe tener:
+- title: Título del playbook (ej: "Playbook: Maximizar Productividad Semanal")
+- description: Resumen del enfoque estratégico (1-2 oraciones)
+- steps: Array de 5-7 pasos concretos y accionables para lograr el objetivo
+- tips: Array de 3-5 consejos profesionales específicos para el rol del usuario
+- resources: Array de 2-3 recursos o herramientas recomendadas
+- daily_focus: Array de 5 strings con el enfoque para cada día laboral (lunes a viernes)
 
 IMPORTANTE: 
 - Los KRs deben ser REALISTAS para UNA SEMANA
-- Deben reflejar las ${userTasks.length} tareas específicas que tiene esta semana
-- Deben ser MEDIBLES objetivamente
-- Deben mostrar cómo las tareas contribuyen a los objetivos estratégicos del rol
-- Si no hay objetivos estratégicos definidos, genera OKRs generales basados solo en las tareas
-- Evita metas genéricas, hazlas específicas a las tareas actuales y objetivos estratégicos`;
+- El playbook debe ser PROFESIONAL y ESPECÍFICO al contexto del usuario
+- Incluye pasos concretos basados en las tareas reales de la semana
+- Los tips deben ser aplicables inmediatamente`;
 
     console.log('Generating weekly OKRs with AI for user:', userId);
 
@@ -186,14 +186,14 @@ IMPORTANTE:
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: 'Eres un experto en OKRs semanales. Devuelve SOLO un JSON válido sin markdown ni explicaciones.' },
+          { role: 'system', content: 'Eres un experto en OKRs semanales y coaching profesional. Devuelve SOLO un JSON válido sin markdown ni explicaciones.' },
           { role: 'user', content: prompt }
         ],
         tools: [{
           type: "function",
           function: {
             name: "generate_weekly_okr",
-            description: "Genera un Objetivo semanal con Key Results personalizados",
+            description: "Genera un Objetivo semanal con Key Results y Playbook personalizados",
             parameters: {
               type: "object",
               properties: {
@@ -219,9 +219,33 @@ IMPORTANTE:
                     },
                     required: ["title", "description", "metric_type", "start_value", "target_value", "unit"]
                   }
+                },
+                playbook: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    description: { type: "string" },
+                    steps: { 
+                      type: "array", 
+                      items: { type: "string" }
+                    },
+                    tips: { 
+                      type: "array", 
+                      items: { type: "string" }
+                    },
+                    resources: {
+                      type: "array",
+                      items: { type: "string" }
+                    },
+                    daily_focus: {
+                      type: "array",
+                      items: { type: "string" }
+                    }
+                  },
+                  required: ["title", "description", "steps", "tips"]
                 }
               },
-              required: ["objective", "key_results"]
+              required: ["objective", "key_results", "playbook"]
             }
           }
         }],
@@ -259,7 +283,7 @@ IMPORTANTE:
 
     const generated = JSON.parse(toolCall.function.arguments);
     
-    // Insertar el Objetivo semanal
+    // Insertar el Objetivo semanal CON PLAYBOOK
     const { data: newObjective, error: objInsertError } = await supabase
       .from('objectives')
       .insert({
@@ -272,7 +296,8 @@ IMPORTANTE:
         owner_user_id: userId,
         created_by: userId,
         status: 'active',
-        organization_id: userRole?.organization_id
+        organization_id: userRole?.organization_id,
+        playbook: generated.playbook || null
       })
       .select()
       .single();
@@ -283,7 +308,7 @@ IMPORTANTE:
     }
     
     // Insertar los KRs
-    const krsToInsert = generated.key_results.map((kr: any) => ({
+    const krsToInsert = generated.key_results.map((kr: Record<string, unknown>) => ({
       objective_id: newObjective.id,
       title: kr.title,
       description: kr.description,
@@ -306,13 +331,14 @@ IMPORTANTE:
       throw insertError;
     }
 
-    console.log(`Successfully generated weekly OKR with ${insertedKRs.length} Key Results`);
+    console.log(`Successfully generated weekly OKR with ${insertedKRs.length} Key Results and Playbook`);
 
     return new Response(
       JSON.stringify({ 
         success: true,
         objective: newObjective,
         key_results: insertedKRs,
+        playbook: generated.playbook,
         count: insertedKRs.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
