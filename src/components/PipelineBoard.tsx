@@ -33,7 +33,7 @@ interface CustomPipelineStage {
 }
 
 const PipelineBoard = () => {
-  const { user } = useAuth();
+  const { user, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
 
   // State
@@ -55,10 +55,10 @@ const PipelineBoard = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && currentOrganizationId) {
       loadData();
     }
-  }, [user, filterType, filterAssigned, filterMinValue]);
+  }, [user, currentOrganizationId, filterType, filterAssigned, filterMinValue]);
 
   const loadData = async () => {
     setLoading(true);
@@ -74,20 +74,16 @@ const PipelineBoard = () => {
 
   const loadPipelineStages = async () => {
     try {
-      // Obtener la organización del usuario
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('organization_id')
-        .eq('id', user?.id)
-        .single();
-
-      if (userError) throw userError;
+      if (!currentOrganizationId) {
+        console.error('No organization ID available');
+        return;
+      }
 
       // Obtener las etapas personalizadas de la organización
       const { data, error } = await supabase
         .from('pipeline_stages')
         .select('*')
-        .eq('organization_id', userData.organization_id)
+        .eq('organization_id', currentOrganizationId)
         .order('order_index');
 
       if (error) throw error;
@@ -107,6 +103,8 @@ const PipelineBoard = () => {
 
   const loadLeads = async () => {
     try {
+      if (!currentOrganizationId) return;
+
       let query = supabase
         .from('leads')
         .select(`
@@ -114,6 +112,7 @@ const PipelineBoard = () => {
           creator:users!leads_created_by_fkey(id, full_name, role),
           assignee:users!leads_assigned_to_fkey(id, full_name, role)
         `)
+        .eq('organization_id', currentOrganizationId)
         .order('created_at', { ascending: false });
 
       // Apply filters on server
@@ -152,9 +151,26 @@ const PipelineBoard = () => {
 
   const loadUsers = async () => {
     try {
+      if (!currentOrganizationId) return;
+
+      // Obtener usuarios de la organización actual via user_roles
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('organization_id', currentOrganizationId);
+
+      if (roleError) throw roleError;
+
+      const userIds = (roleData || []).map(r => r.user_id);
+      if (userIds.length === 0) {
+        setUsers([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('users')
         .select('id, full_name, role')
+        .in('id', userIds)
         .order('full_name');
 
       if (error) throw error;
