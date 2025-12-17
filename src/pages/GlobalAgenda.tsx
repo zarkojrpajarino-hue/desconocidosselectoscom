@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { format, startOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays } from 'lucide-react';
+import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, Globe, CalendarDays, Cog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -12,10 +12,10 @@ import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
 import { AgendaFilters, AgendaStats } from '@/components/agenda/AgendaFilters';
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
-import { WorkPreferencesModal } from '@/components/agenda/WorkPreferencesModal';
+import { WorkConfigReadOnly } from '@/components/agenda/WorkConfigReadOnly';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import WeeklyAgenda from '@/components/WeeklyAgenda';
-import WorkModeSelector from '@/components/WorkModeSelector';
+import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
 import { useGlobalAgendaStats, useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,13 +25,12 @@ export default function GlobalAgenda() {
   const { user } = useAuth();
   const hasAccess = hasFeature('global_agenda');
 
-  const [activeTab, setActiveTab] = useState('weekly');
+  const [activeTab, setActiveTab] = useState('global');
   const [weekStart, setWeekStart] = useState(
     format(startOfWeek(new Date(), { weekStartsOn: 3 }), 'yyyy-MM-dd')
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const [workMode, setWorkMode] = useState<string | undefined>(undefined);
   const [activeFilters, setActiveFilters] = useState<FiltersType>({
     showPersonal: true,
     showOrganizational: true,
@@ -57,30 +56,6 @@ export default function GlobalAgenda() {
     },
     enabled: !!user?.id && hasAccess,
   });
-
-  // Fetch work mode
-  const { data: weeklyData, refetch: refetchWorkMode } = useQuery({
-    queryKey: ['user-weekly-data', user?.id, weekStart],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('user_weekly_data')
-        .select('mode, task_limit')
-        .eq('user_id', user.id)
-        .eq('week_start', new Date(weekStart).toISOString())
-        .maybeSingle();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
-    enabled: !!user?.id && hasAccess,
-  });
-
-  useEffect(() => {
-    if (weeklyData?.mode) {
-      setWorkMode(weeklyData.mode);
-    }
-  }, [weeklyData]);
 
   const { data: stats } = useGlobalAgendaStats(weekStart);
   const generateSchedule = useGenerateGlobalSchedule();
@@ -109,10 +84,6 @@ export default function GlobalAgenda() {
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
   };
 
-  const handleWorkModeChange = () => {
-    refetchWorkMode();
-  };
-
   // Show locked card if user doesn't have access
   if (!hasAccess) {
     return (
@@ -137,7 +108,7 @@ export default function GlobalAgenda() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 space-y-6 pb-20">
-      {/* Header */}
+      {/* Header - Only show full controls in Agenda Global tab */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
@@ -145,89 +116,96 @@ export default function GlobalAgenda() {
             Mi Agenda
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona tu agenda semanal y global de todas tus organizaciones
+            {activeTab === 'global' 
+              ? 'Gestiona tu agenda global de todas tus organizaciones'
+              : activeTab === 'weekly'
+              ? 'Vista semanal de tus tareas'
+              : 'Configuración de trabajo (solo lectura)'
+            }
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            onClick={handleRegenerate}
-            variant="outline"
-            size="sm"
-            disabled={generateSchedule.isPending}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${generateSchedule.isPending ? 'animate-spin' : ''}`} />
-            Regenerar
-          </Button>
+        {/* Buttons only visible in Agenda Global tab */}
+        {activeTab === 'global' && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              onClick={handleRegenerate}
+              variant="outline"
+              size="sm"
+              disabled={generateSchedule.isPending}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${generateSchedule.isPending ? 'animate-spin' : ''}`} />
+              Regenerar
+            </Button>
 
-          <Button onClick={() => setShowCreateTask(true)} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Tarea Personal
-          </Button>
+            <Button onClick={() => setShowCreateTask(true)} size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Tarea Personal
+            </Button>
 
-          <Sheet open={showSettings} onOpenChange={setShowSettings}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Configurar
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:w-[500px] overflow-y-auto">
-              <GlobalAgendaSettings onClose={() => setShowSettings(false)} />
-            </SheetContent>
-          </Sheet>
-        </div>
+            <Sheet open={showSettings} onOpenChange={setShowSettings}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configurar
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-full sm:w-[500px] overflow-y-auto">
+                <GlobalAgendaSettings onClose={() => setShowSettings(false)} />
+              </SheetContent>
+            </Sheet>
+          </div>
+        )}
       </div>
 
-      {/* Work Preferences Modal */}
-      <WorkPreferencesModal onPreferencesChange={handleWorkModeChange} />
+      {/* Google Calendar Connect - Always visible */}
+      {user && <GoogleCalendarConnect userId={user.id} />}
 
-      {/* Work Mode Selector */}
-      <WorkModeSelector 
-        userId={user?.id} 
-        currentMode={workMode} 
-        onModeChange={handleWorkModeChange} 
-      />
+      {/* Stats - Only in Agenda Global tab */}
+      {activeTab === 'global' && stats && <AgendaStats stats={stats} />}
 
-      {/* Stats */}
-      {stats && <AgendaStats stats={stats} />}
+      {/* Navigation + Filters - Only in Agenda Global tab */}
+      {activeTab === 'global' && (
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
 
-      {/* Navigation + Filters */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border border-border rounded-lg p-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-
-          <div className="text-center min-w-[180px]">
-            <div className="text-xs text-muted-foreground">Semana del</div>
-            <div className="text-lg font-semibold text-foreground">
-              {format(new Date(weekStart), "d 'de' MMMM", { locale: es })}
+            <div className="text-center min-w-[180px]">
+              <div className="text-xs text-muted-foreground">Semana del</div>
+              <div className="text-lg font-semibold text-foreground">
+                {format(new Date(weekStart), "d 'de' MMMM", { locale: es })}
+              </div>
             </div>
+
+            <Button variant="outline" size="icon" onClick={goToNextWeek}>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+
+            <Button variant="ghost" size="sm" onClick={goToCurrentWeek}>
+              Hoy
+            </Button>
           </div>
 
-          <Button variant="outline" size="icon" onClick={goToNextWeek}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-
-          <Button variant="ghost" size="sm" onClick={goToCurrentWeek}>
-            Hoy
-          </Button>
+          <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
         </div>
-
-        <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
-      </div>
+      )}
 
       {/* Main Content with Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="weekly" className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4" />
-            Agenda Semanal
+            <span className="hidden sm:inline">Agenda</span> Semanal
           </TabsTrigger>
           <TabsTrigger value="global" className="flex items-center gap-2">
             <Globe className="w-4 h-4" />
-            Agenda Global
+            <span className="hidden sm:inline">Agenda</span> Global
+          </TabsTrigger>
+          <TabsTrigger value="config" className="flex items-center gap-2">
+            <Cog className="w-4 h-4" />
+            Configuración
           </TabsTrigger>
         </TabsList>
 
@@ -243,6 +221,10 @@ export default function GlobalAgenda() {
 
         <TabsContent value="global">
           <GlobalWeeklyView weekStart={weekStart} filters={activeFilters} />
+        </TabsContent>
+
+        <TabsContent value="config">
+          <WorkConfigReadOnly />
         </TabsContent>
       </Tabs>
 
