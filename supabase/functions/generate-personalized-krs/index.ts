@@ -271,7 +271,8 @@ IMPORTANTE:
         target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         owner_user_id: userId,
         created_by: userId,
-        status: 'active'
+        status: 'active',
+        organization_id: userRole?.organization_id
       })
       .select()
       .single();
@@ -292,7 +293,8 @@ IMPORTANTE:
       current_value: kr.start_value,
       unit: kr.unit,
       weight: 1.0,
-      status: 'on_track'
+      status: 'on_track',
+      organization_id: userRole?.organization_id
     }));
 
     const { data: insertedKRs, error: insertError } = await supabase
