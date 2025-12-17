@@ -11,8 +11,10 @@ export interface PhaseTask {
   phase_id: string | null;
   week_number: number;
   estimated_hours: number | null;
+  actual_hours: number | null;
   is_completed: boolean;
   user_id: string;
+  leader_id: string | null;
   order_index: number;
 }
 
@@ -94,8 +96,10 @@ export function usePhaseWeeklyTasks(phaseNumber: number | undefined) {
         phase_id: task.phase_id,
         week_number: 1, // Se asignará en distributeTasksInWeeks
         estimated_hours: task.estimated_hours,
+        actual_hours: task.actual_hours,
         is_completed: completedIds.has(task.id),
         user_id: task.user_id,
+        leader_id: task.leader_id,
         order_index: task.order_index || 0,
       }));
       
