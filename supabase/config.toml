@@ -218,3 +218,6 @@ verify_jwt = true
 
 [functions.generate-business-phases]
 verify_jwt = true
+
+[functions.check-phase-completion]
+verify_jwt = true
