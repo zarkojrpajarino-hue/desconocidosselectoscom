@@ -421,7 +421,7 @@ const DashboardHome = () => {
             </Card>
 
             {/* Team Progress - Now available for ALL users */}
-            <TeamProgress currentPhase={systemConfig?.current_phase || 1} currentUserId={user?.id} />
+            <TeamProgress currentPhase={systemConfig?.current_phase || 1} currentUserId={user?.id} organizationId={currentOrganizationId || undefined} />
 
             {/* Work Mode Selector */}
             <WorkModeSelector userId={user?.id} currentMode={userWeeklyData?.mode} onModeChange={fetchUserWeeklyData} />
