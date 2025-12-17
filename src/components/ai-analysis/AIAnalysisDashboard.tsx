@@ -53,7 +53,7 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAn
   // Handle both old format (executive_summary) and new format (executive_dashboard)
   const rawData = data as unknown as Record<string, unknown>;
   const executiveDashboard = data?.executive_dashboard || (rawData?.executive_summary as typeof data.executive_dashboard);
-  const hasValidData = executiveDashboard && (executiveDashboard.overall_score !== undefined || (executiveDashboard as Record<string, unknown>)?.overall_health !== undefined);
+  const hasValidData = executiveDashboard && (executiveDashboard.overall_score !== undefined || (executiveDashboard as unknown as Record<string, unknown>)?.overall_health !== undefined);
 
   // Get overall score - handle different data structures
   const overallScore = executiveDashboard?.overall_score ?? 
@@ -64,7 +64,7 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAn
   
   // Get health status
   const healthStatus: HealthStatus = executiveDashboard?.health_status || 
-    ((executiveDashboard as Record<string, unknown>)?.overall_health as HealthStatus) || 'warning';
+    ((executiveDashboard as unknown as Record<string, unknown>)?.overall_health as HealthStatus) || 'warning';
 
   if (!hasValidData) {
     return (
