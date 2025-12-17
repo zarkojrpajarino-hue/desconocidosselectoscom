@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RoadmapPreviewProps {
   organizationId?: string;
@@ -32,6 +34,35 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
     generatePhases,
     regenerateTasks,
   } = useBusinessPhases({ organizationId: orgId });
+
+  // Obtener conteo REAL de tareas desde la tabla tasks
+  const { data: taskStats } = useQuery({
+    queryKey: ['roadmap-task-stats', orgId],
+    queryFn: async () => {
+      if (!orgId) return { total: 0, completed: 0 };
+      
+      // Contar tareas reales de la organización que tienen phase
+      const { count: totalTasks } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', orgId)
+        .not('phase', 'is', null);
+      
+      // Contar tareas completadas (con task_completions validadas)
+      const { data: completedData } = await supabase
+        .from('task_completions')
+        .select('task_id, tasks!inner(organization_id, phase)')
+        .eq('tasks.organization_id', orgId)
+        .eq('completed_by_user', true)
+        .not('tasks.phase', 'is', null);
+      
+      return {
+        total: totalTasks || 0,
+        completed: completedData?.length || 0
+      };
+    },
+    enabled: !!orgId && phases.length > 0
+  });
 
   if (isLoading) {
     return (
@@ -89,12 +120,10 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
     );
   }
 
-  // Calcular métricas del roadmap
+  // Calcular métricas del roadmap usando datos REALES
   const totalObjectives = phases.reduce((acc, p) => acc + (p.objectives?.length || 0), 0);
-  const totalTasks = phases.reduce((acc, p) => acc + (p.checklist?.length || 0), 0);
-  const completedTasks = phases.reduce((acc, p) => 
-    acc + (p.checklist?.filter(t => t.completed)?.length || 0), 0
-  );
+  const totalTasks = taskStats?.total || 0;
+  const completedTasks = taskStats?.completed || 0;
   const totalWeeks = phases.reduce((acc, p) => acc + (p.duration_weeks || 0), 0);
 
   return (

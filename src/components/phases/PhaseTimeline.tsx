@@ -343,20 +343,27 @@ export function PhaseTimeline({
         </TabsList>
 
         <TabsContent value="cards" className="space-y-4">
-          {phases.map((phase) => (
-            <PhaseCard
-              key={phase.id}
-              phase={phase}
-              isExpanded={expandedPhases.has(phase.id)}
-              onToggleExpand={() => toggleExpanded(phase.id)}
-              onUpdateObjective={(index, value) => updateObjectiveProgress(phase.id, index, value)}
-              onActivate={() => handleActivatePhase(phase)}
-              onRegenerate={() => regeneratePhase(phase.phase_number)}
-              isAdmin={isAdmin}
-              showPlaybooks={showPlaybooks}
-              compact={compact}
-            />
-          ))}
+          {phases.map((phase) => {
+            // Determinar si esta fase es la SIGUIENTE a la activa
+            const nextPhaseNumber = (activePhase?.phase_number || 0) + 1;
+            const isNextPhase = phase.phase_number === nextPhaseNumber && phase.status === 'pending';
+            
+            return (
+              <PhaseCard
+                key={phase.id}
+                phase={phase}
+                isExpanded={expandedPhases.has(phase.id)}
+                onToggleExpand={() => toggleExpanded(phase.id)}
+                onUpdateObjective={(index, value) => updateObjectiveProgress(phase.id, index, value)}
+                onActivate={() => handleActivatePhase(phase)}
+                onRegenerate={() => regeneratePhase(phase.phase_number)}
+                isAdmin={isAdmin}
+                showPlaybooks={showPlaybooks}
+                compact={compact}
+                isNextPhase={isNextPhase}
+              />
+            );
+          })}
         </TabsContent>
 
         <TabsContent value="timeline">
@@ -387,6 +394,7 @@ interface PhaseCardProps {
   isAdmin: boolean;
   showPlaybooks: boolean;
   compact: boolean;
+  isNextPhase: boolean;
 }
 
 function PhaseCard({
@@ -398,6 +406,7 @@ function PhaseCard({
   onRegenerate,
   isAdmin,
   showPlaybooks,
+  isNextPhase,
 }: PhaseCardProps) {
   const statusConfig = {
     pending: { color: 'bg-muted text-muted-foreground', icon: Circle, label: 'Pendiente' },
@@ -533,13 +542,13 @@ function PhaseCard({
               </div>
             )}
 
-            {/* Actions - SOLO ADMIN puede activar fase */}
+            {/* Actions - SOLO ADMIN puede activar la SIGUIENTE fase */}
             {isAdmin && (
               <div className="flex gap-2 pt-4 border-t">
-                {phase.status === 'pending' && (
+                {phase.status === 'pending' && isNextPhase && (
                   <Button onClick={onActivate} size="sm" className="gap-2">
                     <Play className="h-4 w-4" />
-                    Activar Fase
+                    Cambiar a Esta Fase
                   </Button>
                 )}
                 {(phase.regeneration_count || 0) < 2 && (

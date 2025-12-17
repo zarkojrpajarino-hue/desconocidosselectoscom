@@ -17,10 +17,12 @@ interface TeamMemberProgress {
 interface TeamProgressProps {
   currentPhase: number;
   currentUserId?: string;
+  organizationId?: string;
 }
 const TeamProgress = ({
   currentPhase,
-  currentUserId
+  currentUserId,
+  organizationId
 }: TeamProgressProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [teamData, setTeamData] = useState<TeamMemberProgress[]>([]);
@@ -31,28 +33,47 @@ const TeamProgress = ({
     data: rolesMap
   } = useUserRoles();
   useEffect(() => {
-    fetchTeamProgress();
-  }, [currentPhase]);
+    if (organizationId) {
+      fetchTeamProgress();
+    }
+  }, [currentPhase, organizationId]);
   const fetchTeamProgress = async () => {
+    if (!organizationId) return;
+    
     setLoading(true);
     try {
-      // Obtener todos los usuarios (incluido el actual si no está en la lista)
-      const {
-        data: users,
-        error: usersError
-      } = await supabase.from('users').select('id, username, full_name').neq('role', 'admin').order('username');
+      // Obtener usuarios DE ESTA ORGANIZACIÓN solamente
+      const { data: orgUsers, error: orgUsersError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('organization_id', organizationId);
+      
+      if (orgUsersError) throw orgUsersError;
+      
+      const userIds = orgUsers?.map(u => u.user_id) || [];
+      
+      if (userIds.length === 0) {
+        setTeamData([]);
+        setTotalTasks(0);
+        setTotalCompleted(0);
+        setLoading(false);
+        return;
+      }
+      
+      // Obtener info de usuarios
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, username, full_name')
+        .in('id', userIds)
+        .order('username');
+      
       if (usersError) throw usersError;
-      if (!users) return;
-
-      // Asegurarse de que el usuario actual está en la lista
-      const userIds = users.map(u => u.id);
-      if (currentUserId && !userIds.includes(currentUserId)) {
-        const {
-          data: currentUser
-        } = await supabase.from('users').select('id, username, full_name').eq('id', currentUserId).single();
-        if (currentUser) {
-          users.push(currentUser);
-        }
+      if (!users || users.length === 0) {
+        setTeamData([]);
+        setTotalTasks(0);
+        setTotalCompleted(0);
+        setLoading(false);
+        return;
       }
 
       // Para cada usuario, obtener sus tareas y completaciones
