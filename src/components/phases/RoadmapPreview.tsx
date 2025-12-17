@@ -11,13 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo, CheckCircle, Play, AlertTriangle } from 'lucide-react';
+import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo, CheckCircle, Play, AlertTriangle, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { HowItWorksExplainer } from './HowItWorksExplainer';
+import { OKRRequiredMessage } from './OKRRequiredMessage';
 
 interface RoadmapPreviewProps {
   organizationId?: string;
@@ -108,6 +110,22 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
       };
     },
     enabled: !!orgId && phases.length > 0
+  });
+
+  // Verificar si hay OKRs generados
+  const { data: hasOKRs } = useQuery({
+    queryKey: ['has-okrs', orgId],
+    queryFn: async () => {
+      if (!orgId) return false;
+      
+      const { count } = await supabase
+        .from('objectives')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', orgId);
+      
+      return (count || 0) > 0;
+    },
+    enabled: !!orgId
   });
 
   if (isLoading) {
@@ -354,6 +372,8 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
                     </div>
                   ))}
                 </div>
+                {/* Explicación de cómo funciona el checklist */}
+                <HowItWorksExplainer type="checklist" />
               </div>
             )}
           </div>
