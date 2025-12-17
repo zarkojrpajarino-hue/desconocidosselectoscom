@@ -22,40 +22,40 @@ import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline } from '@/lib/weekUtils';
-
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 import { WorkPreferencesModal } from '@/components/agenda/WorkPreferencesModal';
-
 interface SystemConfig {
   week_start: string;
   current_phase: number;
   [key: string]: unknown;
 }
-
 interface UserWeeklyData {
   mode: 'agresivo' | 'conservador' | 'moderado';
   task_limit: number;
   [key: string]: unknown;
 }
-
 interface TaskItem {
   id: string;
   title: string;
   [key: string]: unknown;
 }
-
 interface CompletionItem {
   id: string;
   task_id: string;
   [key: string]: unknown;
 }
-
 const DashboardHome = () => {
-  const { user, userProfile, currentOrganizationId, userOrganizations, loading } = useAuth();
+  const {
+    user,
+    userProfile,
+    currentOrganizationId,
+    userOrganizations,
+    loading
+  } = useAuth();
   const navigate = useNavigate();
   const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
   const [userWeeklyData, setUserWeeklyData] = useState<UserWeeklyData | null>(null);
@@ -68,86 +68,71 @@ const DashboardHome = () => {
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const [roadmapOpen, setRoadmapOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
-  const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
+  const {
+    remainingSwaps,
+    limit
+  } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
 
   // Obtener el rol actual del usuario en la organización seleccionada
-  const currentUserRole = userOrganizations.find(
-    org => org.organization_id === currentOrganizationId
-  )?.role || 'member';
+  const currentUserRole = userOrganizations.find(org => org.organization_id === currentOrganizationId)?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
-
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
     }
   }, [user, loading, navigate]);
-
   useEffect(() => {
     if (user) {
       fetchSystemConfig();
       fetchUserWeeklyData();
     }
   }, [user]);
-
   useEffect(() => {
     if (user && systemConfig && userWeeklyData) {
       fetchTasksAndCompletions();
     }
   }, [user, systemConfig, userWeeklyData]);
-
   useEffect(() => {
     if (user) {
       checkAvailabilityStatus();
     }
   }, [user]);
-
   const fetchSystemConfig = async () => {
-    const { data } = await supabase
-      .from('system_config')
-      .select('*')
-      .single();
+    const {
+      data
+    } = await supabase.from('system_config').select('*').single();
     if (data) setSystemConfig(data);
   };
-
   const fetchUserWeeklyData = async () => {
     if (!user) return;
-    
-    const { data } = await supabase
-      .from('user_weekly_data')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('week_start', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    
+    const {
+      data
+    } = await supabase.from('user_weekly_data').select('*').eq('user_id', user.id).order('week_start', {
+      ascending: false
+    }).limit(1).maybeSingle();
     if (data) setUserWeeklyData(data as UserWeeklyData);
   };
-
   const checkAvailabilityStatus = async () => {
     if (!user) return;
-
     try {
       // Calcular próximo miércoles
       const today = new Date();
       const dayOfWeek = today.getDay();
       let daysUntilWednesday = (3 - dayOfWeek + 7) % 7;
-      
+
       // Si hoy es miércoles y ya pasó la 13:30, siguiente miércoles
       if (dayOfWeek === 3 && today.getHours() >= 13 && today.getMinutes() >= 30) {
         daysUntilWednesday = 7;
       }
-      
       const nextWed = new Date(today);
       nextWed.setDate(today.getDate() + daysUntilWednesday);
       nextWed.setHours(13, 30, 0, 0);
-      
       setNextWeekStart(nextWed.toISOString().split('T')[0]);
 
       // Calcular deadline (Lunes 13:00 de esa semana)
       const deadline = new Date(nextWed);
       deadline.setDate(nextWed.getDate() - 2); // 2 días antes = Lunes
       deadline.setHours(13, 0, 0, 0);
-      
       setAvailabilityDeadline(deadline);
 
       // Verificar si ya pasó el deadline
@@ -158,13 +143,9 @@ const DashboardHome = () => {
       }
 
       // Verificar si usuario completó disponibilidad
-      const { data } = await supabase
-        .from('user_weekly_availability')
-        .select('submitted_at')
-        .eq('user_id', user.id)
-        .eq('week_start', nextWed.toISOString().split('T')[0])
-        .maybeSingle();
-
+      const {
+        data
+      } = await supabase.from('user_weekly_availability').select('submitted_at').eq('user_id', user.id).eq('week_start', nextWed.toISOString().split('T')[0]).maybeSingle();
       if (!data || !data.submitted_at) {
         // No ha completado, mostrar bloqueo
         setShowAvailabilityBlock(true);
@@ -175,28 +156,18 @@ const DashboardHome = () => {
       console.error('Error checking availability:', error);
     }
   };
-
   const fetchTasksAndCompletions = async () => {
     if (!user || !systemConfig || !userWeeklyData) return;
-
     try {
       const taskLimit = userWeeklyData.task_limit || 8;
-
-      const { data: taskData } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('phase', systemConfig.current_phase)
-        .order('order_index')
-        .limit(taskLimit);
+      const {
+        data: taskData
+      } = await supabase.from('tasks').select('*').eq('user_id', user.id).eq('phase', systemConfig.current_phase).order('order_index').limit(taskLimit);
 
       // IMPORTANTE: Solo contar completaciones VALIDADAS
-      const { data: completionData } = await supabase
-        .from('task_completions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('validated_by_leader', true);
-
+      const {
+        data: completionData
+      } = await supabase.from('task_completions').select('*').eq('user_id', user.id).eq('validated_by_leader', true);
       if (taskData) setTasks(taskData);
       if (completionData) setCompletions(completionData);
     } catch (error) {
@@ -208,18 +179,14 @@ const DashboardHome = () => {
   const fullyCompletedCount = completions.length; // Ya están filtradas por validated_by_leader en el fetch
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Clock className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
           <p className="text-muted-foreground">Cargando...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <>
+  return <>
       {/* Header - Mobile optimized */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
         <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
@@ -227,41 +194,22 @@ const DashboardHome = () => {
             <h1 className="text-base sm:text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
               Hola, {userProfile.full_name?.split(' ')[0]}
             </h1>
-            {isAdmin && (
-              <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground text-[10px] md:text-xs shrink-0 hidden sm:flex">
+            {isAdmin && <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground text-[10px] md:text-xs shrink-0 hidden sm:flex">
                 Admin
-              </Badge>
-            )}
+              </Badge>}
           </div>
           <div className="flex items-center gap-1 md:gap-2 shrink-0">
             <SectionTourButton sectionId="dashboard" variant="ghost" size="sm" className="hidden md:flex" />
-            <Button
-              onClick={() => navigate('/profile')}
-              variant="outline"
-              size="sm"
-              className="gap-1 p-2 md:px-3 text-xs md:text-sm"
-            >
+            <Button onClick={() => navigate('/profile')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm">
               <User className="h-4 w-4" />
               <span className="hidden md:inline">Mi Perfil</span>
             </Button>
-            {isAdmin && (
-              <Button
-                onClick={() => navigate('/admin')}
-                variant="outline"
-                size="sm"
-                className="gap-1 p-2 md:px-3 text-xs md:text-sm hidden sm:flex"
-              >
+            {isAdmin && <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm hidden sm:flex">
                 <Users className="h-4 w-4" />
                 <span className="hidden md:inline">Equipo</span>
-              </Button>
-            )}
+              </Button>}
             {user && <NotificationBell />}
-            <Button
-              onClick={() => navigate('/home')}
-              variant="outline"
-              size="sm"
-              className="gap-1 p-2 md:px-3 text-xs md:text-sm"
-            >
+            <Button onClick={() => navigate('/home')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm">
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden md:inline">Menú</span>
             </Button>
@@ -272,48 +220,27 @@ const DashboardHome = () => {
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
         {/* MOSTRAR BLOQUEO SI NO COMPLETÓ DISPONIBILIDAD */}
-        {showAvailabilityBlock && !showQuestionnaire && availabilityDeadline && (
-          <AvailabilityBlockScreen
-            deadlineDate={availabilityDeadline}
-            onConfigure={() => setShowQuestionnaire(true)}
-          />
-        )}
+        {showAvailabilityBlock && !showQuestionnaire && availabilityDeadline && <AvailabilityBlockScreen deadlineDate={availabilityDeadline} onConfigure={() => setShowQuestionnaire(true)} />}
 
         {/* MOSTRAR CUESTIONARIO SI LO PIDIÓ */}
-        {showQuestionnaire && (
-          <AvailabilityQuestionnaire
-            userId={user!.id}
-            weekStart={nextWeekStart}
-            onComplete={() => {
-              setShowQuestionnaire(false);
-              setShowAvailabilityBlock(false);
-              toast.success('Disponibilidad guardada correctamente');
-            }}
-          />
-        )}
+        {showQuestionnaire && <AvailabilityQuestionnaire userId={user!.id} weekStart={nextWeekStart} onComplete={() => {
+        setShowQuestionnaire(false);
+        setShowAvailabilityBlock(false);
+        toast.success('Disponibilidad guardada correctamente');
+      }} />}
 
         {/* DASHBOARD NORMAL (solo si no está bloqueado) */}
-        {!showAvailabilityBlock && !showQuestionnaire && (
-          <>
+        {!showAvailabilityBlock && !showQuestionnaire && <>
             {/* Trial Countdown */}
             <TrialCountdown />
 
             {/* Marketing Message */}
-            <InfoMessage
-              icon={Lightbulb}
-              title="💡 Tu Dashboard Personalizado"
-              message="Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio."
-              className="mb-2"
-            />
+            <InfoMessage icon={Lightbulb} title="💡 Tu Dashboard Personalizado" message="Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio." className="mb-2" />
 
             {/* Roadmap Preview - Collapsible */}
-            {currentOrganizationId && (
-              <Collapsible open={roadmapOpen} onOpenChange={setRoadmapOpen}>
+            {currentOrganizationId && <Collapsible open={roadmapOpen} onOpenChange={setRoadmapOpen}>
                 <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-primary/5 to-violet-500/5 border-primary/20 hover:bg-primary/10"
-                  >
+                  <Button variant="outline" className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-primary/5 to-violet-500/5 border-primary/20 hover:bg-primary/10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center">
                         <Zap className="h-5 w-5 text-white" />
@@ -329,17 +256,12 @@ const DashboardHome = () => {
                 <CollapsibleContent className="mt-2">
                   <RoadmapPreview organizationId={currentOrganizationId} />
                 </CollapsibleContent>
-              </Collapsible>
-            )}
+              </Collapsible>}
 
             {/* AI Business Phases Timeline - Collapsible */}
-            {currentOrganizationId && (
-              <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
+            {currentOrganizationId && <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
                 <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-violet-500/5 to-indigo-500/5 border-violet-500/20 hover:bg-violet-500/10"
-                  >
+                  <Button variant="outline" className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-violet-500/5 to-indigo-500/5 border-violet-500/20 hover:bg-violet-500/10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center">
                         <Lightbulb className="h-5 w-5 text-white" />
@@ -355,39 +277,19 @@ const DashboardHome = () => {
                 <CollapsibleContent className="mt-2">
                   <PhaseTimeline />
                 </CollapsibleContent>
-              </Collapsible>
-            )}
+              </Collapsible>}
 
             {/* PhaseSelector removed - PhaseTimeline replaces it */}
 
             {/* Countdown */}
-            <CountdownTimer 
-              deadline={getCurrentWeekDeadline().toISOString()}
-              onTimeExpired={setIsWeekLocked}
-            />
+            <CountdownTimer deadline={getCurrentWeekDeadline().toISOString()} onTimeExpired={setIsWeekLocked} />
 
             {/* Urgent Alert */}
-            {!isWeekLocked && (
-              <UrgentAlert
-                deadline={getCurrentWeekDeadline().toISOString()}
-                totalTasks={tasks.length}
-                completedTasks={completions.length}
-                pendingTasks={tasks.filter(
-                  task => !completions.some(c => c.task_id === task.id)
-                )}
-              />
-            )}
+            {!isWeekLocked && <UrgentAlert deadline={getCurrentWeekDeadline().toISOString()} totalTasks={tasks.length} completedTasks={completions.length} pendingTasks={tasks.filter(task => !completions.some(c => c.task_id === task.id))} />}
 
             {/* Stats */}
             <div data-testid="stats-cards">
-              <StatsCards 
-                userId={user?.id} 
-                currentPhase={systemConfig?.current_phase} 
-                organizationId={currentOrganizationId || undefined}
-                taskLimit={userWeeklyData?.task_limit}
-                remainingSwaps={remainingSwaps}
-                swapLimit={limit}
-              />
+              <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} organizationId={currentOrganizationId || undefined} taskLimit={userWeeklyData?.task_limit} remainingSwaps={remainingSwaps} swapLimit={limit} />
             </div>
 
             {/* Sync All Card */}
@@ -403,101 +305,40 @@ const DashboardHome = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  <IntegrationButton
-                    type="slack"
-                    action="notify"
-                    data={{
-                      message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` +
-                        `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` +
-                        `🔄 Cambios restantes: ${remainingSwaps}/${limit}\n` +
-                        `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` +
-                        `_¡Seguimos avanzando! 💪_`,
-                      channel: '#daily-updates'
-                    }}
-                    label="Resumen a Slack"
-                    size="sm"
-                  />
+                  <IntegrationButton type="slack" action="notify" data={{
+                message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` + `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` + `🔄 Cambios restantes: ${remainingSwaps}/${limit}\n` + `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` + `_¡Seguimos avanzando! 💪_`,
+                channel: '#daily-updates'
+              }} label="Resumen a Slack" size="sm" />
                   
-                  <IntegrationButton
-                    type="calendar"
-                    action="sync"
-                    data={{
-                      title: 'Sincronizar tareas pendientes',
-                      description: `${tasks.length - completions.length} tareas por completar`,
-                      start_time: new Date().toISOString(),
-                      end_time: getCurrentWeekDeadline().toISOString()
-                    }}
-                    label="Sync Calendario"
-                    size="sm"
-                    variant="outline"
-                  />
+                  <IntegrationButton type="calendar" action="sync" data={{
+                title: 'Sincronizar tareas pendientes',
+                description: `${tasks.length - completions.length} tareas por completar`,
+                start_time: new Date().toISOString(),
+                end_time: getCurrentWeekDeadline().toISOString()
+              }} label="Sync Calendario" size="sm" variant="outline" />
                   
-                  <IntegrationButton
-                    type="asana"
-                    action="export"
-                    data={{
-                      name: 'Tareas semanales',
-                      notes: `${tasks.length} tareas de la semana`
-                    }}
-                    label="Exportar Asana"
-                    size="sm"
-                    variant="outline"
-                  />
+                  <IntegrationButton type="asana" action="export" data={{
+                name: 'Tareas semanales',
+                notes: `${tasks.length} tareas de la semana`
+              }} label="Exportar Asana" size="sm" variant="outline" />
                 </div>
               </CardContent>
             </Card>
 
             {/* Team Progress */}
-            <TeamProgress 
-              currentPhase={systemConfig?.current_phase || 1}
-              currentUserId={user?.id}
-            />
+            <TeamProgress currentPhase={systemConfig?.current_phase || 1} currentUserId={user?.id} />
 
             {/* Swaps Info Card */}
-            {userWeeklyData?.mode && (
-              <Card className="shadow-card bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <RefreshCw className="h-5 w-5" />
-                        Cambios de Tareas Disponibles
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        Puedes intercambiar tareas que no te convengan esta semana
-                      </CardDescription>
-                    </div>
-                    <Badge variant="secondary" className="text-lg px-4 py-2">
-                      {remainingSwaps}/{limit}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Modo <span className="font-semibold">{userWeeklyData.mode}</span>: 
-                    {remainingSwaps > 0 
-                      ? ` Te quedan ${remainingSwaps} cambio${remainingSwaps !== 1 ? 's' : ''} esta semana.`
-                      : ' Has usado todos tus cambios esta semana.'}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            {userWeeklyData?.mode}
 
             {/* Work Preferences Modal */}
             <WorkPreferencesModal onPreferencesChange={fetchUserWeeklyData} />
 
             {/* Work Mode Selector */}
-            <WorkModeSelector
-              userId={user?.id}
-              currentMode={userWeeklyData?.mode}
-              onModeChange={fetchUserWeeklyData}
-            />
+            <WorkModeSelector userId={user?.id} currentMode={userWeeklyData?.mode} onModeChange={fetchUserWeeklyData} />
 
             {/* Progress Bar */}
-            <ProgressBar
-              completedTasks={fullyCompletedCount}
-              totalTasks={tasks.length}
-            />
+            <ProgressBar completedTasks={fullyCompletedCount} totalTasks={tasks.length} />
 
             {/* Task List */}
             <Card className="shadow-card">
@@ -508,20 +349,11 @@ const DashboardHome = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TaskList
-                  userId={user?.id}
-                  currentPhase={systemConfig?.current_phase}
-                  isLocked={isWeekLocked}
-                  mode={userWeeklyData?.mode || 'moderado'}
-                  taskLimit={userWeeklyData?.task_limit}
-                />
+                <TaskList userId={user?.id} currentPhase={systemConfig?.current_phase} isLocked={isWeekLocked} mode={userWeeklyData?.mode || 'moderado'} taskLimit={userWeeklyData?.task_limit} />
               </CardContent>
             </Card>
-          </>
-        )}
+          </>}
       </main>
-    </>
-  );
+    </>;
 };
-
 export default DashboardHome;
