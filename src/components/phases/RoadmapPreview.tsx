@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo, CheckCircle } from 'lucide-react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Sparkles, TrendingUp, Target, Calendar, ArrowRight, Rocket, RefreshCw, ListTodo, CheckCircle, Play, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,7 +42,44 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
     overallProgress,
     generatePhases,
     regenerateTasks,
+    activatePhase,
   } = useBusinessPhases({ organizationId: orgId });
+
+  // Estado para el diálogo de confirmación de cambio de fase
+  const [activateConfirmDialog, setActivateConfirmDialog] = useState<{
+    open: boolean;
+    phaseNumber: number;
+    phaseName: string;
+    currentProgress: number;
+    pendingTasks: string[];
+  } | null>(null);
+
+  // Encontrar la siguiente fase pendiente
+  const nextPendingPhase = phases.find(p => p.status === 'pending');
+  
+  const handleActivatePhase = () => {
+    if (!nextPendingPhase) return;
+    
+    const pendingTasks = nextPendingPhase.checklist
+      ?.filter(item => !item.completed)
+      .map(item => item.task)
+      .slice(0, 5) || [];
+
+    setActivateConfirmDialog({
+      open: true,
+      phaseNumber: nextPendingPhase.phase_number,
+      phaseName: nextPendingPhase.phase_name,
+      currentProgress: activePhase?.progress_percentage || 0,
+      pendingTasks,
+    });
+  };
+
+  const confirmActivatePhase = () => {
+    if (activateConfirmDialog) {
+      activatePhase(activateConfirmDialog.phaseNumber);
+      setActivateConfirmDialog(null);
+    }
+  };
 
   // Obtener conteo REAL de tareas desde la tabla tasks
   const { data: taskStats } = useQuery({
@@ -339,6 +385,17 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
         {/* Botones para admin */}
         {isAdmin && (
           <div className="mt-4 flex flex-wrap justify-end gap-2">
+            {/* Botón CAMBIAR DE FASE - solo visible si hay siguiente fase pendiente */}
+            {nextPendingPhase && (
+              <Button 
+                onClick={handleActivatePhase}
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-500/90"
+              >
+                <Play className="h-4 w-4" />
+                Cambiar a Fase {nextPendingPhase.phase_number}
+              </Button>
+            )}
             <Button 
               onClick={() => regenerateTasks()} 
               disabled={isRegeneratingTasks || isGenerating}
@@ -379,6 +436,59 @@ export function RoadmapPreview({ organizationId }: RoadmapPreviewProps) {
             </Button>
           </div>
         )}
+
+        {/* Diálogo de confirmación para cambiar de fase */}
+        <Dialog 
+          open={activateConfirmDialog?.open || false} 
+          onOpenChange={(open) => !open && setActivateConfirmDialog(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                ¿Cambiar a {activateConfirmDialog?.phaseName}?
+              </DialogTitle>
+              <DialogDescription className="space-y-4 pt-4">
+                <p>
+                  Estás a punto de avanzar a la <strong>Fase {activateConfirmDialog?.phaseNumber}</strong>.
+                </p>
+                
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <p className="text-sm font-medium text-amber-600">
+                    Progreso actual de la fase activa: {activateConfirmDialog?.currentProgress}%
+                  </p>
+                </div>
+
+                {activateConfirmDialog?.pendingTasks && activateConfirmDialog.pendingTasks.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Tareas pendientes en la fase actual:</p>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                      {activateConfirmDialog.pendingTasks.map((task, i) => (
+                        <li key={i} className="truncate">{task}</li>
+                      ))}
+                      {activateConfirmDialog.pendingTasks.length === 5 && (
+                        <li className="text-muted-foreground/60">... y más</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="text-sm text-muted-foreground">
+                  Esta acción marcará la fase actual como completada y activará la nueva fase.
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setActivateConfirmDialog(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={confirmActivatePhase} className="gap-2">
+                <Play className="h-4 w-4" />
+                Sí, Cambiar de Fase
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
