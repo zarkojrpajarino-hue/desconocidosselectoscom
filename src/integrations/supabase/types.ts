@@ -4134,6 +4134,92 @@ export type Database = {
           },
         ]
       }
+      okr_retrospectives: {
+        Row: {
+          action_items: Json | null
+          created_at: string | null
+          difficulty_rating: number | null
+          final_progress: number | null
+          id: string
+          krs_achieved: number | null
+          krs_total: number | null
+          lessons_learned: string | null
+          objective_id: string
+          organization_id: string
+          satisfaction_rating: number | null
+          updated_at: string | null
+          user_id: string
+          what_to_improve: string[] | null
+          what_went_well: string[] | null
+          would_repeat: boolean | null
+        }
+        Insert: {
+          action_items?: Json | null
+          created_at?: string | null
+          difficulty_rating?: number | null
+          final_progress?: number | null
+          id?: string
+          krs_achieved?: number | null
+          krs_total?: number | null
+          lessons_learned?: string | null
+          objective_id: string
+          organization_id: string
+          satisfaction_rating?: number | null
+          updated_at?: string | null
+          user_id: string
+          what_to_improve?: string[] | null
+          what_went_well?: string[] | null
+          would_repeat?: boolean | null
+        }
+        Update: {
+          action_items?: Json | null
+          created_at?: string | null
+          difficulty_rating?: number | null
+          final_progress?: number | null
+          id?: string
+          krs_achieved?: number | null
+          krs_total?: number | null
+          lessons_learned?: string | null
+          objective_id?: string
+          organization_id?: string
+          satisfaction_rating?: number | null
+          updated_at?: string | null
+          user_id?: string
+          what_to_improve?: string[] | null
+          what_went_well?: string[] | null
+          would_repeat?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "okr_retrospectives_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "okr_retrospectives_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "okr_financial_summary"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "okr_retrospectives_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "okrs_with_progress"
+            referencedColumns: ["objective_id"]
+          },
+          {
+            foreignKeyName: "okr_retrospectives_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       okr_task_links: {
         Row: {
           contribution_weight: number | null

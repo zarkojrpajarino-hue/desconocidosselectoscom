@@ -377,12 +377,12 @@ const OrganizationOKRHistory = () => {
 
           {/* Tab: Dependencias */}
           <TabsContent value="dependencias">
-            <OKRDependencyMap />
+            <OKRDependencyMap type="organizational" />
           </TabsContent>
 
           {/* Tab: Retrospectiva */}
           <TabsContent value="retrospectiva">
-            <OKRRetrospective />
+            <OKRRetrospective type="organizational" />
           </TabsContent>
         </Tabs>
       </main>
