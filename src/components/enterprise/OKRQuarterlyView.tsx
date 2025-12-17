@@ -58,7 +58,7 @@ export function OKRQuarterlyView() {
         const currentYear = now.getFullYear();
         setSelectedQuarter(`${currentQuarter} ${currentYear}`);
 
-        // Obtener objetivos con key results
+        // Obtener objetivos ORGANIZACIONALES (phase IS NULL) con key results
         const { data: objectives, error: objError } = await supabase
           .from('objectives')
           .select(`
@@ -68,7 +68,8 @@ export function OKRQuarterlyView() {
           `)
           .eq('organization_id', organizationId)
           .eq('quarter', currentQuarter)
-          .eq('year', currentYear);
+          .eq('year', currentYear)
+          .is('phase', null);
 
         if (objError) throw objError;
 
