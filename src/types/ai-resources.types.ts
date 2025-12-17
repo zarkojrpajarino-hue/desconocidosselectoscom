@@ -7,7 +7,8 @@ export type AIResourceType =
   | 'social_posts'
   | 'design_brief'
   | 'outreach_templates'
-  | 'email_sequences';
+  | 'email_sequences'
+  | 'task_resources'; // Generic resources based on task content
 
 export interface VideoScript {
   title: string;

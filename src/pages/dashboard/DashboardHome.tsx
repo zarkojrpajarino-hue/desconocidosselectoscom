@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap, ChevronDown } from 'lucide-react';
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
 import CountdownTimer from '@/components/CountdownTimer';
@@ -65,6 +66,8 @@ const DashboardHome = () => {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
+  const [roadmapOpen, setRoadmapOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
   const { remainingSwaps, limit } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
 
   // Obtener el rol actual del usuario en la organización seleccionada
@@ -303,14 +306,56 @@ const DashboardHome = () => {
               className="mb-2"
             />
 
-            {/* Roadmap Preview - Resumen con métricas */}
+            {/* Roadmap Preview - Collapsible */}
             {currentOrganizationId && (
-              <RoadmapPreview organizationId={currentOrganizationId} />
+              <Collapsible open={roadmapOpen} onOpenChange={setRoadmapOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-primary/5 to-violet-500/5 border-primary/20 hover:bg-primary/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center">
+                        <Zap className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-semibold block">Roadmap Estratégico con IA</span>
+                        <span className="text-xs text-muted-foreground">Plan de crecimiento personalizado</span>
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${roadmapOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <RoadmapPreview organizationId={currentOrganizationId} />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
-            {/* AI Business Phases Timeline - Vista completa con Tarjetas/Timeline/Kanban */}
+            {/* AI Business Phases Timeline - Collapsible */}
             {currentOrganizationId && (
-              <PhaseTimeline />
+              <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto py-4 px-4 bg-gradient-to-r from-violet-500/5 to-indigo-500/5 border-violet-500/20 hover:bg-violet-500/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center">
+                        <Lightbulb className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <span className="font-semibold block">Progreso General</span>
+                        <span className="text-xs text-muted-foreground">Fases, objetivos y tareas del negocio</span>
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${progressOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <PhaseTimeline />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {/* PhaseSelector removed - PhaseTimeline replaces it */}
