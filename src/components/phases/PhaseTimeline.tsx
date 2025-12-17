@@ -22,6 +22,10 @@ import { cn } from '@/lib/utils';
 import { useBusinessPhases, BusinessPhase } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HowItWorksExplainer } from './HowItWorksExplainer';
+import { OKRRequiredMessage } from './OKRRequiredMessage';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PhaseTimelineProps {
   view?: 'timeline' | 'cards' | 'kanban';
@@ -52,6 +56,22 @@ export function PhaseTimeline({
     updateObjectiveProgress,
     activatePhase,
   } = useBusinessPhases({ organizationId: currentOrganizationId });
+
+  // Verificar si hay OKRs generados
+  const { data: hasOKRs } = useQuery({
+    queryKey: ['has-okrs', currentOrganizationId],
+    queryFn: async () => {
+      if (!currentOrganizationId) return false;
+      
+      const { count } = await supabase
+        .from('objectives')
+        .select('*', { count: 'exact', head: true })
+        .eq('organization_id', currentOrganizationId);
+      
+      return (count || 0) > 0;
+    },
+    enabled: !!currentOrganizationId
+  });
 
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
   const [activateConfirmDialog, setActivateConfirmDialog] = useState<{
@@ -361,6 +381,7 @@ export function PhaseTimeline({
                 showPlaybooks={showPlaybooks}
                 compact={compact}
                 isNextPhase={isNextPhase}
+                hasOKRs={hasOKRs || false}
               />
             );
           })}
@@ -395,6 +416,7 @@ interface PhaseCardProps {
   showPlaybooks: boolean;
   compact: boolean;
   isNextPhase: boolean;
+  hasOKRs: boolean;
 }
 
 function PhaseCard({
@@ -407,6 +429,7 @@ function PhaseCard({
   isAdmin,
   showPlaybooks,
   isNextPhase,
+  hasOKRs,
 }: PhaseCardProps) {
   const statusConfig = {
     pending: { color: 'bg-muted text-muted-foreground', icon: Circle, label: 'Pendiente' },
@@ -484,6 +507,12 @@ function PhaseCard({
                 <Target className="h-4 w-4 text-primary" />
                 Objetivos ({completedObjectives}/{phase.objectives.length})
               </h4>
+              
+              {/* Mensaje si no hay OKRs */}
+              {!hasOKRs && (
+                <OKRRequiredMessage className="mb-4" />
+              )}
+              
               <div className="space-y-3">
                 {phase.objectives.map((obj, index) => {
                   const progress = obj.target > 0 ? (obj.current / obj.target) * 100 : 0;
@@ -507,6 +536,9 @@ function PhaseCard({
                   );
                 })}
               </div>
+              
+              {/* Explicación de cómo funcionan los objetivos */}
+              <HowItWorksExplainer type="objectives" />
             </div>
 
             {/* Checklist Section ELIMINADO - Ahora solo se muestra en RoadmapPreview */}
