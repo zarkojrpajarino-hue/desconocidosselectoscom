@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { 
   Package, TrendingUp, TrendingDown, DollarSign,
-  BarChart3, AlertTriangle 
+  BarChart3, AlertTriangle, Eye 
 } from 'lucide-react';
 import {
   BarChart,
@@ -30,11 +32,21 @@ interface ProductData {
   status: 'profitable' | 'break_even' | 'loss';
 }
 
+// Demo data for empty states
+const DEMO_PRODUCTS: ProductData[] = [
+  { product_name: 'Servicio Premium', revenue: 45000, cost: 22500, margin: 22500, margin_percentage: 50, units_sold: 45, status: 'profitable' },
+  { product_name: 'Consultoría Básica', revenue: 28000, cost: 16800, margin: 11200, margin_percentage: 40, units_sold: 56, status: 'profitable' },
+  { product_name: 'Soporte Técnico', revenue: 15000, cost: 10500, margin: 4500, margin_percentage: 30, units_sold: 120, status: 'profitable' },
+  { product_name: 'Implementación', revenue: 12000, cost: 9600, margin: 2400, margin_percentage: 20, units_sold: 8, status: 'break_even' },
+  { product_name: 'Formación', revenue: 8000, cost: 7200, margin: 800, margin_percentage: 10, units_sold: 16, status: 'break_even' },
+];
+
 export function ProductProfitability() {
   const { organizationId } = useCurrentOrganization();
   const [data, setData] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [showDemoData, setShowDemoData] = useState(true);
 
   useEffect(() => {
     async function fetchProductData() {
@@ -97,6 +109,8 @@ export function ProductProfitability() {
     fetchProductData();
   }, [organizationId]);
 
+  const hasRealData = data.length > 0;
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -121,7 +135,7 @@ export function ProductProfitability() {
     );
   }
 
-  const products = data || [];
+  const products = hasRealData ? data : (showDemoData ? DEMO_PRODUCTS : []);
   const totalRevenue = products.reduce((sum, p) => sum + p.revenue, 0);
   const totalMargin = products.reduce((sum, p) => sum + p.margin, 0);
   const avgMargin = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
@@ -136,23 +150,38 @@ export function ProductProfitability() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Rentabilidad por Producto</h2>
-          <p className="text-muted-foreground">Análisis de margen por línea de producto</p>
+          <h2 className="text-2xl font-bold">Rentabilidad por Producto/Servicio</h2>
+          <p className="text-muted-foreground">Análisis de margen por línea de producto o servicio</p>
         </div>
-        <div className="flex gap-4 text-sm">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-primary">
-              €{totalRevenue.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
-            </p>
-            <p className="text-muted-foreground">Ingresos Totales</p>
-          </div>
-          <div className="text-center">
-            <p className={`text-2xl font-bold ${avgMargin >= 20 ? 'text-emerald-600' : 'text-amber-600'}`}>
-              {avgMargin.toFixed(1)}%
-            </p>
-            <p className="text-muted-foreground">Margen Promedio</p>
+        <div className="flex items-center gap-4">
+          {!hasRealData && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="product-demo-toggle" className="text-xs text-muted-foreground">
+                Demo
+              </Label>
+              <Switch
+                id="product-demo-toggle"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+            </div>
+          )}
+          <div className="flex gap-4 text-sm">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">
+                €{totalRevenue.toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+              </p>
+              <p className="text-muted-foreground">Ingresos Totales</p>
+            </div>
+            <div className="text-center">
+              <p className={`text-2xl font-bold ${avgMargin >= 20 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                {avgMargin.toFixed(1)}%
+              </p>
+              <p className="text-muted-foreground">Margen Promedio</p>
+            </div>
           </div>
         </div>
       </div>

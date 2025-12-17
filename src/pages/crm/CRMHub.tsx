@@ -194,65 +194,65 @@ const CRMHub = () => {
 
         {/* KPIs Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <Card className="bg-gradient-to-br from-card to-muted/20 hover:shadow-lg transition-shadow">
+          <Card className="bg-gradient-to-br from-card to-muted/20 hover:shadow-lg transition-shadow overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs md:text-sm font-medium text-muted-foreground">Total Leads</span>
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground truncate">Total Leads</span>
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Users className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold truncate">
                 {hasRealData ? stats.total_leads : (showDemoData ? 31 : 0)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 truncate">
                 +{hasRealData ? stats.new_leads : (showDemoData ? 8 : 0)} este mes
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-card to-success/5 hover:shadow-lg transition-shadow">
+          <Card className="bg-gradient-to-br from-card to-success/5 hover:shadow-lg transition-shadow overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs md:text-sm font-medium text-muted-foreground">Pipeline</span>
-                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground truncate">Pipeline</span>
+                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
                   <DollarSign className="h-4 w-4 text-success" />
                 </div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-success">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-success truncate">
                 {formatCurrency(hasRealData ? stats.total_pipeline_value : (showDemoData ? 382000 : 0))}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Valor total activo</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">Valor total activo</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-card to-rose-500/5 hover:shadow-lg transition-shadow">
+          <Card className="bg-gradient-to-br from-card to-rose-500/5 hover:shadow-lg transition-shadow overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs md:text-sm font-medium text-muted-foreground">Leads Calientes</span>
-                <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground truncate">Leads Calientes</span>
+                <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
                   <Flame className="h-4 w-4 text-rose-500" />
                 </div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-rose-600">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-rose-600 truncate">
                 {hasRealData ? stats.hot_leads : (showDemoData ? 6 : 0)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Alta probabilidad</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">Alta probabilidad</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-card to-emerald-500/5 hover:shadow-lg transition-shadow">
+          <Card className="bg-gradient-to-br from-card to-emerald-500/5 hover:shadow-lg transition-shadow overflow-hidden">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs md:text-sm font-medium text-muted-foreground">Conversión</span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground truncate">Conversión</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                   <Target className="h-4 w-4 text-emerald-500" />
                 </div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-emerald-600">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-emerald-600 truncate">
                 {hasRealData ? conversionRate : (showDemoData ? '18.5' : '0')}%
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 truncate">
                 {hasRealData ? stats.won_leads : (showDemoData ? 5 : 0)} ganados
               </p>
             </CardContent>

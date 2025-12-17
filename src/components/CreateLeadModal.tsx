@@ -15,6 +15,14 @@ import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
+
+interface ProductService {
+  name: string;
+  price?: number;
+  category?: string;
+  description?: string;
+}
+
 interface CreateLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,6 +38,7 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
   const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [organizationProducts, setOrganizationProducts] = useState<ProductService[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,6 +59,7 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
 
   useEffect(() => {
     fetchUsers();
+    fetchOrganizationProducts();
     if (editLead) {
       setFormData({
         name: editLead.name || '',
@@ -68,7 +78,42 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
         notes: editLead.notes || ''
       });
     }
-  }, [editLead, user]);
+  }, [editLead, user, currentOrganizationId]);
+
+  const fetchOrganizationProducts = async () => {
+    if (!currentOrganizationId) return;
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('products_services')
+        .eq('id', currentOrganizationId)
+        .single();
+      
+      if (error) {
+        logger.error('Error fetching organization products:', error);
+        return;
+      }
+      
+      // Parse products_services from organization
+      const rawProducts = data?.products_services;
+      if (Array.isArray(rawProducts)) {
+        const parsed = rawProducts.map((p: unknown) => {
+          const item = p as Record<string, unknown>;
+          return {
+            name: String(item.name || ''),
+            price: item.price ? Number(item.price) : undefined,
+            category: item.category ? String(item.category) : undefined,
+            description: item.description ? String(item.description) : undefined,
+          };
+        }).filter(p => p.name);
+        setOrganizationProducts(parsed);
+      } else {
+        setOrganizationProducts([]);
+      }
+    } catch (err) {
+      handleError(err, 'Error al cargar productos de la organización');
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -363,19 +408,26 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
             </div>
 
             <div>
-              <Label>Productos de Interés</Label>
+              <Label>Productos/Servicios de Interés</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {['premium', 'personalizadas', 'estandar', 'basicas', 'corporativas'].map(product => (
-                  <Button
-                    key={product}
-                    type="button"
-                    size="sm"
-                    variant={formData.interested_products.includes(product) ? 'default' : 'outline'}
-                    onClick={() => handleProductToggle(product)}
-                  >
-                    {product}
-                  </Button>
-                ))}
+                {organizationProducts.length > 0 ? (
+                  organizationProducts.map(product => (
+                    <Button
+                      key={product.name}
+                      type="button"
+                      size="sm"
+                      variant={formData.interested_products.includes(product.name) ? 'default' : 'outline'}
+                      onClick={() => handleProductToggle(product.name)}
+                      title={product.price ? `€${product.price}` : undefined}
+                    >
+                      {product.name}
+                    </Button>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No hay productos/servicios configurados. Configúralos en el onboarding o contacta al administrador.
+                  </p>
+                )}
               </div>
             </div>
 
