@@ -8,23 +8,27 @@ import {
   ChevronLeft, 
   ChevronRight, 
   CheckCircle2, 
-  Circle, 
   Target, 
   Calendar,
   Lightbulb,
   Clock
 } from 'lucide-react';
-import { usePhaseWeeklyTasks, useCurrentPhase } from '@/hooks/usePhaseWeeklyTasks';
+import { usePhaseWeeklyTasks, useCurrentPhase, PhaseTask } from '@/hooks/usePhaseWeeklyTasks';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTaskSwaps } from '@/hooks/useTaskSwaps';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { PhaseTaskCard } from './PhaseTaskCard';
 import { useTranslation } from 'react-i18next';
 
-interface PhaseWeeklyTasksProps {
-  onTaskClick?: (taskId: string) => void;
-}
-
-export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
+export function PhaseWeeklyTasks() {
   const { t } = useTranslation();
+  const { user, currentOrganizationId } = useAuth();
   const { data: currentPhase, isLoading: phaseLoading } = useCurrentPhase();
   const { data: weeklyData, isLoading: tasksLoading } = usePhaseWeeklyTasks(currentPhase?.phase_number);
+  const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(user?.id || '', 'moderado');
+  const queryClient = useQueryClient();
   
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   
@@ -32,6 +36,52 @@ export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
   const displayWeek = selectedWeek ?? weeklyData?.currentWeek ?? 1;
   
   const isLoading = phaseLoading || tasksLoading;
+  
+  const handleTaskComplete = async (taskId: string, completed: boolean) => {
+    if (!user?.id || !currentOrganizationId) return;
+    
+    try {
+      if (completed) {
+        // Crear completion
+        const { error } = await supabase
+          .from('task_completions')
+          .upsert({
+            task_id: taskId,
+            user_id: user.id,
+            organization_id: currentOrganizationId,
+            completed_by_user: true,
+            validated_by_leader: true, // Auto-validate for now
+            completed_at: new Date().toISOString(),
+          }, {
+            onConflict: 'task_id,user_id'
+          });
+        
+        if (error) throw error;
+        toast.success('¡Tarea completada!');
+      } else {
+        // Eliminar completion
+        const { error } = await supabase
+          .from('task_completions')
+          .delete()
+          .eq('task_id', taskId)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        toast.info('Tarea marcada como pendiente');
+      }
+      
+      // Refrescar datos
+      queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast.error('Error al actualizar la tarea');
+    }
+  };
+  
+  const handleSwapComplete = () => {
+    reloadSwaps();
+    queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+  };
   
   if (isLoading) {
     return (
@@ -87,6 +137,7 @@ export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
   
   const isCurrentWeekSelected = displayWeek === weeklyData.currentWeek;
   
+  
   return (
     <div className="space-y-4">
       {/* Progress Overview */}
@@ -108,6 +159,13 @@ export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
             </div>
           </div>
           <Progress value={weeklyData.progressPercent} className="mt-4 h-2" />
+          
+          {/* Swaps remaining */}
+          {remainingSwaps > 0 && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Cambios disponibles esta semana: {remainingSwaps}
+            </p>
+          )}
         </CardContent>
       </Card>
       
@@ -204,56 +262,16 @@ export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
               <p>No hay tareas para esta semana</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {currentWeekTasks.map((task) => (
-                <div
+                <PhaseTaskCard
                   key={task.id}
-                  onClick={() => onTaskClick?.(task.id)}
-                  className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                    task.is_completed
-                      ? 'bg-success/10 border-success/20'
-                      : 'bg-card hover:bg-muted/50 border-border'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 shrink-0 ${
-                      task.is_completed 
-                        ? 'bg-success text-success-foreground' 
-                        : 'border-2 border-muted-foreground'
-                    }`}>
-                      {task.is_completed ? (
-                        <CheckCircle2 className="w-3 h-3" />
-                      ) : (
-                        <Circle className="w-3 h-3 opacity-0" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium ${
-                        task.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'
-                      }`}>
-                        {task.title}
-                      </p>
-                      {task.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        {task.area && (
-                          <Badge variant="secondary" className="text-xs">
-                            {task.area}
-                          </Badge>
-                        )}
-                        {task.estimated_hours && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            ~{task.estimated_hours}h
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  task={{ ...task, organization_id: currentOrganizationId }}
+                  userId={user?.id || ''}
+                  onComplete={handleTaskComplete}
+                  remainingSwaps={remainingSwaps}
+                  onSwapComplete={handleSwapComplete}
+                />
               ))}
             </div>
           )}
@@ -270,7 +288,8 @@ export function PhaseWeeklyTasks({ onTaskClick }: PhaseWeeklyTasksProps) {
               <p className="text-sm text-muted-foreground">
                 La IA ha generado {weeklyData.totalTasks} tareas para completar esta fase, 
                 distribuidas en {weeklyData.totalWeeks} semanas. Completa las tareas a tu ritmo - 
-                las tareas pendientes se acumulan hasta que las termines.
+                las tareas pendientes se acumulan hasta que las termines. Expande cada tarea para 
+                ver opciones de IA, tiempo y sincronización.
               </p>
             </div>
           </div>
