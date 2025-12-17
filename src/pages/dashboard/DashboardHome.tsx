@@ -68,6 +68,8 @@ const DashboardHome = () => {
   const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const [roadmapOpen, setRoadmapOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
+  const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
+  const [hasTeam, setHasTeam] = useState(true);
   const {
     remainingSwaps,
     limit
@@ -76,6 +78,23 @@ const DashboardHome = () => {
   // Obtener el rol actual del usuario en la organización seleccionada
   const currentUserRole = userOrganizations.find(org => org.organization_id === currentOrganizationId)?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
+  
+  // Fetch organization settings including visibility and has_team
+  useEffect(() => {
+    const fetchOrgSettings = async () => {
+      if (!currentOrganizationId) return;
+      const { data } = await supabase
+        .from('organizations')
+        .select('admin_visibility_team, has_team')
+        .eq('id', currentOrganizationId)
+        .single();
+      if (data) {
+        setAdminVisibilityTeam(data.admin_visibility_team ?? false);
+        setHasTeam(data.has_team ?? true);
+      }
+    };
+    fetchOrgSettings();
+  }, [currentOrganizationId]);
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
@@ -204,9 +223,9 @@ const DashboardHome = () => {
               <User className="h-4 w-4" />
               <span className="hidden md:inline">Mi Perfil</span>
             </Button>
-            {isAdmin && <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm hidden sm:flex">
+            {(isAdmin || adminVisibilityTeam) && <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm hidden sm:flex">
                 <Users className="h-4 w-4" />
-                <span className="hidden md:inline">Equipo</span>
+                <span className="hidden md:inline">{hasTeam ? 'Equipo' : 'Tu Trabajo'}</span>
               </Button>}
             {user && <NotificationBell />}
             <Button onClick={() => navigate('/home')} variant="outline" size="sm" className="gap-1 p-2 md:px-3 text-xs md:text-sm">

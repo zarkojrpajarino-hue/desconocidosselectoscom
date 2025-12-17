@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, User, MapPin, Building2, Users, Bell } from 'lucide-react';
@@ -16,6 +17,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { restartTour } = useOnboardingTour();
   const isMobile = useIsMobileDevice();
+  const [hasTeam, setHasTeam] = useState<boolean | null>(null);
 
   const isAdmin = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
@@ -26,6 +28,19 @@ const Profile = () => {
       navigate('/login');
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    const fetchOrgSettings = async () => {
+      if (!currentOrganizationId) return;
+      const { data } = await supabase
+        .from('organizations')
+        .select('has_team')
+        .eq('id', currentOrganizationId)
+        .single();
+      if (data) setHasTeam(data.has_team ?? true);
+    };
+    fetchOrgSettings();
+  }, [currentOrganizationId]);
 
   if (loading) {
     return (
@@ -84,7 +99,7 @@ const Profile = () => {
             {isAdmin && !isMobile && (
               <TabsTrigger value="team" className="gap-2">
                 <Users className="w-4 h-4" />
-                Equipo
+                {hasTeam ? 'Equipo' : 'Tu Trabajo'}
               </TabsTrigger>
             )}
             {isMobile && (

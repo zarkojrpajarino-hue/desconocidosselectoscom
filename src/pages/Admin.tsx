@@ -75,8 +75,9 @@ const Admin = () => {
   const [sortBy, setSortBy] = useState<'progress' | 'points' | 'tasks'>('progress');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
-  // Visibility settings
+  // Visibility and team settings
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
+  const [hasTeam, setHasTeam] = useState(true);
   
   // Filtros avanzados
   const [filterRole, setFilterRole] = useState<string>('all');
@@ -99,20 +100,21 @@ const Admin = () => {
   )?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
 
-  // Fetch visibility setting
+  // Fetch visibility and team settings
   useEffect(() => {
-    const fetchVisibility = async () => {
+    const fetchOrgSettings = async () => {
       if (!currentOrganizationId) return;
       const { data } = await supabase
         .from('organizations')
-        .select('admin_visibility_team')
+        .select('admin_visibility_team, has_team')
         .eq('id', currentOrganizationId)
         .single();
       if (data) {
         setAdminVisibilityTeam(data.admin_visibility_team ?? false);
+        setHasTeam(data.has_team ?? true);
       }
     };
-    fetchVisibility();
+    fetchOrgSettings();
   }, [currentOrganizationId]);
 
   // Check access: admin always, non-admin only if visibility is enabled
@@ -528,10 +530,10 @@ const Admin = () => {
             <div className="min-w-0 flex items-center gap-2">
               <div>
                 <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                  Admin
+                  {hasTeam ? 'Equipo' : 'Tu Trabajo'}
                 </h1>
                 <p className="text-[10px] md:text-sm text-muted-foreground hidden sm:block">
-                  Gestión del equipo
+                  {hasTeam ? 'Gestión del equipo' : 'Tu rendimiento individual'}
                 </p>
               </div>
               {!isAdmin && (
@@ -807,11 +809,11 @@ const Admin = () => {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-sm flex-shrink-0">
-                                  {user.full_name[0]}
+                                  {user.full_name?.[0] || 'U'}
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-medium truncate">{user.full_name}</p>
-                                  <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                                 </div>
                               </div>
                             </TableCell>
