@@ -41,7 +41,7 @@ export function OKRDependencyMap() {
       try {
         setLoading(true);
 
-        // Obtener objetivos con key results
+        // Obtener objetivos ORGANIZACIONALES (phase IS NULL) con key results
         const { data: objectivesData, error: objError } = await supabase
           .from('objectives')
           .select(`
@@ -52,7 +52,8 @@ export function OKRDependencyMap() {
             key_results (current_value, target_value)
           `)
           .eq('organization_id', organizationId)
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .is('phase', null);
 
         if (objError) throw objError;
 

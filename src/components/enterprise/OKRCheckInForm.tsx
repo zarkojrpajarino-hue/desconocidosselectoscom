@@ -39,7 +39,7 @@ export function OKRCheckInForm() {
       try {
         setLoading(true);
 
-        // Obtener key results del usuario actual
+        // Obtener key results ORGANIZACIONALES (phase IS NULL) del usuario actual
         const { data: objectives, error: objError } = await supabase
           .from('objectives')
           .select(`
@@ -49,7 +49,8 @@ export function OKRCheckInForm() {
           `)
           .eq('organization_id', organizationId)
           .eq('owner_user_id', user.id)
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .is('phase', null);
 
         if (objError) throw objError;
 

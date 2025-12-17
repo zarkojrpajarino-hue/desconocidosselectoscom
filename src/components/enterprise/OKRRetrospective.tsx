@@ -52,7 +52,7 @@ export function OKRRetrospective() {
         const prevYear = currentQuarter === 1 ? now.getFullYear() - 1 : now.getFullYear();
         setSelectedQuarter(`Q${prevQuarter} ${prevYear}`);
 
-        // Obtener objetivos del trimestre anterior
+        // Obtener objetivos ORGANIZACIONALES (phase IS NULL) del trimestre anterior
         const { data: objectivesData, error: objError } = await supabase
           .from('objectives')
           .select(`
@@ -63,7 +63,8 @@ export function OKRRetrospective() {
           `)
           .eq('organization_id', organizationId)
           .eq('quarter', `Q${prevQuarter}`)
-          .eq('year', prevYear);
+          .eq('year', prevYear)
+          .is('phase', null);
 
         if (objError) throw objError;
 
