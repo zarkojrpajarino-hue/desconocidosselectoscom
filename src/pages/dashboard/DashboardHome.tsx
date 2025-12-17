@@ -6,24 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, Users, Clock, RefreshCw, User, Building2, MapPin, Lightbulb, Zap, ChevronDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Users, Clock, User, Lightbulb, Zap, ChevronDown, AlertTriangle } from 'lucide-react';
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import { toast } from 'sonner';
-import CountdownTimer from '@/components/CountdownTimer';
-import WorkModeSelector from '@/components/WorkModeSelector';
-import ProgressBar from '@/components/ProgressBar';
-import TaskList from '@/components/TaskList';
 import StatsCards from '@/components/StatsCards';
 import TeamProgress from '@/components/TeamProgress';
-import UrgentAlert from '@/components/UrgentAlert';
 import NotificationBell from '@/components/NotificationBell';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
-import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWednesdayStart } from '@/lib/weekUtils';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
+import { PhaseWeeklyTasks } from '@/components/dashboard/PhaseWeeklyTasks';
 
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
@@ -49,7 +44,6 @@ interface SystemConfig {
   [key: string]: unknown;
 }
 interface UserWeeklyData {
-  mode: 'agresivo' | 'conservador' | 'moderado';
   task_limit: number;
   [key: string]: unknown;
 }
@@ -76,7 +70,6 @@ const DashboardHome = () => {
   const [userWeeklyData, setUserWeeklyData] = useState<UserWeeklyData | null>(null);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [completions, setCompletions] = useState<CompletionItem[]>([]);
-  const [isWeekLocked, setIsWeekLocked] = useState(false);
   const [showAvailabilityBlock, setShowAvailabilityBlock] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
@@ -86,13 +79,8 @@ const DashboardHome = () => {
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
   const [hasTeam, setHasTeam] = useState(true);
   const [isTransition, setIsTransition] = useState(isInTransitionPeriod());
-  const [tasksThisWeekOpen, setTasksThisWeekOpen] = useState(true);
   const [overdueTasksOpen, setOverdueTasksOpen] = useState(true);
   const [overdueTasks, setOverdueTasks] = useState<TaskItem[]>([]);
-  const {
-    remainingSwaps,
-    limit
-  } = useTaskSwaps(user?.id || '', userWeeklyData?.mode || 'moderado');
 
   // Detectar periodo de transición cada minuto
   useEffect(() => {
@@ -350,15 +338,9 @@ const DashboardHome = () => {
 
             {/* PhaseSelector removed - PhaseTimeline replaces it */}
 
-            {/* Countdown */}
-            <CountdownTimer deadline={getCurrentWeekDeadline().toISOString()} onTimeExpired={setIsWeekLocked} />
-
-            {/* Urgent Alert */}
-            {!isWeekLocked && <UrgentAlert deadline={getCurrentWeekDeadline().toISOString()} totalTasks={tasks.length} completedTasks={completions.length} pendingTasks={tasks.filter(task => !completions.some(c => c.task_id === task.id))} />}
-
             {/* Stats */}
             <div data-testid="stats-cards">
-              <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} organizationId={currentOrganizationId || undefined} taskLimit={userWeeklyData?.task_limit} remainingSwaps={remainingSwaps} swapLimit={limit} />
+              <StatsCards userId={user?.id} currentPhase={systemConfig?.current_phase} organizationId={currentOrganizationId || undefined} taskLimit={userWeeklyData?.task_limit} />
             </div>
 
             {/* Sync All Card */}
@@ -375,7 +357,7 @@ const DashboardHome = () => {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   <IntegrationButton type="slack" action="notify" data={{
-                message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` + `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` + `🔄 Cambios restantes: ${remainingSwaps}/${limit}\n` + `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` + `_¡Seguimos avanzando! 💪_`,
+                message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` + `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` + `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` + `_¡Seguimos avanzando! 💪_`,
                 channel: '#daily-updates'
               }} label="Resumen a Slack" size="sm" />
                   
@@ -396,12 +378,6 @@ const DashboardHome = () => {
 
             {/* Team Progress - Now available for ALL users */}
             <TeamProgress currentPhase={systemConfig?.current_phase || 1} currentUserId={user?.id} organizationId={currentOrganizationId || undefined} />
-
-            {/* Work Mode Selector */}
-            <WorkModeSelector userId={user?.id} currentMode={userWeeklyData?.mode} onModeChange={fetchUserWeeklyData} />
-
-            {/* Progress Bar */}
-            <ProgressBar completedTasks={fullyCompletedCount} totalTasks={tasks.length} />
 
             {/* Tareas Atrasadas - SIEMPRE VISIBLE si hay tareas atrasadas */}
             {overdueTasks.length > 0 && (
@@ -468,37 +444,8 @@ const DashboardHome = () => {
               </Card>
             )}
 
-            {/* Mis Tareas Esta Semana - Solo cuando NO estamos en transición */}
-            {!isTransition && (
-              <Collapsible open={tasksThisWeekOpen} onOpenChange={setTasksThisWeekOpen}>
-                <Card className="shadow-card">
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle>Mis Tareas Esta Semana</CardTitle>
-                            <CardDescription>Tareas asignadas a ti en esta fase</CardDescription>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{tasks.length}</Badge>
-                          <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${tasksThisWeekOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent className="pt-0">
-                      <TaskList userId={user?.id} currentPhase={systemConfig?.current_phase} isLocked={isWeekLocked} mode={userWeeklyData?.mode || 'moderado'} taskLimit={userWeeklyData?.task_limit} />
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            )}
+            {/* Tareas de la Fase por Semanas */}
+            <PhaseWeeklyTasks />
           </>}
       </main>
     </>;

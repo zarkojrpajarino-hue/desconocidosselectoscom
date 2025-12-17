@@ -84,14 +84,7 @@ const AVAILABILITY_MULTIPLIER: Record<string, number> = {
   overtime: 1.2
 };
 
-const WORK_MODE_MULTIPLIER: Record<string, number> = {
-  conservative: 0.75,
-  conservador: 0.75,
-  moderate: 1.0,
-  moderado: 1.0,
-  aggressive: 1.35,
-  agresivo: 1.35
-};
+// Work modes eliminados - la IA genera todas las tareas necesarias para la fase
 
 interface AdaptiveTaskResult {
   totalTasks: number;
@@ -103,7 +96,6 @@ interface AdaptiveTaskResult {
     industryMult: number;
     resourcesMult: number;
     availabilityMult: number;
-    workModeMult: number;
     finalComplexity: number;
   };
 }
@@ -125,7 +117,6 @@ function calculateAdaptiveTasks(input: {
   industry: string;
   fundingStage: string;
   teamAvailability: string;
-  workMode: string;
 }): AdaptiveTaskResult {
   // 1. Base de complejidad de la fase
   const phaseKey = getPhaseKey(input.methodology, input.phaseNumber);
@@ -138,7 +129,6 @@ function calculateAdaptiveTasks(input: {
   const industryMult = INDUSTRY_MULTIPLIER[input.industry?.toLowerCase()] || 1.0;
   const resourcesMult = RESOURCES_MULTIPLIER[input.fundingStage?.toLowerCase()] || 1.0;
   const availabilityMult = AVAILABILITY_MULTIPLIER[input.teamAvailability?.toLowerCase()] || 1.0;
-  const workModeMult = WORK_MODE_MULTIPLIER[input.workMode?.toLowerCase()] || 1.0;
 
   // 3. Calcular complejidad ajustada
   let complexity = baseComplexity;
@@ -150,19 +140,16 @@ function calculateAdaptiveTasks(input: {
 
   const finalComplexity = complexity;
 
-  // 4. Convertir a tareas (4 puntos = 1 tarea)
+  // 4. Convertir a tareas (4 puntos = 1 tarea) - Sin multiplicador de modo
   let totalTasks = complexity / 4;
 
-  // 5. Aplicar modo de trabajo
-  totalTasks *= workModeMult;
-
-  // 6. GUARDRAILS - límites saludables
+  // 5. GUARDRAILS - límites saludables
   const minTasks = Math.max(4, Math.ceil(input.teamSize * 1.5));
   const maxTasks = Math.min(25, input.teamSize * 8);
   totalTasks = Math.max(minTasks, Math.min(maxTasks, totalTasks));
   totalTasks = Math.round(totalTasks);
 
-  // 7. Tareas por persona (mínimo 1, máximo 12)
+  // 6. Tareas por persona (mínimo 1, máximo 12)
   let tasksPerPerson = totalTasks / input.teamSize;
   tasksPerPerson = Math.max(1, Math.min(12, tasksPerPerson));
   tasksPerPerson = Math.round(tasksPerPerson * 10) / 10;
@@ -177,7 +164,6 @@ function calculateAdaptiveTasks(input: {
       industryMult,
       resourcesMult,
       availabilityMult,
-      workModeMult,
       finalComplexity
     }
   };
@@ -407,8 +393,7 @@ serve(async (req) => {
         teamSize: actualTeamSize,
         industry: org?.industry || 'generic',
         fundingStage: org?.funding_stage || 'bootstrapped',
-        teamAvailability: 'full_time',
-        workMode
+        teamAvailability: 'full_time'
       });
 
       console.log(`Adaptive calculation for phase ${phase.phase_number}:`, {
