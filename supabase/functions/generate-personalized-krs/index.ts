@@ -293,8 +293,7 @@ IMPORTANTE:
       current_value: kr.start_value,
       unit: kr.unit,
       weight: 1.0,
-      status: 'on_track',
-      organization_id: userRole?.organization_id
+      status: 'on_track'
     }));
 
     const { data: insertedKRs, error: insertError } = await supabase
