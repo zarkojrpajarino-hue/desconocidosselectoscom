@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AIAnalysisResult, AnalysisState } from '@/types/ai-analysis.types';
+import { logger } from '@/lib/logger';
 
 interface UseAIAnalysisOptions {
   organization_id: string;
@@ -16,6 +17,27 @@ interface UseAIAnalysisOptions {
   data_period?: {
     start_date: string;
     end_date: string;
+  };
+}
+
+interface AdditionalAnalysisData {
+  // Preguntas predefinidas respondidas
+  answers?: Record<string, string | number | boolean | string[]>;
+  // Datos actualizados manualmente
+  updatedMetrics?: {
+    currentRevenue?: number;
+    currentExpenses?: number;
+    teamSize?: number;
+    mainChallenges?: string[];
+    growthGoals?: string;
+    marketContext?: string;
+    competitorUpdates?: string;
+  };
+  // Contexto adicional
+  context?: {
+    urgency?: 'low' | 'medium' | 'high';
+    focusAreas?: string[];
+    specificQuestions?: string[];
   };
 }
 
@@ -69,7 +91,7 @@ export function useAIAnalysis({
         }));
       }
     } catch (error) {
-      console.error('Error loading analysis:', error);
+      logger.error('Error loading analysis:', error);
       setState(prev => ({
         ...prev,
         loading: false,
@@ -99,7 +121,7 @@ export function useAIAnalysis({
         history: data?.map(d => d.analysis_data as unknown as AIAnalysisResult) || [],
       }));
     } catch (error) {
-      console.error('Error loading history:', error);
+      logger.error('Error loading history:', error);
       toast({
         title: 'Error',
         description: 'No se pudo cargar el histórico de análisis',
@@ -109,24 +131,30 @@ export function useAIAnalysis({
   }, [organization_id, toast]);
 
   // ============================================
-  // GENERAR NUEVO ANÁLISIS
+  // GENERAR NUEVO ANÁLISIS CON DATOS ADICIONALES
   // ============================================
-  const generateAnalysis = useCallback(async () => {
+  const generateAnalysis = useCallback(async (additionalData?: AdditionalAnalysisData) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
       toast({
-        title: 'Generando análisis...',
-        description: 'Esto puede tardar hasta 2 minutos. Por favor espera.',
+        title: 'Generando análisis completo...',
+        description: 'Recopilando datos y analizando tu negocio. Esto puede tardar hasta 2 minutos.',
       });
 
-      // Llamar a la edge function v3
+      // Llamar a la edge function v3 con datos adicionales
       const { data, error } = await supabase.functions.invoke(
         'analyze-project-data-v3',
         {
           body: {
             organizationId: organization_id,
             includeCompetitors,
+            // Enviar datos adicionales del modal
+            additionalData: additionalData ? {
+              answers: additionalData.answers,
+              updatedMetrics: additionalData.updatedMetrics,
+              context: additionalData.context,
+            } : undefined,
           },
         }
       );
@@ -145,14 +173,14 @@ export function useAIAnalysis({
 
         toast({
           title: '✅ Análisis completado',
-          description: 'El análisis se ha generado exitosamente',
+          description: 'El análisis se ha generado exitosamente con todos los datos proporcionados',
         });
 
         // Recargar histórico
         loadHistory();
       }
     } catch (error) {
-      console.error('Error generating analysis:', error);
+      logger.error('Error generating analysis:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error generating analysis';
       
       setState(prev => ({
@@ -213,7 +241,7 @@ export function useAIAnalysis({
           });
         }
       } catch (error) {
-        console.error('Error exporting analysis:', error);
+        logger.error('Error exporting analysis:', error);
         toast({
           title: 'Error al exportar',
           description: error instanceof Error ? error.message : 'Error desconocido',
