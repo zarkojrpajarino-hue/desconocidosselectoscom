@@ -4459,6 +4459,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          admin_visibility_team: boolean | null
           ai_analysis_count: number | null
           ai_generation_completed_at: string | null
           ai_generation_error: string | null
@@ -4543,6 +4544,7 @@ export type Database = {
           value_proposition: string
         }
         Insert: {
+          admin_visibility_team?: boolean | null
           ai_analysis_count?: number | null
           ai_generation_completed_at?: string | null
           ai_generation_error?: string | null
@@ -4627,6 +4629,7 @@ export type Database = {
           value_proposition: string
         }
         Update: {
+          admin_visibility_team?: boolean | null
           ai_analysis_count?: number | null
           ai_generation_completed_at?: string | null
           ai_generation_error?: string | null
