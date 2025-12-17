@@ -1,12 +1,12 @@
 // supabase/functions/send-weekly-summary/index.ts
 /**
- * Send Weekly Summary - CORREGIDO
- * Usa templates reutilizables con branding OPTIMUS-K
+ * Send Weekly Summary - with Error Handler
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
 import { weeklySummaryEmail, emailConfig } from '../_shared/email-templates.ts';
+import { handleError, createErrorResponse } from '../_shared/errorHandler.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -14,6 +14,8 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const FUNCTION_NAME = 'send-weekly-summary';
 
 interface WeeklySummaryRequest {
   userId: string;
@@ -23,6 +25,8 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const requestId = crypto.randomUUID();
 
   try {
     const { userId }: WeeklySummaryRequest = await req.json();
@@ -35,10 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!isScheduledJob) {
       const authHeader = req.headers.get('Authorization');
       if (!authHeader) {
-        return new Response(
-          JSON.stringify({ error: 'Authorization required' }),
-          { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
+        return createErrorResponse('Authorization required', 401, corsHeaders);
       }
       
       const supabaseClient = createClient(
@@ -49,10 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
       if (authError || !authUser || authUser.id !== userId) {
-        return new Response(
-          JSON.stringify({ error: 'Not authorized' }),
-          { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
+        return createErrorResponse('Not authorized', 403, corsHeaders);
       }
     }
 
@@ -68,7 +66,9 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', userId)
       .single();
 
-    if (!user) throw new Error('Usuario no encontrado');
+    if (!user) {
+      return createErrorResponse('Usuario no encontrado', 404, corsHeaders);
+    }
 
     // Check user preferences
     const { data: prefs } = await supabaseAdmin
@@ -78,9 +78,9 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (prefs && (!prefs.email_enabled || !prefs.weekly_summary)) {
-      console.log('User has disabled weekly summaries');
+      console.log(`[${FUNCTION_NAME}] User has disabled weekly summaries (requestId: ${requestId})`);
       return new Response(
-        JSON.stringify({ message: 'User has disabled weekly summaries' }),
+        JSON.stringify({ message: 'User has disabled weekly summaries', requestId }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
@@ -163,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     });
 
-    console.log('Weekly summary enviado:', emailResponse);
+    console.log(`[${FUNCTION_NAME}] ✅ Weekly summary enviado (requestId: ${requestId}):`, emailResponse);
 
     // Log email
     try {
@@ -178,10 +178,10 @@ const handler = async (req: Request): Promise<Response> => {
           status: 'sent'
         });
     } catch (logError) {
-      console.error('Error logging email:', logError);
+      console.error(`[${FUNCTION_NAME}] Error logging email:`, logError);
     }
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ ...emailResponse, requestId }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -189,14 +189,17 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error enviando weekly summary:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/send-weekly-summary',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500,
+      corsHeaders
     );
   }
 };

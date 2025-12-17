@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { handleError, createErrorResponse } from "../_shared/errorHandler.ts";
 
 const stripe = new Stripe(Deno.env.get('SECRET_KEY_stripe')!, {
   apiVersion: '2024-11-20.acacia',
@@ -11,23 +12,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const FUNCTION_NAME = 'create-checkout';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const { planName, organizationId } = await req.json();
 
     if (!planName || !organizationId) {
-      throw new Error('Missing planName or organizationId');
+      return createErrorResponse('Missing planName or organizationId', 400, corsHeaders);
     }
 
     // Security: Verify user is authenticated and belongs to the organization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header provided');
+      return createErrorResponse('No authorization header provided', 401, corsHeaders);
     }
 
     const supabaseAuth = createClient(
@@ -39,7 +43,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
     
     if (userError || !user) {
-      throw new Error('Invalid authentication token');
+      return createErrorResponse('Invalid authentication token', 401, corsHeaders);
     }
 
     // Verify user has admin role in this organization
@@ -56,16 +60,16 @@ serve(async (req) => {
       .single();
 
     if (membershipError || !membership) {
-      console.error('[create-checkout] ❌ User not a member of organization:', user.id, organizationId);
-      throw new Error('You are not a member of this organization');
+      console.error(`[${FUNCTION_NAME}] ❌ User not a member of organization:`, user.id, organizationId);
+      return createErrorResponse('You are not a member of this organization', 403, corsHeaders);
     }
 
     if (membership.role !== 'admin') {
-      console.error('[create-checkout] ❌ User is not admin:', user.id, membership.role);
-      throw new Error('Only organization admins can manage billing');
+      console.error(`[${FUNCTION_NAME}] ❌ User is not admin:`, user.id, membership.role);
+      return createErrorResponse('Only organization admins can manage billing', 403, corsHeaders);
     }
 
-    console.log(`[create-checkout] ✅ Auth verified: user ${user.id} is admin of org ${organizationId}`);
+    console.log(`[${FUNCTION_NAME}] ✅ Auth verified: user ${user.id} is admin of org ${organizationId} (requestId: ${requestId})`);
 
     // Map plan name to actual Stripe price ID
     const planMap: Record<string, string> = {
@@ -85,12 +89,12 @@ serve(async (req) => {
     }
     
     if (!priceId) {
-      throw new Error(`Invalid plan name or price ID for plan: ${planName}`);
+      return createErrorResponse(`Invalid plan name or price ID for plan: ${planName}`, 400, corsHeaders);
     }
 
-    console.log(`[create-checkout] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}, priceId: ${priceId}`);
+    console.log(`[${FUNCTION_NAME}] 🚀 Creating checkout for org: ${organizationId}, plan: ${planName}, priceId: ${priceId}`);
 
-    // Get organization (reuse supabaseService from auth check)
+    // Get organization
     const { data: org, error: orgError } = await supabaseService
       .from('organizations')
       .select('*')
@@ -98,14 +102,14 @@ serve(async (req) => {
       .single();
 
     if (orgError || !org) {
-      throw new Error('Organization not found');
+      return createErrorResponse('Organization not found', 404, corsHeaders);
     }
 
     let customerId = org.stripe_customer_id;
 
     // Create customer if doesn't exist
     if (!customerId) {
-      console.log('[create-checkout] 👤 Creating new Stripe customer');
+      console.log(`[${FUNCTION_NAME}] 👤 Creating new Stripe customer`);
       
       const customer = await stripe.customers.create({
         email: org.contact_email,
@@ -123,7 +127,7 @@ serve(async (req) => {
         .update({ stripe_customer_id: customerId })
         .eq('id', organizationId);
 
-      console.log(`[create-checkout] ✅ Customer created: ${customerId}`);
+      console.log(`[${FUNCTION_NAME}] ✅ Customer created: ${customerId}`);
     }
 
     // Create checkout session
@@ -149,16 +153,17 @@ serve(async (req) => {
         organization_id: organizationId,
         plan_name: planName,
       },
-      allow_promotion_codes: true, // Permitir códigos de descuento
+      allow_promotion_codes: true,
       billing_address_collection: 'required',
     });
 
-    console.log(`[create-checkout] ✅ Checkout session created: ${session.id}`);
+    console.log(`[${FUNCTION_NAME}] ✅ Checkout session created: ${session.id}`);
 
     return new Response(
       JSON.stringify({ 
         url: session.url,
-        sessionId: session.id 
+        sessionId: session.id,
+        requestId
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -166,14 +171,18 @@ serve(async (req) => {
       }
     );
 
-  } catch (error: any) {
-    console.error('[create-checkout] ❌ Error:', error.message);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+  } catch (error) {
+    await handleError(error, {
+      functionName: FUNCTION_NAME,
+      requestId,
+      endpoint: '/create-checkout',
+      method: req.method,
+    });
+
+    return createErrorResponse(
+      error instanceof Error ? error.message : 'Internal server error',
+      500,
+      corsHeaders
     );
   }
 });
