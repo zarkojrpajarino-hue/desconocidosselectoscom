@@ -42,10 +42,9 @@ export const useToolContent = (toolType: ToolType) => {
   )?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
 
-  // Cargar contenido existente
+  // Cargar contenido existente y auto-generar si no existe
   useEffect(() => {
-    const fetchContent = async () => {
-      // ✅ CORREGIDO: Verificar user y currentOrganizationId
+    const fetchAndAutoGenerate = async () => {
       if (!user || !currentOrganizationId) {
         setLoading(false);
         return;
@@ -54,28 +53,57 @@ export const useToolContent = (toolType: ToolType) => {
       setLoading(true);
 
       try {
-        // ✅ CORREGIDO: Usar currentOrganizationId directamente, sin query a user_roles
         const { data, error } = await supabase
           .from('tool_contents')
           .select('*')
           .eq('organization_id', currentOrganizationId)
           .eq('tool_type', toolType)
-          .maybeSingle(); // ✅ CORREGIDO: Usar maybeSingle() para evitar error si no existe
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching tool content:', error);
         }
 
-        setContent(data);
+        if (data) {
+          setContent(data);
+          setLoading(false);
+        } else {
+          // Auto-generar si no existe contenido
+          setLoading(false);
+          setGenerating(true);
+          
+          try {
+            const { data: generatedData, error: genError } = await supabase.functions.invoke('generate-tool-content', {
+              body: { toolType }
+            });
+
+            if (genError) throw genError;
+
+            if (generatedData?.success) {
+              // Refetch para obtener el contenido guardado
+              const { data: newContent } = await supabase
+                .from('tool_contents')
+                .select('*')
+                .eq('organization_id', currentOrganizationId)
+                .eq('tool_type', toolType)
+                .maybeSingle();
+              
+              setContent(newContent);
+            }
+          } catch (genErr) {
+            console.error('Error auto-generating tool content:', genErr);
+          } finally {
+            setGenerating(false);
+          }
+        }
       } catch (error) {
         console.error('Error:', error);
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchContent();
-  }, [user, currentOrganizationId, toolType]); // ✅ CORREGIDO: Agregado currentOrganizationId a dependencies
+    fetchAndAutoGenerate();
+  }, [user, currentOrganizationId, toolType]);
 
   const generateContent = async () => {
     // Si ya existe contenido, solo admin puede regenerar
