@@ -59,7 +59,6 @@ serve(async (req) => {
               organization_id: organizationId,
               tool_type: toolType,
               content: content,
-              generated_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             }, {
               onConflict: 'organization_id,tool_type'
