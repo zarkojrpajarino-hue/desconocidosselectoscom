@@ -11,7 +11,9 @@ import {
   Target, 
   Calendar,
   Lightbulb,
-  Clock
+  Clock,
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { usePhaseWeeklyTasks, useCurrentPhase, PhaseTask } from '@/hooks/usePhaseWeeklyTasks';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +29,7 @@ export function PhaseWeeklyTasks() {
   const { user, currentOrganizationId } = useAuth();
   const { data: currentPhase, isLoading: phaseLoading } = useCurrentPhase();
   const { data: weeklyData, isLoading: tasksLoading } = usePhaseWeeklyTasks(currentPhase?.phase_number);
-  const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(user?.id || '', 'moderado');
+  const { remainingSwaps, totalSwaps, usedSwaps, reload: reloadSwaps } = useTaskSwaps(user?.id || '', currentPhase?.phase_number);
   const queryClient = useQueryClient();
   
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
@@ -75,17 +77,22 @@ export function PhaseWeeklyTasks() {
         toast.success('¡Tarea completada!');
       } else {
         // Unmark - delete completion record completely
-        await supabase
+        const { error: deleteError } = await supabase
           .from('task_completions')
           .delete()
           .eq('task_id', taskId)
           .eq('user_id', user.id);
         
+        if (deleteError) {
+          console.error('Error deleting completion:', deleteError);
+          throw deleteError;
+        }
+        
         toast.info('Tarea marcada como pendiente');
       }
       
-      // Force refresh
-      await queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+      // Force immediate cache clear and refetch
+      queryClient.removeQueries({ queryKey: ['phase-weekly-tasks'] });
       await queryClient.refetchQueries({ queryKey: ['phase-weekly-tasks'] });
     } catch (error) {
       console.error('Error updating task:', error);
@@ -175,12 +182,17 @@ export function PhaseWeeklyTasks() {
           </div>
           <Progress value={weeklyData.progressPercent} className="mt-4 h-2" />
           
-          {/* Swaps remaining */}
-          {remainingSwaps > 0 && (
-            <p className="text-xs text-muted-foreground mt-3">
-              Cambios disponibles esta semana: {remainingSwaps}
-            </p>
-          )}
+          {/* Swaps remaining - New format */}
+          <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-1 text-sm">
+              <RefreshCw className="w-4 h-4 text-warning" />
+              <span className="font-medium">Cambios:</span>
+              <span className={remainingSwaps === 0 ? 'text-destructive' : 'text-foreground'}>
+                {remainingSwaps}
+              </span>
+              <span className="text-muted-foreground">de {totalSwaps} totales</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
@@ -289,6 +301,57 @@ export function PhaseWeeklyTasks() {
                 />
               ))}
             </div>
+          )}
+          
+          {/* Week Complete - Continue Working Card */}
+          {weekProgress === 100 && displayWeek < weeklyData.totalWeeks && (
+            <Card className="mt-4 border-success/30 bg-gradient-to-r from-success/5 to-success/10">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-success" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        ¡Semana completada!
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        ¿Quieres seguir trabajando con tareas de la próxima semana?
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={goToNextWeek}
+                    className="shrink-0"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Ver tareas de semana {displayWeek + 1}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Phase Complete Card */}
+          {weeklyData.progressPercent === 100 && (
+            <Card className="mt-4 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      🎉 ¡Fase completada al 100%!
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Has completado todas las tareas de esta fase. Contacta con tu administrador para avanzar a la siguiente.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </CardContent>
       </Card>
