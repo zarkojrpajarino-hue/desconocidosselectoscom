@@ -701,61 +701,324 @@ Genera SOLO el JSON con este formato exacto:
       throw new Error(`Tipo de herramienta no soportado: ${toolType}`)
     }
 
-    console.log('Calling Lovable AI...')
+    console.log('Calling Lovable AI with tool calling...')
 
-    // Función para llamar a la IA con reintentos
-    const callAIWithRetry = async (retries = 2): Promise<Record<string, unknown>> => {
-      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 4096, // Asegurar respuestas completas
-        }),
-      })
-
-      if (!aiResponse.ok) {
-        const errorText = await aiResponse.text()
-        console.error('AI API error:', aiResponse.status, errorText)
-        throw new Error(`Error de IA: ${aiResponse.status}`)
-      }
-
-      const aiData = await aiResponse.json()
-      const content = aiData.choices[0].message.content
-
-      console.log('AI response received, length:', content.length)
-
-      // Parsear respuesta
-      try {
-        // Intentar extraer JSON de la respuesta
-        const jsonMatch = content.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) {
-          throw new Error('No se encontró JSON en la respuesta')
+    // Definir schemas de herramientas según el tipo
+    const toolSchemas: Record<string, { name: string; description: string; parameters: Record<string, unknown> }> = {
+      buyer_persona: {
+        name: 'generate_buyer_persona',
+        description: 'Genera un buyer persona detallado',
+        parameters: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: 'Nombre del persona' },
+            age: { type: 'string', description: 'Rango de edad' },
+            occupation: { type: 'string', description: 'Ocupación o cargo' },
+            industry: { type: 'string', description: 'Industria donde trabaja' },
+            goals: { type: 'array', items: { type: 'string' }, description: '3-5 objetivos principales' },
+            challenges: { type: 'array', items: { type: 'string' }, description: '3-5 desafíos principales' },
+            values: { type: 'array', items: { type: 'string' }, description: '3-5 valores' },
+            channels: { type: 'array', items: { type: 'string' }, description: '3-5 canales preferidos' },
+            quote: { type: 'string', description: 'Cita representativa' }
+          },
+          required: ['name', 'age', 'occupation', 'industry', 'goals', 'challenges', 'values', 'channels', 'quote'],
+          additionalProperties: false
         }
-        return JSON.parse(jsonMatch[0])
-      } catch (parseError) {
-        console.error('Parse error:', parseError)
-        console.log('AI content preview:', content.substring(0, 500))
-        
-        if (retries > 0) {
-          console.log(`Reintentando... (${retries} intentos restantes)`)
-          // Esperar un poco antes de reintentar
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          return callAIWithRetry(retries - 1)
+      },
+      customer_journey: {
+        name: 'generate_customer_journey',
+        description: 'Genera un customer journey completo',
+        parameters: {
+          type: 'object',
+          properties: {
+            stages: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  touchpoints: { type: 'array', items: { type: 'string' } },
+                  emotions: { type: 'string' },
+                  painPoints: { type: 'array', items: { type: 'string' } },
+                  opportunities: { type: 'array', items: { type: 'string' } }
+                },
+                required: ['name', 'touchpoints', 'emotions', 'painPoints', 'opportunities']
+              }
+            }
+          },
+          required: ['stages'],
+          additionalProperties: false
         }
-        throw new Error('Error al parsear respuesta de IA después de varios intentos')
+      },
+      value_proposition: {
+        name: 'generate_value_proposition',
+        description: 'Genera una propuesta de valor',
+        parameters: {
+          type: 'object',
+          properties: {
+            headline: { type: 'string' },
+            subheadline: { type: 'string' },
+            benefits: { type: 'array', items: { type: 'string' } },
+            features: { type: 'array', items: { type: 'string' } },
+            socialProof: { type: 'string' },
+            cta: { type: 'string' }
+          },
+          required: ['headline', 'subheadline', 'benefits', 'features', 'socialProof', 'cta'],
+          additionalProperties: false
+        }
+      },
+      sales_simulator: {
+        name: 'generate_sales_simulator',
+        description: 'Genera datos para simulador de ventas',
+        parameters: {
+          type: 'object',
+          properties: {
+            scenarios: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  initialInvestment: { type: 'number' },
+                  monthlyGrowth: { type: 'number' },
+                  conversionRate: { type: 'number' },
+                  averageTicket: { type: 'number' }
+                },
+                required: ['name', 'description', 'initialInvestment', 'monthlyGrowth', 'conversionRate', 'averageTicket']
+              }
+            }
+          },
+          required: ['scenarios'],
+          additionalProperties: false
+        }
+      },
+      content_calendar: {
+        name: 'generate_content_calendar',
+        description: 'Genera un calendario de contenido',
+        parameters: {
+          type: 'object',
+          properties: {
+            weeks: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  weekNumber: { type: 'number' },
+                  theme: { type: 'string' },
+                  posts: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        day: { type: 'string' },
+                        platform: { type: 'string' },
+                        type: { type: 'string' },
+                        topic: { type: 'string' },
+                        hook: { type: 'string' }
+                      },
+                      required: ['day', 'platform', 'type', 'topic', 'hook']
+                    }
+                  }
+                },
+                required: ['weekNumber', 'theme', 'posts']
+              }
+            }
+          },
+          required: ['weeks'],
+          additionalProperties: false
+        }
+      },
+      email_templates: {
+        name: 'generate_email_templates',
+        description: 'Genera plantillas de email',
+        parameters: {
+          type: 'object',
+          properties: {
+            templates: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  subject: { type: 'string' },
+                  body: { type: 'string' },
+                  cta: { type: 'string' }
+                },
+                required: ['name', 'type', 'subject', 'body', 'cta']
+              }
+            }
+          },
+          required: ['templates'],
+          additionalProperties: false
+        }
+      },
+      competitor_analysis: {
+        name: 'generate_competitor_analysis',
+        description: 'Genera análisis de competidores',
+        parameters: {
+          type: 'object',
+          properties: {
+            marketOverview: { type: 'string' },
+            competitors: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  strengths: { type: 'array', items: { type: 'string' } },
+                  weaknesses: { type: 'array', items: { type: 'string' } },
+                  marketShare: { type: 'string' },
+                  pricingStrategy: { type: 'string' }
+                },
+                required: ['name', 'strengths', 'weaknesses', 'marketShare', 'pricingStrategy']
+              }
+            },
+            opportunities: { type: 'array', items: { type: 'string' } },
+            threats: { type: 'array', items: { type: 'string' } }
+          },
+          required: ['marketOverview', 'competitors', 'opportunities', 'threats'],
+          additionalProperties: false
+        }
+      },
+      pricing_strategy: {
+        name: 'generate_pricing_strategy',
+        description: 'Genera estrategia de precios',
+        parameters: {
+          type: 'object',
+          properties: {
+            recommendedModel: { type: 'string' },
+            rationale: { type: 'string' },
+            tiers: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  price: { type: 'string' },
+                  features: { type: 'array', items: { type: 'string' } },
+                  targetCustomer: { type: 'string' }
+                },
+                required: ['name', 'price', 'features', 'targetCustomer']
+              }
+            },
+            discountStrategy: { type: 'string' },
+            upsellOpportunities: { type: 'array', items: { type: 'string' } }
+          },
+          required: ['recommendedModel', 'rationale', 'tiers', 'discountStrategy', 'upsellOpportunities'],
+          additionalProperties: false
+        }
+      },
+      elevator_pitch: {
+        name: 'generate_elevator_pitch',
+        description: 'Genera elevator pitches',
+        parameters: {
+          type: 'object',
+          properties: {
+            pitches: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  duration: { type: 'string' },
+                  audience: { type: 'string' },
+                  script: { type: 'string' },
+                  keyPoints: { type: 'array', items: { type: 'string' } }
+                },
+                required: ['duration', 'audience', 'script', 'keyPoints']
+              }
+            }
+          },
+          required: ['pitches'],
+          additionalProperties: false
+        }
+      },
+      objection_handler: {
+        name: 'generate_objection_handler',
+        description: 'Genera manejo de objeciones',
+        parameters: {
+          type: 'object',
+          properties: {
+            objections: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  objection: { type: 'string' },
+                  category: { type: 'string' },
+                  response: { type: 'string' },
+                  followUp: { type: 'string' }
+                },
+                required: ['objection', 'category', 'response', 'followUp']
+              }
+            }
+          },
+          required: ['objections'],
+          additionalProperties: false
+        }
       }
     }
 
-    const toolContent = await callAIWithRetry()
+    const toolSchema = toolSchemas[toolType]
+    if (!toolSchema) {
+      throw new Error(`Schema no definido para: ${toolType}`)
+    }
+
+    // Llamar a la IA con tool calling
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        tools: [{
+          type: 'function',
+          function: toolSchema
+        }],
+        tool_choice: { type: 'function', function: { name: toolSchema.name } }
+      }),
+    })
+
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text()
+      console.error('AI API error:', aiResponse.status, errorText)
+      throw new Error(`Error de IA: ${aiResponse.status}`)
+    }
+
+    const aiData = await aiResponse.json()
+    console.log('AI response received')
+
+    // Extraer el contenido del tool call
+    let toolContent: Record<string, unknown>
+    const toolCall = aiData.choices[0]?.message?.tool_calls?.[0]
+    
+    if (toolCall && toolCall.function?.arguments) {
+      try {
+        toolContent = JSON.parse(toolCall.function.arguments)
+        console.log('Tool content parsed successfully')
+      } catch (parseError) {
+        console.error('Error parsing tool arguments:', parseError)
+        throw new Error('Error al parsear argumentos de herramienta')
+      }
+    } else {
+      // Fallback: intentar parsear del contenido
+      const content = aiData.choices[0]?.message?.content || ''
+      console.log('No tool call found, trying content parse. Content length:', content.length)
+      
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('No se encontró JSON en la respuesta')
+      }
+      toolContent = JSON.parse(jsonMatch[0])
+    }
 
     console.log('Saving tool content to database...')
 
