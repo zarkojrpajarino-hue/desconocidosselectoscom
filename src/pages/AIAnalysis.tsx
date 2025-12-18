@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { DEMO_AI_ANALYSIS, DEMO_MARKET_STUDY } from '@/data/demo-ai-analysis';
+import { DEMO_AI_ANALYSIS } from '@/data/demo-ai-analysis';
 import type { AIAnalysisResult } from '@/types/ai-analysis.types';
 
 const AIAnalysis = () => {
@@ -80,7 +80,7 @@ const AIAnalysis = () => {
 
   // Determine which data to display
   const displayData: AIAnalysisResult | null = showDemoData 
-    ? { ...DEMO_AI_ANALYSIS, market_study: DEMO_MARKET_STUDY } as AIAnalysisResult
+    ? DEMO_AI_ANALYSIS
     : analysis.data;
 
   return (

@@ -357,6 +357,48 @@ export interface Benchmarking {
   peer_comparison: string;
 }
 
+// Market Study Data
+export interface MarketStudy {
+  country_data?: {
+    country_name: string;
+    country_code: string;
+    currency: string;
+    vat_rate: number;
+    corporate_tax_rate: number;
+    population: number;
+    gdp_per_capita: number;
+    internet_penetration: number;
+    ecommerce_penetration: number;
+    median_age: number;
+    unemployment_rate: number;
+    top_social_platforms: string[];
+    top_ecommerce_platforms: string[];
+    data_privacy_law: string;
+  };
+  market_analysis?: {
+    market_size: string;
+    market_growth_rate: string;
+    competition_level: string;
+    entry_barriers: string[];
+    key_trends: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  competitive_analysis?: {
+    positioning: string;
+    threats: string[];
+    opportunities: string[];
+    differentiation: string[];
+  };
+  competitors?: Array<{
+    name: string;
+    description?: string;
+    strengths?: string[];
+    weaknesses?: string[];
+    market_position?: string;
+  }>;
+}
+
 // ============================================
 // ESTRUCTURA COMPLETA DEL ANÁLISIS
 // ============================================
@@ -383,6 +425,7 @@ export interface AIAnalysisResult {
   critical_alerts: Alert[];
   honest_feedback: HonestFeedback;
   benchmarking: Benchmarking;
+  market_study?: MarketStudy; // Market study data
   
   // Metadata
   confidence_score: number; // 0-100

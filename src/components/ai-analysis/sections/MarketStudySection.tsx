@@ -3,7 +3,7 @@
 // Country-based analysis, competitors, market opportunities
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -13,21 +13,17 @@ import {
   Globe,
   Target,
   TrendingUp,
-  TrendingDown,
   Users,
   DollarSign,
   AlertTriangle,
   CheckCircle2,
-  Zap,
   Shield,
   MapPin,
   Building2,
   ShoppingCart,
   Smartphone,
   BarChart3,
-  PieChart as PieChartIcon,
   ArrowUpRight,
-  ExternalLink,
   Star,
   Lightbulb,
 } from 'lucide-react';
@@ -49,59 +45,21 @@ import {
   PolarRadiusAxis,
   Radar,
 } from 'recharts';
-
-interface MarketStudyData {
-  country_data?: {
-    country_name: string;
-    country_code: string;
-    currency: string;
-    vat_rate: number;
-    corporate_tax_rate: number;
-    population: number;
-    gdp_per_capita: number;
-    internet_penetration: number;
-    ecommerce_penetration: number;
-    median_age: number;
-    unemployment_rate: number;
-    top_social_platforms: string[];
-    top_ecommerce_platforms: string[];
-    data_privacy_law: string;
-  };
-  market_analysis?: {
-    market_size: string;
-    market_growth_rate: string;
-    competition_level: string;
-    entry_barriers: string[];
-    key_trends: string[];
-    opportunities: string[];
-    threats: string[];
-  };
-  competitive_analysis?: {
-    positioning: string;
-    threats: string[];
-    opportunities: string[];
-    differentiation: string[];
-  };
-  competitors?: Array<{
-    name: string;
-    description?: string;
-    strengths?: string[];
-    weaknesses?: string[];
-    market_position?: string;
-  }>;
-}
+import { MarketStudy } from '@/types/ai-analysis.types';
 
 interface MarketStudySectionProps {
-  data: MarketStudyData;
+  data: MarketStudy | Record<string, unknown>;
 }
 
 export function MarketStudySection({ data }: MarketStudySectionProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const countryData = data.country_data;
-  const marketAnalysis = data.market_analysis;
-  const competitiveAnalysis = data.competitive_analysis;
-  const competitors = data.competitors || [];
+  // Safe type casting with fallbacks
+  const typedData = data as MarketStudy;
+  const countryData = typedData?.country_data;
+  const marketAnalysis = typedData?.market_analysis;
+  const competitiveAnalysis = typedData?.competitive_analysis;
+  const competitors = typedData?.competitors || [];
 
   const formatNumber = (num: number) => {
     if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`;
