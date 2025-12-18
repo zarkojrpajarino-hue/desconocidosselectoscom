@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Loader2, Building2, Users, Target, Package, RefreshCw, CheckCircle2, AlertCircle, HelpCircle, TrendingUp, Lightbulb, MessageSquare, ShoppingCart, UserCheck } from 'lucide-react';
+import { Loader2, Building2, Users, Target, RefreshCw, CheckCircle2, AlertCircle, HelpCircle, TrendingUp, Lightbulb, MessageSquare, ShoppingCart, UserCheck, Save, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -30,14 +31,17 @@ interface StrategicQuestion {
   helpText?: string;
 }
 
+interface FieldConfig {
+  key: string;
+  label: string;
+  type: 'text' | 'array' | 'json' | 'number';
+  placeholder?: string;
+}
+
 interface OnboardingDataConfig {
   title: string;
   icon: React.ReactNode;
-  fields: Array<{
-    key: string;
-    label: string;
-    type: 'text' | 'array' | 'json';
-  }>;
+  fields: FieldConfig[];
 }
 
 // Configuration for what onboarding data each tool uses
@@ -47,19 +51,19 @@ const TOOL_ONBOARDING_DATA: Record<string, OnboardingDataConfig[]> = {
       title: 'Información del Cliente Ideal',
       icon: <UserCheck className="w-4 h-4" />,
       fields: [
-        { key: 'target_customers', label: 'Clientes Objetivo', type: 'text' },
-        { key: 'icp_criteria', label: 'Criterios ICP', type: 'text' },
-        { key: 'customer_pain_points', label: 'Dolores del Cliente', type: 'text' },
-        { key: 'buying_motivations', label: 'Motivaciones de Compra', type: 'text' },
+        { key: 'target_customers', label: 'Clientes Objetivo', type: 'text', placeholder: 'Ej: Empresas medianas del sector tecnología' },
+        { key: 'icp_criteria', label: 'Criterios ICP', type: 'text', placeholder: 'Ej: Facturación > 1M€, equipo > 20 personas' },
+        { key: 'customer_pain_points', label: 'Dolores del Cliente', type: 'text', placeholder: 'Ej: Falta de automatización, procesos manuales lentos' },
+        { key: 'buying_motivations', label: 'Motivaciones de Compra', type: 'text', placeholder: 'Ej: Ahorro de tiempo, reducción de errores' },
       ]
     },
     {
       title: 'Demografía y Mercado',
       icon: <Target className="w-4 h-4" />,
       fields: [
-        { key: 'geographic_market', label: 'Mercado Geográfico', type: 'text' },
-        { key: 'industry', label: 'Industria', type: 'text' },
-        { key: 'decision_makers', label: 'Tomadores de Decisión', type: 'text' },
+        { key: 'geographic_market', label: 'Mercado Geográfico', type: 'text', placeholder: 'Ej: España, LATAM' },
+        { key: 'industry', label: 'Industria', type: 'text', placeholder: 'Ej: SaaS B2B, Consultoría' },
+        { key: 'decision_makers', label: 'Tomadores de Decisión', type: 'text', placeholder: 'Ej: CEO, Director de Operaciones' },
       ]
     }
   ],
@@ -353,14 +357,19 @@ export const ToolDataReviewModal = ({
 }: ToolDataReviewModalProps) => {
   const { currentOrganizationId } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [organization, setOrganization] = useState<Record<string, unknown> | null>(null);
+  const [editedData, setEditedData] = useState<Record<string, string | number>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('data');
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (open && currentOrganizationId) {
       fetchOrganizationData();
+      setIsEditing(false);
+      setEditedData({});
     }
   }, [open, currentOrganizationId]);
 
@@ -375,6 +384,25 @@ export const ToolDataReviewModal = ({
 
       if (error) throw error;
       setOrganization(data);
+      
+      // Initialize edited data with current values
+      const dataConfig = TOOL_ONBOARDING_DATA[toolType] || [];
+      const initialData: Record<string, string | number> = {};
+      dataConfig.forEach(section => {
+        section.fields.forEach(field => {
+          const value = data[field.key];
+          if (value !== null && value !== undefined) {
+            if (field.type === 'json' && typeof value === 'object') {
+              initialData[field.key] = JSON.stringify(value);
+            } else {
+              initialData[field.key] = String(value);
+            }
+          } else {
+            initialData[field.key] = '';
+          }
+        });
+      });
+      setEditedData(initialData);
     } catch (error) {
       console.error('Error fetching organization:', error);
       toast.error('Error al cargar datos de la organización');
@@ -383,14 +411,61 @@ export const ToolDataReviewModal = ({
     }
   };
 
+  const handleFieldChange = (key: string, value: string) => {
+    setEditedData(prev => ({ ...prev, [key]: value }));
+  };
+
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
+  };
+
+  const handleSaveData = async () => {
+    setSaving(true);
+    try {
+      // Build update object with proper types
+      const dataConfig = TOOL_ONBOARDING_DATA[toolType] || [];
+      const updateObj: Record<string, unknown> = {};
+      
+      dataConfig.forEach(section => {
+        section.fields.forEach(field => {
+          const value = editedData[field.key];
+          if (value !== undefined && value !== '') {
+            if (field.type === 'number') {
+              updateObj[field.key] = parseFloat(String(value)) || 0;
+            } else if (field.type === 'json') {
+              try {
+                updateObj[field.key] = JSON.parse(String(value));
+              } catch {
+                updateObj[field.key] = String(value);
+              }
+            } else {
+              updateObj[field.key] = String(value);
+            }
+          }
+        });
+      });
+
+      const { error } = await supabase
+        .from('organizations')
+        .update(updateObj)
+        .eq('id', currentOrganizationId);
+
+      if (error) throw error;
+      
+      toast.success('Datos guardados correctamente');
+      setIsEditing(false);
+      await fetchOrganizationData();
+    } catch (error) {
+      console.error('Error saving:', error);
+      toast.error('Error al guardar los datos');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleRegenerate = async () => {
     setRegenerating(true);
     try {
-      // Save answers as additional context if needed
       if (Object.keys(answers).length > 0) {
         console.log('Strategic answers for', toolType, ':', answers);
       }
@@ -413,7 +488,7 @@ export const ToolDataReviewModal = ({
     
     const allFields = dataConfig.flatMap(section => section.fields.map(f => f.key));
     const filledFields = allFields.filter(field => {
-      const value = organization[field];
+      const value = editedData[field] || organization[field];
       if (value === null || value === undefined) return false;
       if (typeof value === 'string') return value.trim() !== '';
       if (Array.isArray(value)) return value.length > 0;
@@ -424,42 +499,66 @@ export const ToolDataReviewModal = ({
     return allFields.length > 0 ? Math.round((filledFields.length / allFields.length) * 100) : 0;
   };
 
-  const renderFieldValue = (field: { key: string; label: string; type: 'text' | 'array' | 'json' }) => {
-    const value = organization?.[field.key];
+  const renderEditableField = (field: FieldConfig) => {
+    const value = editedData[field.key] ?? '';
     
-    if (value === null || value === undefined || value === '') {
-      return <span className="text-muted-foreground italic text-xs">No definido</span>;
-    }
-    
-    if (field.type === 'json' && typeof value === 'object') {
-      if (Array.isArray(value)) {
-        return (
-          <div className="flex flex-wrap gap-1">
-            {value.slice(0, 3).map((item, idx) => (
-              <Badge key={idx} variant="outline" className="text-xs">
-                {typeof item === 'object' ? item.name || JSON.stringify(item).slice(0, 30) : String(item)}
-              </Badge>
-            ))}
-            {value.length > 3 && <Badge variant="secondary" className="text-xs">+{value.length - 3}</Badge>}
-          </div>
-        );
+    if (!isEditing) {
+      // Read-only display
+      if (value === '' || value === null || value === undefined) {
+        return <span className="text-muted-foreground italic text-xs">No definido - Haz clic en Editar para añadir</span>;
       }
-      return <span className="text-xs">{JSON.stringify(value).slice(0, 50)}...</span>;
+      
+      if (field.type === 'json') {
+        try {
+          const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+          if (Array.isArray(parsed)) {
+            return (
+              <div className="flex flex-wrap gap-1">
+                {parsed.slice(0, 3).map((item: unknown, idx: number) => {
+                  const displayText = typeof item === 'object' && item !== null 
+                    ? String((item as Record<string, unknown>).name || JSON.stringify(item).slice(0, 30))
+                    : String(item);
+                  return (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {displayText}
+                    </Badge>
+                  );
+                })}
+                {parsed.length > 3 && <Badge variant="secondary" className="text-xs">+{parsed.length - 3}</Badge>}
+              </div>
+            );
+          }
+        } catch {
+          // If parse fails, show as text
+        }
+        return <span className="text-xs">{String(value).slice(0, 80)}...</span>;
+      }
+      
+      const strValue = String(value);
+      return <span className="text-sm">{strValue.length > 100 ? strValue.slice(0, 100) + '...' : strValue}</span>;
     }
-    
-    if (field.type === 'array' && Array.isArray(value)) {
+
+    // Editable input
+    if (field.type === 'number') {
       return (
-        <div className="flex flex-wrap gap-1">
-          {value.slice(0, 4).map((item, idx) => (
-            <Badge key={idx} variant="outline" className="text-xs">{String(item)}</Badge>
-          ))}
-          {value.length > 4 && <Badge variant="secondary" className="text-xs">+{value.length - 4}</Badge>}
-        </div>
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => handleFieldChange(field.key, e.target.value)}
+          placeholder={field.placeholder || `Ingresa ${field.label.toLowerCase()}`}
+          className="h-9"
+        />
       );
     }
-    
-    const strValue = String(value);
-    return <span className="text-sm">{strValue.length > 100 ? strValue.slice(0, 100) + '...' : strValue}</span>;
+
+    return (
+      <Textarea
+        value={String(value)}
+        onChange={(e) => handleFieldChange(field.key, e.target.value)}
+        placeholder={field.placeholder || `Describe ${field.label.toLowerCase()}`}
+        className="min-h-[70px] resize-none"
+      />
+    );
   };
 
   const completeness = calculateCompleteness();
@@ -517,31 +616,72 @@ export const ToolDataReviewModal = ({
               <TabsContent value="data" className="space-y-4 mt-4">
                 {dataConfig.length > 0 ? (
                   <div className="space-y-4">
+                    {/* Edit toggle */}
+                    <div className="flex justify-end">
+                      {isEditing ? (
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => {
+                              setIsEditing(false);
+                              fetchOrganizationData();
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={handleSaveData}
+                            disabled={saving}
+                            className="gap-1"
+                          >
+                            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                            Guardar Cambios
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setIsEditing(true)}
+                          className="gap-1"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Editar Datos
+                        </Button>
+                      )}
+                    </div>
+
                     {dataConfig.map((section, sectionIdx) => (
-                      <Card key={sectionIdx}>
+                      <Card key={sectionIdx} className={isEditing ? 'border-primary/30' : ''}>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center gap-2">
                             {section.icon}
                             {section.title}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                           {section.fields.map((field, fieldIdx) => (
-                            <div key={fieldIdx} className="flex flex-col gap-1">
-                              <span className="text-xs text-muted-foreground font-medium">{field.label}</span>
-                              {renderFieldValue(field)}
+                            <div key={fieldIdx} className="space-y-1.5">
+                              <Label className="text-xs text-muted-foreground font-medium">
+                                {field.label}
+                              </Label>
+                              {renderEditableField(field)}
                             </div>
                           ))}
                         </CardContent>
                       </Card>
                     ))}
                     
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <HelpCircle className="w-3 h-3" />
-                        Para actualizar estos datos, ve a <strong className="ml-1">Perfil → Configuración de Organización</strong>
-                      </p>
-                    </div>
+                    {!isEditing && (
+                      <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                        <p className="text-xs text-primary flex items-center gap-1">
+                          <Pencil className="w-3 h-3" />
+                          Haz clic en <strong className="mx-1">Editar Datos</strong> para actualizar la información
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
