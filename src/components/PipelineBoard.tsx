@@ -31,7 +31,30 @@ interface CustomPipelineStage {
   colorScheme: typeof STAGE_COLORS[0];
 }
 
-const PipelineBoard = () => {
+interface PipelineBoardProps {
+  showDemoData?: boolean;
+}
+
+// Demo data
+const DEMO_STAGES: CustomPipelineStage[] = [
+  { id: 'demo-1', name: 'Descubrimiento', order_index: 0, description: 'Leads nuevos', colorScheme: STAGE_COLORS[0] },
+  { id: 'demo-2', name: 'Calificación', order_index: 1, description: 'Leads calificados', colorScheme: STAGE_COLORS[1] },
+  { id: 'demo-3', name: 'Propuesta', order_index: 2, description: 'Propuesta enviada', colorScheme: STAGE_COLORS[2] },
+  { id: 'demo-4', name: 'Negociación', order_index: 3, description: 'En negociación', colorScheme: STAGE_COLORS[3] },
+  { id: 'demo-5', name: 'Ganado', order_index: 4, description: 'Deals cerrados', colorScheme: STAGE_COLORS[4] },
+  { id: 'demo-6', name: 'Perdido', order_index: 5, description: 'Deals perdidos', colorScheme: STAGE_COLORS[5] },
+];
+
+const DEMO_LEADS: Lead[] = [
+  { id: 'demo-lead-1', name: 'Empresa Tech S.L.', email: 'contacto@empresatech.com', phone: '+34 600 123 456', company: 'Empresa Tech S.L.', position: 'Director General', source: 'website', stage: 'new', pipeline_stage: 'Descubrimiento', lead_type: 'hot', lead_score: 'A', estimated_value: 25000, probability: 60, priority: 'high', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+  { id: 'demo-lead-2', name: 'Consulting Pro', email: 'info@consultingpro.es', phone: '+34 600 234 567', company: 'Consulting Pro', position: 'CEO', source: 'referral', stage: 'qualified', pipeline_stage: 'Calificación', lead_type: 'warm', lead_score: 'B', estimated_value: 15000, probability: 40, priority: 'medium', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+  { id: 'demo-lead-3', name: 'Digital Solutions', email: 'ventas@digitalsolutions.com', phone: '+34 600 345 678', company: 'Digital Solutions', position: 'CTO', source: 'linkedin', stage: 'qualified', pipeline_stage: 'Propuesta', lead_type: 'hot', lead_score: 'A', estimated_value: 45000, probability: 70, priority: 'high', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+  { id: 'demo-lead-4', name: 'StartUp Innovate', email: 'hello@startupinnovate.io', phone: '+34 600 456 789', company: 'StartUp Innovate', position: 'Founder', source: 'event', stage: 'qualified', pipeline_stage: 'Negociación', lead_type: 'hot', lead_score: 'A', estimated_value: 35000, probability: 80, priority: 'high', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+  { id: 'demo-lead-5', name: 'Global Corp', email: 'procurement@globalcorp.com', phone: '+34 600 567 890', company: 'Global Corp', position: 'Procurement Manager', source: 'cold_call', stage: 'won', pipeline_stage: 'Ganado', lead_type: 'warm', lead_score: 'B', estimated_value: 55000, probability: 100, priority: 'medium', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+  { id: 'demo-lead-6', name: 'Small Biz Co', email: 'owner@smallbiz.es', phone: '+34 600 678 901', company: 'Small Biz Co', position: 'Owner', source: 'website', stage: 'new', pipeline_stage: 'Descubrimiento', lead_type: 'cold', lead_score: 'C', estimated_value: 5000, probability: 20, priority: 'low', notes: '', created_by: '', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), assigned_to: null, tags: null, interested_products: null, next_action_date: null, next_action_type: null, last_contact_date: null, conversion_date: null, lost_reason: null, next_action: null, expected_revenue: null, converted_to_customer: null, revenue_entry_id: null, won_date: null, lost_date: null },
+];
+
+const PipelineBoard = ({ showDemoData = false }: PipelineBoardProps) => {
   const { user, currentOrganizationId } = useAuth();
 
   // State
@@ -172,12 +195,12 @@ const PipelineBoard = () => {
     }
   };
 
-  const getLeadsByStage = (stageName: string) => {
-    return leads.filter(lead => lead.pipeline_stage === stageName);
+  const getLeadsByStageForDisplay = (stageName: string, leadsToFilter: Lead[]) => {
+    return leadsToFilter.filter(lead => lead.pipeline_stage === stageName);
   };
 
-  const getStageStats = (stageName: string) => {
-    const stageLeads = getLeadsByStage(stageName);
+  const getStageStatsForDisplay = (stageName: string, leadsToFilter: Lead[]) => {
+    const stageLeads = getLeadsByStageForDisplay(stageName, leadsToFilter);
     const count = stageLeads.length;
     const totalValue = stageLeads.reduce((sum, lead) => sum + (lead.estimated_value || 0), 0);
     const avgValue = count > 0 ? totalValue / count : 0;
@@ -294,10 +317,15 @@ const PipelineBoard = () => {
     }).format(amount);
   };
 
+  // Use demo data if enabled and no real data
+  const displayStages = (pipelineStages.length === 0 && showDemoData) ? DEMO_STAGES : pipelineStages;
+  const displayLeads = (leads.length === 0 && showDemoData) ? DEMO_LEADS : leads;
+  const isDemo = pipelineStages.length === 0 && showDemoData;
+
   // Calculate total pipeline stats
-  const totalPipelineValue = leads.reduce((sum, lead) => sum + (lead.estimated_value || 0), 0);
-  const totalLeads = leads.length;
-  const wonLeads = leads.filter(l => l.stage === 'won').length;
+  const totalPipelineValue = displayLeads.reduce((sum, lead) => sum + (lead.estimated_value || 0), 0);
+  const totalLeads = displayLeads.length;
+  const wonLeads = displayLeads.filter(l => l.stage === 'won').length;
   const conversionRate = totalLeads > 0 ? Math.round((wonLeads / totalLeads) * 100) : 0;
 
   if (loading) {
@@ -326,6 +354,16 @@ const PipelineBoard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Demo Badge */}
+      {isDemo && (
+        <div className="flex items-center gap-2 p-3 bg-info/10 border border-info/30 rounded-lg">
+          <Badge variant="secondary" className="bg-info/20 text-info-foreground">DEMO</Badge>
+          <span className="text-sm text-muted-foreground">
+            Datos de ejemplo. Crea leads reales para ver tu pipeline.
+          </span>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -344,6 +382,7 @@ const PipelineBoard = () => {
           size="lg"
           className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5"
           data-action="create-lead"
+          disabled={isDemo}
         >
           <Plus className="h-5 w-5" />
           Nuevo Lead
@@ -470,9 +509,9 @@ const PipelineBoard = () => {
 
       {/* Pipeline Board */}
       <div id="pipeline-columns" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {pipelineStages.map((stage) => {
-          const stageLeads = getLeadsByStage(stage.name);
-          const stats = getStageStats(stage.name);
+        {displayStages.map((stage) => {
+          const stageLeads = getLeadsByStageForDisplay(stage.name, displayLeads);
+          const stats = getStageStatsForDisplay(stage.name, displayLeads);
           const isDropTarget = dragOverStage === stage.name;
           const colorScheme = stage.colorScheme;
 
