@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -15,6 +18,7 @@ import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
+import { ChevronDown, Target, DollarSign, UserCheck, Clock, X } from 'lucide-react';
 
 interface ProductService {
   name: string;
@@ -54,13 +58,22 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
     next_action: '',
     next_action_date: '',
     interested_products: [] as string[],
-    notes: ''
+    notes: '',
+    // BANT Fields
+    budget_confirmed: false,
+    budget_amount: '',
+    authority_level: 'unknown',
+    need_level: '5',
+    timeline_date: '',
+    competitors: [] as string[],
+    main_objection: ''
   });
 
   useEffect(() => {
     fetchUsers();
     fetchOrganizationProducts();
     if (editLead) {
+      const leadAny = editLead as unknown as Record<string, unknown>;
       setFormData({
         name: editLead.name || '',
         company: editLead.company || '',
@@ -75,7 +88,15 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
         next_action: editLead.next_action || '',
         next_action_date: editLead.next_action_date || '',
         interested_products: editLead.interested_products || [],
-        notes: editLead.notes || ''
+        notes: editLead.notes || '',
+        // BANT Fields
+        budget_confirmed: Boolean(leadAny.budget_confirmed) || false,
+        budget_amount: String(leadAny.budget_amount || ''),
+        authority_level: String(leadAny.authority_level || 'unknown'),
+        need_level: String(leadAny.need_level || '5'),
+        timeline_date: String(leadAny.timeline_date || ''),
+        competitors: Array.isArray(leadAny.competitors) ? leadAny.competitors as string[] : [],
+        main_objection: String(leadAny.main_objection || '')
       });
     }
   }, [editLead, user, currentOrganizationId]);
@@ -199,7 +220,15 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
         notes: formData.notes.trim() || null,
         last_contact_date: new Date().toISOString().split('T')[0],
         created_by: user?.id,
-        organization_id: currentOrganizationId
+        organization_id: currentOrganizationId,
+        // BANT Fields
+        budget_confirmed: formData.budget_confirmed,
+        budget_amount: formData.budget_amount ? parseFloat(formData.budget_amount) : null,
+        authority_level: formData.authority_level,
+        need_level: parseInt(formData.need_level) || 5,
+        timeline_date: formData.timeline_date || null,
+        competitors: formData.competitors.length > 0 ? formData.competitors : null,
+        main_objection: formData.main_objection.trim() || null
       };
 
       if (editLead) {
@@ -463,6 +492,144 @@ const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadMod
                 rows={3}
               />
             </div>
+
+            {/* BANT Qualification Section */}
+            <Collapsible className="border rounded-lg p-3 bg-muted/30">
+              <CollapsibleTrigger className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Calificación BANT</span>
+                  <Badge variant="secondary" className="text-xs">Opcional</Badge>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4 space-y-4">
+                <p className="text-xs text-muted-foreground mb-3">
+                  BANT te ayuda a calificar leads: Budget (Presupuesto), Authority (Decisor), Need (Necesidad), Timeline (Urgencia)
+                </p>
+                
+                {/* Budget */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="budget_confirmed"
+                      checked={formData.budget_confirmed}
+                      onCheckedChange={(checked) => setFormData({ ...formData, budget_confirmed: checked === true })}
+                    />
+                    <Label htmlFor="budget_confirmed" className="text-sm flex items-center gap-1">
+                      <DollarSign className="h-3 w-3" />
+                      Presupuesto confirmado
+                    </Label>
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="Monto del presupuesto (€)"
+                      value={formData.budget_amount}
+                      onChange={(e) => setFormData({ ...formData, budget_amount: e.target.value })}
+                      disabled={!formData.budget_confirmed}
+                    />
+                  </div>
+                </div>
+
+                {/* Authority */}
+                <div>
+                  <Label className="text-sm flex items-center gap-1 mb-2">
+                    <UserCheck className="h-3 w-3" />
+                    Nivel de autoridad
+                  </Label>
+                  <Select 
+                    value={formData.authority_level} 
+                    onValueChange={(value) => setFormData({ ...formData, authority_level: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unknown">Desconocido</SelectItem>
+                      <SelectItem value="decisor">Decisor final</SelectItem>
+                      <SelectItem value="influencer">Influenciador</SelectItem>
+                      <SelectItem value="user">Usuario final</SelectItem>
+                      <SelectItem value="gatekeeper">Gatekeeper</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Need */}
+                <div>
+                  <Label className="text-sm flex items-center gap-1 mb-2">
+                    <Target className="h-3 w-3" />
+                    Nivel de necesidad (1-10)
+                  </Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={formData.need_level}
+                    onChange={(e) => setFormData({ ...formData, need_level: e.target.value })}
+                  />
+                </div>
+
+                {/* Timeline */}
+                <div>
+                  <Label className="text-sm flex items-center gap-1 mb-2">
+                    <Clock className="h-3 w-3" />
+                    Fecha objetivo de decisión
+                  </Label>
+                  <Input
+                    type="date"
+                    value={formData.timeline_date}
+                    onChange={(e) => setFormData({ ...formData, timeline_date: e.target.value })}
+                  />
+                </div>
+
+                {/* Competitors */}
+                <div>
+                  <Label className="text-sm mb-2">Competidores considerados</Label>
+                  <div className="flex gap-2 flex-wrap mb-2">
+                    {formData.competitors.map((comp, idx) => (
+                      <Badge key={idx} variant="secondary" className="gap-1">
+                        {comp}
+                        <X 
+                          className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                          onClick={() => setFormData({
+                            ...formData,
+                            competitors: formData.competitors.filter((_, i) => i !== idx)
+                          })}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                  <Input
+                    placeholder="Escribe y presiona Enter"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const value = e.currentTarget.value.trim();
+                        if (value && !formData.competitors.includes(value)) {
+                          setFormData({
+                            ...formData,
+                            competitors: [...formData.competitors, value]
+                          });
+                          e.currentTarget.value = '';
+                        }
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Main Objection */}
+                <div>
+                  <Label className="text-sm mb-2">Principal objeción</Label>
+                  <Textarea
+                    value={formData.main_objection}
+                    onChange={(e) => setFormData({ ...formData, main_objection: e.target.value })}
+                    placeholder="¿Cuál es la principal barrera u objeción del cliente?"
+                    rows={2}
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="flex gap-2 justify-end">
               <Button 

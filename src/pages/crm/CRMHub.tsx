@@ -12,8 +12,10 @@ import {
   ArrowLeft, TrendingUp, Users, DollarSign, Target, Flame, 
   BarChart3, AlertTriangle, Zap, Plus, Sparkles, ArrowUpRight,
   Clock, Phone, Mail, Calendar, CheckCircle2, Eye, ChevronRight,
-  PieChart, Activity, RefreshCw
+  PieChart, Activity, RefreshCw, ChevronDown, Info
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLeads } from '@/hooks/useLeads';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { formatCurrency } from '@/lib/currencyUtils';
@@ -77,6 +79,7 @@ const CRMHub = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [showDemoData, setShowDemoData] = useState(true);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const { leads, globalStats, loading } = useLeads(user?.id, currentOrganizationId);
   const hasRealData = leads && leads.length > 0;
@@ -194,6 +197,50 @@ const CRMHub = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* CRM Info Card */}
+        <Collapsible open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+          <Card>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Info className="h-5 w-5 text-primary" />
+                    ¿Cómo funciona el CRM?
+                  </CardTitle>
+                  <ChevronDown 
+                    className={`h-5 w-5 text-muted-foreground transition-transform ${isInfoOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-4">
+                <Alert className="border-info/30 bg-info/5">
+                  <AlertTitle className="text-sm">🔗 Relación CRM ↔ Pipeline</AlertTitle>
+                  <AlertDescription className="text-sm space-y-2">
+                    <p><strong>CRM y Pipeline usan los mismos leads</strong> - son dos vistas del mismo dato:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
+                      <li><strong>CRM:</strong> Gestión detallada de cada lead (datos, historial, calificación BANT)</li>
+                      <li><strong>Pipeline:</strong> Vista visual del embudo de ventas (drag-and-drop entre etapas)</li>
+                      <li>Los leads nuevos aparecen automáticamente en el pipeline</li>
+                      <li>Mover leads en el pipeline actualiza su etapa en todo el sistema</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+
+                <Alert className="border-primary/30 bg-primary/5">
+                  <AlertTitle className="text-sm">💡 Calificación BANT</AlertTitle>
+                  <AlertDescription className="text-sm">
+                    Al crear o editar un lead, usa la sección <strong>Calificación BANT</strong> para evaluar:
+                    Budget (presupuesto), Authority (decisor), Need (necesidad) y Timeline (urgencia).
+                    Esto te ayuda a priorizar leads con mayor probabilidad de cierre.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* KPIs Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">

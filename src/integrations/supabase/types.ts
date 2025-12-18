@@ -3397,7 +3397,11 @@ export type Database = {
       leads: {
         Row: {
           assigned_to: string | null
+          authority_level: string | null
+          budget_amount: number | null
+          budget_confirmed: boolean | null
           company: string | null
+          competitors: string[] | null
           conversion_date: string | null
           converted_to_customer: boolean | null
           created_at: string | null
@@ -3414,7 +3418,9 @@ export type Database = {
           lead_type: string | null
           lost_date: string | null
           lost_reason: string | null
+          main_objection: string | null
           name: string
+          need_level: number | null
           next_action: string | null
           next_action_date: string | null
           next_action_type: string | null
@@ -3429,12 +3435,17 @@ export type Database = {
           source: string | null
           stage: string
           tags: string[] | null
+          timeline_date: string | null
           updated_at: string | null
           won_date: string | null
         }
         Insert: {
           assigned_to?: string | null
+          authority_level?: string | null
+          budget_amount?: number | null
+          budget_confirmed?: boolean | null
           company?: string | null
+          competitors?: string[] | null
           conversion_date?: string | null
           converted_to_customer?: boolean | null
           created_at?: string | null
@@ -3451,7 +3462,9 @@ export type Database = {
           lead_type?: string | null
           lost_date?: string | null
           lost_reason?: string | null
+          main_objection?: string | null
           name: string
+          need_level?: number | null
           next_action?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
@@ -3466,12 +3479,17 @@ export type Database = {
           source?: string | null
           stage?: string
           tags?: string[] | null
+          timeline_date?: string | null
           updated_at?: string | null
           won_date?: string | null
         }
         Update: {
           assigned_to?: string | null
+          authority_level?: string | null
+          budget_amount?: number | null
+          budget_confirmed?: boolean | null
           company?: string | null
+          competitors?: string[] | null
           conversion_date?: string | null
           converted_to_customer?: boolean | null
           created_at?: string | null
@@ -3488,7 +3506,9 @@ export type Database = {
           lead_type?: string | null
           lost_date?: string | null
           lost_reason?: string | null
+          main_objection?: string | null
           name?: string
+          need_level?: number | null
           next_action?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
@@ -3503,6 +3523,7 @@ export type Database = {
           source?: string | null
           stage?: string
           tags?: string[] | null
+          timeline_date?: string | null
           updated_at?: string | null
           won_date?: string | null
         }
