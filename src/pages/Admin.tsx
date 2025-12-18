@@ -66,6 +66,83 @@ interface SystemConfig {
   updated_at: string | null;
 }
 
+// =========================================
+// DEMO DATA - Team Mode (with invented names)
+// =========================================
+const DEMO_TEAM_STATS: UserStats[] = [
+  { id: '1', full_name: 'María García López', username: 'mgarcia', email: 'maria.garcia@empresa.com', role: 'admin', totalTasks: 45, completedTasks: 38, validatedTasks: 35, totalPoints: 1250, progress: 84, weeklyMode: 'moderado' },
+  { id: '2', full_name: 'Carlos Rodríguez Martín', username: 'crodriguez', email: 'carlos.rodriguez@empresa.com', role: 'leader', totalTasks: 40, completedTasks: 32, validatedTasks: 30, totalPoints: 980, progress: 80, weeklyMode: 'agresivo' },
+  { id: '3', full_name: 'Ana Fernández Ruiz', username: 'afernandez', email: 'ana.fernandez@empresa.com', role: 'member', totalTasks: 35, completedTasks: 28, validatedTasks: 26, totalPoints: 870, progress: 80, weeklyMode: 'moderado' },
+  { id: '4', full_name: 'Pedro Sánchez Gil', username: 'psanchez', email: 'pedro.sanchez@empresa.com', role: 'member', totalTasks: 38, completedTasks: 25, validatedTasks: 22, totalPoints: 720, progress: 66, weeklyMode: 'conservador' },
+  { id: '5', full_name: 'Laura Martínez Díaz', username: 'lmartinez', email: 'laura.martinez@empresa.com', role: 'member', totalTasks: 42, completedTasks: 35, validatedTasks: 32, totalPoints: 1100, progress: 83, weeklyMode: 'agresivo' },
+  { id: '6', full_name: 'Javier López Castro', username: 'jlopez', email: 'javier.lopez@empresa.com', role: 'member', totalTasks: 30, completedTasks: 18, validatedTasks: 15, totalPoints: 450, progress: 60, weeklyMode: 'conservador' },
+];
+
+const DEMO_TEAM_WEEKLY_PROGRESS: WeeklyProgress[] = [
+  { week: 'Sem 1', completed: 45, validated: 40, points: 1200 },
+  { week: 'Sem 2', completed: 52, validated: 48, points: 1450 },
+  { week: 'Sem 3', completed: 48, validated: 45, points: 1380 },
+  { week: 'Sem 4', completed: 60, validated: 55, points: 1680 },
+  { week: 'Sem 5', completed: 58, validated: 52, points: 1520 },
+  { week: 'Sem 6', completed: 65, validated: 60, points: 1850 },
+];
+
+const DEMO_TEAM_WEEK_COMPARISON: WeekComparison[] = [
+  { week: 'Sem 3', tasksCompleted: 48, avgProgress: 68, totalPoints: 1380, activeUsers: 6 },
+  { week: 'Sem 4', tasksCompleted: 60, avgProgress: 72, totalPoints: 1680, activeUsers: 6 },
+  { week: 'Sem 5', tasksCompleted: 58, avgProgress: 75, totalPoints: 1520, activeUsers: 5 },
+  { week: 'Sem 6', tasksCompleted: 65, avgProgress: 78, totalPoints: 1850, activeUsers: 6 },
+];
+
+const DEMO_TEAM_HEATMAP: HeatmapData[] = [
+  { day: 'Lunes', hour: '09:00', tasks: 12 },
+  { day: 'Lunes', hour: '10:00', tasks: 18 },
+  { day: 'Lunes', hour: '11:00', tasks: 15 },
+  { day: 'Martes', hour: '09:00', tasks: 10 },
+  { day: 'Martes', hour: '14:00', tasks: 20 },
+  { day: 'Miércoles', hour: '10:00', tasks: 14 },
+  { day: 'Miércoles', hour: '15:00', tasks: 16 },
+  { day: 'Jueves', hour: '09:00', tasks: 8 },
+  { day: 'Jueves', hour: '11:00', tasks: 22 },
+  { day: 'Viernes', hour: '10:00', tasks: 11 },
+  { day: 'Viernes', hour: '14:00', tasks: 9 },
+];
+
+// =========================================
+// DEMO DATA - Individual Mode (solo worker)
+// =========================================
+const DEMO_INDIVIDUAL_STATS: UserStats[] = [
+  { id: '1', full_name: 'Tú', username: 'tu', email: 'tu@tuempresa.com', role: 'admin', totalTasks: 52, completedTasks: 41, validatedTasks: 38, totalPoints: 1420, progress: 79, weeklyMode: 'moderado' },
+];
+
+const DEMO_INDIVIDUAL_WEEKLY_PROGRESS: WeeklyProgress[] = [
+  { week: 'Sem 1', completed: 6, validated: 5, points: 180 },
+  { week: 'Sem 2', completed: 8, validated: 7, points: 240 },
+  { week: 'Sem 3', completed: 7, validated: 6, points: 210 },
+  { week: 'Sem 4', completed: 9, validated: 8, points: 280 },
+  { week: 'Sem 5', completed: 6, validated: 5, points: 170 },
+  { week: 'Sem 6', completed: 10, validated: 9, points: 340 },
+];
+
+const DEMO_INDIVIDUAL_WEEK_COMPARISON: WeekComparison[] = [
+  { week: 'Sem 3', tasksCompleted: 7, avgProgress: 65, totalPoints: 210, activeUsers: 1 },
+  { week: 'Sem 4', tasksCompleted: 9, avgProgress: 72, totalPoints: 280, activeUsers: 1 },
+  { week: 'Sem 5', tasksCompleted: 6, avgProgress: 68, totalPoints: 170, activeUsers: 1 },
+  { week: 'Sem 6', tasksCompleted: 10, avgProgress: 79, totalPoints: 340, activeUsers: 1 },
+];
+
+const DEMO_INDIVIDUAL_HEATMAP: HeatmapData[] = [
+  { day: 'Lunes', hour: '09:00', tasks: 2 },
+  { day: 'Lunes', hour: '16:00', tasks: 3 },
+  { day: 'Martes', hour: '10:00', tasks: 2 },
+  { day: 'Miércoles', hour: '09:00', tasks: 1 },
+  { day: 'Miércoles', hour: '14:00', tasks: 4 },
+  { day: 'Jueves', hour: '11:00', tasks: 2 },
+  { day: 'Viernes', hour: '09:00', tasks: 3 },
+  { day: 'Viernes', hour: '15:00', tasks: 1 },
+];
+
+
 const Admin = () => {
   const { userProfile, loading, currentOrganizationId, userOrganizations } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +154,10 @@ const Admin = () => {
   
   // Visibility and team settings
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
-  const [hasTeam, setHasTeam] = useState(true);
+  const [hasTeam, setHasTeam] = useState<boolean | null>(null);
+  
+  // Demo data toggle
+  const [showDemoData, setShowDemoData] = useState(false);
   
   // Filtros avanzados
   const [filterRole, setFilterRole] = useState<string>('all');
@@ -93,6 +173,20 @@ const Admin = () => {
   const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgress[]>([]);
   const [weekComparison, setWeekComparison] = useState<WeekComparison[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
+
+  // Get demo or real data based on toggle and hasTeam setting
+  const displayTeamStats = showDemoData 
+    ? (hasTeam ? DEMO_TEAM_STATS : DEMO_INDIVIDUAL_STATS) 
+    : teamStats;
+  const displayWeeklyProgress = showDemoData 
+    ? (hasTeam ? DEMO_TEAM_WEEKLY_PROGRESS : DEMO_INDIVIDUAL_WEEKLY_PROGRESS) 
+    : weeklyProgress;
+  const displayWeekComparison = showDemoData 
+    ? (hasTeam ? DEMO_TEAM_WEEK_COMPARISON : DEMO_INDIVIDUAL_WEEK_COMPARISON) 
+    : weekComparison;
+  const displayHeatmapData = showDemoData 
+    ? (hasTeam ? DEMO_TEAM_HEATMAP : DEMO_INDIVIDUAL_HEATMAP) 
+    : heatmapData;
 
   // Obtener el rol actual del usuario en la organización seleccionada
   const currentUserRole = userOrganizations.find(
@@ -494,8 +588,8 @@ const Admin = () => {
     toast.success('Filtros aplicados');
   };
 
-  // Aplicar filtros a los datos
-  const filteredTeamStats = teamStats.filter(user => {
+  // Aplicar filtros a los datos - use displayTeamStats for demo/real data
+  const filteredTeamStats = displayTeamStats.filter(user => {
     if (filterRole !== 'all' && user.role !== filterRole) return false;
     if (filterMode !== 'all' && user.weeklyMode !== filterMode) return false;
     return true;
@@ -526,11 +620,11 @@ const Admin = () => {
     ? filteredTeamStats.reduce((sum, u) => sum + u.progress, 0) / filteredTeamStats.length 
     : 0;
 
-  // Calcular métricas de comparación
+  // Calcular métricas de comparación - use displayWeekComparison
   const getCurrentWeekMetrics = () => {
-    if (weekComparison.length === 0) return null;
-    const current = weekComparison[weekComparison.length - 1];
-    const previous = weekComparison[weekComparison.length - 2];
+    if (displayWeekComparison.length === 0) return null;
+    const current = displayWeekComparison[displayWeekComparison.length - 1];
+    const previous = displayWeekComparison[displayWeekComparison.length - 2];
     
     if (!previous) return null;
 
@@ -609,6 +703,18 @@ const Admin = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            {/* Demo Data Toggle */}
+            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50 mr-2">
+              <Switch
+                id="demo-data"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+              <Label htmlFor="demo-data" className="text-xs cursor-pointer">
+                Demo
+              </Label>
+            </div>
+            
             {isAdmin && (
               <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50 mr-2">
                 <Label htmlFor="team-visibility" className="text-xs hidden sm:block">
@@ -930,7 +1036,7 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={weeklyProgress}>
+                    <AreaChart data={displayWeeklyProgress}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="week" />
                       <YAxis />
@@ -950,7 +1056,7 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={weeklyProgress}>
+                    <LineChart data={displayWeeklyProgress}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="week" />
                       <YAxis />

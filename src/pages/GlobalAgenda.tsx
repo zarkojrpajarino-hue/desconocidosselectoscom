@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, Settings, RefreshCw, Cog, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,19 +18,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
 import { format } from 'date-fns';
 
-// Get the correct week start based on custom rules
-const getCorrectWeekStart = (): string => {
-  const weekStart = getCurrentWeekStart(new Date());
-  return format(weekStart, 'yyyy-MM-dd');
-};
-
 export default function GlobalAgenda() {
   const { hasFeature } = usePlanAccess();
   const { user, currentOrganizationId } = useAuth();
   const hasAccess = hasFeature('global_agenda');
 
   const [activeTab, setActiveTab] = useState('agenda');
-  const [weekStart] = useState(getCorrectWeekStart());
   const [showSettings, setShowSettings] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FiltersType>({
@@ -41,14 +34,14 @@ export default function GlobalAgenda() {
     collaborative: 'all',
   });
 
-  // Fetch organization settings to determine has_team
+  // Fetch organization settings including week_start_day
   const { data: orgSettings, isLoading: orgLoading } = useQuery({
     queryKey: ['org-work-settings', currentOrganizationId],
     queryFn: async () => {
       if (!currentOrganizationId) return null;
       const { data, error } = await supabase
         .from('organizations')
-        .select('has_team, collaborative_percentage, team_size')
+        .select('has_team, collaborative_percentage, team_size, week_start_day')
         .eq('id', currentOrganizationId)
         .maybeSingle();
       
@@ -62,6 +55,14 @@ export default function GlobalAgenda() {
 
   const hasTeam = orgSettings?.has_team ?? false;
   const collaborativePercentage = orgSettings?.collaborative_percentage ?? 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const weekStartDay = (orgSettings as any)?.week_start_day ?? 1; // Default Monday
+
+  // Calculate week start based on organization's configured day
+  const weekStart = useMemo(() => {
+    const start = getCurrentWeekStart(new Date(), weekStartDay);
+    return format(start, 'yyyy-MM-dd');
+  }, [weekStartDay]);
 
   const handleRegenerate = () => {
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
@@ -152,6 +153,7 @@ export default function GlobalAgenda() {
             filters={activeFilters}
             hasTeam={hasTeam}
             collaborativePercentage={collaborativePercentage}
+            weekStartDay={weekStartDay}
             onCreateTask={() => setShowCreateTask(true)}
           />
           

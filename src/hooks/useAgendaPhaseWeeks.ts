@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { format, addWeeks, addDays, parseISO } from 'date-fns';
+import { format, addWeeks, addDays } from 'date-fns';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
 
 export interface PhaseWeekInfo {
@@ -13,11 +13,11 @@ export interface PhaseWeekInfo {
   hasAvailability: boolean;
 }
 
-export function useAgendaPhaseWeeks(phaseNumber: number | undefined) {
+export function useAgendaPhaseWeeks(phaseNumber: number | undefined, weekStartDay: number = 1) {
   const { user, currentOrganizationId } = useAuth();
 
   return useQuery({
-    queryKey: ['agenda-phase-weeks', user?.id, currentOrganizationId, phaseNumber],
+    queryKey: ['agenda-phase-weeks', user?.id, currentOrganizationId, phaseNumber, weekStartDay],
     queryFn: async (): Promise<PhaseWeekInfo[]> => {
       if (!user?.id || !currentOrganizationId || !phaseNumber) return [];
 
@@ -47,8 +47,8 @@ export function useAgendaPhaseWeeks(phaseNumber: number | undefined) {
       const tasksPerWeek = 8;
       const totalWeeks = Math.max(1, Math.ceil(tasks.length / tasksPerWeek));
 
-      // Get current week start as base
-      const baseWeekStart = getCurrentWeekStart(new Date());
+      // Get current week start as base, using organization's configured week start day
+      const baseWeekStart = getCurrentWeekStart(new Date(), weekStartDay);
 
       // Get all availability records for the user
       const { data: availabilities } = await supabase
