@@ -243,7 +243,7 @@ export function useBusinessPhases({ organizationId, autoGenerate = true }: UseBu
     });
   }, [phases, updatePhaseMutation]);
 
-  // Activate next phase
+  // Activate next phase and auto-generate organizational OKRs
   const activatePhase = useCallback(async (phaseNumber: number) => {
     const phase = phases?.find(p => p.phase_number === phaseNumber);
     if (!phase) return;
@@ -270,7 +270,25 @@ export function useBusinessPhases({ organizationId, autoGenerate = true }: UseBu
     });
 
     toast.success(`Fase ${phaseNumber}: ${phase.phase_name} activada`);
-  }, [phases, updatePhaseMutation]);
+
+    // Auto-generate organizational OKRs for this phase
+    try {
+      const { error: okrError } = await supabase.functions.invoke('generate-organizational-okrs', {
+        body: { 
+          organizationId: organizationId,
+          phaseNumber: phaseNumber 
+        },
+      });
+      
+      if (!okrError) {
+        toast.success('OKRs organizacionales generados automáticamente');
+        queryClient.invalidateQueries({ queryKey: ['organizational-okrs', organizationId] });
+      }
+    } catch (okrErr) {
+      console.error('Error auto-generating organizational OKRs:', okrErr);
+      // Non-blocking - phase activation succeeded
+    }
+  }, [phases, updatePhaseMutation, organizationId, queryClient]);
 
   // Auto-generate phases if none exist
   useEffect(() => {

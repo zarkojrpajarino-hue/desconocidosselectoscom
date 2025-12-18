@@ -12,13 +12,101 @@ serve(async (req) => {
   }
 
   try {
-    const { userId } = await req.json();
+    const { userId, autoGenerate = false } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Obtener la semana actual del sistema PRIMERO
+    const { data: systemConfig } = await supabase
+      .from('system_config')
+      .select('week_start')
+      .single();
+
+    if (!systemConfig) {
+      throw new Error('Configuración del sistema no encontrada');
+    }
+
+    const currentWeekStart = new Date(systemConfig.week_start).toISOString().split('T')[0];
+
+    // ============================================
+    // NUEVO: Verificar OKRs pendientes de semanas anteriores
+    // ============================================
+    const { data: pendingOKRs } = await supabase
+      .from('objectives')
+      .select(`
+        id,
+        title,
+        description,
+        status,
+        week_start,
+        key_results (
+          id,
+          title,
+          current_value,
+          target_value,
+          status
+        )
+      `)
+      .eq('owner_user_id', userId)
+      .neq('status', 'completed')
+      .lt('week_start', currentWeekStart)
+      .is('phase', null); // Solo OKRs semanales, no organizacionales
+
+    // Si hay OKRs pendientes de semanas anteriores
+    if (pendingOKRs && pendingOKRs.length > 0 && !autoGenerate) {
+      // Contar Key Results incompletos
+      const incompleteKRs = pendingOKRs.flatMap(okr => 
+        // deno-lint-ignore no-explicit-any
+        (okr.key_results as any[] || []).filter((kr: any) => 
+          kr.status !== 'completed' && kr.current_value < kr.target_value
+        )
+      );
+
+      if (incompleteKRs.length > 0) {
+        // Arrastrar los OKRs pendientes a la semana actual
+        const okrIds = pendingOKRs.map(okr => okr.id);
+        
+        await supabase
+          .from('objectives')
+          .update({ week_start: currentWeekStart })
+          .in('id', okrIds);
+
+        console.log(`Arrastrados ${pendingOKRs.length} OKRs pendientes con ${incompleteKRs.length} KRs incompletos a la semana actual`);
+
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: `Tienes ${pendingOKRs.length} OKRs con ${incompleteKRs.length} Key Results pendientes que se han arrastrado a esta semana. Completa tus OKRs actuales antes de generar nuevos.`,
+            pendingOKRs: pendingOKRs.length,
+            pendingKRs: incompleteKRs.length,
+            carried_over: true
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Verificar si ya tiene OKRs para esta semana
+    const { data: existingWeekOKRs } = await supabase
+      .from('objectives')
+      .select('id')
+      .eq('owner_user_id', userId)
+      .eq('week_start', currentWeekStart)
+      .is('phase', null);
+
+    if (existingWeekOKRs && existingWeekOKRs.length > 0 && !autoGenerate) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Ya tienes OKRs generados para esta semana. Completa los existentes primero.',
+          existingOKRs: existingWeekOKRs.length
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verificar límite de generaciones en plan gratuito
     const { data: userRole } = await supabase
@@ -39,7 +127,8 @@ serve(async (req) => {
         const { count: existingOKRs } = await supabase
           .from('objectives')
           .select('*', { count: 'exact', head: true })
-          .eq('owner_user_id', userId);
+          .eq('owner_user_id', userId)
+          .is('phase', null);
 
         if (existingOKRs && existingOKRs >= 2) {
           return new Response(
@@ -62,18 +151,6 @@ serve(async (req) => {
     if (userError || !user) {
       throw new Error('Usuario no encontrado');
     }
-
-    // Obtener la semana actual del sistema
-    const { data: systemConfig } = await supabase
-      .from('system_config')
-      .select('week_start')
-      .single();
-
-    if (!systemConfig) {
-      throw new Error('Configuración del sistema no encontrada');
-    }
-
-    const currentWeekStart = new Date(systemConfig.week_start).toISOString().split('T')[0];
 
     // Obtener TODAS las tareas programadas para esta semana del usuario
     const { data: scheduledTasks } = await supabase
