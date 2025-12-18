@@ -1,12 +1,12 @@
 import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   BookOpen, Target, CheckCircle, AlertTriangle, 
   ArrowRight, Clock, TrendingUp, MessageSquare,
   Shield, Zap
 } from 'lucide-react';
+import { DEMO_PLAYBOOK } from '@/data/demo-practicar-data';
 
 interface SalesStage {
   stage: string;
@@ -62,8 +62,17 @@ interface PlaybookContent {
 }
 
 const Playbook = () => {
-  const renderContent = (playbook: PlaybookContent) => {
+  const renderContent = (data: Record<string, unknown>) => {
+    const playbook = data as PlaybookContent;
     if (!playbook) return null;
+
+    // Safety checks for arrays
+    const salesProcess = Array.isArray(playbook.sales_process) ? playbook.sales_process : [];
+    const keyPrinciples = Array.isArray(playbook.methodology?.key_principles) ? playbook.methodology.key_principles : [];
+    const criteria = Array.isArray(playbook.qualification_framework?.criteria) ? playbook.qualification_framework.criteria : [];
+    const objectionHandling = Array.isArray(playbook.objection_handling) ? playbook.objection_handling : [];
+    const closingTechniques = Array.isArray(playbook.closing_techniques) ? playbook.closing_techniques : [];
+    const kpis = Array.isArray(playbook.kpis) ? playbook.kpis : [];
 
     return (
       <div className="space-y-8">
@@ -78,11 +87,11 @@ const Playbook = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">{playbook.methodology.description}</p>
-              {playbook.methodology.key_principles && (
+              {keyPrinciples.length > 0 && (
                 <div>
                   <h4 className="font-semibold mb-2">Principios Clave</h4>
                   <div className="flex flex-wrap gap-2">
-                    {playbook.methodology.key_principles.map((principle: string, idx: number) => (
+                    {keyPrinciples.map((principle: string, idx: number) => (
                       <Badge key={idx} variant="secondary">{principle}</Badge>
                     ))}
                   </div>
@@ -93,81 +102,86 @@ const Playbook = () => {
         )}
 
         {/* Sales Process */}
-        {playbook.sales_process && playbook.sales_process.length > 0 && (
+        {salesProcess.length > 0 && (
           <div>
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
               Proceso de Ventas
             </h3>
             <div className="space-y-4">
-              {playbook.sales_process.map((stage: SalesStage, idx: number) => (
-                <Card key={idx}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm">
-                          {idx + 1}
-                        </div>
-                        <CardTitle className="text-lg">{stage.stage}</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        {stage.average_duration}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{stage.objective}</p>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {/* Activities */}
-                      {stage.activities && stage.activities.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold text-sm mb-2">Actividades</h4>
-                          <ul className="space-y-1">
-                            {stage.activities.map((activity: string, aIdx: number) => (
-                              <li key={aIdx} className="text-sm flex items-start gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                                <span>{activity}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* Tools */}
-                      {stage.tools && stage.tools.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold text-sm mb-2">Herramientas</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {stage.tools.map((tool: string, tIdx: number) => (
-                              <Badge key={tIdx} variant="outline" className="text-xs">{tool}</Badge>
-                            ))}
+              {salesProcess.map((stage: SalesStage, idx: number) => {
+                const activities = Array.isArray(stage.activities) ? stage.activities : [];
+                const tools = Array.isArray(stage.tools) ? stage.tools : [];
+                
+                return (
+                  <Card key={idx}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm">
+                            {idx + 1}
                           </div>
+                          <CardTitle className="text-lg">{stage.stage}</CardTitle>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm border-t pt-3">
-                      <div className="flex items-center gap-2">
-                        <ArrowRight className="h-4 w-4 text-primary" />
-                        <span className="text-muted-foreground">Criterio de salida:</span>
-                        <span>{stage.exit_criteria}</span>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          {stage.average_duration}
+                        </div>
                       </div>
-                      <Badge variant="secondary">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {stage.conversion_rate_target} conversión
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">{stage.objective}</p>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {/* Activities */}
+                        {activities.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-sm mb-2">Actividades</h4>
+                            <ul className="space-y-1">
+                              {activities.map((activity: string, aIdx: number) => (
+                                <li key={aIdx} className="text-sm flex items-start gap-2">
+                                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                                  <span>{activity}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {/* Tools */}
+                        {tools.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-sm mb-2">Herramientas</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {tools.map((tool: string, tIdx: number) => (
+                                <Badge key={tIdx} variant="outline" className="text-xs">{tool}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm border-t pt-3">
+                        <div className="flex items-center gap-2">
+                          <ArrowRight className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">Criterio de salida:</span>
+                          <span>{stage.exit_criteria}</span>
+                        </div>
+                        <Badge variant="secondary">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          {stage.conversion_rate_target} conversión
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* Qualification Framework */}
-        {playbook.qualification_framework && (
+        {playbook.qualification_framework && criteria.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -177,45 +191,50 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                {playbook.qualification_framework.criteria?.map((criterion: QualificationCriterion, idx: number) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
-                        {criterion.letter}
-                      </div>
-                      <span className="font-semibold">{criterion.meaning}</span>
-                    </div>
-                    
-                    {criterion.questions && criterion.questions.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs text-muted-foreground mb-1">Preguntas clave:</p>
-                        <ul className="space-y-1">
-                          {criterion.questions.map((q: string, qIdx: number) => (
-                            <li key={qIdx} className="text-sm">• {q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    {criterion.red_flags && criterion.red_flags.length > 0 && (
-                      <div>
-                        <p className="text-xs text-destructive mb-1">Red flags:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {criterion.red_flags.map((flag: string, fIdx: number) => (
-                            <Badge key={fIdx} variant="destructive" className="text-xs">{flag}</Badge>
-                          ))}
+                {criteria.map((criterion: QualificationCriterion, idx: number) => {
+                  const questions = Array.isArray(criterion.questions) ? criterion.questions : [];
+                  const redFlags = Array.isArray(criterion.red_flags) ? criterion.red_flags : [];
+                  
+                  return (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
+                          {criterion.letter}
                         </div>
+                        <span className="font-semibold">{criterion.meaning}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      
+                      {questions.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs text-muted-foreground mb-1">Preguntas clave:</p>
+                          <ul className="space-y-1">
+                            {questions.map((q: string, qIdx: number) => (
+                              <li key={qIdx} className="text-sm">• {q}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {redFlags.length > 0 && (
+                        <div>
+                          <p className="text-xs text-destructive mb-1">Red flags:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {redFlags.map((flag: string, fIdx: number) => (
+                              <Badge key={fIdx} variant="destructive" className="text-xs">{flag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
 
         {/* Objection Handling */}
-        {playbook.objection_handling && playbook.objection_handling.length > 0 && (
+        {objectionHandling.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -225,7 +244,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {playbook.objection_handling.map((obj: ObjectionItem, idx: number) => (
+                {objectionHandling.map((obj: ObjectionItem, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-semibold text-destructive">"{obj.objection}"</h4>
@@ -255,7 +274,7 @@ const Playbook = () => {
         )}
 
         {/* Closing Techniques */}
-        {playbook.closing_techniques && playbook.closing_techniques.length > 0 && (
+        {closingTechniques.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -265,7 +284,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                {playbook.closing_techniques.map((technique: ClosingTechnique, idx: number) => (
+                {closingTechniques.map((technique: ClosingTechnique, idx: number) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <h4 className="font-semibold mb-2">{technique.name}</h4>
                     <p className="text-sm text-muted-foreground mb-2">
@@ -282,7 +301,7 @@ const Playbook = () => {
         )}
 
         {/* KPIs */}
-        {playbook.kpis && playbook.kpis.length > 0 && (
+        {kpis.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -292,7 +311,7 @@ const Playbook = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
-                {playbook.kpis.map((kpi: KPIItem, idx: number) => (
+                {kpis.map((kpi: KPIItem, idx: number) => (
                   <div key={idx} className="text-center p-4 border rounded-lg">
                     <h4 className="font-semibold mb-1">{kpi.name}</h4>
                     <p className="text-2xl font-bold text-primary">{kpi.target}</p>
@@ -313,6 +332,7 @@ const Playbook = () => {
       title="Sales Playbook"
       description="Guía completa de metodología, proceso de ventas, calificación y técnicas de cierre"
       renderContent={renderContent}
+      demoData={DEMO_PLAYBOOK}
     />
   );
 };
