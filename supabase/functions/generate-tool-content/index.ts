@@ -57,13 +57,49 @@ serve(async (req) => {
       throw new Error('Organización no encontrada')
     }
 
-    // Construir prompt según tipo de herramienta
-    let prompt = ''
-    let systemPrompt = 'Eres un experto en estrategia empresarial y marketing. Respondes SOLO en formato JSON válido.'
+    // Detectar si es usuario Discovery (idea en validación)
+    const isDiscovery = org.business_stage === 'discovery'
+    let discoveryProfile = null
+    let selectedIdea = null
 
-    if (toolType === 'buyer_persona') {
-      prompt = `Genera un Buyer Persona detallado para esta empresa:
+    if (isDiscovery) {
+      // Obtener perfil de Discovery con la idea seleccionada
+      const { data: profile } = await supabase
+        .from('discovery_profiles')
+        .select('*, curated_ideas(*)')
+        .eq('organization_id', userRole.organization_id)
+        .single()
+      
+      if (profile) {
+        discoveryProfile = profile
+        selectedIdea = profile.curated_ideas
+      }
+    }
 
+    // Construir contexto según tipo de usuario
+    const getBusinessContext = () => {
+      if (isDiscovery && selectedIdea) {
+        return `
+CONTEXTO DE IDEA EN VALIDACIÓN:
+- Idea de negocio: ${selectedIdea.name}
+- Categoría: ${selectedIdea.category}
+- Descripción: ${selectedIdea.description}
+- Público objetivo: ${selectedIdea.target_audience}
+- Problema que resuelve: ${selectedIdea.problem_solved}
+- Modelo de ingresos: ${selectedIdea.revenue_model}
+- Perfil del fundador:
+  - Habilidades: ${discoveryProfile?.skills?.join(', ') || 'No especificadas'}
+  - Industrias con experiencia: ${discoveryProfile?.industries?.join(', ') || 'No especificadas'}
+  - Motivaciones: ${discoveryProfile?.motivations?.join(', ') || 'No especificadas'}
+  - Horas semanales disponibles: ${discoveryProfile?.hours_weekly || 'No especificado'}
+  - Capital inicial: ${discoveryProfile?.initial_capital || 'No especificado'}
+  - Tolerancia al riesgo: ${discoveryProfile?.risk_tolerance || 'No especificada'}/5
+
+IMPORTANTE: Esta es una IDEA EN FASE DE VALIDACIÓN, no un negocio establecido. 
+El contenido debe enfocarse en VALIDAR la idea y conseguir los primeros clientes, no en escalar un negocio existente.
+`
+      }
+      return `
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
 - Industria: ${org.industry}
@@ -72,6 +108,48 @@ CONTEXTO DE LA EMPRESA:
 - Clientes objetivo: ${org.target_customers}
 - Propuesta de valor: ${org.value_proposition}
 - Productos/Servicios: ${JSON.stringify(org.products_services)}
+`
+    }
+
+    // Construir prompt según tipo de herramienta
+    let prompt = ''
+    let systemPrompt = isDiscovery 
+      ? 'Eres un experto en validación de ideas de negocio y Customer Development. Ayudas a emprendedores a validar sus ideas antes de invertir. Respondes SOLO en formato JSON válido.'
+      : 'Eres un experto en estrategia empresarial y marketing. Respondes SOLO en formato JSON válido.'
+
+    if (toolType === 'buyer_persona') {
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera un BUYER PERSONA HIPOTÉTICO para validar esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Este es un persona HIPOTÉTICO para ayudar a validar la idea. 
+Incluye preguntas de validación que el emprendedor debería hacer en entrevistas.
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "name": "Nombre del persona hipotético",
+  "age": "Rango de edad estimado",
+  "occupation": "Ocupación/Cargo probable",
+  "industry": "Industria donde trabaja",
+  "goals": ["Objetivo que tendría este persona", "Objetivo 2", "Objetivo 3"],
+  "challenges": ["Dolor/Problema que la idea resuelve", "Desafío 2", "Desafío 3"],
+  "values": ["Valor 1", "Valor 2", "Valor 3"],
+  "channels": ["Dónde encontrar a este persona", "Canal 2", "Canal 3"],
+  "quote": "Una frase que diría este persona sobre su problema",
+  "validation_questions": [
+    "Pregunta para validar si tiene este problema",
+    "Pregunta para validar willingness-to-pay",
+    "Pregunta para entender su proceso de compra actual"
+  ],
+  "interview_tips": [
+    "Tip 1 para la entrevista de validación",
+    "Tip 2 para obtener insights honestos"
+  ]
+}`
+      } else {
+        prompt = `Genera un Buyer Persona detallado para esta empresa:
+${getBusinessContext()}
 
 Genera SOLO el JSON con este formato exacto:
 {
@@ -85,6 +163,7 @@ Genera SOLO el JSON con este formato exacto:
   "channels": ["Canal 1", "Canal 2", "Canal 3"],
   "quote": "Una cita representativa del persona"
 }`
+      }
 
     } else if (toolType === 'customer_journey') {
       prompt = `Genera un Customer Journey detallado para esta empresa:

@@ -143,6 +143,8 @@ const AppContent = () => {
         <Route path="/install" element={<InstallPage />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/onboarding/startup" element={<OnboardingStartup />} />
+        <Route path="/onboarding/discovery" element={<OnboardingDiscovery />} />
+        <Route path="/discovery-results" element={<DiscoveryResults />} />
         <Route path="/generating-workspace" element={<GeneratingWorkspace />} />
         <Route path="/onboarding/success" element={<OnboardingSuccess />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
