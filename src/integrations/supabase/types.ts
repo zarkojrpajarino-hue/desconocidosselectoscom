@@ -1851,6 +1851,84 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_ideas: {
+        Row: {
+          category: string
+          common_mistakes: string[] | null
+          created_at: string | null
+          description: string
+          difficulty_level: number | null
+          examples: string[] | null
+          first_steps: string[] | null
+          id: string
+          industry_tags: string[] | null
+          is_active: boolean | null
+          min_capital: number | null
+          min_hours_weekly: number | null
+          motivation_tags: string[] | null
+          name: string
+          problem_solved: string
+          required_skills: string[] | null
+          resources: string[] | null
+          revenue_model: string
+          skill_tags: string[] | null
+          slug: string
+          target_audience: string
+          time_to_first_revenue: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          common_mistakes?: string[] | null
+          created_at?: string | null
+          description: string
+          difficulty_level?: number | null
+          examples?: string[] | null
+          first_steps?: string[] | null
+          id?: string
+          industry_tags?: string[] | null
+          is_active?: boolean | null
+          min_capital?: number | null
+          min_hours_weekly?: number | null
+          motivation_tags?: string[] | null
+          name: string
+          problem_solved: string
+          required_skills?: string[] | null
+          resources?: string[] | null
+          revenue_model: string
+          skill_tags?: string[] | null
+          slug: string
+          target_audience: string
+          time_to_first_revenue: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          common_mistakes?: string[] | null
+          created_at?: string | null
+          description?: string
+          difficulty_level?: number | null
+          examples?: string[] | null
+          first_steps?: string[] | null
+          id?: string
+          industry_tags?: string[] | null
+          is_active?: boolean | null
+          min_capital?: number | null
+          min_hours_weekly?: number | null
+          motivation_tags?: string[] | null
+          name?: string
+          problem_solved?: string
+          required_skills?: string[] | null
+          resources?: string[] | null
+          revenue_model?: string
+          skill_tags?: string[] | null
+          slug?: string
+          target_audience?: string
+          time_to_first_revenue?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       custom_dashboards: {
         Row: {
           created_at: string | null
@@ -2065,6 +2143,99 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discovery_profiles: {
+        Row: {
+          business_type_preference: string | null
+          completed_at: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          current_situation: string | null
+          current_step: number | null
+          existing_idea: string | null
+          generated_ideas: Json | null
+          hours_weekly: number | null
+          id: string
+          industries: string[] | null
+          initial_capital: string | null
+          motivations: string[] | null
+          organization_id: string | null
+          revenue_urgency: string | null
+          risk_tolerance: number | null
+          selected_idea_id: string | null
+          skills: string[] | null
+          status: string | null
+          target_audience_preference: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          business_type_preference?: string | null
+          completed_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          current_situation?: string | null
+          current_step?: number | null
+          existing_idea?: string | null
+          generated_ideas?: Json | null
+          hours_weekly?: number | null
+          id?: string
+          industries?: string[] | null
+          initial_capital?: string | null
+          motivations?: string[] | null
+          organization_id?: string | null
+          revenue_urgency?: string | null
+          risk_tolerance?: number | null
+          selected_idea_id?: string | null
+          skills?: string[] | null
+          status?: string | null
+          target_audience_preference?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          business_type_preference?: string | null
+          completed_at?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          current_situation?: string | null
+          current_step?: number | null
+          existing_idea?: string | null
+          generated_ideas?: Json | null
+          hours_weekly?: number | null
+          id?: string
+          industries?: string[] | null
+          initial_capital?: string | null
+          motivations?: string[] | null
+          organization_id?: string | null
+          revenue_urgency?: string | null
+          risk_tolerance?: number | null
+          selected_idea_id?: string | null
+          skills?: string[] | null
+          status?: string | null
+          target_audience_preference?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discovery_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discovery_profiles_selected_idea_id_fkey"
+            columns: ["selected_idea_id"]
+            isOneToOne: false
+            referencedRelation: "curated_ideas"
             referencedColumns: ["id"]
           },
         ]
@@ -7223,6 +7394,7 @@ export type Database = {
           first_trial_started_at: string
           id: string
           ip_address: string | null
+          onboarding_type: string | null
           organization_id: string | null
           user_agent: string | null
           user_id: string | null
@@ -7233,6 +7405,7 @@ export type Database = {
           first_trial_started_at?: string
           id?: string
           ip_address?: string | null
+          onboarding_type?: string | null
           organization_id?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -7243,6 +7416,7 @@ export type Database = {
           first_trial_started_at?: string
           id?: string
           ip_address?: string | null
+          onboarding_type?: string | null
           organization_id?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -8581,6 +8755,10 @@ export type Database = {
       }
       can_use_ai_analysis: { Args: { _user_id: string }; Returns: Json }
       can_use_trial: { Args: { user_email: string }; Returns: Json }
+      can_use_trial_by_type: {
+        Args: { onboard_type: string; user_email: string }
+        Returns: boolean
+      }
       can_user_swap: {
         Args: { p_user_id: string; p_week_number: number }
         Returns: boolean
@@ -8840,6 +9018,10 @@ export type Database = {
           user_id_param?: string
         }
         Returns: Json
+      }
+      register_trial_email_by_type: {
+        Args: { onboard_type: string; user_email: string }
+        Returns: undefined
       }
       send_weekly_summaries_to_admins: { Args: never; Returns: undefined }
       slugify: { Args: { text_input: string }; Returns: string }
