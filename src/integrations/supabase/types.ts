@@ -8476,6 +8476,7 @@ export type Database = {
         Row: {
           full_name: string | null
           hot_leads: number | null
+          organization_id: string | null
           role: string | null
           total_leads: number | null
           total_pipeline_value: number | null
@@ -8483,7 +8484,15 @@ export type Database = {
           user_id: string | null
           won_leads: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
