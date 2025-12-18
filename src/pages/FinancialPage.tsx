@@ -446,7 +446,7 @@ const FinancialPage = () => {
               </Card>
             )}
 
-            <FinancialDashboard key={refreshKey} />
+            <FinancialDashboard key={refreshKey} showDemoData={showDemoData} />
           </TabsContent>
 
           <TabsContent value="projections" className="mt-6">

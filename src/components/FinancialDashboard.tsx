@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Alert } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -72,7 +73,49 @@ interface MarketingROI {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--secondary))'];
 
-const FinancialDashboard = () => {
+// Demo data for professional presentation
+const DEMO_METRICS: FinancialMetrics = {
+  month: new Date().toISOString().slice(0, 7),
+  total_revenue: 47850,
+  total_expenses: 28500,
+  gross_margin: 19350,
+  margin_percentage: 40.4,
+  burn_rate: 28500,
+  runway_months: 14,
+  customer_count: 156,
+  new_customers: 23,
+  avg_order_value: 307
+};
+
+const DEMO_REVENUE_BY_PRODUCT: RevenueByProduct[] = [
+  { product_category: 'SaaS Premium', total_revenue: 18500, total_quantity: 45, percentage_of_total: 38.7 },
+  { product_category: 'Consultoría', total_revenue: 12300, total_quantity: 12, percentage_of_total: 25.7 },
+  { product_category: 'SaaS Básico', total_revenue: 9800, total_quantity: 98, percentage_of_total: 20.5 },
+  { product_category: 'Formación', total_revenue: 7250, total_quantity: 29, percentage_of_total: 15.1 }
+];
+
+const DEMO_EXPENSES_BY_CATEGORY: ExpenseByCategory[] = [
+  { category: 'Salarios', total_amount: 15000, percentage_of_total: 52.6 },
+  { category: 'Marketing', total_amount: 5500, percentage_of_total: 19.3 },
+  { category: 'Herramientas', total_amount: 3200, percentage_of_total: 11.2 },
+  { category: 'Operaciones', total_amount: 2800, percentage_of_total: 9.8 },
+  { category: 'Otros', total_amount: 2000, percentage_of_total: 7.0 }
+];
+
+const DEMO_MARKETING_ROI: MarketingROI[] = [
+  { channel: 'Google Ads', total_spend: 2500, total_leads: 145, total_conversions: 18, total_revenue: 8750, roi_ratio: 3.5, cac: 139, conversion_rate: 12.4 },
+  { channel: 'LinkedIn', total_spend: 1800, total_leads: 87, total_conversions: 12, total_revenue: 6200, roi_ratio: 3.4, cac: 150, conversion_rate: 13.8 },
+  { channel: 'Referidos', total_spend: 500, total_leads: 42, total_conversions: 15, total_revenue: 5800, roi_ratio: 11.6, cac: 33, conversion_rate: 35.7 },
+  { channel: 'Email Marketing', total_spend: 700, total_leads: 68, total_conversions: 8, total_revenue: 3100, roi_ratio: 4.4, cac: 88, conversion_rate: 11.8 }
+];
+
+const DEMO_CASH_BALANCE = 398500;
+
+interface FinancialDashboardProps {
+  showDemoData?: boolean;
+}
+
+const FinancialDashboard = ({ showDemoData = false }: FinancialDashboardProps) => {
   const { userProfile, currentOrganizationId, userOrganizations } = useAuth();
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
   const [revenueByProduct, setRevenueByProduct] = useState<RevenueByProduct[]>([]);
@@ -87,6 +130,14 @@ const FinancialDashboard = () => {
     org => org.organization_id === currentOrganizationId
   )?.role || 'member';
   const canViewFinancials = currentUserRole === 'admin' || currentUserRole === 'leader';
+
+  // Determine display data - use demo data if enabled and no real data
+  const hasRealData = (metrics?.total_revenue || 0) > 0 || (metrics?.total_expenses || 0) > 0;
+  const displayMetrics = (showDemoData && !hasRealData) ? DEMO_METRICS : metrics;
+  const displayRevenueByProduct = (showDemoData && revenueByProduct.length === 0) ? DEMO_REVENUE_BY_PRODUCT : revenueByProduct;
+  const displayExpensesByCategory = (showDemoData && expensesByCategory.length === 0) ? DEMO_EXPENSES_BY_CATEGORY : expensesByCategory;
+  const displayMarketingROI = (showDemoData && marketingROI.length === 0) ? DEMO_MARKETING_ROI : marketingROI;
+  const displayCashBalance = (showDemoData && cashBalance === 0) ? DEMO_CASH_BALANCE : cashBalance;
 
   useEffect(() => {
     if (currentOrganizationId) {
@@ -253,6 +304,19 @@ const FinancialDashboard = () => {
         </Button>
       </div>
 
+      {/* Demo Data Alert */}
+      {showDemoData && !hasRealData && (
+        <Alert className="border-primary/50 bg-primary/5">
+          <AlertCircle className="h-4 w-4 text-primary" />
+          <div className="ml-2">
+            <span className="font-medium text-primary">Datos de demostración</span>
+            <span className="text-muted-foreground ml-2">
+              Estos son datos de ejemplo. Registra tus transacciones reales para ver información actualizada.
+            </span>
+          </div>
+        </Alert>
+      )}
+
       {/* KPIs Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Ingresos */}
@@ -263,12 +327,12 @@ const FinancialDashboard = () => {
               Ingresos del Mes
             </CardDescription>
             <CardTitle className="text-3xl text-success" data-value="amount">
-              {formatCurrency(metrics?.total_revenue || 0)}
+              {formatCurrency(displayMetrics?.total_revenue || 0)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">
-              {metrics?.customer_count || 0} clientes ({metrics?.new_customers || 0} nuevos)
+              {displayMetrics?.customer_count || 0} clientes ({displayMetrics?.new_customers || 0} nuevos)
             </div>
           </CardContent>
         </Card>
@@ -281,7 +345,7 @@ const FinancialDashboard = () => {
               Gastos del Mes
             </CardDescription>
             <CardTitle className="text-3xl text-destructive" data-value="amount">
-              {formatCurrency(metrics?.total_expenses || 0)}
+              {formatCurrency(displayMetrics?.total_expenses || 0)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -299,14 +363,14 @@ const FinancialDashboard = () => {
               Margen Neto
             </CardDescription>
             <CardTitle className="text-3xl" data-value="amount">
-              {formatCurrency(metrics?.gross_margin || 0)}
+              {formatCurrency(displayMetrics?.gross_margin || 0)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Progress value={metrics?.margin_percentage || 0} className="h-2" />
+              <Progress value={displayMetrics?.margin_percentage || 0} className="h-2" />
               <span className="text-sm font-medium">
-                {formatPercentage(metrics?.margin_percentage || 0)}
+                {formatPercentage(displayMetrics?.margin_percentage || 0)}
               </span>
             </div>
           </CardContent>
@@ -320,19 +384,19 @@ const FinancialDashboard = () => {
               Runway
             </CardDescription>
             <CardTitle className="text-3xl">
-              {Math.round(metrics?.runway_months || 0)} meses
+              {Math.round(displayMetrics?.runway_months || 0)} meses
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">
-              Caja: {formatCurrency(cashBalance)}
+              Caja: {formatCurrency(displayCashBalance)}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alert de margen bajo */}
-      {(metrics?.margin_percentage || 0) < 20 && (
+      {/* Alert de margen bajo - solo si NO estamos mostrando demo */}
+      {!showDemoData && (displayMetrics?.margin_percentage || 0) < 20 && (displayMetrics?.margin_percentage || 0) > 0 && (
         <Card className="border-warning bg-warning/5">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
@@ -340,7 +404,7 @@ const FinancialDashboard = () => {
               <div>
                 <h4 className="font-semibold text-warning">Margen Bajo Detectado</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Tu margen neto es {formatPercentage(metrics?.margin_percentage || 0)}. 
+                  Tu margen neto es {formatPercentage(displayMetrics?.margin_percentage || 0)}. 
                   Se recomienda un margen mínimo del 20% para crecimiento sostenible.
                 </p>
               </div>
@@ -365,7 +429,7 @@ const FinancialDashboard = () => {
           <CardContent>
             <div id="revenue-by-product-chart">
               <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={revenueByProduct}>
+              <BarChart data={displayRevenueByProduct}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="product_category" 
@@ -387,7 +451,7 @@ const FinancialDashboard = () => {
 
             {/* Tabla de detalles */}
             <div className="mt-4 space-y-2">
-              {revenueByProduct.map((product, index) => (
+              {displayRevenueByProduct.map((product, index) => (
                 <div key={index} className="flex items-center justify-between text-sm">
                   <span className="font-medium">{getCategoryLabel(product.product_category)}</span>
                   <div className="flex items-center gap-3">
@@ -424,7 +488,7 @@ const FinancialDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
                 <Pie
-                  data={expensesByCategory}
+                  data={displayExpensesByCategory}
                   dataKey="total_amount"
                   nameKey="category"
                   cx="50%"
@@ -432,7 +496,7 @@ const FinancialDashboard = () => {
                   outerRadius={100}
                   label
                 >
-                  {expensesByCategory.map((entry, index) => (
+                  {displayExpensesByCategory.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -445,7 +509,7 @@ const FinancialDashboard = () => {
 
             {/* Tabla de detalles */}
             <div className="mt-4 space-y-2">
-              {expensesByCategory.map((expense, index) => (
+              {displayExpensesByCategory.map((expense, index) => (
                 <div key={index} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <div 
@@ -497,7 +561,7 @@ const FinancialDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {marketingROI.map((channel, index) => (
+                {displayMarketingROI.map((channel, index) => (
                   <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4 font-medium capitalize">{channel.channel}</td>
                     <td className="text-right py-3 px-4">{formatCurrency(channel.total_spend)}</td>
