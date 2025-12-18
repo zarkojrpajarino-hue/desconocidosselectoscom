@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { format, addWeeks, subWeeks } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Calendar, Settings, Plus, ChevronLeft, ChevronRight, RefreshCw, CalendarDays, Cog, User, Users } from 'lucide-react';
+import { Calendar, Settings, RefreshCw, Cog, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -10,7 +8,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { GlobalAgendaSettings } from '@/components/agenda/GlobalAgendaSettings';
 import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskModal';
-import { AgendaFilters } from '@/components/agenda/AgendaFilters';
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
 import { WorkConfigReadOnly } from '@/components/agenda/WorkConfigReadOnly';
 import { ProfessionalAgendaView } from '@/components/agenda/ProfessionalAgendaView';
@@ -19,6 +16,7 @@ import { useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
+import { format } from 'date-fns';
 
 // Get the correct week start based on custom rules
 const getCorrectWeekStart = (): string => {
@@ -32,7 +30,7 @@ export default function GlobalAgenda() {
   const hasAccess = hasFeature('global_agenda');
 
   const [activeTab, setActiveTab] = useState('agenda');
-  const [weekStart, setWeekStart] = useState(getCorrectWeekStart());
+  const [weekStart] = useState(getCorrectWeekStart());
   const [showSettings, setShowSettings] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FiltersType>({
@@ -64,20 +62,6 @@ export default function GlobalAgenda() {
 
   const hasTeam = orgSettings?.has_team ?? false;
   const collaborativePercentage = orgSettings?.collaborative_percentage ?? 0;
-
-  const goToPreviousWeek = () => {
-    const prev = subWeeks(new Date(weekStart), 1);
-    setWeekStart(format(prev, 'yyyy-MM-dd'));
-  };
-
-  const goToNextWeek = () => {
-    const next = addWeeks(new Date(weekStart), 1);
-    setWeekStart(format(next, 'yyyy-MM-dd'));
-  };
-
-  const goToCurrentWeek = () => {
-    setWeekStart(getCorrectWeekStart());
-  };
 
   const handleRegenerate = () => {
     generateSchedule.mutate({ weekStart, forceRegenerate: true });
@@ -152,43 +136,11 @@ export default function GlobalAgenda() {
       {/* Google Calendar Connect */}
       {user && <GoogleCalendarConnect userId={user.id} />}
 
-      {/* Week Navigation with New Task button */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border border-border rounded-lg p-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-
-          <div className="text-center min-w-[180px]">
-            <div className="text-xs text-muted-foreground">Semana del</div>
-            <div className="text-lg font-semibold text-foreground">
-              {format(new Date(weekStart), "d 'de' MMMM", { locale: es })}
-            </div>
-          </div>
-
-          <Button variant="outline" size="icon" onClick={goToNextWeek}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-
-          <Button variant="ghost" size="sm" onClick={goToCurrentWeek}>
-            Hoy
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button onClick={() => setShowCreateTask(true)} size="sm" variant="default">
-            <Plus className="w-4 h-4 mr-2" />
-            Nueva Tarea
-          </Button>
-          <AgendaFilters filters={activeFilters} onFiltersChange={setActiveFilters} />
-        </div>
-      </div>
-
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="agenda" className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" />
+            <Calendar className="w-4 h-4" />
             Mi Agenda
           </TabsTrigger>
           <TabsTrigger value="config" className="flex items-center gap-2">
@@ -203,6 +155,7 @@ export default function GlobalAgenda() {
             filters={activeFilters}
             hasTeam={hasTeam}
             collaborativePercentage={collaborativePercentage}
+            onCreateTask={() => setShowCreateTask(true)}
           />
         </TabsContent>
 
