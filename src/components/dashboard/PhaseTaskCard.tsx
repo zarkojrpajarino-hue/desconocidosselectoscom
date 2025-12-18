@@ -28,6 +28,8 @@ interface PhaseTaskCardProps {
   onSwapComplete?: () => void;
   leaderName?: string;
   isLocked?: boolean;
+  currentWeek?: number;
+  isCarriedOver?: boolean;
 }
 
 export function PhaseTaskCard({
@@ -37,7 +39,9 @@ export function PhaseTaskCard({
   remainingSwaps = 0,
   onSwapComplete,
   leaderName,
-  isLocked = false
+  isLocked = false,
+  currentWeek,
+  isCarriedOver = false
 }: PhaseTaskCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
@@ -47,6 +51,9 @@ export function PhaseTaskCard({
   
   const isCompleted = task.is_completed;
   const canSwap = !isCompleted && !isLocked && task.user_id === userId;
+  
+  // Determine if task is carried over from previous week
+  const isFromPreviousWeek = isCarriedOver || (currentWeek && task.week_number < currentWeek && !isCompleted);
 
   // Open completion modal instead of direct toggle
   const handleCheckboxClick = () => {
@@ -113,6 +120,12 @@ export function PhaseTaskCard({
                 <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
                   Completada
+                </Badge>
+              )}
+              {isFromPreviousWeek && !isCompleted && (
+                <Badge variant="outline" className="text-xs bg-warning/10 text-warning border-warning/30">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Semana anterior
                 </Badge>
               )}
             </div>
