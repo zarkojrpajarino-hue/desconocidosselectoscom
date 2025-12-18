@@ -35,6 +35,7 @@ interface ProfessionalAgendaViewProps {
   filters: FiltersType;
   hasTeam: boolean;
   collaborativePercentage: number;
+  weekStartDay: number;
   onCreateTask: () => void;
 }
 
@@ -61,6 +62,7 @@ export function ProfessionalAgendaView({
   filters, 
   hasTeam, 
   collaborativePercentage,
+  weekStartDay,
   onCreateTask
 }: ProfessionalAgendaViewProps) {
   const { user } = useAuth();
@@ -71,8 +73,8 @@ export function ProfessionalAgendaView({
   // Get current phase
   const { data: currentPhase } = useCurrentPhase();
   
-  // Get all weeks for the phase
-  const { data: phaseWeeks = [], isLoading: weeksLoading, refetch: refetchWeeks } = useAgendaPhaseWeeks(currentPhase?.phase_number);
+  // Get all weeks for the phase, using organization's week start day
+  const { data: phaseWeeks = [], isLoading: weeksLoading, refetch: refetchWeeks } = useAgendaPhaseWeeks(currentPhase?.phase_number, weekStartDay);
 
   // Calculate current week start based on selected week index
   const currentWeekStart = useMemo(() => {
