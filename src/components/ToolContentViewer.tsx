@@ -111,7 +111,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
     );
   }
 
-  // Show demo toggle + empty state if no content but has demo data
+  // Show demo toggle + generation state if no content but has demo data
   if (!hasContent && demoData) {
     return (
       <>
@@ -140,16 +140,28 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
                 </div>
                 {renderContent(demoData)}
               </div>
+            ) : generating ? (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                </div>
+                <div className="font-medium text-foreground">
+                  Generando tu herramienta personalizada...
+                </div>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Estamos creando contenido personalizado basado en los datos de tu empresa. Esto puede tardar unos segundos.
+                </p>
+              </div>
             ) : (
               <div className="text-center py-8 space-y-4">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-                  <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+                  <Sparkles className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <div className="font-medium text-foreground">
-                  Generando herramienta automáticamente...
+                  Preparando herramienta...
                 </div>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  Esta herramienta se genera automáticamente con los datos de tu onboarding. Activa el modo Demo mientras se completa el proceso.
+                  Esta herramienta se genera automáticamente con los datos de tu onboarding.
                 </p>
                 <Button
                   onClick={() => setShowDemo(true)}
@@ -158,7 +170,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
                   className="gap-2"
                 >
                   <Eye className="h-4 w-4" />
-                  Ver Demo
+                  Ver Demo mientras tanto
                 </Button>
               </div>
             )}
