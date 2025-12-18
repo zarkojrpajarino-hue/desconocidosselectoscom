@@ -720,7 +720,7 @@ const OrganizationOKRs = () => {
                 <Building2 className="w-16 h-16 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Sin OKRs para esta fase</h3>
                 <p className="text-muted-foreground text-center max-w-md mb-4">
-                  No hay OKRs organizacionales para la Fase {activePhase.phase_number}. 
+                  No hay OKRs organizacionales para la Fase {activePhase?.phase_number ?? displayPhase.phase_number}. 
                   Genera objetivos estratégicos basados en las {totalPhaseTasks} tareas de 
                   {isIndividual ? ' tu trabajo.' : ' tu equipo.'}
                 </p>

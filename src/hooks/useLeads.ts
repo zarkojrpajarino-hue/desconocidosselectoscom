@@ -57,10 +57,16 @@ export const useLeads = (userId: string | undefined, organizationId: string | nu
 
   const fetchUserStats = async () => {
     try {
-      const { data, error: statsError } = await supabase
+      // MULTI-TENANCY: Filter by organization_id
+      let query = supabase
         .from('user_lead_stats')
-        .select('*')
-        .order('total_leads', { ascending: false });
+        .select('*');
+      
+      if (organizationId) {
+        query = query.eq('organization_id', organizationId);
+      }
+      
+      const { data, error: statsError } = await query.order('total_leads', { ascending: false });
 
       if (statsError) throw statsError;
       setUserStats(data || []);
