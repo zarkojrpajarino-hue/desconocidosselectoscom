@@ -142,46 +142,24 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
               </div>
             ) : (
               <div className="text-center py-8 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto">
-                  <Sparkles className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                  <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
                 </div>
                 <div className="font-medium text-foreground">
-                  Herramienta no generada aún
+                  Generando herramienta automáticamente...
                 </div>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  Esta herramienta se genera automáticamente al completar el onboarding. Si ya completaste el onboarding, puedes generarla manualmente.
+                  Esta herramienta se genera automáticamente con los datos de tu onboarding. Activa el modo Demo mientras se completa el proceso.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-                  {isAdmin && hasToolAccess && (
-                    <Button
-                      onClick={handleUpdateData}
-                      disabled={generating}
-                      size="lg"
-                      className="gap-2"
-                    >
-                      {generating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Generando...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" />
-                          Generar Ahora
-                        </>
-                      )}
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => setShowDemo(true)}
-                    variant="outline"
-                    size="lg"
-                    className="gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Ver Demo
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => setShowDemo(true)}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Ver Demo
+                </Button>
               </div>
             )}
           </CardContent>
@@ -212,35 +190,15 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto">
-                <Sparkles className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
               </div>
               <div className="font-medium text-foreground">
-                Herramienta no generada aún
+                Generando herramienta automáticamente...
               </div>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Esta herramienta se genera automáticamente al completar el onboarding. Si ya completaste el onboarding, puedes generarla manualmente.
+                Esta herramienta se genera automáticamente con los datos de tu onboarding. Espera unos minutos y recarga la página.
               </p>
-              {isAdmin && hasToolAccess && (
-                <Button
-                  onClick={handleUpdateData}
-                  disabled={generating}
-                  size="lg"
-                  className="gap-2"
-                >
-                  {generating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      Generar Ahora
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
