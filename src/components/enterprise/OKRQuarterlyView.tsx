@@ -86,6 +86,7 @@ export function OKRQuarterlyView({ type = 'organizational', showDemoData = false
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [showExplanation, setShowExplanation] = useState(false);
 
   useEffect(() => {
     async function fetchOKRs() {
@@ -225,8 +226,6 @@ export function OKRQuarterlyView({ type = 'organizational', showDemoData = false
     : 0;
   const onTrackCount = objectives.filter(o => o.progress >= 70).length;
   const atRiskCount = objectives.filter(o => o.progress < 50).length;
-
-  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <div className="space-y-6">
