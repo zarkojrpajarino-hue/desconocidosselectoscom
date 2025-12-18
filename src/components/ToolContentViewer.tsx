@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Sparkles, RefreshCw, Lock, Eye } from 'lucide-react';
+import { Loader2, Sparkles, RefreshCw, Lock, Eye, Settings2 } from 'lucide-react';
 import { ToolType, useToolContent } from '@/hooks/useToolContent';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { ToolDataReviewModal } from '@/components/ToolDataReviewModal';
 
 interface ToolContentViewerProps {
   toolType: ToolType;
@@ -20,15 +21,20 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
   const { content, loading, generating, generateContent, hasContent, isAdmin } = useToolContent(toolType);
   const { canUseAiTool, plan } = useSubscriptionLimits();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDataReviewModal, setShowDataReviewModal] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
 
   const { allowed: hasToolAccess, message: toolMessage } = canUseAiTool(toolType);
 
-  const handleGenerate = () => {
+  const handleUpdateData = () => {
     if (!hasToolAccess) {
       setShowUpgradeModal(true);
       return;
     }
+    setShowDataReviewModal(true);
+  };
+
+  const handleRegenerate = () => {
     generateContent();
   };
 
@@ -127,60 +133,24 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
               </div>
             ) : (
               <div className="text-center py-8 space-y-4">
-                <div className="text-muted-foreground">
-                  Esta herramienta aún no ha sido personalizada para tu empresa
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                  <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
                 </div>
-                {isAdmin ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Genera contenido personalizado basado en los datos de tu organización usando IA
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                      <Button
-                        onClick={handleGenerate}
-                        disabled={generating || !hasToolAccess}
-                        size="lg"
-                        className="gap-2"
-                      >
-                        {generating ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Generando...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4" />
-                            Generar con IA
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => setShowDemo(true)}
-                        variant="outline"
-                        size="lg"
-                        className="gap-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                        Ver Demo
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Contacta al administrador para generar el contenido personalizado
-                    </p>
-                    <Button
-                      onClick={() => setShowDemo(true)}
-                      variant="outline"
-                      size="lg"
-                      className="gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Ver Demo
-                    </Button>
-                  </div>
-                )}
+                <div className="text-muted-foreground">
+                  Esta herramienta se está generando automáticamente...
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Puede tardar unos minutos. Mientras tanto, puedes ver una demostración.
+                </p>
+                <Button
+                  onClick={() => setShowDemo(true)}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Ver Demo
+                </Button>
               </div>
             )}
           </CardContent>
@@ -197,7 +167,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
     );
   }
 
-  // No content and no demo data
+  // No content and no demo data - show generating state
   if (!hasContent) {
     return (
       <>
@@ -211,38 +181,15 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center py-8 space-y-4">
-              <div className="text-muted-foreground">
-                Esta herramienta aún no ha sido personalizada para tu empresa
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
               </div>
-              {isAdmin ? (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    Genera contenido personalizado basado en los datos de tu organización usando IA
-                  </p>
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={generating || !hasToolAccess}
-                    size="lg"
-                    className="gap-2"
-                  >
-                    {generating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Generar con IA
-                      </>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Contacta al administrador para generar el contenido personalizado
-                </p>
-              )}
+              <div className="text-muted-foreground">
+                Esta herramienta se está generando automáticamente...
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Se genera con los datos de tu onboarding. Recarga la página en unos minutos.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -275,7 +222,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
             )}
             {isAdmin && hasToolAccess && (
               <Button
-                onClick={handleGenerate}
+                onClick={handleUpdateData}
                 disabled={generating}
                 variant="outline"
                 size="sm"
@@ -284,14 +231,14 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
                 {generating ? (
                   <>
                     <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin" />
-                    <span className="hidden md:inline">Regenerando...</span>
+                    <span className="hidden md:inline">Actualizando...</span>
                     <span className="md:hidden">...</span>
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />
-                    <span className="hidden md:inline">Regenerar</span>
-                    <span className="md:hidden">Regen.</span>
+                    <Settings2 className="h-3 w-3 md:h-4 md:w-4" />
+                    <span className="hidden md:inline">Actualizar Datos</span>
+                    <span className="md:hidden">Actualizar</span>
                   </>
                 )}
               </Button>
@@ -317,6 +264,14 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
         currentPlan={plan}
         limitType="ai_tools"
         featureName={title}
+      />
+
+      <ToolDataReviewModal
+        open={showDataReviewModal}
+        onOpenChange={setShowDataReviewModal}
+        toolType={toolType}
+        toolName={title}
+        onRegenerate={handleRegenerate}
       />
     </>
   );
