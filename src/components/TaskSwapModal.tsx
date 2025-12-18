@@ -28,23 +28,17 @@ interface TaskAlternative {
 interface TaskSwapModalProps {
   task: Task;
   userId: string;
-  mode: 'conservador' | 'moderado' | 'agresivo';
   remainingSwaps: number;
+  totalSwaps?: number;
   onSwapComplete: () => void;
   onCancel: () => void;
 }
 
-const swapLimits = {
-  conservador: 5,
-  moderado: 7,
-  agresivo: 10
-};
-
 export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({ 
   task, 
   userId,
-  mode,
   remainingSwaps,
+  totalSwaps = remainingSwaps,
   onSwapComplete, 
   onCancel 
 }) => {
@@ -165,8 +159,8 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
           new_title: selected.title,
           new_description: selected.description,
           week_number: weekNumber,
-          mode: mode,
-          leader_comment: leaderComment.trim() // Siempre guardar el comentario
+          mode: 'moderado', // Legacy field
+          leader_comment: leaderComment.trim()
         });
 
       if (swapError) throw swapError;
@@ -223,16 +217,11 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
     }
   };
 
-  const getModeColor = () => {
-    if (mode === 'conservador') return 'text-green-600 bg-green-50 border-green-200';
-    if (mode === 'moderado') return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-red-600 bg-red-50 border-red-200';
-  };
-
-  const getModeLabel = () => {
-    if (mode === 'conservador') return '🟢 Conservador';
-    if (mode === 'moderado') return '🟡 Moderado';
-    return '🔴 Agresivo';
+  const getSwapStatusColor = () => {
+    const ratio = remainingSwaps / totalSwaps;
+    if (ratio > 0.5) return 'text-success bg-success/10 border-success/30';
+    if (ratio > 0.2) return 'text-warning bg-warning/10 border-warning/30';
+    return 'text-destructive bg-destructive/10 border-destructive/30';
   };
 
   return (
@@ -250,11 +239,8 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
               </p>
             )}
             <div className="flex items-center gap-2 mt-2">
-              <span className={`text-xs px-2 py-1 rounded border ${getModeColor()}`}>
-                {getModeLabel()}
-              </span>
-              <span className="text-xs font-medium">
-                Cambios restantes: {remainingSwaps}/{swapLimits[mode]}
+              <span className={`text-xs px-2 py-1 rounded border ${getSwapStatusColor()}`}>
+                Cambios: {remainingSwaps}/{totalSwaps}
               </span>
             </div>
           </div>
@@ -264,11 +250,10 @@ export const TaskSwapModal: React.FC<TaskSwapModalProps> = ({
         </div>
 
         {remainingSwaps === 0 && (
-          <Alert className="mb-4 border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              ⚠️ Has alcanzado el límite de cambios para esta semana en modo {mode}.
-              {mode === 'conservador' && ' Prueba cambiar a modo Moderado (7 cambios) o Agresivo (10 cambios).'}
+          <Alert className="mb-4 border-destructive/30 bg-destructive/10">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
+              ⚠️ Has alcanzado el límite de cambios para esta fase ({totalSwaps} cambios = 50% de tus tareas).
             </AlertDescription>
           </Alert>
         )}

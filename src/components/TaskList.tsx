@@ -41,7 +41,7 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
   const [selectedTask, setSelectedTask] = useState<TaskData | null>(null);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [taskToSwap, setTaskToSwap] = useState<TaskData | null>(null);
-  const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || "", mode);
+  const { remainingSwaps, reload: reloadSwaps } = useTaskSwaps(userId || "");
   const [leadersById, setLeadersById] = useState<Record<string, string>>({});
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [impactMeasurementModalOpen, setImpactMeasurementModalOpen] = useState(false);
@@ -872,7 +872,6 @@ const TaskList = ({ userId, currentPhase, isLocked = false, mode = "moderado", t
         <TaskSwapModal
           task={taskToSwap}
           userId={userId}
-          mode={mode}
           remainingSwaps={remainingSwaps}
           onSwapComplete={handleSwapComplete}
           onCancel={() => {

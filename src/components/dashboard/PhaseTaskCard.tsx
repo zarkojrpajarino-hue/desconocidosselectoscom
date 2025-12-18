@@ -276,7 +276,6 @@ export function PhaseTaskCard({
             leader_id: task.leader_id,
           }}
           userId={userId}
-          mode="moderado"
           remainingSwaps={remainingSwaps}
           onSwapComplete={() => {
             setSwapModalOpen(false);
