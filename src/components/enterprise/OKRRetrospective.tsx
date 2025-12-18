@@ -76,6 +76,7 @@ export function OKRRetrospective({ type = 'organizational', showDemoData = false
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [showExplanation, setShowExplanation] = useState(false);
 
   // Retro modal state
   const [showRetroModal, setShowRetroModal] = useState(false);
@@ -335,8 +336,6 @@ export function OKRRetrospective({ type = 'organizational', showDemoData = false
   const displayObjectives = (objectives.length === 0 && showDemoData) ? DEMO_OBJECTIVES : objectives;
   const displayStats = (objectives.length === 0 && showDemoData) ? DEMO_STATS : stats;
   const isDemo = objectives.length === 0 && showDemoData;
-
-  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <div className="space-y-6">

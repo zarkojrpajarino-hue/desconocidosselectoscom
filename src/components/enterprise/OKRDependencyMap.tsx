@@ -65,6 +65,7 @@ export function OKRDependencyMap({ type = 'organizational', showDemoData = false
   const [links, setLinks] = useState<DependencyLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   
   // Modal state for creating dependencies
   const [showAddModal, setShowAddModal] = useState(false);
@@ -280,8 +281,6 @@ export function OKRDependencyMap({ type = 'organizational', showDemoData = false
   const healthyLinks = displayLinks.filter(l => l.status === 'healthy').length;
   const atRiskLinks = displayLinks.filter(l => l.status === 'at_risk').length;
   const blockedLinks = displayLinks.filter(l => l.status === 'blocked').length;
-
-  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <div className="space-y-6">
