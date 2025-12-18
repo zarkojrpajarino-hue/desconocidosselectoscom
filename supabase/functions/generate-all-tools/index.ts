@@ -146,168 +146,221 @@ function buildPrompt(toolType: string, org: Record<string, unknown>): string {
   const baseContext = `
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
-- Industria: ${org.industry}
-- Tamaño: ${org.company_size}
-- Descripción: ${org.business_description}
-- Clientes objetivo: ${org.target_customers}
-- Propuesta de valor: ${org.value_proposition}
-- Productos/Servicios: ${JSON.stringify(org.products_services)}
-- Proceso de ventas: ${org.sales_process}
-- Ciclo de ventas: ${org.sales_cycle_days} días
+- Industria: ${org.industry || 'No especificada'}
+- Tamaño: ${org.company_size || 'No especificado'}
+- Descripción: ${org.business_description || 'No especificada'}
+- Clientes objetivo: ${org.target_customers || 'No especificados'}
+- Propuesta de valor: ${org.value_proposition || 'No especificada'}
+- Productos/Servicios: ${JSON.stringify(org.products_services || [])}
+- Proceso de ventas: ${org.sales_process || 'No especificado'}
+- Ciclo de ventas: ${org.sales_cycle_days || 30} días
 `
 
   const prompts: Record<string, string> = {
-    buyer_persona: `Genera un Buyer Persona detallado para esta empresa:
+    buyer_persona: `Genera un Buyer Persona detallado y personalizado para esta empresa específica:
 ${baseContext}
+
+IMPORTANTE: Genera contenido 100% personalizado basado en la industria, productos y clientes de esta empresa.
 
 Genera SOLO el JSON con este formato exacto:
 {
-  "name": "Nombre del persona",
-  "age": "Rango de edad",
-  "occupation": "Ocupación/Cargo",
-  "industry": "Industria donde trabaja",
-  "goals": ["Objetivo 1", "Objetivo 2", "Objetivo 3"],
-  "challenges": ["Desafío 1", "Desafío 2", "Desafío 3"],
-  "values": ["Valor 1", "Valor 2", "Valor 3"],
-  "channels": ["Canal 1", "Canal 2", "Canal 3"],
-  "quote": "Una cita representativa del persona"
+  "name": "Nombre realista del persona (ej: 'María García' o 'Carlos Director')",
+  "age": "Rango de edad específico (ej: '35-45 años')",
+  "occupation": "Cargo específico relevante para esta empresa",
+  "industry": "Industria donde trabaja este persona",
+  "goals": ["Objetivo profesional 1 relevante", "Objetivo profesional 2", "Objetivo personal relacionado"],
+  "challenges": ["Desafío 1 que tu producto resuelve", "Desafío 2 específico", "Desafío 3 del día a día"],
+  "values": ["Valor 1 importante para este persona", "Valor 2", "Valor 3"],
+  "channels": ["Canal digital favorito", "Red social principal", "Medio de comunicación preferido"],
+  "quote": "Una frase que este persona diría sobre su trabajo o necesidades"
 }`,
 
-    customer_journey: `Genera un Customer Journey detallado para esta empresa:
+    customer_journey: `Genera un Customer Journey detallado y personalizado para esta empresa:
 ${baseContext}
+
+IMPORTANTE: Personaliza cada etapa con touchpoints y oportunidades específicas para esta industria y tipo de cliente.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "stages": [
-    {"name": "Awareness", "description": "Descripción", "touchpoints": ["Punto 1", "Punto 2"], "emotions": ["Emoción 1"], "opportunities": ["Oportunidad 1"]},
-    {"name": "Consideration", "description": "Descripción", "touchpoints": ["Punto 1"], "emotions": ["Emoción 1"], "opportunities": ["Oportunidad 1"]},
-    {"name": "Decision", "description": "Descripción", "touchpoints": ["Punto 1"], "emotions": ["Emoción 1"], "opportunities": ["Oportunidad 1"]},
-    {"name": "Retention", "description": "Descripción", "touchpoints": ["Punto 1"], "emotions": ["Emoción 1"], "opportunities": ["Oportunidad 1"]}
+    {"name": "Awareness", "description": "Cómo el cliente descubre tu solución", "touchpoints": ["Touchpoint 1 específico", "Touchpoint 2"], "emotions": ["Emoción típica"], "opportunities": ["Oportunidad de mejora 1", "Oportunidad 2"]},
+    {"name": "Consideration", "description": "Proceso de evaluación del cliente", "touchpoints": ["Touchpoint 1", "Touchpoint 2"], "emotions": ["Emoción típica"], "opportunities": ["Oportunidad 1", "Oportunidad 2"]},
+    {"name": "Decision", "description": "Momento de la decisión de compra", "touchpoints": ["Touchpoint 1", "Touchpoint 2"], "emotions": ["Emoción típica"], "opportunities": ["Oportunidad 1", "Oportunidad 2"]},
+    {"name": "Retention", "description": "Experiencia post-compra", "touchpoints": ["Touchpoint 1", "Touchpoint 2"], "emotions": ["Emoción típica"], "opportunities": ["Oportunidad 1", "Oportunidad 2"]},
+    {"name": "Advocacy", "description": "Conversión en promotor", "touchpoints": ["Touchpoint 1", "Touchpoint 2"], "emotions": ["Emoción típica"], "opportunities": ["Oportunidad 1", "Oportunidad 2"]}
   ]
 }`,
 
-    growth_model: `Genera un Growth Model (AARRR Pirate Metrics) para esta empresa:
+    growth_model: `Genera un Growth Model (AARRR Pirate Metrics) personalizado para esta empresa:
 ${baseContext}
+
+IMPORTANTE: Los KPIs, canales y tácticas deben ser específicos para esta industria y modelo de negocio.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "metrics": [
-    {"stage": "Acquisition", "kpis": ["KPI 1", "KPI 2"], "channels": ["Canal 1"], "tactics": ["Táctica 1"]},
-    {"stage": "Activation", "kpis": ["KPI 1"], "channels": ["Canal 1"], "tactics": ["Táctica 1"]},
-    {"stage": "Retention", "kpis": ["KPI 1"], "channels": ["Canal 1"], "tactics": ["Táctica 1"]},
-    {"stage": "Revenue", "kpis": ["KPI 1"], "channels": ["Canal 1"], "tactics": ["Táctica 1"]},
-    {"stage": "Referral", "kpis": ["KPI 1"], "channels": ["Canal 1"], "tactics": ["Táctica 1"]}
+    {"stage": "Acquisition", "kpis": ["KPI específico 1", "KPI específico 2", "KPI 3"], "channels": ["Canal 1 relevante", "Canal 2"], "tactics": ["Táctica 1 específica", "Táctica 2", "Táctica 3"]},
+    {"stage": "Activation", "kpis": ["KPI de activación 1", "KPI 2"], "channels": ["Canal 1", "Canal 2"], "tactics": ["Táctica 1", "Táctica 2"]},
+    {"stage": "Retention", "kpis": ["KPI de retención 1", "KPI 2"], "channels": ["Canal 1", "Canal 2"], "tactics": ["Táctica 1", "Táctica 2"]},
+    {"stage": "Revenue", "kpis": ["KPI de ingresos 1", "KPI 2"], "channels": ["Canal 1", "Canal 2"], "tactics": ["Táctica 1", "Táctica 2"]},
+    {"stage": "Referral", "kpis": ["KPI de referidos 1", "KPI 2"], "channels": ["Canal 1", "Canal 2"], "tactics": ["Táctica 1", "Táctica 2"]}
   ]
 }`,
 
-    lead_scoring: `Genera un modelo de Lead Scoring para esta empresa:
+    lead_scoring: `Genera un modelo de Lead Scoring personalizado para esta empresa:
 ${baseContext}
+
+IMPORTANTE: Los factores de puntuación deben ser específicos para el tipo de cliente y proceso de venta de esta empresa.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "criteria": [
-    {"category": "Perfil Demográfico", "factors": [{"name": "Factor 1", "points": 10, "description": "Descripción"}]},
-    {"category": "Comportamiento", "factors": [{"name": "Factor 1", "points": 15, "description": "Descripción"}]},
-    {"category": "Engagement", "factors": [{"name": "Factor 1", "points": 20, "description": "Descripción"}]}
+    {"category": "Datos Demográficos", "factors": [{"name": "Factor relevante 1", "points": 15, "description": "Por qué este factor indica un buen lead"}, {"name": "Factor 2", "points": 10, "description": "Descripción"}, {"name": "Factor 3", "points": 20, "description": "Descripción"}]},
+    {"category": "Comportamiento Digital", "factors": [{"name": "Acción web 1", "points": 15, "description": "Descripción"}, {"name": "Acción 2", "points": 10, "description": "Descripción"}, {"name": "Acción 3", "points": 25, "description": "Descripción"}]},
+    {"category": "Engagement de Ventas", "factors": [{"name": "Interacción 1", "points": 20, "description": "Descripción"}, {"name": "Interacción 2", "points": 15, "description": "Descripción"}, {"name": "Interacción 3", "points": 10, "description": "Descripción"}]},
+    {"category": "Factores Negativos", "factors": [{"name": "Factor negativo 1", "points": -15, "description": "Descripción"}, {"name": "Factor negativo 2", "points": -10, "description": "Descripción"}]}
   ],
   "scoring_ranges": [
-    {"min": 0, "max": 30, "grade": "C", "label": "Cold Lead"},
-    {"min": 31, "max": 60, "grade": "B", "label": "Warm Lead"},
-    {"min": 61, "max": 100, "grade": "A", "label": "Hot Lead"}
+    {"min": 0, "max": 40, "grade": "C", "label": "Cold Lead - Nutrir con contenido"},
+    {"min": 41, "max": 70, "grade": "B", "label": "Warm Lead - Seguimiento activo"},
+    {"min": 71, "max": 100, "grade": "A", "label": "Hot Lead - Contactar inmediatamente"}
   ]
 }`,
 
-    sales_playbook: `Genera un Sales Playbook completo para esta empresa:
+    sales_playbook: `Genera un Sales Playbook completo y personalizado para esta empresa:
 ${baseContext}
+
+IMPORTANTE: Los speeches y frases deben usar el lenguaje y tono apropiado para esta industria y tipo de cliente.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "intro": {
-    "big_message": "Mensaje principal de ventas",
-    "key_points": ["Punto 1", "Punto 2", "Punto 3", "Punto 4", "Punto 5"]
+    "big_message": "Mensaje principal de ventas que captura la propuesta de valor",
+    "key_points": ["Punto clave 1 de la propuesta", "Beneficio principal 2", "Diferenciador 3", "Resultado esperado 4", "Garantía o promesa 5"]
   },
   "scenarios": [
     {
-      "name": "Cliente Individual",
+      "name": "Cliente Tipo 1 (basado en tu buyer persona)",
       "icon": "👤",
-      "tone": "Personal, cercano",
+      "tone": "Tono de comunicación apropiado",
       "channels": {
-        "instagram": "Speech para Instagram...",
-        "whatsapp": "Speech para WhatsApp...",
-        "email": "Speech para Email...",
-        "phone": "Speech para llamada...",
-        "presencial": "Speech presencial..."
+        "email": "Speech personalizado para email frío...",
+        "whatsapp": "Speech para WhatsApp profesional...",
+        "phone": "Guión para llamada telefónica...",
+        "linkedin": "Mensaje para LinkedIn...",
+        "presencial": "Pitch para reunión presencial..."
       },
-      "key_phrases": ["Frase 1", "Frase 2"],
-      "objections": [{"question": "Objeción 1", "response": "Respuesta 1"}],
-      "closing_steps": ["Paso 1", "Paso 2"]
+      "key_phrases": ["Frase poderosa 1", "Frase de cierre 2", "Frase para objeciones 3"],
+      "objections": [{"question": "Objeción común 1", "response": "Respuesta efectiva 1"}, {"question": "Objeción 2", "response": "Respuesta 2"}],
+      "closing_steps": ["Paso de cierre 1", "Paso 2", "Paso final"]
     }
   ],
-  "tips": [{"title": "Tip 1", "description": "Descripción"}],
-  "final_message": "Mensaje final motivacional"
+  "tips": [{"title": "Tip estratégico 1", "description": "Descripción detallada del tip"}, {"title": "Tip 2", "description": "Descripción"}],
+  "final_message": "Mensaje motivacional final para el equipo de ventas"
 }`,
 
-    sales_simulator: `Genera un Simulador de Ventas interactivo para esta empresa:
+    sales_simulator: `Genera un Simulador de Ventas interactivo y personalizado para esta empresa:
 ${baseContext}
+
+IMPORTANTE: Los escenarios deben reflejar situaciones reales que el equipo de ventas de esta empresa enfrenta.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "quick_tips": [
-    {"title": "Tip 1", "content": "Contenido del tip"}
+    {"category": "Apertura", "tip": "Consejo específico para abrir conversaciones con clientes de esta industria"},
+    {"category": "Descubrimiento", "tip": "Consejo para hacer preguntas efectivas"},
+    {"category": "Objeciones", "tip": "Consejo para manejar objeciones comunes"},
+    {"category": "Cierre", "tip": "Consejo para cerrar ventas efectivamente"},
+    {"category": "Seguimiento", "tip": "Consejo para el seguimiento post-reunión"}
   ],
   "scenarios": [
     {
-      "id": "individual",
-      "name": "Cliente Individual",
-      "icon": "👤",
-      "description": "Descripción del escenario",
-      "stages": [
+      "title": "Escenario 1: Cliente Tipo Principal",
+      "difficulty": "Medio",
+      "client_profile": {
+        "name": "Nombre realista del cliente",
+        "role": "Cargo del cliente",
+        "company_type": "Tipo de empresa",
+        "personality": "Tipo de personalidad (Analítico, Expresivo, etc.)",
+        "budget_level": "Alto/Medio/Bajo"
+      },
+      "conversation_flow": [
         {
-          "id": "intro",
-          "title": "Introducción",
-          "client_message": "Mensaje inicial del cliente...",
+          "stage": "Apertura",
+          "client_says": "Mensaje inicial del cliente expresando su situación o pregunta",
           "options": [
-            {"id": "a", "text": "Opción A de respuesta", "feedback": "Feedback positivo", "points": 10, "isCorrect": true},
-            {"id": "b", "text": "Opción B de respuesta", "feedback": "Feedback negativo", "points": 0, "isCorrect": false}
-          ],
-          "tips": ["Tip para esta etapa"]
+            {"response": "Respuesta excelente que demuestra empatía y profesionalismo", "score": 10, "feedback": "Feedback positivo explicando por qué es buena respuesta"},
+            {"response": "Respuesta aceptable pero mejorable", "score": 5, "feedback": "Feedback explicando qué podría mejorar"},
+            {"response": "Respuesta inadecuada", "score": 2, "feedback": "Feedback explicando por qué no es efectiva"}
+          ]
+        },
+        {
+          "stage": "Descubrimiento",
+          "client_says": "El cliente comparte más información sobre su necesidad",
+          "options": [
+            {"response": "Respuesta que profundiza en las necesidades", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta que salta a la venta muy rápido", "score": 4, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que cambia de tema", "score": 1, "feedback": "Feedback negativo"}
+          ]
+        },
+        {
+          "stage": "Presentación de Valor",
+          "client_says": "El cliente pregunta sobre tu solución",
+          "options": [
+            {"response": "Respuesta que conecta beneficios con necesidades expresadas", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta genérica sobre el producto", "score": 5, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que solo habla de características", "score": 3, "feedback": "Feedback negativo"}
+          ]
+        },
+        {
+          "stage": "Cierre",
+          "client_says": "El cliente muestra interés pero duda",
+          "options": [
+            {"response": "Respuesta que aborda la duda y propone siguiente paso", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta que presiona demasiado", "score": 4, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que no pide ningún compromiso", "score": 2, "feedback": "Feedback negativo"}
+          ]
         }
-      ]
+      ],
+      "ideal_outcome": "Descripción del resultado ideal de este escenario",
+      "learning_points": ["Aprendizaje clave 1", "Aprendizaje 2", "Aprendizaje 3"]
     }
   ]
 }`,
 
-    communication_guide: `Genera una Guía de Comunicación completa para esta empresa:
+    communication_guide: `Genera una Guía de Comunicación completa y personalizada para esta empresa:
 ${baseContext}
+
+IMPORTANTE: El tono, vocabulario y mensajes deben reflejar la identidad de marca de esta empresa.
 
 Genera SOLO el JSON con este formato exacto:
 {
   "brand_voice": {
-    "tone": "Descripción del tono de comunicación",
-    "personality_traits": ["Rasgo 1", "Rasgo 2", "Rasgo 3"],
-    "dos": ["Hacer esto", "Hacer aquello"],
-    "donts": ["No hacer esto", "No hacer aquello"]
+    "tone": "Descripción detallada del tono de comunicación ideal para esta marca",
+    "personality_traits": ["Rasgo de personalidad 1", "Rasgo 2", "Rasgo 3", "Rasgo 4"],
+    "dos": ["Hacer: comportamiento 1", "Hacer: comportamiento 2", "Hacer: comportamiento 3"],
+    "donts": ["No hacer: comportamiento 1", "No hacer: comportamiento 2", "No hacer: comportamiento 3"]
   },
   "key_messages": {
-    "tagline": "Eslogan principal",
-    "elevator_pitch": "Pitch de 30 segundos",
-    "value_propositions": ["Propuesta 1", "Propuesta 2"]
+    "tagline": "Eslogan o frase principal de la marca",
+    "elevator_pitch": "Pitch de 30 segundos explicando qué hace la empresa y por qué importa",
+    "value_propositions": ["Propuesta de valor 1", "Propuesta de valor 2", "Propuesta de valor 3"]
   },
   "vocabulary": {
-    "preferred_terms": [{"use": "Término preferido", "instead_of": "Término a evitar", "reason": "Razón"}],
-    "power_words": ["Palabra poderosa 1", "Palabra poderosa 2"]
+    "preferred_terms": [
+      {"use": "Término preferido", "instead_of": "Término a evitar", "reason": "Razón del cambio"},
+      {"use": "Otro término", "instead_of": "Término viejo", "reason": "Razón"}
+    ],
+    "power_words": ["Palabra poderosa 1", "Palabra 2", "Palabra 3", "Palabra 4", "Palabra 5"]
   },
   "templates": {
-    "email_subject_lines": ["Asunto 1", "Asunto 2"],
-    "social_media_hooks": ["Hook 1", "Hook 2"],
-    "call_to_actions": ["CTA 1", "CTA 2"]
+    "email_subject_lines": ["Asunto efectivo 1", "Asunto 2", "Asunto 3"],
+    "social_media_hooks": ["Hook para redes 1", "Hook 2", "Hook 3"],
+    "call_to_actions": ["CTA 1", "CTA 2", "CTA 3"]
   },
   "scenarios": [
-    {
-      "situation": "Situación específica",
-      "recommended_approach": "Enfoque recomendado",
-      "sample_script": "Guión de ejemplo"
-    }
+    {"situation": "Situación de comunicación 1", "recommended_approach": "Enfoque recomendado", "sample_script": "Ejemplo de guión o mensaje"},
+    {"situation": "Situación 2", "recommended_approach": "Enfoque", "sample_script": "Ejemplo"}
   ]
 }`
   }

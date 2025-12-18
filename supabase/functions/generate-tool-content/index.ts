@@ -340,7 +340,7 @@ Genera SOLO el JSON con este formato exacto:
 }`
 
     } else if (toolType === 'sales_simulator') {
-      prompt = `Genera un Simulador de Ventas interactivo para esta empresa:
+      prompt = `Genera un Simulador de Ventas interactivo y personalizado para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -349,86 +349,70 @@ CONTEXTO DE LA EMPRESA:
 - Productos/Servicios: ${JSON.stringify(org.products_services)}
 - Proceso de ventas: ${org.sales_process}
 
+IMPORTANTE: Los escenarios deben reflejar situaciones reales que el equipo de ventas de esta empresa enfrenta.
+
 Genera SOLO el JSON con este formato exacto:
 {
-  "client_types": [
-    {"id": "individual", "name": "Cliente Individual", "icon": "👤"},
-    {"id": "familia", "name": "Familia", "icon": "👨‍👩‍👧‍👦"},
-    {"id": "amigos", "name": "Grupo de Amigos", "icon": "🎉"},
-    {"id": "desconocido", "name": "Desconocido (Icebreaker)", "icon": "🎭"},
-    {"id": "empresa_cercana", "name": "Empresa Cercana", "icon": "🏢"},
-    {"id": "empresa_b2b", "name": "Empresa B2B Real", "icon": "💼"}
+  "quick_tips": [
+    {"category": "Apertura", "tip": "Consejo específico para abrir conversaciones con clientes de esta industria"},
+    {"category": "Descubrimiento", "tip": "Consejo para hacer preguntas efectivas"},
+    {"category": "Objeciones", "tip": "Consejo para manejar objeciones comunes"},
+    {"category": "Cierre", "tip": "Consejo para cerrar ventas efectivamente"},
+    {"category": "Seguimiento", "tip": "Consejo para el seguimiento post-reunión"}
   ],
-  "channels": [
-    {"id": "instagram", "name": "Instagram DM", "icon": "📸"},
-    {"id": "whatsapp", "name": "WhatsApp", "icon": "💬"},
-    {"id": "email", "name": "Email", "icon": "📧"},
-    {"id": "phone", "name": "Llamada Telefónica", "icon": "📞"},
-    {"id": "presencial", "name": "Presencial", "icon": "🤝"}
-  ],
-  "scenarios": {
-    "individual": {
-      "initial_speech": "Speech inicial para cliente individual...",
-      "conversation": [
+  "scenarios": [
+    {
+      "title": "Escenario 1: Cliente Tipo Principal",
+      "difficulty": "Medio",
+      "client_profile": {
+        "name": "Nombre realista del cliente",
+        "role": "Cargo del cliente",
+        "company_type": "Tipo de empresa",
+        "personality": "Tipo de personalidad (Analítico, Expresivo, etc.)",
+        "budget_level": "Alto/Medio/Bajo"
+      },
+      "conversation_flow": [
         {
-          "client_message": "Mensaje del cliente preguntando...",
-          "response_options": ["Respuesta opción A", "Respuesta opción B", "Respuesta opción C"],
-          "tips": ["Tip 1 para esta etapa", "Tip 2 para esta etapa", "Tip 3 para esta etapa"]
+          "stage": "Apertura",
+          "client_says": "Mensaje inicial del cliente expresando su situación o pregunta",
+          "options": [
+            {"response": "Respuesta excelente que demuestra empatía y profesionalismo", "score": 10, "feedback": "Feedback positivo explicando por qué es buena respuesta"},
+            {"response": "Respuesta aceptable pero mejorable", "score": 5, "feedback": "Feedback explicando qué podría mejorar"},
+            {"response": "Respuesta inadecuada", "score": 2, "feedback": "Feedback explicando por qué no es efectiva"}
+          ]
         },
         {
-          "client_message": "Segunda pregunta o objeción del cliente...",
-          "response_options": ["Respuesta A", "Respuesta B", "Respuesta C"],
-          "tips": ["Tip 1", "Tip 2", "Tip 3"]
+          "stage": "Descubrimiento",
+          "client_says": "El cliente comparte más información sobre su necesidad",
+          "options": [
+            {"response": "Respuesta que profundiza en las necesidades", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta que salta a la venta muy rápido", "score": 4, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que cambia de tema", "score": 1, "feedback": "Feedback negativo"}
+          ]
         },
         {
-          "client_message": "Pregunta de cierre del cliente...",
-          "response_options": ["Cierre opción A", "Cierre opción B", "Cierre opción C"],
-          "tips": ["Tip cierre 1", "Tip cierre 2", "Tip cierre 3"]
+          "stage": "Presentación de Valor",
+          "client_says": "El cliente pregunta sobre tu solución",
+          "options": [
+            {"response": "Respuesta que conecta beneficios con necesidades expresadas", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta genérica sobre el producto", "score": 5, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que solo habla de características", "score": 3, "feedback": "Feedback negativo"}
+          ]
+        },
+        {
+          "stage": "Cierre",
+          "client_says": "El cliente muestra interés pero duda",
+          "options": [
+            {"response": "Respuesta que aborda la duda y propone siguiente paso", "score": 10, "feedback": "Feedback positivo"},
+            {"response": "Respuesta que presiona demasiado", "score": 4, "feedback": "Feedback de mejora"},
+            {"response": "Respuesta que no pide ningún compromiso", "score": 2, "feedback": "Feedback negativo"}
+          ]
         }
-      ]
-    },
-    "familia": {
-      "initial_speech": "Speech inicial para familias...",
-      "conversation": [
-        {"client_message": "Pregunta familia 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta familia 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta familia 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
-      ]
-    },
-    "amigos": {
-      "initial_speech": "Speech inicial para grupos de amigos...",
-      "conversation": [
-        {"client_message": "Pregunta amigos 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta amigos 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta amigos 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
-      ]
-    },
-    "desconocido": {
-      "initial_speech": "Speech icebreaker para desconocidos...",
-      "conversation": [
-        {"client_message": "Pregunta icebreaker 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta icebreaker 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta icebreaker 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
-      ]
-    },
-    "empresa_cercana": {
-      "initial_speech": "Speech para empresa cercana/conocida...",
-      "conversation": [
-        {"client_message": "Pregunta empresa cercana 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta empresa cercana 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta empresa cercana 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
-      ]
-    },
-    "empresa_b2b": {
-      "initial_speech": "Speech profesional B2B...",
-      "conversation": [
-        {"client_message": "Pregunta B2B 1", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta B2B 2", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]},
-        {"client_message": "Pregunta B2B 3", "response_options": ["A", "B", "C"], "tips": ["Tip 1", "Tip 2", "Tip 3"]}
-      ]
+      ],
+      "ideal_outcome": "Descripción del resultado ideal de este escenario",
+      "learning_points": ["Aprendizaje clave 1", "Aprendizaje 2", "Aprendizaje 3"]
     }
-  },
-  "completion_message": "¡Felicidades! Has completado la simulación de ventas."
+  ]
 }`
 
     } else if (toolType === 'communication_guide') {
