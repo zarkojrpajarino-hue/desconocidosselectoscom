@@ -1,6 +1,7 @@
 import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DEMO_GROWTH_MODEL } from '@/data/demo-herramientas-data';
 
 // Types for GrowthModel
 interface GrowthMetric {
@@ -92,6 +93,7 @@ const GrowthModel = () => {
       title="Growth Model"
       description="Modelo AARRR para medir y optimizar cada etapa del crecimiento"
       renderContent={renderContent}
+      demoData={DEMO_GROWTH_MODEL}
     />
   );
 };

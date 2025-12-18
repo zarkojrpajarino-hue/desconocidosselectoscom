@@ -1,6 +1,7 @@
 import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DEMO_CUSTOMER_JOURNEY } from '@/data/demo-herramientas-data';
 
 // Types for CustomerJourney
 interface JourneyStage {
@@ -84,6 +85,7 @@ const CustomerJourney = () => {
       title="Customer Journey"
       description="Mapa del recorrido del cliente desde el primer contacto hasta la conversión y fidelización"
       renderContent={renderContent}
+      demoData={DEMO_CUSTOMER_JOURNEY}
     />
   );
 };

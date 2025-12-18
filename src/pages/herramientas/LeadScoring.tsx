@@ -2,6 +2,7 @@ import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { DEMO_LEAD_SCORING } from '@/data/demo-herramientas-data';
 
 // Types for LeadScoring
 interface ScoringRange { grade?: string; label?: string; min?: number; max?: number }
@@ -94,6 +95,7 @@ const LeadScoring = () => {
       title="Lead Scoring"
       description="Sistema de puntuación para priorizar y calificar leads según su potencial"
       renderContent={renderContent}
+      demoData={DEMO_LEAD_SCORING}
     />
   );
 };
