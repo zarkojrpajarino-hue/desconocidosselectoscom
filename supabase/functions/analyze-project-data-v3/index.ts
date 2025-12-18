@@ -200,16 +200,37 @@ serve(async (req) => {
       productsServices
     });
 
-    // Build comprehensive AI prompt
-    const prompt = buildComprehensivePrompt({
-      organization,
-      metrics,
-      competitors: competitors || [],
-      buyerPersonas: buyerPersonas || [],
-      countryData,
-      additionalData: { answers, updatedMetrics, context },
-      includeCompetitors
-    });
+    // Detect Discovery stage
+    const isDiscovery = organization.business_stage === 'discovery';
+    
+    // Fetch discovery profile if Discovery user
+    let discoveryProfile = null;
+    if (isDiscovery) {
+      const { data: dp } = await supabase
+        .from('discovery_profiles')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .maybeSingle();
+      discoveryProfile = dp;
+    }
+
+    // Build comprehensive AI prompt (different for Discovery)
+    const prompt = isDiscovery 
+      ? buildDiscoveryAnalysisPrompt({
+          organization,
+          discoveryProfile,
+          countryData,
+          additionalData: { answers, updatedMetrics, context }
+        })
+      : buildComprehensivePrompt({
+          organization,
+          metrics,
+          competitors: competitors || [],
+          buyerPersonas: buyerPersonas || [],
+          countryData,
+          additionalData: { answers, updatedMetrics, context },
+          includeCompetitors
+        });
 
     logger.info('calling_ai_gateway', { promptLength: prompt.length });
 
@@ -1408,4 +1429,254 @@ function generateComprehensiveFallback(
       }
     }
   };
+}
+
+// ============================================
+// DISCOVERY-SPECIFIC ANALYSIS PROMPT
+// ============================================
+
+function buildDiscoveryAnalysisPrompt(input: {
+  organization: Record<string, unknown>;
+  discoveryProfile: Record<string, unknown> | null;
+  countryData: Record<string, unknown> | null;
+  additionalData: {
+    answers: Record<string, unknown>;
+    updatedMetrics: Record<string, unknown>;
+    context: Record<string, unknown>;
+  };
+}): string {
+  const { organization, discoveryProfile, countryData, additionalData } = input;
+  
+  const orgName = (organization as { name?: string }).name || 'Mi Idea';
+  const dp = discoveryProfile || {};
+  
+  // Extract Discovery profile data
+  const currentSituation = (dp as { current_situation?: string }).current_situation || 'No especificada';
+  const hoursWeekly = (dp as { hours_weekly?: number }).hours_weekly || 10;
+  const riskTolerance = (dp as { risk_tolerance?: number }).risk_tolerance || 3;
+  const motivations = ((dp as { motivations?: string[] }).motivations || []).join(', ') || 'No especificadas';
+  const skills = ((dp as { skills?: string[] }).skills || []).join(', ') || 'No especificadas';
+  const industries = ((dp as { industries?: string[] }).industries || []).join(', ') || 'No especificadas';
+  const targetAudience = (dp as { target_audience_preference?: string }).target_audience_preference || 'No especificado';
+  const initialCapital = (dp as { initial_capital?: string }).initial_capital || 'No especificado';
+  const existingIdea = (dp as { existing_idea?: string }).existing_idea || '';
+  const businessTypePreference = (dp as { business_type_preference?: string }).business_type_preference || 'No especificado';
+  const revenueUrgency = (dp as { revenue_urgency?: string }).revenue_urgency || 'No especificada';
+  
+  // Selected idea from generated ideas
+  const generatedIdeas = (dp as { generated_ideas?: unknown[] }).generated_ideas || [];
+  const selectedIdeaId = (dp as { selected_idea_id?: string }).selected_idea_id;
+  
+  let marketSection = '';
+  if (countryData) {
+    marketSection = `
+DATOS DEL MERCADO (${(countryData as { country_name?: string }).country_name}):
+- Población: ${((countryData as { population?: number }).population || 0).toLocaleString()}
+- PIB per cápita: €${((countryData as { gdp_per_capita?: number }).gdp_per_capita || 0).toLocaleString()}
+- Penetración Internet: ${(countryData as { internet_penetration?: number }).internet_penetration}%
+- Penetración eCommerce: ${(countryData as { ecommerce_penetration?: number }).ecommerce_penetration}%
+- Plataformas sociales top: ${JSON.stringify((countryData as { top_social_platforms?: unknown }).top_social_platforms)}
+`;
+  }
+  
+  let additionalDataSection = '';
+  const { answers = {} } = additionalData;
+  if (Object.keys(answers).length > 0) {
+    additionalDataSection = `
+RESPUESTAS ADICIONALES DEL USUARIO:
+${Object.entries(answers).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+`;
+  }
+
+  return `Genera un ANÁLISIS DE VIABILIDAD DE IDEA para un emprendedor en etapa de descubrimiento:
+
+===== PERFIL DEL FUNDADOR =====
+Nombre del proyecto: ${orgName}
+Situación actual: ${currentSituation}
+Horas disponibles/semana: ${hoursWeekly}
+Tolerancia al riesgo (1-5): ${riskTolerance}
+Motivaciones principales: ${motivations}
+Habilidades fuertes: ${skills}
+Experiencia en industrias: ${industries}
+Público objetivo preferido: ${targetAudience}
+Capital inicial disponible: ${initialCapital}
+Preferencia tipo de negocio: ${businessTypePreference}
+Urgencia de ingresos: ${revenueUrgency}
+
+===== IDEA EXISTENTE (si aplica) =====
+${existingIdea || 'El usuario no tiene una idea definida aún'}
+
+===== IDEAS SUGERIDAS =====
+${generatedIdeas.length > 0 ? JSON.stringify(generatedIdeas) : 'No se han generado ideas todavía'}
+
+===== IDEA SELECCIONADA =====
+${selectedIdeaId || 'Aún no ha seleccionado una idea'}
+${marketSection}
+${additionalDataSection}
+
+===== INSTRUCCIONES PARA EL JSON =====
+Responde ÚNICAMENTE con JSON válido. Sin markdown. Sin explicaciones.
+Este análisis es para VALIDACIÓN DE IDEAS, no para un negocio operativo.
+
+La estructura EXACTA debe ser:
+{
+  "executive_dashboard": {
+    "overall_score": [0-100 viabilidad de la idea],
+    "health_status": "promising|needs_validation|risky|not_recommended",
+    "summary": "[resumen ejecutivo sobre viabilidad de la idea y próximos pasos de validación]",
+    "key_metrics": {
+      "idea_viability": [0-100],
+      "founder_fit": [0-100 qué tan bien encaja el fundador con esta idea],
+      "market_opportunity": [0-100],
+      "resource_readiness": [0-100 recursos disponibles vs necesarios]
+    },
+    "validation_progress": {
+      "problem_validated": false,
+      "solution_validated": false,
+      "market_validated": false,
+      "customer_validated": false
+    }
+  },
+  "idea_viability": {
+    "score": [0-100],
+    "status": "promising|needs_validation|risky|not_recommended",
+    "idea_summary": "[descripción clara de la idea de negocio]",
+    "value_proposition": "[propuesta de valor única]",
+    "target_customer": "[cliente objetivo específico]",
+    "problem_being_solved": "[problema que resuelve]",
+    "unique_differentiator": "[qué lo hace diferente]",
+    "revenue_model_suggestion": "[modelo de ingresos recomendado]",
+    "strengths": ["fortaleza 1", "fortaleza 2", "fortaleza 3"],
+    "weaknesses": ["debilidad 1", "debilidad 2"],
+    "critical_assumptions": [
+      {"assumption": "descripción", "risk_level": "high|medium|low", "how_to_validate": "experimento sugerido"}
+    ],
+    "recommendations": ["recomendación 1", "recomendación 2", "recomendación 3"]
+  },
+  "founder_fit_analysis": {
+    "overall_fit_score": [0-100],
+    "skills_match": {
+      "score": [0-100],
+      "matching_skills": ["habilidad que aplica 1"],
+      "missing_skills": ["habilidad necesaria que falta"],
+      "recommendation": "[cómo compensar gaps]"
+    },
+    "time_capacity": {
+      "score": [0-100],
+      "hours_available": ${hoursWeekly},
+      "hours_recommended": [horas recomendadas para esta idea],
+      "is_sufficient": true|false,
+      "recommendation": "[ajuste sugerido]"
+    },
+    "capital_adequacy": {
+      "score": [0-100],
+      "capital_available": "${initialCapital}",
+      "capital_recommended": "[rango recomendado]",
+      "is_sufficient": true|false,
+      "bootstrap_options": ["opción 1 para empezar con menos"]
+    },
+    "risk_alignment": {
+      "score": [0-100],
+      "founder_risk_tolerance": ${riskTolerance},
+      "idea_risk_level": [1-5],
+      "is_aligned": true|false,
+      "recommendation": "[ajuste si no está alineado]"
+    },
+    "motivation_alignment": {
+      "score": [0-100],
+      "aligned_motivations": ["motivación que encaja"],
+      "potential_conflicts": ["posible conflicto"],
+      "long_term_sustainability": "high|medium|low"
+    }
+  },
+  "market_analysis": {
+    "market_size": "[tamaño estimado del mercado]",
+    "market_growth": "[crecimiento proyectado]",
+    "target_segment_size": "[tamaño del segmento objetivo]",
+    "competition_level": "high|medium|low",
+    "entry_barriers": "high|medium|low",
+    "key_competitors": ["competidor 1", "competidor 2"],
+    "differentiation_opportunities": ["oportunidad 1", "oportunidad 2"],
+    "market_timing": "too_early|perfect|crowded|too_late",
+    "regulatory_considerations": ["consideración 1"],
+    "geographic_recommendations": ["mercado recomendado"]
+  },
+  "validation_roadmap": {
+    "current_stage": "idea|problem_validation|solution_validation|mvp|market_validation",
+    "next_milestone": "[próximo hito a alcanzar]",
+    "week_1_2": {
+      "focus": "[área de enfoque]",
+      "experiments": [{"name": "", "description": "", "success_criteria": "", "time_required": "", "cost": "€0"}],
+      "key_questions_to_answer": ["pregunta 1", "pregunta 2"]
+    },
+    "week_3_4": {
+      "focus": "[área de enfoque]",
+      "experiments": [{"name": "", "description": "", "success_criteria": "", "time_required": "", "cost": "€0"}],
+      "key_questions_to_answer": ["pregunta 1"]
+    },
+    "month_2_3": {
+      "focus": "[área de enfoque]",
+      "milestones": ["hito 1", "hito 2"],
+      "expected_learnings": ["aprendizaje esperado 1"]
+    },
+    "go_no_go_criteria": [
+      {"criterion": "criterio 1", "threshold": "umbral mínimo", "current_status": "unknown"}
+    ]
+  },
+  "resource_plan": {
+    "minimum_viable_budget": "€X",
+    "recommended_budget": "€X",
+    "budget_breakdown": [
+      {"category": "Validación", "amount": "€X", "priority": "critical|high|medium|low"}
+    ],
+    "time_investment": {
+      "minimum_hours_week": [horas],
+      "recommended_hours_week": [horas],
+      "duration_to_validation": "[tiempo estimado]"
+    },
+    "tools_needed": ["herramienta 1 gratuita/económica"],
+    "skills_to_acquire": ["habilidad 1"],
+    "potential_collaborators": ["tipo de colaborador que buscar"]
+  },
+  "risk_assessment": {
+    "overall_risk_level": "high|medium|low",
+    "key_risks": [
+      {"risk": "descripción", "probability": "high|medium|low", "impact": "high|medium|low", "mitigation": "cómo mitigar"}
+    ],
+    "worst_case_scenario": "[qué pasa si falla]",
+    "pivot_options": ["opción de pivote 1", "opción de pivote 2"],
+    "exit_criteria": ["criterio para abandonar si no funciona"]
+  },
+  "honest_feedback": {
+    "overall_assessment": "[Evaluación honesta y directa de la viabilidad]",
+    "what_is_promising": ["aspecto prometedor 1"],
+    "concerns": ["preocupación 1", "preocupación 2"],
+    "hard_truths": ["verdad difícil que el fundador necesita escuchar"],
+    "founder_blind_spots": ["punto ciego potencial"],
+    "success_probability": {
+      "percentage": [0-100],
+      "confidence": "high|medium|low",
+      "factors_that_could_increase": ["factor 1"],
+      "factors_that_could_decrease": ["factor 1"]
+    },
+    "alternative_suggestions": ["si esta idea no funciona, considera..."],
+    "encouragement": "[mensaje motivacional pero realista]"
+  },
+  "action_items": {
+    "this_week": [
+      {"task": "tarea concreta 1", "why": "por qué es importante", "time_required": "1-2 horas"}
+    ],
+    "this_month": [
+      {"task": "tarea 1", "expected_outcome": "resultado esperado"}
+    ],
+    "before_investing_money": ["validar X primero", "hablar con Y personas"]
+  }
+}
+
+IMPORTANTE: 
+- Enfócate en VALIDACIÓN, no en ejecución
+- Sé HONESTO pero CONSTRUCTIVO
+- Prioriza experimentos de bajo costo
+- Adapta al nivel de experiencia del fundador
+- Los scores deben reflejar viabilidad real, no optimismo`;
 }

@@ -73,6 +73,7 @@ const DashboardHome = () => {
   const [isTransition, setIsTransition] = useState(isInTransitionPeriod());
   const [overdueTasksOpen, setOverdueTasksOpen] = useState(true);
   const [overdueTasks, setOverdueTasks] = useState<TaskItem[]>([]);
+  const [isDiscovery, setIsDiscovery] = useState(false);
 
   // Detectar periodo de transición cada minuto
   useEffect(() => {
@@ -132,18 +133,21 @@ const DashboardHome = () => {
   const currentUserRole = userOrganizations.find(org => org.organization_id === currentOrganizationId)?.role || 'member';
   const isAdmin = currentUserRole === 'admin';
   
-  // Fetch organization settings including visibility and has_team
+  // Fetch organization settings including visibility, has_team, and business_stage
   useEffect(() => {
     const fetchOrgSettings = async () => {
       if (!currentOrganizationId) return;
       const { data } = await supabase
         .from('organizations')
-        .select('admin_visibility_team, has_team')
+        .select('admin_visibility_team, has_team, business_stage')
         .eq('id', currentOrganizationId)
         .single();
       if (data) {
         setAdminVisibilityTeam(data.admin_visibility_team ?? false);
-        setHasTeam(data.has_team ?? true);
+        // Discovery users are always in individual mode (no team)
+        const discoveryMode = data.business_stage === 'discovery';
+        setIsDiscovery(discoveryMode);
+        setHasTeam(discoveryMode ? false : (data.has_team ?? true));
       }
     };
     fetchOrgSettings();
@@ -247,8 +251,16 @@ const DashboardHome = () => {
             {/* Trial Countdown */}
             <TrialCountdown />
 
-            {/* Marketing Message */}
-            <InfoMessage icon={Lightbulb} title="💡 Tu Dashboard Personalizado" message="Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio." className="mb-2" />
+            {/* Marketing Message - Different for Discovery */}
+            <InfoMessage 
+              icon={Lightbulb} 
+              title={isDiscovery ? "🚀 Tu Panel de Validación" : "💡 Tu Dashboard Personalizado"} 
+              message={isDiscovery 
+                ? "Estás en <strong>modo descubrimiento</strong>. Tu objetivo es validar tu idea de negocio antes de invertir tiempo y dinero." 
+                : "Este no es un dashboard genérico. Es <strong>tu espacio de trabajo</strong> con tareas y métricas específicas para tu negocio."
+              } 
+              className="mb-2" 
+            />
 
             {/* Roadmap Preview - Collapsible */}
             {currentOrganizationId && <Collapsible open={roadmapOpen} onOpenChange={setRoadmapOpen}>
@@ -259,8 +271,12 @@ const DashboardHome = () => {
                         <Zap className="h-5 w-5 text-white" />
                       </div>
                       <div className="text-left">
-                        <span className="font-semibold block">Roadmap Estratégico con IA</span>
-                        <span className="text-xs text-muted-foreground">Plan de crecimiento personalizado</span>
+                        <span className="font-semibold block">
+                          {isDiscovery ? 'Roadmap de Validación' : 'Roadmap Estratégico con IA'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {isDiscovery ? 'Fases de Customer Development' : 'Plan de crecimiento personalizado'}
+                        </span>
                       </div>
                     </div>
                     <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${roadmapOpen ? 'rotate-180' : ''}`} />
