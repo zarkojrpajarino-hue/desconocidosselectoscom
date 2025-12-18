@@ -3839,6 +3839,7 @@ export type Database = {
           target_date: string | null
           title: string
           updated_at: string | null
+          week_start: string | null
           year: number
         }
         Insert: {
@@ -3858,6 +3859,7 @@ export type Database = {
           target_date?: string | null
           title: string
           updated_at?: string | null
+          week_start?: string | null
           year: number
         }
         Update: {
@@ -3877,6 +3879,7 @@ export type Database = {
           target_date?: string | null
           title?: string
           updated_at?: string | null
+          week_start?: string | null
           year?: number
         }
         Relationships: [
