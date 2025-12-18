@@ -6,6 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Calculate current week start based on user's preferred day
+ */
+function getCurrentWeekStart(preferredStartDay: number): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const daysSinceStart = (dayOfWeek - preferredStartDay + 7) % 7;
+  const currentWeekStart = new Date(today);
+  currentWeekStart.setDate(today.getDate() - daysSinceStart);
+  currentWeekStart.setHours(0, 0, 0, 0);
+  return currentWeekStart.toISOString().split('T')[0];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -20,20 +33,22 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Obtener la semana actual del sistema PRIMERO
-    const { data: systemConfig } = await supabase
-      .from('system_config')
-      .select('week_start')
+    // ============================================
+    // NUEVO: Obtener preferencias de semana del usuario
+    // ============================================
+    const { data: userSettings } = await supabase
+      .from('user_global_agenda_settings')
+      .select('preferred_week_start_day, personal_week_start')
+      .eq('user_id', userId)
       .single();
+    
+    const preferredStartDay = userSettings?.preferred_week_start_day ?? 1; // Default Monday
+    const currentWeekStart = getCurrentWeekStart(preferredStartDay);
 
-    if (!systemConfig) {
-      throw new Error('Configuración del sistema no encontrada');
-    }
-
-    const currentWeekStart = new Date(systemConfig.week_start).toISOString().split('T')[0];
+    console.log(`User ${userId} - Preferred start day: ${preferredStartDay}, Week start: ${currentWeekStart}`);
 
     // ============================================
-    // NUEVO: Verificar OKRs pendientes de semanas anteriores
+    // Verificar OKRs pendientes de semanas anteriores
     // ============================================
     const { data: pendingOKRs } = await supabase
       .from('objectives')
@@ -360,7 +375,7 @@ IMPORTANTE:
 
     const generated = JSON.parse(toolCall.function.arguments);
     
-    // Insertar el Objetivo semanal CON PLAYBOOK
+    // Insertar el Objetivo semanal CON PLAYBOOK y week_start
     const { data: newObjective, error: objInsertError } = await supabase
       .from('objectives')
       .insert({
@@ -374,7 +389,8 @@ IMPORTANTE:
         created_by: userId,
         status: 'active',
         organization_id: userRole?.organization_id,
-        playbook: generated.playbook || null
+        playbook: generated.playbook || null,
+        week_start: currentWeekStart // Guardar la semana de este OKR
       })
       .select()
       .single();

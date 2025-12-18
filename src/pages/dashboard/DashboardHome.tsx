@@ -14,7 +14,7 @@ import TeamProgress from '@/components/TeamProgress';
 import NotificationBell from '@/components/NotificationBell';
 import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
 import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
-import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWednesdayStart } from '@/lib/weekUtils';
+import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWeekStart } from '@/lib/weekUtils';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
@@ -437,7 +437,7 @@ const DashboardHome = () => {
                     <h3 className="font-semibold text-lg">La semana ha terminado</h3>
                     <p className="text-muted-foreground">
                       La nueva semana comienza hoy a las 13:30. 
-                      Prepara tu disponibilidad para la semana del {format(getNextWednesdayStart(), "d 'de' MMMM", { locale: es })}.
+                      Prepara tu disponibilidad para la semana del {format(getNextWeekStart(), "d 'de' MMMM", { locale: es })}.
                     </p>
                   </div>
                 </CardContent>
