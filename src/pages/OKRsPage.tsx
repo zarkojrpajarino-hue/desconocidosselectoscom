@@ -287,7 +287,7 @@ const OKRsPage = () => {
           </TabsList>
 
           <TabsContent value="weekly">
-            <OKRsDashboard />
+            <OKRsDashboard showDemoData={showDemoData} />
           </TabsContent>
 
           <TabsContent value="quarterly">

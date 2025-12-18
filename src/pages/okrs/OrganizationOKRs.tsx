@@ -27,6 +27,16 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OKRProgressModal } from '@/components/OKRProgressModal';
+import { OKRPlaybook } from '@/components/okrs/OKRPlaybook';
+
+interface PlaybookData {
+  title: string;
+  description: string;
+  steps: string[];
+  tips: string[];
+  resources?: string[];
+  daily_focus?: string[];
+}
 
 interface KeyResult {
   id: string;
@@ -58,6 +68,7 @@ interface Objective {
   on_track_krs: number;
   at_risk_krs: number;
   behind_krs: number;
+  playbook?: PlaybookData | null;
 }
 
 interface ActivePhase {
@@ -91,6 +102,24 @@ const DEMO_OBJECTIVES: Objective[] = [
     on_track_krs: 2,
     at_risk_krs: 0,
     behind_krs: 0,
+    playbook: {
+      title: 'Playbook: Crecimiento de MRR',
+      description: 'Estrategia para aumentar ingresos recurrentes mensuales de forma sostenible',
+      steps: [
+        'Identificar clientes con alto potencial de upsell',
+        'Optimizar proceso de onboarding para reducir churn temprano',
+        'Implementar programa de referidos con incentivos',
+        'Crear contenido de valor para lead nurturing',
+        'Establecer reuniones semanales de revisión de pipeline'
+      ],
+      tips: [
+        'Enfócate en retener clientes existentes antes de adquirir nuevos',
+        'Monitorea métricas de engagement para detectar churn temprano',
+        'Automatiza comunicaciones de onboarding para mejorar activación'
+      ],
+      resources: ['Template de seguimiento de MRR', 'Guía de upselling', 'Checklist de onboarding'],
+      daily_focus: ['Revisar pipeline de ventas', 'Contactar leads calificados', 'Analizar métricas de retención']
+    }
   },
   {
     id: 'demo-obj-2',
@@ -111,6 +140,24 @@ const DEMO_OBJECTIVES: Objective[] = [
     on_track_krs: 0,
     at_risk_krs: 1,
     behind_krs: 1,
+    playbook: {
+      title: 'Playbook: Retención de Clientes',
+      description: 'Estrategia para mejorar satisfacción y reducir abandono de clientes',
+      steps: [
+        'Implementar encuestas NPS mensuales automatizadas',
+        'Crear programa de customer success proactivo',
+        'Desarrollar base de conocimiento para autoservicio',
+        'Establecer alertas tempranas de riesgo de churn',
+        'Ofrecer sesiones de formación y webinars para clientes'
+      ],
+      tips: [
+        'Responde a detractores NPS en menos de 24 horas',
+        'Celebra y comparte casos de éxito de promotores',
+        'Analiza patrones de comportamiento pre-churn'
+      ],
+      resources: ['Plantilla de encuesta NPS', 'Script de llamada de retención', 'Dashboard de health score'],
+      daily_focus: ['Revisar alertas de churn', 'Seguimiento con detractores', 'Actualizar health scores']
+    }
   },
   {
     id: 'demo-obj-3',
@@ -131,6 +178,24 @@ const DEMO_OBJECTIVES: Objective[] = [
     on_track_krs: 1,
     at_risk_krs: 0,
     behind_krs: 0,
+    playbook: {
+      title: 'Playbook: Automatización y Eficiencia',
+      description: 'Estrategia para escalar operaciones mediante automatización inteligente',
+      steps: [
+        'Mapear todos los procesos manuales actuales',
+        'Priorizar por impacto y facilidad de automatización',
+        'Implementar herramientas de automatización (Zapier, Make)',
+        'Crear documentación de procesos automatizados',
+        'Medir tiempo ahorrado y ROI de cada automatización'
+      ],
+      tips: [
+        'Empieza por procesos repetitivos de alto volumen',
+        'Involucra al equipo en identificar cuellos de botella',
+        'Documenta todo antes de automatizar'
+      ],
+      resources: ['Matriz de priorización de automatización', 'Template de ROI', 'Checklist de documentación'],
+      daily_focus: ['Revisar métricas de eficiencia', 'Identificar nuevas oportunidades', 'Optimizar procesos existentes']
+    }
   },
 ];
 
@@ -847,6 +912,15 @@ const OrganizationOKRs = () => {
                         </CardContent>
                       </Card>
                     ))}
+                    
+                    {/* Playbook del OKR */}
+                    {objective.playbook && (
+                      <OKRPlaybook 
+                        playbook={objective.playbook} 
+                        objectiveTitle={objective.title}
+                        className="mt-4"
+                      />
+                    )}
                   </CardContent>
                 </Card>
               ))}

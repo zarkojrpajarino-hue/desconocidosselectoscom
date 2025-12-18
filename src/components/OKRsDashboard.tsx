@@ -75,7 +75,52 @@ interface Objective {
   playbook?: PlaybookData | null;
 }
 
-const OKRsDashboard = () => {
+// Demo data for weekly OKRs
+const DEMO_WEEKLY_OBJECTIVES: Objective[] = [
+  {
+    id: 'demo-weekly-1',
+    title: 'Completar tareas prioritarias de la semana',
+    description: 'Maximizar productividad en las tareas clave de esta semana',
+    quarter: new Date().toISOString().split('T')[0],
+    year: new Date().getFullYear(),
+    status: 'active',
+    target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    owner_name: 'Tu nombre',
+    progress: 65,
+    key_results: [
+      { id: 'demo-kr-1', title: 'Completar 5 tareas de alta prioridad', description: '', metric_type: 'number', start_value: 0, target_value: 5, current_value: 3, unit: 'tareas', status: 'on_track', weight: 1, progress: 60 },
+      { id: 'demo-kr-2', title: 'Dedicar 4 horas a deep work diario', description: '', metric_type: 'number', start_value: 0, target_value: 20, current_value: 14, unit: 'horas', status: 'on_track', weight: 1, progress: 70 },
+    ],
+    total_key_results: 2,
+    achieved_krs: 0,
+    on_track_krs: 2,
+    at_risk_krs: 0,
+    behind_krs: 0,
+    playbook: {
+      title: 'Playbook: Productividad Semanal',
+      description: 'Guía para maximizar tu rendimiento esta semana',
+      steps: [
+        'Revisar y priorizar tareas al inicio del día',
+        'Bloquear tiempo para deep work sin interrupciones',
+        'Usar técnica Pomodoro para tareas complejas',
+        'Revisar progreso al final del día',
+        'Ajustar prioridades según avance'
+      ],
+      tips: [
+        'Empieza con las tareas más difíciles por la mañana',
+        'Limita reuniones a lo esencial',
+        'Toma descansos regulares para mantener energía'
+      ],
+      daily_focus: ['Revisar KRs', 'Actualizar progreso', 'Planificar siguiente día']
+    }
+  }
+];
+
+interface OKRsDashboardProps {
+  showDemoData?: boolean;
+}
+
+const OKRsDashboard = ({ showDemoData = false }: OKRsDashboardProps) => {
   const { user, userProfile, currentOrganizationId } = useAuth();
   const { canAddOkr, plan, okrCount, limits } = useSubscriptionLimits();
   const { canAddOkr: validateOkrBackend, validating } = useBackendValidation();
@@ -93,6 +138,11 @@ const OKRsDashboard = () => {
     targetValue: number;
     unit: string;
   } | null>(null);
+
+  // Use demo data if enabled and no real data
+  const hasRealData = objectives.length > 0;
+  const displayObjectives = (showDemoData && !hasRealData) ? DEMO_WEEKLY_OBJECTIVES : objectives;
+  const isDemo = showDemoData && !hasRealData;
 
   useEffect(() => {
     fetchWeekStart();
@@ -475,7 +525,7 @@ const OKRsDashboard = () => {
               </CardDescription>
               <CardTitle className="text-3xl text-primary">
                 {Math.round(
-                  objectives.reduce((sum, obj) => sum + obj.progress, 0) / objectives.length
+                  displayObjectives.reduce((sum, obj) => sum + obj.progress, 0) / displayObjectives.length
                 )}%
               </CardTitle>
             </CardHeader>
@@ -488,14 +538,27 @@ const OKRsDashboard = () => {
                 KRs Logrados
               </CardDescription>
               <CardTitle className="text-3xl text-success">
-                {objectives.reduce((sum, obj) => sum + obj.achieved_krs, 0)}
+                {displayObjectives.reduce((sum, obj) => sum + obj.achieved_krs, 0)}
               </CardTitle>
             </CardHeader>
           </Card>
         </div>
       )}
 
-      {objectives.length === 0 ? (
+      {/* Demo Alert */}
+      {isDemo && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-primary">
+              <Info className="w-4 h-4" />
+              <span className="font-medium">Datos de demostración</span>
+              <span className="text-muted-foreground">- Genera tu OKR real para ver datos personalizados</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {displayObjectives.length === 0 && !isDemo ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Sparkles className="w-16 h-16 text-primary mb-4" />
@@ -509,9 +572,9 @@ const OKRsDashboard = () => {
             </Button>
           </CardContent>
         </Card>
-      ) : (
+      ) : displayObjectives.length > 0 ? (
         <div className="space-y-6">
-          {objectives.map((objective) => (
+          {displayObjectives.map((objective) => (
             <Card key={objective.id} className="border-2">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -654,7 +717,7 @@ const OKRsDashboard = () => {
             </Card>
           ))}
         </div>
-      )}
+      ) : null}
 
       {/* Modal de actualización de progreso */}
       {selectedKR && (
