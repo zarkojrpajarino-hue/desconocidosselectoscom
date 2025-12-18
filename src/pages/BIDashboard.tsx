@@ -6,7 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { BarChart3, TrendingUp, PieChart, Activity, Download, RefreshCw, Calendar } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BarChart3, TrendingUp, PieChart, Activity, Download, RefreshCw, Calendar, Database, Info } from 'lucide-react';
 import { RevenueAnalytics } from '@/components/bi/RevenueAnalytics';
 import { SalesPerformance } from '@/components/bi/SalesPerformance';
 import { CustomerInsights } from '@/components/bi/CustomerInsights';
@@ -20,6 +23,7 @@ const BIDashboard = () => {
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30d');
   const [refreshing, setRefreshing] = useState(false);
+  const [showDemoData, setShowDemoData] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -105,14 +109,36 @@ const BIDashboard = () => {
             <Download className="w-4 h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Exportar</span>
           </Button>
+
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <Database className="w-4 h-4 text-muted-foreground" />
+            <Label htmlFor="demo-mode" className="text-sm text-muted-foreground whitespace-nowrap">
+              Demo
+            </Label>
+            <Switch
+              id="demo-mode"
+              checked={showDemoData}
+              onCheckedChange={setShowDemoData}
+            />
+          </div>
         </div>
       </div>
+
+      {showDemoData && (
+        <Alert className="bg-primary/5 border-primary/20">
+          <Info className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-sm">
+            Visualizando datos de demostración profesionales. Desactiva el toggle para ver tus datos reales.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Executive Summary */}
       <ExecutiveSummary 
         organizationId={currentOrganizationId} 
         dateRange={dateRange}
-        key={`summary-${refreshing}`}
+        showDemoData={showDemoData}
+        key={`summary-${refreshing}-${showDemoData}`}
       />
 
       {/* Detailed Analytics Tabs */}
@@ -140,7 +166,8 @@ const BIDashboard = () => {
           <RevenueAnalytics 
             organizationId={currentOrganizationId} 
             dateRange={dateRange}
-            key={`revenue-${refreshing}`}
+            showDemoData={showDemoData}
+            key={`revenue-${refreshing}-${showDemoData}`}
           />
         </TabsContent>
 
@@ -148,7 +175,8 @@ const BIDashboard = () => {
           <SalesPerformance 
             organizationId={currentOrganizationId} 
             dateRange={dateRange}
-            key={`sales-${refreshing}`}
+            showDemoData={showDemoData}
+            key={`sales-${refreshing}-${showDemoData}`}
           />
         </TabsContent>
 
@@ -156,7 +184,8 @@ const BIDashboard = () => {
           <CustomerInsights 
             organizationId={currentOrganizationId} 
             dateRange={dateRange}
-            key={`customers-${refreshing}`}
+            showDemoData={showDemoData}
+            key={`customers-${refreshing}-${showDemoData}`}
           />
         </TabsContent>
 
@@ -164,7 +193,8 @@ const BIDashboard = () => {
           <OperationalMetrics 
             organizationId={currentOrganizationId} 
             dateRange={dateRange}
-            key={`operations-${refreshing}`}
+            showDemoData={showDemoData}
+            key={`operations-${refreshing}-${showDemoData}`}
           />
         </TabsContent>
       </Tabs>

@@ -5,10 +5,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Activity, CheckCircle, Clock, AlertTriangle, Users } from 'lucide-react';
+import { DEMO_OPERATIONAL_METRICS } from '@/data/demo-bi-data';
 
 interface OperationalMetricsProps {
   organizationId: string;
   dateRange: string;
+  showDemoData?: boolean;
 }
 
 interface OperationalData {
@@ -23,7 +25,7 @@ interface OperationalData {
   };
 }
 
-export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMetricsProps) => {
+export const OperationalMetrics = ({ organizationId, dateRange, showDemoData = false }: OperationalMetricsProps) => {
   const [data, setData] = useState<OperationalData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -145,9 +147,11 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
     };
 
     fetchData();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, showDemoData]);
 
-  if (loading) {
+  const displayData = showDemoData ? DEMO_OPERATIONAL_METRICS : data;
+
+  if (loading && !showDemoData) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
@@ -164,7 +168,7 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
     );
   }
 
-  if (!data) return null;
+  if (!displayData) return null;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -177,7 +181,6 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Task Completion Trend */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -188,39 +191,25 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.taskCompletion.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.taskCompletion}>
-                  <defs>
-                    <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" className="text-xs" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="completed" 
-                    name="Completadas"
-                    stroke="hsl(var(--primary))" 
-                    fillOpacity={1} 
-                    fill="url(#colorCompleted)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                No hay datos de tareas disponibles
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={displayData.taskCompletion}>
+                <defs>
+                  <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="date" className="text-xs" />
+                <YAxis />
+                <Tooltip />
+                <Area type="monotone" dataKey="completed" name="Completadas" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorCompleted)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Team Productivity */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -231,27 +220,20 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.teamProductivity.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.teamProductivity} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} className="text-xs" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="completed" name="Completadas" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                No hay datos de productividad disponibles
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={displayData.teamProductivity} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis type="number" />
+                <YAxis dataKey="name" type="category" width={100} className="text-xs" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="completed" name="Completadas" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* OKR Progress */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -262,28 +244,19 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.okrProgress.length > 0 ? (
-              data.okrProgress.map((okr, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium truncate max-w-[200px]">{okr.objective}</span>
-                    <span className={`text-sm font-medium ${getStatusColor(okr.status)}`}>
-                      {okr.progress.toFixed(0)}%
-                    </span>
-                  </div>
-                  <Progress value={okr.progress} className="h-2" />
+            {displayData.okrProgress.map((okr, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium truncate max-w-[200px]">{okr.objective}</span>
+                  <span className={`text-sm font-medium ${getStatusColor(okr.status)}`}>{okr.progress.toFixed(0)}%</span>
                 </div>
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground py-8">
-                No hay OKRs activos
+                <Progress value={okr.progress} className="h-2" />
               </div>
-            )}
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Operational Alerts */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -299,31 +272,28 @@ export const OperationalMetrics = ({ organizationId, dateRange }: OperationalMet
                 <Clock className="w-4 h-4 text-red-500" />
                 <span className="text-sm text-muted-foreground">Tareas Vencidas</span>
               </div>
-              <p className="text-2xl font-bold text-red-600">{data.alerts.overdueTasks}</p>
+              <p className="text-2xl font-bold text-red-600">{displayData.alerts.overdueTasks}</p>
             </div>
-            
             <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 <span className="text-sm text-muted-foreground">Deals Estancados</span>
               </div>
-              <p className="text-2xl font-bold text-amber-600">{data.alerts.stalledDeals}</p>
+              <p className="text-2xl font-bold text-amber-600">{displayData.alerts.stalledDeals}</p>
             </div>
-            
             <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-4 h-4 text-purple-500" />
                 <span className="text-sm text-muted-foreground">Bajo Rendimiento</span>
               </div>
-              <p className="text-2xl font-bold text-purple-600">{data.alerts.lowPerformers}</p>
+              <p className="text-2xl font-bold text-purple-600">{displayData.alerts.lowPerformers}</p>
             </div>
-            
             <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-blue-500" />
                 <span className="text-sm text-muted-foreground">Pendientes</span>
               </div>
-              <p className="text-2xl font-bold text-blue-600">{data.alerts.pendingApprovals}</p>
+              <p className="text-2xl font-bold text-blue-600">{displayData.alerts.pendingApprovals}</p>
             </div>
           </div>
         </CardContent>

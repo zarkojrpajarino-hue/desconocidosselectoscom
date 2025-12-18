@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { Users, UserPlus, UserMinus, Heart } from 'lucide-react';
+import { DEMO_CUSTOMER_INSIGHTS } from '@/data/demo-bi-data';
 
 interface CustomerInsightsProps {
   organizationId: string;
   dateRange: string;
+  showDemoData?: boolean;
 }
 
 interface CustomerData {
@@ -25,7 +27,7 @@ interface CustomerData {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
-export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsightsProps) => {
+export const CustomerInsights = ({ organizationId, dateRange, showDemoData = false }: CustomerInsightsProps) => {
   const [data, setData] = useState<CustomerData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -130,13 +132,11 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
     };
 
     fetchData();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, showDemoData]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
-  };
+  const displayData = showDemoData ? DEMO_CUSTOMER_INSIGHTS : data;
 
-  if (loading) {
+  if (loading && !showDemoData) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
@@ -153,18 +153,17 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
     );
   }
 
-  if (!data) return null;
+  if (!displayData) return null;
 
   const radarData = [
-    { metric: 'NPS', value: data.satisfaction.nps, fullMark: 100 },
-    { metric: 'CSAT', value: data.satisfaction.csat, fullMark: 100 },
-    { metric: 'Retención', value: data.satisfaction.retention, fullMark: 100 },
-    { metric: 'Fidelidad', value: Math.max(0, 100 - data.satisfaction.churn), fullMark: 100 },
+    { metric: 'NPS', value: displayData.satisfaction.nps, fullMark: 100 },
+    { metric: 'CSAT', value: displayData.satisfaction.csat, fullMark: 100 },
+    { metric: 'Retención', value: displayData.satisfaction.retention, fullMark: 100 },
+    { metric: 'Fidelidad', value: Math.max(0, 100 - displayData.satisfaction.churn), fullMark: 100 },
   ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Customer Acquisition by Source */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -175,31 +174,20 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.acquisition.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.acquisition} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="source" type="category" width={100} className="text-xs" />
-                  <Tooltip 
-                    formatter={(value: number, name: string) => 
-                      name === 'value' ? formatCurrency(value) : value
-                    }
-                  />
-                  <Legend />
-                  <Bar dataKey="count" name="Clientes" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                No hay datos de adquisición disponibles
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={displayData.acquisition} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis type="number" />
+                <YAxis dataKey="source" type="category" width={100} className="text-xs" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="count" name="Clientes" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Customer Segments */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -210,36 +198,29 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.segments.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data.segments}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
-                  >
-                    {data.segments.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                No hay datos de segmentos disponibles
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={displayData.segments}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                >
+                  {displayData.segments.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Customer Satisfaction Radar */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -269,7 +250,6 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
         </CardContent>
       </Card>
 
-      {/* Cohort Analysis */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -280,23 +260,17 @@ export const CustomerInsights = ({ organizationId, dateRange }: CustomerInsights
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.cohorts.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.cohorts}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="newCustomers" name="Nuevos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="retained" name="Retenidos" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                No hay datos de cohortes disponibles
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={displayData.cohorts}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="text-xs" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="newCustomers" name="Nuevos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="retained" name="Retenidos" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>

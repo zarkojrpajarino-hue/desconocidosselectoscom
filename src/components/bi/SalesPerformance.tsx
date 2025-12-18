@@ -5,10 +5,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, FunnelChart, Funnel, LabelList } from 'recharts';
 import { Trophy, Target, TrendingUp, Clock } from 'lucide-react';
+import { DEMO_SALES_PERFORMANCE } from '@/data/demo-bi-data';
 
 interface SalesPerformanceProps {
   organizationId: string;
   dateRange: string;
+  showDemoData?: boolean;
 }
 
 interface SalesData {
@@ -18,7 +20,7 @@ interface SalesData {
   funnel: Array<{ name: string; value: number; fill: string }>;
 }
 
-export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformanceProps) => {
+export const SalesPerformance = ({ organizationId, dateRange, showDemoData = false }: SalesPerformanceProps) => {
   const [data, setData] = useState<SalesData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -116,13 +118,16 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
     };
 
     fetchData();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, showDemoData]);
+
+  // Use demo data if enabled
+  const displayData = showDemoData ? DEMO_SALES_PERFORMANCE : data;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
   };
 
-  if (loading) {
+  if (loading && !showDemoData) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
@@ -139,7 +144,7 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
     );
   }
 
-  if (!data) return null;
+  if (!displayData) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -155,7 +160,7 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.pipeline}>
+              <BarChart data={displayData.pipeline}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="stage" className="text-xs" />
                 <YAxis yAxisId="left" orientation="left" />
@@ -190,7 +195,7 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
                 <Tooltip formatter={(value: number) => `${value} leads`} />
                 <Funnel
                   dataKey="value"
-                  data={data.funnel}
+                  data={displayData.funnel}
                   isAnimationActive
                 >
                   <LabelList position="right" fill="#000" stroke="none" dataKey="name" />
@@ -212,9 +217,9 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            {data.velocity.length > 0 ? (
+            {displayData.velocity.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.velocity}>
+                <LineChart data={displayData.velocity}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="stage" className="text-xs" />
                   <YAxis />
@@ -249,8 +254,8 @@ export const SalesPerformance = ({ organizationId, dateRange }: SalesPerformance
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.performers.length > 0 ? (
-              data.performers.map((performer, index) => (
+            {displayData.performers.length > 0 ? (
+              displayData.performers.map((performer, index) => (
                 <div key={performer.name} className="flex items-center gap-4">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
                     index === 0 ? 'bg-amber-500 text-white' :
