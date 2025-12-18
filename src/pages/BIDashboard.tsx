@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { BarChart3, TrendingUp, PieChart, Activity, Download, RefreshCw, Calendar, Database, Info } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { BarChart3, TrendingUp, PieChart, Activity, Download, RefreshCw, Calendar, Database, Info, HelpCircle, ChevronDown, Zap, Clock, LineChart, Users } from 'lucide-react';
 import { RevenueAnalytics } from '@/components/bi/RevenueAnalytics';
 import { SalesPerformance } from '@/components/bi/SalesPerformance';
 import { CustomerInsights } from '@/components/bi/CustomerInsights';
@@ -24,6 +25,7 @@ const BIDashboard = () => {
   const [dateRange, setDateRange] = useState('30d');
   const [refreshing, setRefreshing] = useState(false);
   const [showDemoData, setShowDemoData] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -81,9 +83,18 @@ const BIDashboard = () => {
               <span className="truncate">Business Intelligence</span>
             </h1>
             <p className="text-xs md:text-base text-muted-foreground mt-1">
-              Análisis avanzado de métricas y tendencias
+              Análisis avanzado de métricas y tendencias en tiempo real
             </p>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowHelp(!showHelp)}
+            className="flex-shrink-0"
+          >
+            <HelpCircle className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">¿Cómo funciona?</span>
+          </Button>
         </div>
         
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -123,6 +134,68 @@ const BIDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Help Section */}
+      <Collapsible open={showHelp} onOpenChange={setShowHelp}>
+        <CollapsibleContent>
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Info className="w-5 h-5 text-primary" />
+                ¿Qué es el Business Intelligence?
+              </CardTitle>
+              <CardDescription>
+                Tu centro de mando para visualizar y analizar los datos de tu negocio en tiempo real
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="w-5 h-5 text-primary" />
+                    <span className="font-semibold text-sm">Datos en Tiempo Real</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Los dashboards muestran datos actualizados automáticamente cada vez que visitas la página. Sin necesidad de generar reportes manualmente.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <LineChart className="w-5 h-5 text-success" />
+                    <span className="font-semibold text-sm">Fuentes de Datos</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Los gráficos se alimentan de: ingresos, gastos, leads del CRM, tareas completadas, y métricas de negocio que registres.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-5 h-5 text-warning" />
+                    <span className="font-semibold text-sm">Filtro por Período</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Usa el selector de fechas para ver datos de los últimos 7, 30, 90, 365 días o todo el histórico de tu empresa.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-5 h-5 text-info" />
+                    <span className="font-semibold text-sm">Modo Demo</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Activa el toggle "Demo" para ver cómo se verían los dashboards con datos de ejemplo profesionales.
+                  </p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                <p className="text-sm">
+                  <strong className="text-success">💡 Tip:</strong> Conforme añadas más datos a tu CRM, registres ingresos/gastos y completes tareas, estos dashboards se enriquecerán automáticamente mostrando tendencias y patrones de tu negocio.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
 
       {showDemoData && (
         <Alert className="bg-primary/5 border-primary/20">
