@@ -230,113 +230,125 @@ CONTEXTO DE LA EMPRESA:
 
 Genera SOLO el JSON con este formato exacto:
 {
-  "intro": {
-    "big_message": "NO VENDEMOS PRODUCTOS - VENDEMOS EXPERIENCIAS",
-    "key_points": [
-      "Punto clave 1 sobre cómo vender",
-      "Punto clave 2 sobre cómo vender",
-      "Punto clave 3 sobre cómo vender",
-      "Punto clave 4 sobre cómo vender",
-      "Punto clave 5 sobre cómo vender"
-    ]
+  "methodology": {
+    "name": "Nombre de la metodología de ventas (SPIN, Challenger, Sandler, etc.)",
+    "description": "Descripción de por qué esta metodología es ideal para esta empresa",
+    "key_principles": ["Principio 1", "Principio 2", "Principio 3", "Principio 4"]
   },
-  "scenarios": [
+  "sales_process": [
     {
-      "name": "Cliente Individual",
-      "icon": "👤",
-      "tone": "Personal, cercano, enfocado en beneficios individuales",
-      "channels": {
-        "instagram": "Speech de ejemplo para Instagram DM...",
-        "whatsapp": "Speech de ejemplo para WhatsApp...",
-        "email": "Speech de ejemplo para Email...",
-        "phone": "Speech de ejemplo para llamada telefónica...",
-        "presencial": "Speech de ejemplo para venta presencial..."
-      },
-      "key_phrases": [
-        "Frase clave 1",
-        "Frase clave 2",
-        "Frase clave 3",
-        "Frase clave 4",
-        "Frase clave 5",
-        "Frase clave 6"
-      ],
-      "objections": [
-        {"question": "Objeción común 1", "response": "Respuesta efectiva 1"},
-        {"question": "Objeción común 2", "response": "Respuesta efectiva 2"},
-        {"question": "Objeción común 3", "response": "Respuesta efectiva 3"}
-      ],
-      "closing_steps": [
-        "Paso 1 para cerrar la venta",
-        "Paso 2 para cerrar la venta",
-        "Paso 3 para cerrar la venta",
-        "Paso 4 para cerrar la venta"
-      ]
+      "stage": "Prospección",
+      "objective": "Identificar y contactar clientes potenciales cualificados",
+      "average_duration": "2-5 días",
+      "activities": ["Investigar empresas objetivo", "Identificar decisores", "Preparar propuesta de valor"],
+      "tools": ["LinkedIn Sales Navigator", "CRM", "Email"],
+      "exit_criteria": "Cliente acepta reunión de descubrimiento",
+      "conversion_rate_target": "30%"
     },
     {
-      "name": "Familia",
-      "icon": "👨‍👩‍👧‍👦",
-      "tone": "Cálido, tradicional, enfocado en compartir momentos",
-      "channels": {
-        "instagram": "Speech de ejemplo para familias en Instagram...",
-        "whatsapp": "Speech de ejemplo para familias en WhatsApp...",
-        "email": "Speech de ejemplo para familias por Email...",
-        "phone": "Speech de ejemplo para familias por teléfono...",
-        "presencial": "Speech de ejemplo para familias presencial..."
-      },
-      "key_phrases": ["Frase 1", "Frase 2", "Frase 3", "Frase 4", "Frase 5", "Frase 6"],
-      "objections": [
-        {"question": "Objeción 1", "response": "Respuesta 1"},
-        {"question": "Objeción 2", "response": "Respuesta 2"}
-      ],
-      "closing_steps": ["Paso 1", "Paso 2", "Paso 3", "Paso 4"]
+      "stage": "Descubrimiento",
+      "objective": "Entender las necesidades y pain points del cliente",
+      "average_duration": "1-2 reuniones",
+      "activities": ["Hacer preguntas de diagnóstico", "Identificar stakeholders", "Documentar requisitos"],
+      "tools": ["Guía de preguntas", "CRM"],
+      "exit_criteria": "Necesidades claramente identificadas y documentadas",
+      "conversion_rate_target": "60%"
     },
     {
-      "name": "Grupo de Amigos",
-      "icon": "🎉",
-      "tone": "Divertido, alternativo, diferente",
-      "channels": {
-        "instagram": "Speech para grupos en Instagram...",
-        "whatsapp": "Speech para grupos en WhatsApp...",
-        "email": "Speech para grupos por Email...",
-        "phone": "Speech para grupos por teléfono...",
-        "presencial": "Speech para grupos presencial..."
-      },
-      "key_phrases": ["Frase 1", "Frase 2", "Frase 3", "Frase 4", "Frase 5", "Frase 6"],
-      "objections": [
-        {"question": "Objeción 1", "response": "Respuesta 1"},
-        {"question": "Objeción 2", "response": "Respuesta 2"}
-      ],
-      "closing_steps": ["Paso 1", "Paso 2", "Paso 3", "Paso 4"]
+      "stage": "Presentación",
+      "objective": "Demostrar cómo nuestra solución resuelve sus problemas",
+      "average_duration": "1 reunión",
+      "activities": ["Presentar solución personalizada", "Demostrar ROI", "Resolver objeciones"],
+      "tools": ["Presentación", "Demo", "Casos de éxito"],
+      "exit_criteria": "Cliente solicita propuesta formal",
+      "conversion_rate_target": "70%"
     },
     {
-      "name": "Empresa B2B",
-      "icon": "💼",
-      "tone": "Profesional, ROI, beneficios corporativos",
-      "channels": {
-        "instagram": "Speech B2B para Instagram...",
-        "whatsapp": "Speech B2B para WhatsApp...",
-        "email": "Speech B2B profesional por Email...",
-        "phone": "Speech B2B para llamadas...",
-        "presencial": "Speech B2B para reuniones presenciales..."
-      },
-      "key_phrases": ["Frase B2B 1", "Frase B2B 2", "Frase B2B 3", "Frase B2B 4", "Frase B2B 5", "Frase B2B 6"],
-      "objections": [
-        {"question": "Objeción B2B 1", "response": "Respuesta B2B 1"},
-        {"question": "Objeción B2B 2", "response": "Respuesta B2B 2"},
-        {"question": "Objeción B2B 3", "response": "Respuesta B2B 3"}
-      ],
-      "closing_steps": ["Paso B2B 1", "Paso B2B 2", "Paso B2B 3", "Paso B2B 4", "Paso B2B 5"]
+      "stage": "Negociación",
+      "objective": "Acordar términos y cerrar la venta",
+      "average_duration": "1-2 semanas",
+      "activities": ["Preparar propuesta", "Negociar términos", "Obtener aprobaciones"],
+      "tools": ["Propuesta", "Contrato"],
+      "exit_criteria": "Contrato firmado",
+      "conversion_rate_target": "50%"
     }
   ],
-  "tips": [
-    {"title": "Tip 1 título", "description": "Descripción del tip 1"},
-    {"title": "Tip 2 título", "description": "Descripción del tip 2"},
-    {"title": "Tip 3 título", "description": "Descripción del tip 3"},
-    {"title": "Tip 4 título", "description": "Descripción del tip 4"},
-    {"title": "Tip 5 título", "description": "Descripción del tip 5"},
-    {"title": "Tip 6 título", "description": "Descripción del tip 6"}
+  "qualification_framework": {
+    "name": "BANT (Budget, Authority, Need, Timeline)",
+    "criteria": [
+      {
+        "letter": "B",
+        "meaning": "Budget - Presupuesto",
+        "questions": ["¿Tienen presupuesto asignado?", "¿Cuál es su rango de inversión?"],
+        "red_flags": ["Sin presupuesto definido", "Proceso de aprobación muy largo"]
+      },
+      {
+        "letter": "A",
+        "meaning": "Authority - Autoridad",
+        "questions": ["¿Quién toma la decisión final?", "¿Quiénes participan en la decisión?"],
+        "red_flags": ["Contacto sin poder de decisión", "Demasiados stakeholders"]
+      },
+      {
+        "letter": "N",
+        "meaning": "Need - Necesidad",
+        "questions": ["¿Cuál es su mayor desafío?", "¿Qué pasa si no resuelven esto?"],
+        "red_flags": ["Necesidad no urgente", "Ya tienen solución funcionando"]
+      },
+      {
+        "letter": "T",
+        "meaning": "Timeline - Tiempo",
+        "questions": ["¿Para cuándo necesitan implementar?", "¿Qué urgencia tiene?"],
+        "red_flags": ["Sin fecha definida", "Proceso de decisión muy largo"]
+      }
+    ]
+  },
+  "objection_handling": [
+    {
+      "objection": "Es muy caro",
+      "type": "Precio",
+      "response_framework": "Reconocer → Explorar → Reencuadrar valor",
+      "example_response": "Entiendo la preocupación por el precio. Permíteme preguntarte: ¿cuánto te está costando actualmente no resolver este problema?",
+      "follow_up_question": "¿Qué valor tendría para ti resolver esto en los próximos 3 meses?"
+    },
+    {
+      "objection": "Necesito pensarlo",
+      "type": "Tiempo",
+      "response_framework": "Validar → Identificar → Facilitar",
+      "example_response": "Por supuesto, es una decisión importante. ¿Qué información adicional necesitarías para tomar la decisión?",
+      "follow_up_question": "¿Hay algo específico que te gustaría revisar antes?"
+    },
+    {
+      "objection": "Ya tenemos un proveedor",
+      "type": "Competencia",
+      "response_framework": "Respetar → Diferenciar → Proponer",
+      "example_response": "Genial que ya tengan solución. ¿Estarían abiertos a ver cómo podríamos complementar o mejorar lo que ya tienen?",
+      "follow_up_question": "¿Qué mejorarían de su solución actual si pudieran?"
+    }
   ],
-  "final_message": "Mensaje motivacional final para el equipo de ventas"
+  "closing_techniques": [
+    {
+      "name": "Cierre Asumido",
+      "when_to_use": "Cuando el cliente muestra señales claras de compra",
+      "example": "Perfecto, entonces empezamos la implementación la próxima semana. ¿El lunes o martes te viene mejor?"
+    },
+    {
+      "name": "Cierre por Urgencia",
+      "when_to_use": "Cuando hay incentivo por tiempo limitado",
+      "example": "Esta promoción está disponible hasta el viernes. ¿Te gustaría asegurar estos términos hoy?"
+    },
+    {
+      "name": "Cierre por Resumen",
+      "when_to_use": "Para reafirmar el valor antes de pedir la decisión",
+      "example": "Entonces tenemos: solución A, beneficio B, ahorro C. ¿Hay algo más que necesites para avanzar?"
+    }
+  ],
+  "kpis": [
+    {"name": "Tasa de Conversión", "target": "25%", "frequency": "Mensual"},
+    {"name": "Tiempo de Ciclo", "target": "30 días", "frequency": "Mensual"},
+    {"name": "Ticket Promedio", "target": "€5,000", "frequency": "Mensual"},
+    {"name": "Reuniones/Semana", "target": "10", "frequency": "Semanal"},
+    {"name": "Propuestas Enviadas", "target": "8/mes", "frequency": "Mensual"}
+  ]
 }`
 
     } else if (toolType === 'sales_simulator') {
@@ -427,74 +439,63 @@ CONTEXTO DE LA EMPRESA:
 
 Genera SOLO el JSON con este formato exacto:
 {
-  "elevator_pitches": {
-    "short": "Pitch de 30 segundos: explicación corta y directa de qué hace la empresa y por qué es diferente...",
-    "long": "Pitch de 2 minutos: versión expandida que plantea el problema, presenta la solución, beneficios clave y propuesta de valor..."
+  "brand_voice": {
+    "personality": ["Profesional", "Cercano", "Innovador", "Confiable"],
+    "tone": "Amigable pero profesional, directo pero empático",
+    "do": [
+      "Usar lenguaje claro y accesible",
+      "Mostrar empatía con los problemas del cliente",
+      "Destacar beneficios sobre características",
+      "Usar ejemplos concretos y casos de éxito"
+    ],
+    "dont": [
+      "Usar jerga técnica innecesaria",
+      "Ser condescendiente o superior",
+      "Hacer promesas que no podemos cumplir",
+      "Ignorar las preocupaciones del cliente"
+    ]
   },
-  "keywords": [
-    "EXPERIENCIA",
-    "TRANSFORMACIÓN",
-    "CONEXIÓN REAL",
-    "MEMORABLE",
-    "AUTÉNTICO",
-    "PROPÓSITO",
-    "RECUERDOS",
-    "LIBERTAD",
-    "PRESENCIA REAL",
-    "DIFERENTE",
-    "SIN FILTROS",
-    "DESCUBRIR",
-    "ESPACIO SEGURO",
-    "ROMPER MONOTONÍA",
-    "ACTO DE REBELDÍA"
-  ],
-  "instagram_posts": [
+  "key_messages": {
+    "elevator_pitch": "Pitch de 30 segundos que explica qué hace la empresa, para quién y por qué es diferente",
+    "value_proposition": "Ayudamos a [tipo de cliente] a [lograr objetivo] mediante [solución única] para que [beneficio principal]",
+    "tagline": "Una frase memorable que resume la esencia de la marca",
+    "differentiators": ["Diferenciador 1", "Diferenciador 2", "Diferenciador 3", "Diferenciador 4"]
+  },
+  "vocabulary": {
+    "preferred_terms": [
+      {"instead_of": "Comprar", "use": "Invertir en", "reason": "Transmite valor a largo plazo"},
+      {"instead_of": "Precio", "use": "Inversión", "reason": "Enfoca en el retorno"},
+      {"instead_of": "Barato", "use": "Accesible", "reason": "Mantiene percepción de calidad"},
+      {"instead_of": "Problema", "use": "Desafío", "reason": "Más positivo y motivador"}
+    ],
+    "power_words": ["Transformar", "Potenciar", "Optimizar", "Garantizar", "Personalizado", "Exclusivo", "Resultados", "Éxito"],
+    "words_to_avoid": ["Quizás", "Intentar", "Esperar", "Básico", "Simple", "Cualquiera"]
+  },
+  "templates": {
+    "email_intro": "Asunto: [Beneficio principal] para [empresa]\\n\\nHola [nombre],\\n\\nSoy [tu nombre] de ${org.name}. Vi que [contexto] y pensé que podríamos ayudarte a [beneficio].\\n\\n[Propuesta de valor en 1-2 líneas]\\n\\n¿Te vendría bien una llamada de 15 minutos esta semana?\\n\\nSaludos,\\n[Firma]",
+    "follow_up": "Hola [nombre],\\n\\nQuería hacer seguimiento a mi mensaje anterior. Sé que estás ocupado/a, así que seré breve:\\n\\n[Recordatorio del beneficio principal]\\n\\nSi prefieres, puedo enviarte [recurso de valor] que te ayudará con [problema].\\n\\n¿Qué te parece?\\n\\nSaludos",
+    "objection_handling": [
+      {"objection": "Es muy caro", "response": "Entiendo. Más que el precio, miremos el retorno: por cada €1 invertido, nuestros clientes obtienen €X. ¿Tiene sentido analizar los números juntos?"},
+      {"objection": "No tengo tiempo ahora", "response": "Lo comprendo perfectamente. ¿Y si agendamos algo para [fecha futura]? Así tendrás tiempo de prepararte y aprovechar mejor la conversación."},
+      {"objection": "Ya tenemos un proveedor", "response": "Genial que ya estén trabajando en esto. ¿Estarías abierto a conocer una perspectiva diferente que podría complementar lo que ya tienen?"}
+    ]
+  },
+  "scenarios": [
     {
-      "type": "Problema",
-      "content": "Contenido del post sobre el problema que resuelve la empresa... 8-10 líneas con emojis y hashtags"
+      "situation": "Primera llamada con prospecto frío",
+      "approach": "Enfócate en hacer preguntas, no en vender. Busca entender su situación actual y sus desafíos principales.",
+      "example_script": "Hola [nombre], soy [tu nombre] de ${org.name}. Te llamo porque vi [contexto] y me gustaría entender si hay algo en lo que podamos ayudarte. ¿Tienes 2 minutos?"
     },
     {
-      "type": "Productos/Industria",
-      "content": "Contenido del post enfocado en los productos/servicios y apoyo local..."
+      "situation": "Respuesta a consulta por email",
+      "approach": "Responde rápido, agradece el interés, y propón una llamada para entender mejor sus necesidades.",
+      "example_script": "¡Gracias por escribirnos! Me encantaría conocer más sobre lo que buscas. ¿Te viene bien una llamada de 15 minutos esta semana?"
     },
     {
-      "type": "Invitación",
-      "content": "Contenido del post con propuesta radical, desafío, call to action..."
-    },
-    {
-      "type": "Manifiesto",
-      "content": "Contenido del post como manifiesto de marca, valores, movimiento..."
+      "situation": "Manejo de cliente insatisfecho",
+      "approach": "Escucha primero, valida su frustración, y propón solución concreta con timeline.",
+      "example_script": "Lamento mucho que hayas tenido esta experiencia. Entiendo perfectamente tu frustración. Déjame ver cómo podemos solucionarlo hoy mismo."
     }
-  ],
-  "conversation_examples": [
-    {
-      "scenario": "¿Qué es esto?",
-      "messages": [
-        {"role": "client", "text": "¿Qué es exactamente lo que hacéis?"},
-        {"role": "vendor", "text": "Respuesta del vendedor explicando..."},
-        {"role": "client", "text": "Pero eso ya existe, ¿no?"},
-        {"role": "vendor", "text": "Respuesta manejando la objeción..."}
-      ]
-    },
-    {
-      "scenario": "DM Instagram",
-      "messages": [
-        {"role": "client", "text": "Hola, he visto vuestro perfil. ¿Cómo funciona?"},
-        {"role": "vendor", "text": "Respuesta casual pero efectiva..."}
-      ]
-    }
-  ],
-  "communication_tips": [
-    "Nunca empieces con 'vendemos X'",
-    "Usa storytelling para conectar emocionalmente",
-    "Contrasta con alternativas tradicionales",
-    "Enfatiza lo local/nacional si aplica",
-    "Sé visual: usa ejemplos y analogías",
-    "Habla de emociones antes que de características",
-    "Invita, no vendas",
-    "Usa testimonios y casos de éxito",
-    "Menciona el propósito detrás del producto",
-    "Cierra con la transformación que ofreces"
   ]
 }`
 
@@ -769,27 +770,70 @@ Genera SOLO el JSON con este formato exacto:
       },
       sales_simulator: {
         name: 'generate_sales_simulator',
-        description: 'Genera datos para simulador de ventas',
+        description: 'Genera un simulador de ventas interactivo con escenarios conversacionales',
         parameters: {
           type: 'object',
           properties: {
+            quick_tips: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  category: { type: 'string' },
+                  tip: { type: 'string' }
+                },
+                required: ['category', 'tip']
+              }
+            },
             scenarios: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  initialInvestment: { type: 'number' },
-                  monthlyGrowth: { type: 'number' },
-                  conversionRate: { type: 'number' },
-                  averageTicket: { type: 'number' }
+                  title: { type: 'string' },
+                  difficulty: { type: 'string' },
+                  client_profile: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string' },
+                      role: { type: 'string' },
+                      company_type: { type: 'string' },
+                      personality: { type: 'string' },
+                      budget_level: { type: 'string' }
+                    },
+                    required: ['name', 'role', 'personality']
+                  },
+                  conversation_flow: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        stage: { type: 'string' },
+                        client_says: { type: 'string' },
+                        options: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              response: { type: 'string' },
+                              score: { type: 'number' },
+                              feedback: { type: 'string' }
+                            },
+                            required: ['response', 'score', 'feedback']
+                          }
+                        }
+                      },
+                      required: ['stage', 'client_says', 'options']
+                    }
+                  },
+                  ideal_outcome: { type: 'string' },
+                  learning_points: { type: 'array', items: { type: 'string' } }
                 },
-                required: ['name', 'description', 'initialInvestment', 'monthlyGrowth', 'conversionRate', 'averageTicket']
+                required: ['title', 'difficulty', 'client_profile', 'conversation_flow', 'ideal_outcome', 'learning_points']
               }
             }
           },
-          required: ['scenarios'],
+          required: ['quick_tips', 'scenarios'],
           additionalProperties: false
         }
       },
@@ -960,125 +1004,177 @@ Genera SOLO el JSON con este formato exacto:
       },
       sales_playbook: {
         name: 'generate_sales_playbook',
-        description: 'Genera un playbook de ventas completo',
+        description: 'Genera un playbook de ventas completo con metodología y proceso',
         parameters: {
           type: 'object',
           properties: {
-            intro: {
+            methodology: {
               type: 'object',
               properties: {
-                big_message: { type: 'string' },
-                key_points: { type: 'array', items: { type: 'string' } }
+                name: { type: 'string' },
+                description: { type: 'string' },
+                key_principles: { type: 'array', items: { type: 'string' } }
               },
-              required: ['big_message', 'key_points']
+              required: ['name', 'description', 'key_principles']
             },
-            scenarios: {
+            sales_process: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  stage: { type: 'string' },
+                  objective: { type: 'string' },
+                  average_duration: { type: 'string' },
+                  activities: { type: 'array', items: { type: 'string' } },
+                  tools: { type: 'array', items: { type: 'string' } },
+                  exit_criteria: { type: 'string' },
+                  conversion_rate_target: { type: 'string' }
+                },
+                required: ['stage', 'objective', 'average_duration', 'activities', 'tools', 'exit_criteria', 'conversion_rate_target']
+              }
+            },
+            qualification_framework: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                criteria: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      letter: { type: 'string' },
+                      meaning: { type: 'string' },
+                      questions: { type: 'array', items: { type: 'string' } },
+                      red_flags: { type: 'array', items: { type: 'string' } }
+                    },
+                    required: ['letter', 'meaning', 'questions', 'red_flags']
+                  }
+                }
+              },
+              required: ['name', 'criteria']
+            },
+            objection_handling: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  objection: { type: 'string' },
+                  type: { type: 'string' },
+                  response_framework: { type: 'string' },
+                  example_response: { type: 'string' },
+                  follow_up_question: { type: 'string' }
+                },
+                required: ['objection', 'type', 'response_framework', 'example_response']
+              }
+            },
+            closing_techniques: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
                   name: { type: 'string' },
-                  icon: { type: 'string' },
-                  tone: { type: 'string' },
-                  channels: {
-                    type: 'object',
-                    properties: {
-                      instagram: { type: 'string' },
-                      whatsapp: { type: 'string' },
-                      email: { type: 'string' },
-                      phone: { type: 'string' },
-                      presencial: { type: 'string' }
-                    }
-                  },
-                  key_phrases: { type: 'array', items: { type: 'string' } },
-                  objections: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        question: { type: 'string' },
-                        response: { type: 'string' }
-                      },
-                      required: ['question', 'response']
-                    }
-                  },
-                  closing_steps: { type: 'array', items: { type: 'string' } }
+                  when_to_use: { type: 'string' },
+                  example: { type: 'string' }
                 },
-                required: ['name', 'icon', 'tone', 'channels', 'key_phrases', 'objections', 'closing_steps']
+                required: ['name', 'when_to_use', 'example']
               }
             },
-            tips: {
+            kpis: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' }
+                  name: { type: 'string' },
+                  target: { type: 'string' },
+                  frequency: { type: 'string' }
                 },
-                required: ['title', 'description']
+                required: ['name', 'target', 'frequency']
               }
-            },
-            final_message: { type: 'string' }
+            }
           },
-          required: ['intro', 'scenarios', 'tips', 'final_message'],
+          required: ['methodology', 'sales_process', 'qualification_framework', 'objection_handling', 'closing_techniques', 'kpis'],
           additionalProperties: false
         }
       },
       communication_guide: {
         name: 'generate_communication_guide',
-        description: 'Genera una guía de comunicación de marca',
+        description: 'Genera una guía de comunicación de marca completa',
         parameters: {
           type: 'object',
           properties: {
             brand_voice: {
               type: 'object',
               properties: {
-                personality: { type: 'string' },
+                personality: { type: 'array', items: { type: 'string' } },
                 tone: { type: 'string' },
-                style: { type: 'string' },
-                do_list: { type: 'array', items: { type: 'string' } },
-                dont_list: { type: 'array', items: { type: 'string' } }
+                do: { type: 'array', items: { type: 'string' } },
+                dont: { type: 'array', items: { type: 'string' } }
               },
-              required: ['personality', 'tone', 'style', 'do_list', 'dont_list']
+              required: ['personality', 'tone', 'do', 'dont']
             },
-            messaging: {
+            key_messages: {
               type: 'object',
               properties: {
-                tagline: { type: 'string' },
                 elevator_pitch: { type: 'string' },
-                key_messages: { type: 'array', items: { type: 'string' } },
-                value_propositions: { type: 'array', items: { type: 'string' } }
+                value_proposition: { type: 'string' },
+                tagline: { type: 'string' },
+                differentiators: { type: 'array', items: { type: 'string' } }
               },
-              required: ['tagline', 'elevator_pitch', 'key_messages', 'value_propositions']
+              required: ['elevator_pitch', 'value_proposition', 'tagline', 'differentiators']
             },
-            audience_messaging: {
+            vocabulary: {
+              type: 'object',
+              properties: {
+                preferred_terms: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      instead_of: { type: 'string' },
+                      use: { type: 'string' },
+                      reason: { type: 'string' }
+                    },
+                    required: ['instead_of', 'use']
+                  }
+                },
+                power_words: { type: 'array', items: { type: 'string' } },
+                words_to_avoid: { type: 'array', items: { type: 'string' } }
+              },
+              required: ['preferred_terms', 'power_words', 'words_to_avoid']
+            },
+            templates: {
+              type: 'object',
+              properties: {
+                email_intro: { type: 'string' },
+                follow_up: { type: 'string' },
+                objection_handling: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      objection: { type: 'string' },
+                      response: { type: 'string' }
+                    },
+                    required: ['objection', 'response']
+                  }
+                }
+              },
+              required: ['email_intro', 'follow_up', 'objection_handling']
+            },
+            scenarios: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  segment: { type: 'string' },
-                  pain_points: { type: 'array', items: { type: 'string' } },
-                  messaging_focus: { type: 'string' },
-                  sample_copy: { type: 'string' }
+                  situation: { type: 'string' },
+                  approach: { type: 'string' },
+                  example_script: { type: 'string' }
                 },
-                required: ['segment', 'pain_points', 'messaging_focus', 'sample_copy']
-              }
-            },
-            channel_guidelines: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  channel: { type: 'string' },
-                  tone: { type: 'string' },
-                  content_types: { type: 'array', items: { type: 'string' } },
-                  best_practices: { type: 'array', items: { type: 'string' } }
-                },
-                required: ['channel', 'tone', 'content_types', 'best_practices']
+                required: ['situation', 'approach', 'example_script']
               }
             }
           },
-          required: ['brand_voice', 'messaging', 'audience_messaging', 'channel_guidelines'],
+          required: ['brand_voice', 'key_messages', 'vocabulary', 'templates', 'scenarios'],
           additionalProperties: false
         }
       }
