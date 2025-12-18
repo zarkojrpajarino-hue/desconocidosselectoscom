@@ -221,3 +221,6 @@ verify_jwt = true
 
 [functions.check-phase-completion]
 verify_jwt = true
+
+[functions.generate-organizational-okrs]
+verify_jwt = true
