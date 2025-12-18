@@ -166,7 +166,61 @@ Genera SOLO el JSON con este formato exacto:
       }
 
     } else if (toolType === 'customer_journey') {
-      prompt = `Genera un Customer Journey detallado para esta empresa:
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera un JOURNEY DE VALIDACIÓN para esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Este NO es un customer journey tradicional. Es el camino que seguirá el emprendedor para VALIDAR su idea y conseguir los PRIMEROS CLIENTES.
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "stages": [
+    {
+      "name": "Descubrimiento del Problema",
+      "description": "Validar que el problema existe y es importante para el mercado objetivo",
+      "touchpoints": ["Entrevistas de validación", "Encuestas online", "Observación directa"],
+      "emotions": ["Incertidumbre inicial", "Curiosidad"],
+      "opportunities": ["Encontrar early adopters", "Refinar la propuesta de valor"],
+      "validation_tasks": ["Entrevistar 10 potenciales clientes", "Identificar 3 pain points recurrentes"],
+      "success_criteria": "Al menos 7/10 entrevistados confirman el problema"
+    },
+    {
+      "name": "Validación de Solución",
+      "description": "Confirmar que tu solución propuesta realmente resuelve el problema",
+      "touchpoints": ["Landing page", "Prototipo básico", "Demo del concepto"],
+      "emotions": ["Emoción por el feedback", "Ajustes necesarios"],
+      "opportunities": ["Conseguir primeros interesados", "Pre-ventas"],
+      "validation_tasks": ["Crear landing page", "Conseguir 50 signups", "Validar willingness-to-pay"],
+      "success_criteria": "Al menos 20% de visitantes dejan su email"
+    },
+    {
+      "name": "Primeras Ventas",
+      "description": "Conseguir los primeros clientes pagando antes de construir el producto completo",
+      "touchpoints": ["Propuesta directa", "Oferta de lanzamiento", "Venta 1 a 1"],
+      "emotions": ["Nerviosismo", "Emoción por la primera venta"],
+      "opportunities": ["Aprender del proceso de venta", "Refinar el pricing"],
+      "validation_tasks": ["Cerrar 3-5 primeros clientes", "Documentar el proceso de venta"],
+      "success_criteria": "Al menos 3 clientes pagando"
+    },
+    {
+      "name": "Iteración y Escala",
+      "description": "Mejorar el producto basado en feedback real y preparar para escalar",
+      "touchpoints": ["Feedback de clientes", "Mejoras del producto", "Referidos"],
+      "emotions": ["Confianza creciente", "Claridad del camino"],
+      "opportunities": ["Testimonios", "Casos de éxito", "Proceso replicable"],
+      "validation_tasks": ["Recoger testimonios", "Crear proceso de ventas repetible"],
+      "success_criteria": "Tasa de retención >70% y al menos 1 referido por cliente"
+    }
+  ],
+  "validation_tips": [
+    "No construyas nada hasta validar la demanda",
+    "Cobra desde el día 1, aunque sea poco",
+    "El rechazo es información valiosa"
+  ]
+}`
+      } else {
+        prompt = `Genera un Customer Journey detallado para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -208,9 +262,58 @@ Genera SOLO el JSON con este formato exacto:
     }
   ]
 }`
+      }
 
     } else if (toolType === 'growth_model') {
-      prompt = `Genera un Growth Model (modelo AARRR Pirate Metrics) para esta empresa:
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera un MODELO DE TRACCIÓN INICIAL para validar esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Este NO es un modelo de crecimiento tradicional. Es un modelo de VALIDACIÓN para una idea que aún no tiene clientes.
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "metrics": [
+    {
+      "stage": "Validación del Problema",
+      "kpis": ["Entrevistas realizadas", "% que confirma el problema", "Willingness-to-pay expresado"],
+      "channels": ["LinkedIn outreach", "Comunidades de nicho", "Red personal"],
+      "tactics": ["Publicar contenido sobre el problema", "Ofrecer entrevistas de 15 min", "Pedir referidos"]
+    },
+    {
+      "stage": "Primeros Interesados",
+      "kpis": ["Signups en landing", "Tasa de conversión landing", "Lista de espera"],
+      "channels": ["Landing page", "Email marketing", "Contenido orgánico"],
+      "tactics": ["Crear landing con propuesta de valor clara", "Ofrecer acceso early-bird", "Capturar emails"]
+    },
+    {
+      "stage": "Primeras Ventas",
+      "kpis": ["Clientes pagando", "Revenue primeros 90 días", "Precio promedio aceptado"],
+      "channels": ["Venta directa 1-a-1", "Email a lista", "Referidos"],
+      "tactics": ["Ofrecer descuento de lanzamiento", "Llamadas de venta personalizadas", "Propuesta de valor clara"]
+    },
+    {
+      "stage": "Retención Inicial",
+      "kpis": ["NPS de primeros clientes", "Tasa de uso", "Feedback recibido"],
+      "channels": ["Onboarding personal", "Seguimiento directo", "Encuestas"],
+      "tactics": ["Llamadas de seguimiento semanales", "Iterar según feedback", "Documentar casos de uso"]
+    },
+    {
+      "stage": "Primeros Referidos",
+      "kpis": ["Referidos por cliente", "Tasa de conversión referidos", "Testimonios conseguidos"],
+      "channels": ["Programa de referidos", "Casos de éxito", "Contenido de clientes"],
+      "tactics": ["Pedir testimonios activamente", "Ofrecer incentivo por referido", "Crear caso de éxito público"]
+    }
+  ],
+  "validation_milestones": [
+    {"milestone": "Problema validado", "criteria": "10+ entrevistas confirman el problema"},
+    {"milestone": "Solución validada", "criteria": "50+ signups o 5 pre-ventas"},
+    {"milestone": "Product-Market Fit inicial", "criteria": "5 clientes pagando + 40% NPS promotores"}
+  ]
+}`
+      } else {
+        prompt = `Genera un Growth Model (modelo AARRR Pirate Metrics) para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -253,6 +356,7 @@ Genera SOLO el JSON con este formato exacto:
     }
   ]
 }`
+      }
 
     } else if (toolType === 'lead_scoring') {
       prompt = `Genera un modelo de Lead Scoring para esta empresa:
@@ -296,7 +400,148 @@ Genera SOLO el JSON con este formato exacto:
 }`
 
     } else if (toolType === 'sales_playbook') {
-      prompt = `Genera un Sales Playbook completo para esta empresa:
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera un PLAYBOOK DE PRIMERAS VENTAS para un emprendedor que está validando esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Este NO es un playbook de ventas corporativo. Es una GUÍA PARA CONSEGUIR LOS PRIMEROS 5-10 CLIENTES como emprendedor individual validando una idea.
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "methodology": {
+    "name": "Customer Development Sales",
+    "description": "Metodología enfocada en aprender del cliente mientras vendes. Cada conversación es una oportunidad de validar hipótesis y mejorar tu oferta.",
+    "key_principles": [
+      "Escucha más de lo que hablas - 70/30",
+      "Cada 'no' es información valiosa",
+      "Vende antes de construir - valida con compromisos reales",
+      "El precio es una hipótesis más que validar"
+    ]
+  },
+  "sales_process": [
+    {
+      "stage": "Identificar Early Adopters",
+      "objective": "Encontrar personas que ya están buscando activamente una solución",
+      "average_duration": "1 semana",
+      "activities": ["Buscar en comunidades del nicho", "Contactar red personal", "Publicar en LinkedIn/Twitter"],
+      "tools": ["LinkedIn", "Twitter", "Comunidades online", "WhatsApp"],
+      "exit_criteria": "5 conversaciones agendadas con personas con el problema",
+      "tips_for_founders": ["No vendas aún - solo valida que tienen el problema", "Pregunta cómo lo resuelven actualmente"]
+    },
+    {
+      "stage": "Entrevista de Descubrimiento",
+      "objective": "Validar el problema y entender el contexto del cliente",
+      "average_duration": "20-30 min por entrevista",
+      "activities": ["Hacer preguntas abiertas", "Entender su situación actual", "Identificar urgencia"],
+      "tools": ["Guía de preguntas", "Notion/Google Docs para notas"],
+      "exit_criteria": "Cliente confirma que el problema es importante y urgente",
+      "tips_for_founders": ["No menciones tu solución hasta entender bien el problema", "Pregunta: ¿Qué pasaría si no resuelves esto?"]
+    },
+    {
+      "stage": "Propuesta de Valor",
+      "objective": "Presentar tu solución como respuesta a lo que el cliente te contó",
+      "average_duration": "15-20 min",
+      "activities": ["Resumir el problema que mencionaron", "Presentar cómo tu solución lo resuelve", "Mostrar ejemplo o mockup"],
+      "tools": ["Presentación simple", "Landing page", "Prototipo básico"],
+      "exit_criteria": "Cliente muestra interés genuino en probarlo",
+      "tips_for_founders": ["Conecta tu solución directamente con lo que dijeron", "Usa sus palabras exactas"]
+    },
+    {
+      "stage": "Cierre Inicial",
+      "objective": "Conseguir un compromiso real (pago o pre-pago)",
+      "average_duration": "1 conversación",
+      "activities": ["Presentar oferta de lanzamiento", "Manejar objeciones", "Pedir el compromiso"],
+      "tools": ["Stripe/PayPal", "Factura simple", "Contrato básico"],
+      "exit_criteria": "Cliente paga o se compromete a pagar",
+      "tips_for_founders": ["Un 'sí' sin pago no es validación real", "Ofrece descuento de early-adopter a cambio de feedback"]
+    }
+  ],
+  "qualification_framework": {
+    "name": "PAIN (Problem, Alternatives, Investment, Need)",
+    "criteria": [
+      {
+        "letter": "P",
+        "meaning": "Problem - ¿Tienen el problema?",
+        "questions": ["¿Cómo manejas [problema] actualmente?", "¿Qué tan frustrante es esto para ti?"],
+        "red_flags": ["No reconoce el problema", "No le afecta realmente"]
+      },
+      {
+        "letter": "A",
+        "meaning": "Alternatives - ¿Qué alternativas tienen?",
+        "questions": ["¿Has probado otras soluciones?", "¿Por qué no funcionaron?"],
+        "red_flags": ["Muy satisfecho con solución actual", "No ha buscado alternativas"]
+      },
+      {
+        "letter": "I",
+        "meaning": "Investment - ¿Están dispuestos a invertir?",
+        "questions": ["¿Cuánto inviertes actualmente en resolver esto?", "¿Qué valor tendría resolverlo?"],
+        "red_flags": ["No paga por nada similar", "Espera solución gratuita"]
+      },
+      {
+        "letter": "N",
+        "meaning": "Need - ¿Lo necesitan ahora?",
+        "questions": ["¿Qué pasa si no lo resuelves este mes?", "¿Hay algún deadline?"],
+        "red_flags": ["Sin urgencia", "Puede esperar indefinidamente"]
+      }
+    ]
+  },
+  "objection_handling": [
+    {
+      "objection": "No tengo presupuesto",
+      "type": "Precio",
+      "response_framework": "Explorar prioridades → Mostrar ROI → Flexibilizar",
+      "example_response": "Entiendo. ¿Cuánto te está costando actualmente no resolver esto? A veces el costo de no actuar es mayor que la inversión.",
+      "follow_up_question": "¿Qué necesitarías ver para justificar esta inversión?"
+    },
+    {
+      "objection": "Necesito pensarlo",
+      "type": "Tiempo",
+      "response_framework": "Validar → Identificar bloqueador → Facilitar decisión",
+      "example_response": "Por supuesto. Para ayudarte a decidir, ¿qué información adicional necesitas? ¿O hay algo que te preocupa que no hemos discutido?",
+      "follow_up_question": "¿Puedo enviarte algo que te ayude a evaluar esto mejor?"
+    },
+    {
+      "objection": "No sé si funcionará para mi caso",
+      "type": "Confianza",
+      "response_framework": "Validar duda → Ofrecer prueba → Reducir riesgo",
+      "example_response": "Es una preocupación válida. ¿Qué te parece si empezamos con un piloto pequeño? Así puedes validar los resultados antes de comprometerte más.",
+      "follow_up_question": "¿Qué resultado necesitarías ver en 2 semanas para seguir adelante?"
+    }
+  ],
+  "closing_techniques": [
+    {
+      "name": "Cierre de Early Adopter",
+      "when_to_use": "Con primeros clientes dispuestos a probar algo nuevo",
+      "example": "Por ser de los primeros, te ofrezco 50% de descuento a cambio de tu feedback detallado. ¿Te interesa ser parte de este grupo fundador?"
+    },
+    {
+      "name": "Cierre de Compromiso Mínimo",
+      "when_to_use": "Cuando hay dudas pero interés genuino",
+      "example": "¿Qué te parece si empezamos con [versión mínima/piloto] por [precio reducido] y si te funciona, escalamos?"
+    },
+    {
+      "name": "Cierre de Escasez Real",
+      "when_to_use": "Cuando genuinamente tienes capacidad limitada",
+      "example": "Ahora mismo solo puedo atender a 5 clientes porque quiero dar atención personalizada. ¿Quieres ser uno de ellos?"
+    }
+  ],
+  "kpis": [
+    {"name": "Conversaciones/Semana", "target": "10-15", "frequency": "Semanal"},
+    {"name": "Tasa Entrevista→Interés", "target": "50%", "frequency": "Semanal"},
+    {"name": "Tasa Interés→Cliente", "target": "20%", "frequency": "Semanal"},
+    {"name": "Clientes Primer Mes", "target": "3-5", "frequency": "Mensual"},
+    {"name": "Feedback Recibido", "target": "1 por cliente", "frequency": "Semanal"}
+  ],
+  "founder_tips": [
+    "Tu objetivo no es solo vender, es APRENDER si tu idea tiene mercado",
+    "Cada 'no' te da información valiosa - pregunta siempre por qué",
+    "Un cliente que paga €50 vale más que 1000 que dicen 'me interesa'",
+    "Graba las llamadas (con permiso) - escucharlas te hará mejor vendedor"
+  ]
+}`
+      } else {
+        prompt = `Genera un Sales Playbook completo para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -429,9 +674,146 @@ Genera SOLO el JSON con este formato exacto:
     {"name": "Propuestas Enviadas", "target": "8/mes", "frequency": "Mensual"}
   ]
 }`
+      }
 
     } else if (toolType === 'sales_simulator') {
-      prompt = `Genera un Simulador de Ventas interactivo y personalizado para esta empresa:
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera un SIMULADOR DE PRIMERAS VENTAS para un emprendedor validando esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Los escenarios deben reflejar las situaciones REALES que enfrentará un emprendedor vendiendo su idea por primera vez:
+- Conversaciones con early adopters
+- Llamadas de validación que se convierten en ventas
+- Manejo del "no tengo presupuesto"
+- Cerrar la primera venta sin tener producto completo
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "quick_tips": [
+    {"category": "Mindset", "tip": "Tu objetivo es APRENDER mientras vendes. Cada conversación te acerca al product-market fit."},
+    {"category": "Apertura", "tip": "No vendas inmediatamente. Empieza validando que tienen el problema que crees resolver."},
+    {"category": "Descubrimiento", "tip": "Las mejores preguntas empiezan con '¿Cuéntame sobre...' - deja que hablen el 70% del tiempo."},
+    {"category": "Objeciones", "tip": "Un 'no' con explicación vale oro. Pregunta siempre: '¿Qué tendría que cambiar para que te interesara?'"},
+    {"category": "Cierre", "tip": "Ofrece ser early adopter con descuento a cambio de feedback - ambos ganan."}
+  ],
+  "scenarios": [
+    {
+      "title": "Escenario 1: Tu Primera Llamada de Validación-Venta",
+      "difficulty": "Fácil",
+      "client_profile": {
+        "name": "Laura Martínez",
+        "role": "Tu contacto ideal en el nicho",
+        "company_type": "Empresa/Persona con el problema que resuelves",
+        "personality": "Curioso pero ocupado",
+        "budget_level": "Tiene capacidad de pago si ve valor"
+      },
+      "conversation_flow": [
+        {
+          "stage": "Apertura - Validación",
+          "client_says": "Hola, me dijiste que querías hablar sobre [el problema]. Tengo 15 minutos. ¿De qué va esto?",
+          "options": [
+            {"response": "Gracias por tu tiempo, Laura. Estoy desarrollando algo para ayudar con [problema específico]. Pero primero me encantaría entender: ¿cómo manejas [el problema] actualmente?", "score": 10, "feedback": "Excelente apertura. Validas primero en lugar de vender. Esto genera confianza y te da información valiosa."},
+            {"response": "Tengo una solución increíble para [problema]. Déjame contarte las características...", "score": 3, "feedback": "Saltaste a vender sin validar. No sabes si realmente tiene el problema o cómo lo percibe."},
+            {"response": "Bueno, es que estoy empezando un negocio y necesito clientes...", "score": 1, "feedback": "Nunca hagas que la conversación sea sobre ti. El cliente no le importa que necesites clientes."}
+          ]
+        },
+        {
+          "stage": "Descubrimiento - Dolor",
+          "client_says": "Pues la verdad es que [problema] me quita bastante tiempo. Hemos probado [solución actual] pero no es ideal.",
+          "options": [
+            {"response": "Interesante. ¿Cuánto tiempo dirías que pierdes con esto cada semana? Y cuando dices que no es ideal, ¿qué es lo que más te frustra?", "score": 10, "feedback": "Perfecto. Profundizas en el dolor específico y cuantificas el impacto. Esto te ayuda a posicionar tu solución."},
+            {"response": "Sí, muchas empresas tienen ese problema. Mi solución lo resuelve completamente.", "score": 4, "feedback": "Perdiste la oportunidad de entender mejor el dolor. Cuanto más específico sea el problema, mejor puedes conectar tu solución."},
+            {"response": "¿Cuánto estarías dispuesto a pagar por resolverlo?", "score": 2, "feedback": "Muy pronto para hablar de precio. Primero necesitas que el cliente sienta que entiendes su problema profundamente."}
+          ]
+        },
+        {
+          "stage": "Presentación de Solución",
+          "client_says": "Pierdo fácilmente 5 horas a la semana. Lo más frustrante es que [dolor específico]. ¿Y tú qué propones?",
+          "options": [
+            {"response": "Basándome en lo que me cuentas - especialmente lo de [dolor específico] - he estado trabajando en algo que podría ayudarte. [Explica tu solución conectándola con lo que dijo]. ¿Te resuena esto?", "score": 10, "feedback": "Excelente. Conectas tu solución directamente con lo que el cliente expresó. Usas sus palabras. Y pides feedback."},
+            {"response": "Mi solución tiene estas características: A, B, C, D, E... [lista larga de features]", "score": 4, "feedback": "Demasiadas características abruman. Enfócate en los 1-2 beneficios que resuelven su dolor específico."},
+            {"response": "Es una plataforma revolucionaria que usa IA para...", "score": 3, "feedback": "Evita buzzwords. Al cliente le importa si resuelve SU problema, no qué tecnología usas."}
+          ]
+        },
+        {
+          "stage": "Cierre - Primera Venta",
+          "client_says": "Suena interesante. ¿Y cuánto costaría esto?",
+          "options": [
+            {"response": "Antes de hablar de precio, déjame preguntarte: si esto te ahorrara esas 5 horas semanales, ¿qué valor tendría para ti? Así puedo ver qué opción tiene más sentido para tu caso.", "score": 10, "feedback": "Genial. Primero estableces el valor antes del precio. Y personalizas la oferta según su percepción de valor."},
+            {"response": "Cuesta €X al mes. ¿Te interesa?", "score": 5, "feedback": "Funciona, pero pierdes la oportunidad de anclar el valor antes del precio."},
+            {"response": "Todavía no tengo precio definido. ¿Cuánto pagarías tú?", "score": 3, "feedback": "Aunque validar willingness-to-pay es importante, esta pregunta directa puede ser incómoda y dar un precio bajo."}
+          ]
+        }
+      ],
+      "ideal_outcome": "Laura entiende el valor, ve cómo resuelve su problema específico, y acepta ser early adopter con descuento a cambio de feedback detallado.",
+      "learning_points": [
+        "Siempre valida el problema antes de presentar la solución",
+        "Usa las palabras exactas del cliente para describir tu solución",
+        "Establece el valor antes de mencionar el precio",
+        "Ofrecer ser early adopter crea compromiso mutuo"
+      ]
+    },
+    {
+      "title": "Escenario 2: Manejando 'No Tengo Presupuesto'",
+      "difficulty": "Medio",
+      "client_profile": {
+        "name": "Carlos Ruiz",
+        "role": "Emprendedor/Pequeña empresa",
+        "company_type": "Startup o negocio en crecimiento",
+        "personality": "Interesado pero cauteloso con dinero",
+        "budget_level": "Limitado pero puede invertir si ve ROI claro"
+      },
+      "conversation_flow": [
+        {
+          "stage": "Objeción Inicial",
+          "client_says": "Me interesa mucho lo que propones, pero la verdad es que ahora no tengo presupuesto para esto.",
+          "options": [
+            {"response": "Entiendo perfectamente, Carlos. Muchos emprendedores están en la misma situación. Déjame preguntarte: ¿cuánto te está costando actualmente NO resolver este problema? A veces el costo de no actuar es mayor que la inversión.", "score": 10, "feedback": "Excelente. Reencuadras el 'gasto' como 'inversión' mostrando el costo de la inacción."},
+            {"response": "¿Y si te hago un descuento del 50%?", "score": 4, "feedback": "Descuento prematuro sin entender el bloqueador real. Puede que el problema no sea el precio sino la prioridad."},
+            {"response": "Bueno, cuando tengas presupuesto me avisas.", "score": 2, "feedback": "Rendirse muy fácil. 'No tengo presupuesto' muchas veces significa 'no veo suficiente valor aún'."}
+          ]
+        },
+        {
+          "stage": "Explorar el Bloqueador Real",
+          "client_says": "Pues la verdad pierdo como 10 horas al mes en esto, pero hay otras prioridades...",
+          "options": [
+            {"response": "10 horas al mes... si tu hora vale €50, eso son €500 mensuales. Mi solución cuesta menos de la mitad. ¿Qué te parecería probarlo un mes y medir si realmente te ahorra ese tiempo?", "score": 10, "feedback": "Perfecto. Cuantificas el valor y reduces el riesgo ofreciendo un periodo de prueba medible."},
+            {"response": "¿Cuáles son esas otras prioridades? Quizás puedo ayudarte con eso también.", "score": 6, "feedback": "Buena intención pero te desvías del problema original. Mejor cerrar este antes de expandir."},
+            {"response": "Entiendo. Cuando sea prioridad, hablamos.", "score": 2, "feedback": "Te rindes sin intentar reencuadrar el valor o reducir el riesgo."}
+          ]
+        },
+        {
+          "stage": "Propuesta de Bajo Riesgo",
+          "client_says": "Tiene sentido cuando lo pones así. Pero ¿y si no funciona para mi caso?",
+          "options": [
+            {"response": "Totalmente válida la preocupación. ¿Qué te parece esto?: empezamos con un piloto de 2 semanas. Si no ves resultados, no pagas. Así no hay riesgo para ti y yo demuestro que funciona. ¿Te parece justo?", "score": 10, "feedback": "Excelente. Eliminas todo el riesgo del cliente. Si confías en tu solución, esta oferta demuestra esa confianza."},
+            {"response": "Funciona, te lo garantizo. Otros clientes están muy contentos.", "score": 4, "feedback": "Las garantías verbales no reducen el riesgo percibido. Ofrece algo tangible."},
+            {"response": "Bueno, podemos empezar con algo más pequeño por menos dinero.", "score": 5, "feedback": "Mejor que rendirse, pero bajar el precio sin quitar riesgo no aborda la objeción real."}
+          ]
+        },
+        {
+          "stage": "Cierre Final",
+          "client_says": "OK, eso suena razonable. ¿Cómo empezamos?",
+          "options": [
+            {"response": "Perfecto. Necesito 3 cosas: tu email para enviarte el acceso, una llamada de 30 min para hacer el setup juntos, y que me cuentes qué resultado específico quieres ver en 2 semanas. ¿Te viene bien empezar mañana?", "score": 10, "feedback": "Excelente cierre. Eres específico, creas urgencia positiva, y defines expectativas claras."},
+            {"response": "Genial, te mando un email con toda la info.", "score": 5, "feedback": "Funciona pero pierdes momentum. Mejor definir el siguiente paso concreto ahora."},
+            {"response": "Cuando quieras, tú me dices.", "score": 2, "feedback": "Sin urgencia ni siguiente paso claro, esta venta puede enfriarse."}
+          ]
+        }
+      ],
+      "ideal_outcome": "Carlos acepta el piloto sin riesgo, define métricas de éxito claras, y programa el inicio para esta semana.",
+      "learning_points": [
+        "'No tengo presupuesto' suele significar 'no veo suficiente valor'",
+        "Cuantificar el costo de la inacción reencuadra la conversación",
+        "Ofertas de bajo riesgo (piloto, garantía) eliminan barreras",
+        "Siempre define el siguiente paso concreto antes de colgar"
+      ]
+    }
+  ]
+}`
+      } else {
+        prompt = `Genera un Simulador de Ventas interactivo y personalizado para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -505,9 +887,71 @@ Genera SOLO el JSON con este formato exacto:
     }
   ]
 }`
+      }
 
     } else if (toolType === 'communication_guide') {
-      prompt = `Genera una Guía de Comunicación completa para esta empresa:
+      if (isDiscovery && selectedIdea) {
+        prompt = `Genera una GUÍA DE COMUNICACIÓN PARA EMPRENDEDOR que está validando esta idea de negocio:
+
+${getBusinessContext()}
+
+IMPORTANTE: Esta guía es para un emprendedor SOLO que está haciendo sus primeras ventas. No es para una empresa con equipo de marketing.
+
+Genera SOLO el JSON con este formato exacto:
+{
+  "brand_voice": {
+    "personality": ["Auténtico", "Cercano", "Experto", "Accesible"],
+    "tone": "Como un amigo experto que genuinamente quiere ayudar - no como un vendedor corporativo",
+    "do": [
+      "Hablar como persona, no como empresa",
+      "Compartir tu historia de por qué empezaste esto",
+      "Admitir que estás empezando pero comprometido",
+      "Usar lenguaje conversacional y directo"
+    ],
+    "dont": [
+      "Usar 'nosotros' cuando eres solo tú",
+      "Pretender ser más grande de lo que eres",
+      "Usar jerga corporativa vacía",
+      "Prometer cosas que no puedes garantizar aún"
+    ]
+  },
+  "key_messages": {
+    "elevator_pitch": "Ayudo a [tipo de cliente] a resolver [problema específico] de forma [diferenciador]. Estoy en fase inicial pero ya he [logro concreto o validación].",
+    "value_proposition": "Te ayudo a [beneficio principal] sin [dolor que eliminas], para que puedas [resultado deseado].",
+    "tagline": "Una frase simple que capture la esencia de lo que haces",
+    "founder_story": "Por qué empecé esto y qué me motiva a resolverlo"
+  },
+  "vocabulary": {
+    "preferred_terms": [
+      {"instead_of": "Empresa", "use": "Proyecto/Solución", "reason": "Más honesto en etapa inicial"},
+      {"instead_of": "Clientes", "use": "Personas que he ayudado", "reason": "Más personal y auténtico"},
+      {"instead_of": "Garantizado", "use": "Mi compromiso es", "reason": "Más realista y creíble"},
+      {"instead_of": "El mejor", "use": "Lo que me diferencia", "reason": "Evita claims que no puedes probar"}
+    ],
+    "power_words": ["Personalizado", "Directo", "Sin intermediarios", "Comprometido", "Flexible", "Enfocado"],
+    "words_to_avoid": ["Líder del mercado", "Revolucionario", "Disruptivo", "Único", "Garantizado"]
+  },
+  "templates": {
+    "linkedin_outreach": "Hola [nombre], vi que [contexto específico]. Estoy desarrollando algo que ayuda con [problema] y me encantaría conocer tu perspectiva. ¿Tienes 15 min esta semana para una llamada rápida? No es pitch de venta, genuinamente quiero entender si esto resuelve un problema real.",
+    "email_intro": "Asunto: [Beneficio] para [su situación]\\n\\nHola [nombre],\\n\\nSoy [tu nombre]. Estoy desarrollando [solución] porque [tu historia/motivación].\\n\\n[Propuesta de valor en 1 línea]\\n\\n¿Te interesaría explorar si esto te sirve?\\n\\nSaludos",
+    "follow_up": "Hola [nombre], sé que estás ocupado/a. Solo quería saber si tuviste chance de pensar en lo que hablamos. Si no es el momento, lo entiendo perfectamente - pero si hay algo que pueda hacer para ayudarte con [problema], aquí estoy.",
+    "testimonial_request": "Hola [nombre], ha sido genial trabajar contigo en [proyecto]. ¿Te importaría compartir en 2-3 líneas cómo te ha ayudado? Estoy empezando y tu feedback es súper valioso para mí."
+  },
+  "scenarios": [
+    {
+      "situation": "Primer contacto en frío",
+      "approach": "Sé directo sobre quién eres y qué buscas. La honestidad de ser emprendedor en etapa inicial puede ser un diferenciador.",
+      "example_script": "Hola [nombre], soy [tu nombre] y estoy desarrollando [solución]. Vi que [contexto] y me pareció que podrías tener experiencia con [problema]. ¿Tienes 10 minutos para contarme cómo lo manejas actualmente?"
+    },
+    {
+      "situation": "Después de una buena conversación",
+      "approach": "Aprovecha el momentum. Propón siguiente paso concreto antes de que se enfríe.",
+      "example_script": "Me encantó esta conversación. Basándome en lo que me contaste, creo que podría ayudarte con [beneficio específico]. ¿Te parece si te preparo una propuesta personalizada para [fecha cercana]?"
+    }
+  ]
+}`
+      } else {
+        prompt = `Genera una Guía de Comunicación completa para esta empresa:
 
 CONTEXTO DE LA EMPRESA:
 - Nombre: ${org.name}
@@ -521,62 +965,28 @@ Genera SOLO el JSON con este formato exacto:
   "brand_voice": {
     "personality": ["Profesional", "Cercano", "Innovador", "Confiable"],
     "tone": "Amigable pero profesional, directo pero empático",
-    "do": [
-      "Usar lenguaje claro y accesible",
-      "Mostrar empatía con los problemas del cliente",
-      "Destacar beneficios sobre características",
-      "Usar ejemplos concretos y casos de éxito"
-    ],
-    "dont": [
-      "Usar jerga técnica innecesaria",
-      "Ser condescendiente o superior",
-      "Hacer promesas que no podemos cumplir",
-      "Ignorar las preocupaciones del cliente"
-    ]
+    "do": ["Usar lenguaje claro", "Mostrar empatía", "Destacar beneficios", "Usar ejemplos"],
+    "dont": ["Usar jerga innecesaria", "Ser condescendiente", "Hacer falsas promesas", "Ignorar preocupaciones"]
   },
   "key_messages": {
-    "elevator_pitch": "Pitch de 30 segundos que explica qué hace la empresa, para quién y por qué es diferente",
-    "value_proposition": "Ayudamos a [tipo de cliente] a [lograr objetivo] mediante [solución única] para que [beneficio principal]",
-    "tagline": "Una frase memorable que resume la esencia de la marca",
-    "differentiators": ["Diferenciador 1", "Diferenciador 2", "Diferenciador 3", "Diferenciador 4"]
+    "elevator_pitch": "Pitch de 30 segundos",
+    "value_proposition": "Ayudamos a [cliente] a [objetivo] mediante [solución]",
+    "tagline": "Frase memorable",
+    "differentiators": ["Diferenciador 1", "Diferenciador 2", "Diferenciador 3"]
   },
   "vocabulary": {
-    "preferred_terms": [
-      {"instead_of": "Comprar", "use": "Invertir en", "reason": "Transmite valor a largo plazo"},
-      {"instead_of": "Precio", "use": "Inversión", "reason": "Enfoca en el retorno"},
-      {"instead_of": "Barato", "use": "Accesible", "reason": "Mantiene percepción de calidad"},
-      {"instead_of": "Problema", "use": "Desafío", "reason": "Más positivo y motivador"}
-    ],
-    "power_words": ["Transformar", "Potenciar", "Optimizar", "Garantizar", "Personalizado", "Exclusivo", "Resultados", "Éxito"],
-    "words_to_avoid": ["Quizás", "Intentar", "Esperar", "Básico", "Simple", "Cualquiera"]
+    "preferred_terms": [{"instead_of": "Comprar", "use": "Invertir en", "reason": "Transmite valor"}],
+    "power_words": ["Transformar", "Potenciar", "Optimizar"],
+    "words_to_avoid": ["Quizás", "Intentar"]
   },
   "templates": {
-    "email_intro": "Asunto: [Beneficio principal] para [empresa]\\n\\nHola [nombre],\\n\\nSoy [tu nombre] de ${org.name}. Vi que [contexto] y pensé que podríamos ayudarte a [beneficio].\\n\\n[Propuesta de valor en 1-2 líneas]\\n\\n¿Te vendría bien una llamada de 15 minutos esta semana?\\n\\nSaludos,\\n[Firma]",
-    "follow_up": "Hola [nombre],\\n\\nQuería hacer seguimiento a mi mensaje anterior. Sé que estás ocupado/a, así que seré breve:\\n\\n[Recordatorio del beneficio principal]\\n\\nSi prefieres, puedo enviarte [recurso de valor] que te ayudará con [problema].\\n\\n¿Qué te parece?\\n\\nSaludos",
-    "objection_handling": [
-      {"objection": "Es muy caro", "response": "Entiendo. Más que el precio, miremos el retorno: por cada €1 invertido, nuestros clientes obtienen €X. ¿Tiene sentido analizar los números juntos?"},
-      {"objection": "No tengo tiempo ahora", "response": "Lo comprendo perfectamente. ¿Y si agendamos algo para [fecha futura]? Así tendrás tiempo de prepararte y aprovechar mejor la conversación."},
-      {"objection": "Ya tenemos un proveedor", "response": "Genial que ya estén trabajando en esto. ¿Estarías abierto a conocer una perspectiva diferente que podría complementar lo que ya tienen?"}
-    ]
+    "email_intro": "Template de email introductorio",
+    "follow_up": "Template de seguimiento",
+    "objection_handling": [{"objection": "Es caro", "response": "Respuesta apropiada"}]
   },
-  "scenarios": [
-    {
-      "situation": "Primera llamada con prospecto frío",
-      "approach": "Enfócate en hacer preguntas, no en vender. Busca entender su situación actual y sus desafíos principales.",
-      "example_script": "Hola [nombre], soy [tu nombre] de ${org.name}. Te llamo porque vi [contexto] y me gustaría entender si hay algo en lo que podamos ayudarte. ¿Tienes 2 minutos?"
-    },
-    {
-      "situation": "Respuesta a consulta por email",
-      "approach": "Responde rápido, agradece el interés, y propón una llamada para entender mejor sus necesidades.",
-      "example_script": "¡Gracias por escribirnos! Me encantaría conocer más sobre lo que buscas. ¿Te viene bien una llamada de 15 minutos esta semana?"
-    },
-    {
-      "situation": "Manejo de cliente insatisfecho",
-      "approach": "Escucha primero, valida su frustración, y propón solución concreta con timeline.",
-      "example_script": "Lamento mucho que hayas tenido esta experiencia. Entiendo perfectamente tu frustración. Déjame ver cómo podemos solucionarlo hoy mismo."
-    }
-  ]
+  "scenarios": [{"situation": "Situación", "approach": "Enfoque", "example_script": "Script ejemplo"}]
 }`
+      }
 
     } else if (toolType === 'brand_kit') {
       prompt = `Genera un Brand Kit completo para esta empresa:
