@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, Info, ChevronDown } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, TrendingUp, Info, ChevronDown, Eye } from 'lucide-react';
 import PipelineBoard from '@/components/PipelineBoard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -14,6 +16,7 @@ const Pipeline = () => {
   const navigate = useNavigate();
   const [isPipelineInfoOpen, setIsPipelineInfoOpen] = useState(false);
   const [isHowToUseOpen, setIsHowToUseOpen] = useState(false);
+  const [showDemoData, setShowDemoData] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -45,6 +48,17 @@ const Pipeline = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 mr-2 bg-muted/50 rounded-lg px-3 py-1.5">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="demo-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                Demo
+              </Label>
+              <Switch
+                id="demo-toggle"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+            </div>
             <SectionTourButton sectionId="crm-pipeline" className="hidden sm:flex" />
             <Button
               variant="outline"
@@ -174,7 +188,7 @@ const Pipeline = () => {
         </Collapsible>
 
         {/* Pipeline Board */}
-        <PipelineBoard />
+        <PipelineBoard showDemoData={showDemoData} />
       </main>
     </div>
   );

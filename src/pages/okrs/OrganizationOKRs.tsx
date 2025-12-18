@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Target, 
@@ -20,7 +22,8 @@ import {
   Sparkles,
   Users,
   User,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OKRProgressModal } from '@/components/OKRProgressModal';
@@ -67,6 +70,80 @@ interface ActivePhase {
   status: string;
 }
 
+// Demo data for when no real data exists
+const DEMO_OBJECTIVES: Objective[] = [
+  {
+    id: 'demo-obj-1',
+    title: 'Aumentar ingresos recurrentes mensuales (MRR)',
+    description: 'Incrementar el MRR para alcanzar sostenibilidad financiera',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'active',
+    target_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+    owner_name: 'Organización',
+    progress: 68,
+    key_results: [
+      { id: 'demo-kr-1', title: 'Alcanzar €50,000 en MRR', description: '', metric_type: 'currency', start_value: 20000, target_value: 50000, current_value: 34000, unit: '€', status: 'on_track', weight: 1, progress: 47 },
+      { id: 'demo-kr-2', title: 'Conseguir 25 nuevos clientes', description: '', metric_type: 'number', start_value: 0, target_value: 25, current_value: 18, unit: 'clientes', status: 'on_track', weight: 1, progress: 72 },
+    ],
+    total_key_results: 2,
+    achieved_krs: 0,
+    on_track_krs: 2,
+    at_risk_krs: 0,
+    behind_krs: 0,
+  },
+  {
+    id: 'demo-obj-2',
+    title: 'Mejorar satisfacción y retención de clientes',
+    description: 'Reducir churn y aumentar NPS',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'at_risk',
+    target_date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+    owner_name: 'Organización',
+    progress: 42,
+    key_results: [
+      { id: 'demo-kr-3', title: 'NPS superior a 50', description: '', metric_type: 'number', start_value: 30, target_value: 50, current_value: 42, unit: 'puntos', status: 'at_risk', weight: 1, progress: 60 },
+      { id: 'demo-kr-4', title: 'Reducir churn a menos del 5%', description: '', metric_type: 'percentage', start_value: 12, target_value: 5, current_value: 8, unit: '%', status: 'behind', weight: 1, progress: 57 },
+    ],
+    total_key_results: 2,
+    achieved_krs: 0,
+    on_track_krs: 0,
+    at_risk_krs: 1,
+    behind_krs: 1,
+  },
+  {
+    id: 'demo-obj-3',
+    title: 'Escalar operaciones y productividad',
+    description: 'Automatizar procesos y mejorar eficiencia del equipo',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'active',
+    target_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    owner_name: 'Organización',
+    progress: 85,
+    key_results: [
+      { id: 'demo-kr-5', title: 'Automatizar 5 procesos manuales', description: '', metric_type: 'number', start_value: 0, target_value: 5, current_value: 4, unit: 'procesos', status: 'on_track', weight: 1, progress: 80 },
+      { id: 'demo-kr-6', title: 'Reducir tiempo de respuesta a 2 horas', description: '', metric_type: 'number', start_value: 24, target_value: 2, current_value: 4, unit: 'horas', status: 'achieved', weight: 1, progress: 91 },
+    ],
+    total_key_results: 2,
+    achieved_krs: 1,
+    on_track_krs: 1,
+    at_risk_krs: 0,
+    behind_krs: 0,
+  },
+];
+
+const DEMO_PHASE: ActivePhase = {
+  id: 'demo-phase',
+  phase_number: 1,
+  phase_name: 'Fase de Lanzamiento',
+  phase_description: 'Establecer bases sólidas para el crecimiento',
+  progress_percentage: 65,
+  duration_weeks: 4,
+  status: 'active',
+};
+
 const OrganizationOKRs = () => {
   const { user, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
@@ -76,6 +153,7 @@ const OrganizationOKRs = () => {
   const [activePhase, setActivePhase] = useState<ActivePhase | null>(null);
   const [teamSize, setTeamSize] = useState(1);
   const [totalPhaseTasks, setTotalPhaseTasks] = useState(0);
+  const [showDemoData, setShowDemoData] = useState(false);
   const [selectedKR, setSelectedKR] = useState<{
     id: string;
     title: string;
@@ -317,6 +395,11 @@ const OrganizationOKRs = () => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Use demo data if enabled and no real data
+  const displayObjectives = (objectives.length === 0 && showDemoData) ? DEMO_OBJECTIVES : objectives;
+  const displayPhase = (!activePhase && showDemoData) ? DEMO_PHASE : activePhase;
+  const isDemo = objectives.length === 0 && showDemoData;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
@@ -341,11 +424,22 @@ const OrganizationOKRs = () => {
                 OKRs Organizacionales
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground truncate">
-                {activePhase ? `Fase ${activePhase.phase_number}: ${activePhase.phase_name}` : 'Objetivos estratégicos'}
+                {displayPhase ? `Fase ${displayPhase.phase_number}: ${displayPhase.phase_name}` : 'Objetivos estratégicos'}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 mr-2 bg-muted/50 rounded-lg px-3 py-1.5">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="demo-okr-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                Demo
+              </Label>
+              <Switch
+                id="demo-okr-toggle"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+            </div>
             <Button
               variant="secondary"
               size="sm"
@@ -370,8 +464,18 @@ const OrganizationOKRs = () => {
 
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         <div className="space-y-6">
+          {/* Demo Badge */}
+          {isDemo && (
+            <div className="flex items-center gap-2 p-3 bg-info/10 border border-info/30 rounded-lg">
+              <Badge variant="secondary" className="bg-info/20">DEMO</Badge>
+              <span className="text-sm text-muted-foreground">
+                Datos de ejemplo. Genera OKRs organizacionales para ver datos reales.
+              </span>
+            </div>
+          )}
+
           {/* Info de Fase Actual */}
-          {activePhase && (
+          {displayPhase && (
             <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -381,29 +485,29 @@ const OrganizationOKRs = () => {
                         {isIndividual ? <User className="w-3 h-3" /> : <Users className="w-3 h-3" />}
                         {isIndividual ? 'Individual' : `Equipo (${teamSize})`}
                       </Badge>
-                      <Badge variant="outline">Fase {activePhase.phase_number}</Badge>
+                      <Badge variant="outline">Fase {displayPhase.phase_number}</Badge>
                     </div>
-                    <h3 className="text-xl font-bold">{activePhase.phase_name}</h3>
-                    {activePhase.phase_description && (
-                      <p className="text-sm text-muted-foreground">{activePhase.phase_description}</p>
+                    <h3 className="text-xl font-bold">{displayPhase.phase_name}</h3>
+                    {displayPhase.phase_description && (
+                      <p className="text-sm text-muted-foreground">{displayPhase.phase_description}</p>
                     )}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Target className="w-4 h-4" />
-                        {totalPhaseTasks} tareas en fase
+                        {isDemo ? 12 : totalPhaseTasks} tareas en fase
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {activePhase.duration_weeks} semanas
+                        {displayPhase.duration_weeks} semanas
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-primary">{activePhase.progress_percentage}%</div>
+                      <div className="text-3xl font-bold text-primary">{displayPhase.progress_percentage}%</div>
                       <div className="text-sm text-muted-foreground">Progreso de fase</div>
                     </div>
-                    <Progress value={activePhase.progress_percentage} className="w-32 h-2" />
+                    <Progress value={displayPhase.progress_percentage} className="w-32 h-2" />
                   </div>
                 </div>
               </CardContent>
@@ -428,7 +532,7 @@ const OrganizationOKRs = () => {
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Actualizar
               </Button>
-              {activePhase && (
+              {displayPhase && !isDemo && (
                 <Button
                   onClick={generatePhaseOKRs}
                   disabled={generating || !activePhase}
@@ -471,7 +575,7 @@ const OrganizationOKRs = () => {
           </Card>
 
           {/* KPIs Summary */}
-          {objectives.length > 0 && (
+          {displayObjectives.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-3">
@@ -480,7 +584,7 @@ const OrganizationOKRs = () => {
                     Objetivos Activos
                   </CardDescription>
                   <CardTitle className="text-3xl">
-                    {objectives.filter(o => o.status === 'active').length}
+                    {displayObjectives.filter(o => o.status === 'active').length}
                   </CardTitle>
                 </CardHeader>
               </Card>
@@ -492,8 +596,8 @@ const OrganizationOKRs = () => {
                     Progreso Promedio
                   </CardDescription>
                   <CardTitle className="text-3xl text-primary">
-                    {objectives.length > 0 
-                      ? Math.round(objectives.reduce((sum, obj) => sum + obj.progress, 0) / objectives.length)
+                    {displayObjectives.length > 0 
+                      ? Math.round(displayObjectives.reduce((sum, obj) => sum + obj.progress, 0) / displayObjectives.length)
                       : 0}%
                   </CardTitle>
                 </CardHeader>
@@ -506,7 +610,7 @@ const OrganizationOKRs = () => {
                     KRs Logrados
                   </CardDescription>
                   <CardTitle className="text-3xl text-success">
-                    {objectives.reduce((sum, obj) => sum + obj.achieved_krs, 0)}
+                    {displayObjectives.reduce((sum, obj) => sum + obj.achieved_krs, 0)}
                   </CardTitle>
                 </CardHeader>
               </Card>
@@ -514,7 +618,7 @@ const OrganizationOKRs = () => {
           )}
 
           {/* OKRs List */}
-          {!activePhase ? (
+          {!displayPhase ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <AlertTriangle className="w-16 h-16 text-warning mb-4" />
