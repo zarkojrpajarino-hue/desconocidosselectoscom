@@ -47,6 +47,7 @@ export function OKRCheckInForm({ type = 'organizational', showDemoData = false }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
 
   useEffect(() => {
     async function fetchKeyResults() {
@@ -200,8 +201,6 @@ export function OKRCheckInForm({ type = 'organizational', showDemoData = false }
   const keyResults = displayData || [];
   const isDemo = data.length === 0 && showDemoData;
   const hasChanges = keyResults.some(kr => kr.new_value !== kr.current_value || kr.comment);
-
-  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <div className="space-y-6">
