@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   User,
   Trophy,
@@ -16,6 +18,7 @@ import {
   Flame,
   Download,
   Building2,
+  Eye,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +35,14 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import {
+  DEMO_PROFILE_STATS,
+  DEMO_WEEKLY_PROGRESS,
+  DEMO_TASKS_BY_AREA,
+  DEMO_RECENT_TASKS,
+  DEMO_ACHIEVEMENTS,
+  DEMO_BADGES,
+} from '@/data/demo-profile-data';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'];
 
@@ -100,6 +111,15 @@ const UserProfile = () => {
   const [achievements, setAchievements] = useState<AchievementsData | null>(null);
   const [badges, setBadges] = useState<BadgeData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDemo, setShowDemo] = useState(false);
+
+  // Use demo data when toggle is on
+  const displayStats = showDemo ? DEMO_PROFILE_STATS : stats;
+  const displayWeeklyProgress = showDemo ? DEMO_WEEKLY_PROGRESS : weeklyProgress;
+  const displayTasksByArea = showDemo ? DEMO_TASKS_BY_AREA : tasksByArea;
+  const displayRecentTasks = showDemo ? DEMO_RECENT_TASKS : recentTasks;
+  const displayAchievements = showDemo ? DEMO_ACHIEVEMENTS : achievements;
+  const displayBadges = showDemo ? DEMO_BADGES : badges;
 
   useEffect(() => {
     if (user) {
@@ -309,24 +329,45 @@ const UserProfile = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* Demo Toggle */}
+      <div className="flex items-center justify-end gap-2 p-2 bg-muted/30 rounded-lg">
+        <Eye className="w-4 h-4 text-muted-foreground" />
+        <Label htmlFor="demo-toggle" className="text-sm text-muted-foreground">
+          Ver datos demo
+        </Label>
+        <Switch
+          id="demo-toggle"
+          checked={showDemo}
+          onCheckedChange={setShowDemo}
+        />
+      </div>
+
       {/* Header del perfil - Mobile optimized */}
       <Card className="bg-gradient-to-br from-primary/5 to-accent/5">
         <CardContent className="pt-4 md:pt-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
             {/* Avatar */}
             <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-primary flex items-center justify-center text-2xl md:text-4xl font-bold text-white shadow-lg shrink-0">
-              {userProfile?.full_name?.charAt(0) || 'U'}
+              {showDemo ? 'D' : (userProfile?.full_name?.charAt(0) || 'U')}
             </div>
 
             {/* Info */}
             <div className="flex-1 text-center sm:text-left min-w-0">
-              <h2 className="text-xl md:text-3xl font-bold mb-1 truncate">{userProfile?.full_name}</h2>
-              <p className="text-sm text-muted-foreground mb-2">{user?.email}</p>
-              {currentOrganization && (
+              <h2 className="text-xl md:text-3xl font-bold mb-1 truncate">
+                {showDemo ? 'Usuario Demo' : userProfile?.full_name}
+              </h2>
+              <p className="text-sm text-muted-foreground mb-2">
+                {showDemo ? 'demo@optimus-k.com' : user?.email}
+              </p>
+              {(currentOrganization || showDemo) && (
                 <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
                   <Building2 className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-sm font-medium truncate">{currentOrganization.organization_name}</span>
-                  <Badge variant="outline" className="text-xs shrink-0">{currentOrganization.role}</Badge>
+                  <span className="text-sm font-medium truncate">
+                    {showDemo ? 'OPTIMUS-K Demo' : currentOrganization?.organization_name}
+                  </span>
+                  <Badge variant="outline" className="text-xs shrink-0">
+                    {showDemo ? 'admin' : currentOrganization?.role}
+                  </Badge>
                 </div>
               )}
 
@@ -334,19 +375,19 @@ const UserProfile = () => {
               <div className="flex gap-3 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap sm:gap-4 -mx-4 px-4 sm:mx-0 sm:px-0 justify-start">
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
-                  <span className="font-semibold text-sm md:text-base">{achievements?.total_points || 0}</span>
+                  <span className="font-semibold text-sm md:text-base">{displayAchievements?.total_points || 0}</span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
-                  <span className="font-semibold text-sm md:text-base">{achievements?.current_streak || 0}w</span>
+                  <span className="font-semibold text-sm md:text-base">{displayAchievements?.current_streak || 0}w</span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <Award className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
-                  <span className="font-semibold text-sm md:text-base">{badges.length}</span>
+                  <span className="font-semibold text-sm md:text-base">{displayBadges.length}</span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2 shrink-0">
                   <Target className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
-                  <span className="font-semibold text-sm md:text-base">{stats?.totalCompleted || 0}</span>
+                  <span className="font-semibold text-sm md:text-base">{displayStats?.totalCompleted || 0}</span>
                 </div>
               </div>
             </div>
@@ -390,7 +431,7 @@ const UserProfile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Tareas Completadas</p>
-                    <p className="text-3xl font-bold text-primary">{stats?.totalCompleted || 0}</p>
+                    <p className="text-3xl font-bold text-primary">{displayStats?.totalCompleted || 0}</p>
                   </div>
                   <CheckCircle2 className="w-10 h-10 text-success" />
                 </div>
@@ -402,7 +443,7 @@ const UserProfile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Tareas Validadas</p>
-                    <p className="text-3xl font-bold text-primary">{stats?.totalValidated || 0}</p>
+                    <p className="text-3xl font-bold text-primary">{displayStats?.totalValidated || 0}</p>
                   </div>
                   <Trophy className="w-10 h-10 text-yellow-500" />
                 </div>
@@ -414,7 +455,7 @@ const UserProfile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Colaborativas</p>
-                    <p className="text-3xl font-bold text-primary">{stats?.totalCollaborative || 0}</p>
+                    <p className="text-3xl font-bold text-primary">{displayStats?.totalCollaborative || 0}</p>
                   </div>
                   <User className="w-10 h-10 text-purple-500" />
                 </div>
@@ -426,9 +467,9 @@ const UserProfile = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Rating Promedio</p>
-                    <p className="text-3xl font-bold text-primary">{stats?.averageRating || 0}</p>
+                    <p className="text-3xl font-bold text-primary">{displayStats?.averageRating || 0}</p>
                     <div className="flex text-yellow-500 text-sm mt-1">
-                      {'⭐'.repeat(Math.round(parseFloat(String(stats?.averageRating || '0'))))}
+                      {'⭐'.repeat(Math.round(parseFloat(String(displayStats?.averageRating || '0'))))}
                     </div>
                   </div>
                   <Award className="w-10 h-10 text-orange-500" />
@@ -447,7 +488,7 @@ const UserProfile = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={weeklyProgress}>
+                <LineChart data={displayWeeklyProgress}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="week" />
                   <YAxis />
@@ -475,11 +516,11 @@ const UserProfile = () => {
                 <CardTitle>Tareas por Área</CardTitle>
               </CardHeader>
               <CardContent>
-                {tasksByArea.length > 0 ? (
+                {displayTasksByArea.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
-                        data={tasksByArea}
+                        data={displayTasksByArea}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -488,7 +529,7 @@ const UserProfile = () => {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {tasksByArea.map((entry, index) => (
+                        {displayTasksByArea.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -512,33 +553,33 @@ const UserProfile = () => {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Tareas Completadas</span>
-                    <span className="font-semibold">{achievements?.tasks_completed_total || 0} / 200</span>
+                    <span className="font-semibold">{displayAchievements?.tasks_completed_total || 0} / 200</span>
                   </div>
-                  <Progress value={((achievements?.tasks_completed_total || 0) / 200) * 100} />
+                  <Progress value={((displayAchievements?.tasks_completed_total || 0) / 200) * 100} />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Tareas Validadas</span>
-                    <span className="font-semibold">{achievements?.tasks_validated_total || 0} / 100</span>
+                    <span className="font-semibold">{displayAchievements?.tasks_validated_total || 0} / 100</span>
                   </div>
-                  <Progress value={((achievements?.tasks_validated_total || 0) / 100) * 100} className="[&>div]:bg-yellow-500" />
+                  <Progress value={((displayAchievements?.tasks_validated_total || 0) / 100) * 100} className="[&>div]:bg-yellow-500" />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Racha Actual</span>
-                    <span className="font-semibold">{achievements?.current_streak || 0} / 20 semanas</span>
+                    <span className="font-semibold">{displayAchievements?.current_streak || 0} / 20 semanas</span>
                   </div>
-                  <Progress value={((achievements?.current_streak || 0) / 20) * 100} className="[&>div]:bg-orange-500" />
+                  <Progress value={((displayAchievements?.current_streak || 0) / 20) * 100} className="[&>div]:bg-orange-500" />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Semanas Perfectas</span>
-                    <span className="font-semibold">{achievements?.perfect_weeks || 0} / 10</span>
+                    <span className="font-semibold">{displayAchievements?.perfect_weeks || 0} / 10</span>
                   </div>
-                  <Progress value={((achievements?.perfect_weeks || 0) / 10) * 100} className="[&>div]:bg-purple-500" />
+                  <Progress value={((displayAchievements?.perfect_weeks || 0) / 10) * 100} className="[&>div]:bg-purple-500" />
                 </div>
               </CardContent>
             </Card>
@@ -549,16 +590,16 @@ const UserProfile = () => {
         <TabsContent value="badges" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Colección de Badges ({badges.length}/19)</CardTitle>
+              <CardTitle>Colección de Badges ({displayBadges.length}/19)</CardTitle>
             </CardHeader>
             <CardContent>
-              {badges.length > 0 ? (
+              {displayBadges.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                  {badges.map((userBadge) => (
+                  {displayBadges.map((userBadge) => (
                     <div
                       key={userBadge.id}
                       className={`p-4 rounded-lg border-2 text-center transition-all hover:scale-105 ${getRarityColor(
-                        userBadge.badges.rarity
+                        userBadge.badges.rarity || 'common'
                       )}`}
                     >
                       <div className="text-5xl mb-2">{userBadge.badges.icon_emoji}</div>
@@ -568,7 +609,7 @@ const UserProfile = () => {
                         {userBadge.badges.rarity}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(userBadge.earned_at).toLocaleDateString('es-ES')}
+                        {userBadge.earned_at ? new Date(userBadge.earned_at).toLocaleDateString('es-ES') : '-'}
                       </p>
                     </div>
                   ))}
@@ -590,27 +631,27 @@ const UserProfile = () => {
               <CardTitle>Últimas 10 Tareas Completadas</CardTitle>
             </CardHeader>
             <CardContent>
-              {recentTasks.length > 0 ? (
+              {displayRecentTasks.length > 0 ? (
                 <div className="space-y-3">
-                  {recentTasks.map((task) => (
+                  {displayRecentTasks.map((task) => (
                     <div
                       key={task.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex-1">
-                        <p className="font-medium">{task.tasks.title}</p>
+                        <p className="font-medium">{task.tasks?.title || 'Tarea sin título'}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          {task.tasks.area && (
+                          {task.tasks?.area && (
                             <Badge variant="secondary" className="text-xs">
                               {task.tasks.area}
                             </Badge>
                           )}
                           <span className="text-xs text-muted-foreground">
-                            {new Date(task.completed_at).toLocaleDateString('es-ES', {
+                            {task.completed_at ? new Date(task.completed_at).toLocaleDateString('es-ES', {
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric',
-                            })}
+                            }) : '-'}
                           </span>
                         </div>
                       </div>
