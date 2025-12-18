@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCountryData } from '@/hooks/useCountryData';
 import { MapPin, Briefcase, Target, Zap, Heart, MessageCircle, ShoppingCart } from 'lucide-react';
+import { DEMO_BUYER_PERSONA } from '@/data/demo-herramientas-data';
 
 // Types for BuyerPersona
 interface Demographics { education?: string; family_status?: string; housing?: string }
@@ -324,6 +325,7 @@ const BuyerPersona = () => {
       title="Buyer Persona"
       description="Perfil detallado del cliente ideal para enfocar estrategias de marketing y ventas"
       renderContent={renderContent}
+      demoData={DEMO_BUYER_PERSONA}
     />
   );
 };

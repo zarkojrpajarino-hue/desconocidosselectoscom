@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Palette, Type, MessageSquare, Download, Wand2, Trash2, Copy, Check } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Palette, Type, MessageSquare, Download, Wand2, Trash2, Copy, Check, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { DEMO_BRAND_KIT } from '@/data/demo-herramientas-data';
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Profesional', description: 'Serio y corporativo' },
@@ -54,6 +56,7 @@ export const BrandKitBuilder = ({ organizationId, businessName = '', industry = 
   
   const [activeTab, setActiveTab] = useState('colors');
   const [selectedIndustry, setSelectedIndustry] = useState(industry || 'technology');
+  const [showDemo, setShowDemo] = useState(false);
   const [formData, setFormData] = useState({
     businessName: businessName,
     targetAudience: '',
@@ -62,6 +65,9 @@ export const BrandKitBuilder = ({ organizationId, businessName = '', industry = 
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
   const filteredPalettes = palettes.filter(p => p.industry === selectedIndustry);
+  
+  // Use demo data or real data
+  const displayKit = showDemo ? DEMO_BRAND_KIT : brandKit;
 
   const handleGenerateWithAI = async () => {
     if (!formData.businessName) {
@@ -221,6 +227,16 @@ module.exports = {
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Banner */}
+      {showDemo && (
+        <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+          <Eye className="w-4 h-4 text-primary" />
+          <span className="text-sm text-primary font-medium">
+            Modo Demo - Visualizando ejemplo de Brand Kit generado con IA
+          </span>
+        </div>
+      )}
+
       {/* Header con AI Generator */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader>
@@ -234,8 +250,12 @@ module.exports = {
                 Crea tu identidad de marca en minutos con IA
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              {brandKit && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mr-2">
+                <span className="text-xs text-muted-foreground">Demo</span>
+                <Switch checked={showDemo} onCheckedChange={setShowDemo} />
+              </div>
+              {brandKit && !showDemo && (
                 <Button
                   onClick={() => deleteBrandKit()}
                   variant="outline"
@@ -250,7 +270,7 @@ module.exports = {
                 onClick={handleExportBrandKit}
                 variant="outline"
                 size="sm"
-                disabled={!brandKit}
+                disabled={!brandKit && !showDemo}
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />
@@ -260,58 +280,62 @@ module.exports = {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Nombre del negocio</Label>
-              <Input
-                value={formData.businessName}
-                onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                placeholder="Mi Empresa"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Industria</Label>
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INDUSTRIES.map((ind) => (
-                    <SelectItem key={ind.value} value={ind.value}>
-                      {ind.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Público objetivo</Label>
-              <Input
-                value={formData.targetAudience}
-                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-                placeholder="Ej: Profesionales 25-45 años"
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button
-              onClick={handleGenerateWithAI}
-              disabled={generating || !formData.businessName}
-              className="gap-2"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-4 w-4" />
-                  Generar con IA
-                </>
-              )}
-            </Button>
-          </div>
+          {!showDemo && (
+            <>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Nombre del negocio</Label>
+                  <Input
+                    value={formData.businessName}
+                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                    placeholder="Mi Empresa"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Industria</Label>
+                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((ind) => (
+                        <SelectItem key={ind.value} value={ind.value}>
+                          {ind.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Público objetivo</Label>
+                  <Input
+                    value={formData.targetAudience}
+                    onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                    placeholder="Ej: Profesionales 25-45 años"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={handleGenerateWithAI}
+                  disabled={generating || !formData.businessName}
+                  className="gap-2"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      Generar con IA
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -335,38 +359,40 @@ module.exports = {
         {/* TAB: Colores */}
         <TabsContent value="colors" className="space-y-6">
           {/* Paleta actual */}
-          {brandKit && (
+          {displayKit && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Tu Paleta de Colores</CardTitle>
+                <CardTitle className="text-lg">
+                  {showDemo ? 'Ejemplo de Paleta de Colores' : 'Tu Paleta de Colores'}
+                </CardTitle>
                 <CardDescription>Haz clic en un color para copiarlo</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-5 gap-4">
                   <ColorSwatch 
-                    color={brandKit.primary_color} 
+                    color={displayKit.primary_color} 
                     label="Primary" 
-                    onClick={() => handleCopyColor(brandKit.primary_color)}
+                    onClick={() => handleCopyColor(displayKit.primary_color)}
                   />
                   <ColorSwatch 
-                    color={brandKit.secondary_color} 
+                    color={displayKit.secondary_color} 
                     label="Secondary" 
-                    onClick={() => handleCopyColor(brandKit.secondary_color)}
+                    onClick={() => handleCopyColor(displayKit.secondary_color)}
                   />
                   <ColorSwatch 
-                    color={brandKit.accent_color} 
+                    color={displayKit.accent_color} 
                     label="Accent" 
-                    onClick={() => handleCopyColor(brandKit.accent_color)}
+                    onClick={() => handleCopyColor(displayKit.accent_color)}
                   />
                   <ColorSwatch 
-                    color={brandKit.neutral_light} 
+                    color={displayKit.neutral_light} 
                     label="Light" 
-                    onClick={() => handleCopyColor(brandKit.neutral_light)}
+                    onClick={() => handleCopyColor(displayKit.neutral_light)}
                   />
                   <ColorSwatch 
-                    color={brandKit.neutral_dark} 
+                    color={displayKit.neutral_dark} 
                     label="Dark" 
-                    onClick={() => handleCopyColor(brandKit.neutral_dark)}
+                    onClick={() => handleCopyColor(displayKit.neutral_dark)}
                   />
                 </div>
               </CardContent>
@@ -429,23 +455,25 @@ module.exports = {
 
         {/* TAB: Tipografía */}
         <TabsContent value="typography" className="space-y-6">
-          {brandKit && (
+          {displayKit && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Tu Tipografía</CardTitle>
+                <CardTitle className="text-lg">
+                  {showDemo ? 'Ejemplo de Tipografía' : 'Tu Tipografía'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div 
                   className="text-4xl font-bold"
-                  style={{ fontFamily: brandKit.font_heading }}
+                  style={{ fontFamily: displayKit.font_heading }}
                 >
-                  {brandKit.font_heading}
+                  {displayKit.font_heading}
                 </div>
                 <div 
                   className="text-lg"
-                  style={{ fontFamily: brandKit.font_body }}
+                  style={{ fontFamily: displayKit.font_body }}
                 >
-                  {brandKit.font_body} - Texto de ejemplo para ver cómo se ve el cuerpo del contenido.
+                  {displayKit.font_body} - Texto de ejemplo para ver cómo se ve el cuerpo del contenido.
                 </div>
               </CardContent>
             </Card>
@@ -504,33 +532,52 @@ module.exports = {
               <CardDescription>Define cómo se comunica tu marca</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Tipo de tono</Label>
-                <Select
-                  value={brandKit?.tone_of_voice || 'professional'}
-                  onValueChange={(value) => {
-                    if (brandKit) {
-                      updateBrandKit({ tone_of_voice: value });
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un tono" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TONE_OPTIONS.map((tone) => (
-                      <SelectItem key={tone.value} value={tone.value}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{tone.label}</span>
-                          <span className="text-xs text-muted-foreground">{tone.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {!showDemo && (
+                <div className="space-y-2">
+                  <Label>Tipo de tono</Label>
+                  <Select
+                    value={brandKit?.tone_of_voice || 'professional'}
+                    onValueChange={(value) => {
+                      if (brandKit) {
+                        updateBrandKit({ tone_of_voice: value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un tono" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TONE_OPTIONS.map((tone) => (
+                        <SelectItem key={tone.value} value={tone.value}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{tone.label}</span>
+                            <span className="text-xs text-muted-foreground">{tone.description}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {brandKit && (
+              {displayKit && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Tipo de tono</Label>
+                    <p className="font-medium">{displayKit.tone_of_voice}</p>
+                  </div>
+                  {displayKit.tone_description && (
+                    <div className="space-y-2">
+                      <Label>Descripción del tono</Label>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm">{displayKit.tone_description}</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!showDemo && brandKit && (
                 <div className="space-y-2">
                   <Label>Descripción del tono</Label>
                   <Textarea
@@ -539,15 +586,6 @@ module.exports = {
                     placeholder="Describe cómo debe comunicarse tu marca..."
                     rows={3}
                   />
-                </div>
-              )}
-
-              {brandKit?.logo_concept && (
-                <div className="space-y-2">
-                  <Label>Concepto de Logo</Label>
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="text-sm">{brandKit.logo_concept}</p>
-                  </div>
                 </div>
               )}
             </CardContent>
