@@ -133,9 +133,6 @@ export default function GlobalAgenda() {
         </div>
       </div>
 
-      {/* Google Calendar Connect */}
-      {user && <GoogleCalendarConnect userId={user.id} />}
-
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
@@ -149,7 +146,7 @@ export default function GlobalAgenda() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="agenda">
+        <TabsContent value="agenda" className="space-y-6">
           <ProfessionalAgendaView 
             weekStart={weekStart} 
             filters={activeFilters}
@@ -157,6 +154,9 @@ export default function GlobalAgenda() {
             collaborativePercentage={collaborativePercentage}
             onCreateTask={() => setShowCreateTask(true)}
           />
+          
+          {/* Google Calendar Connect - Below agenda */}
+          {user && <GoogleCalendarConnect userId={user.id} />}
         </TabsContent>
 
         <TabsContent value="config">

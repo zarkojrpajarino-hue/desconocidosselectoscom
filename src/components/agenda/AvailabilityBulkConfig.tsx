@@ -57,13 +57,15 @@ export function AvailabilityBulkConfig({
   currentWeekStart,
   onComplete 
 }: AvailabilityBulkConfigProps) {
-  const [applyMode, setApplyMode] = useState<'all' | 'selected'>('all');
   const [selectedWeeks, setSelectedWeeks] = useState<number[]>([]);
   const [availability, setAvailability] = useState<Record<string, DayAvailability>>({});
   const [hoursPerDay, setHoursPerDay] = useState<number>(4);
   const [preferredTime, setPreferredTime] = useState<string>('flexible');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWeekSelector, setShowWeekSelector] = useState(false);
+
+  // Find current week number
+  const currentWeekNumber = phaseWeeks.find(w => w.weekStart === currentWeekStart)?.weekNumber || 1;
 
   useEffect(() => {
     // Initialize availability
@@ -73,8 +75,8 @@ export function AvailabilityBulkConfig({
     });
     setAvailability(initial);
     
-    // Initialize selected weeks to all by default
-    setSelectedWeeks(phaseWeeks.map(w => w.weekNumber));
+    // Initialize selected weeks empty (user must select)
+    setSelectedWeeks([]);
   }, [phaseWeeks]);
 
   const toggleDay = (dayKey: string) => {
@@ -97,18 +99,14 @@ export function AvailabilityBulkConfig({
     }));
   };
 
-  const handleSubmit = async () => {
+  const saveForWeeks = async (weeksToSave: PhaseWeek[]) => {
     const hasAnyDay = Object.values(availability).some(day => day.available);
     if (!hasAnyDay) {
       toast.error('Debes seleccionar al menos un día disponible');
       return;
     }
 
-    const weeksToApply = applyMode === 'all' 
-      ? phaseWeeks 
-      : phaseWeeks.filter(w => selectedWeeks.includes(w.weekNumber));
-
-    if (weeksToApply.length === 0) {
+    if (weeksToSave.length === 0) {
       toast.error('Debes seleccionar al menos una semana');
       return;
     }
@@ -116,7 +114,7 @@ export function AvailabilityBulkConfig({
     setIsSubmitting(true);
     try {
       // Save availability for each selected week
-      for (const week of weeksToApply) {
+      for (const week of weeksToSave) {
         const data = {
           user_id: userId,
           week_start: week.weekStart,
@@ -153,8 +151,7 @@ export function AvailabilityBulkConfig({
         if (error) throw error;
       }
 
-
-      toast.success(`✅ Disponibilidad guardada para ${weeksToApply.length} semana(s)`, {
+      toast.success(`✅ Disponibilidad guardada para ${weeksToSave.length} semana(s)`, {
         description: 'Tu agenda se ha actualizado'
       });
 
@@ -167,6 +164,18 @@ export function AvailabilityBulkConfig({
     }
   };
 
+  const handleSaveCurrentWeek = () => {
+    const currentWeek = phaseWeeks.find(w => w.weekStart === currentWeekStart);
+    if (currentWeek) {
+      saveForWeeks([currentWeek]);
+    }
+  };
+
+  const handleSaveSelectedWeeks = () => {
+    const weeksToSave = phaseWeeks.filter(w => selectedWeeks.includes(w.weekNumber));
+    saveForWeeks(weeksToSave);
+  };
+
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
@@ -175,49 +184,10 @@ export function AvailabilityBulkConfig({
           Configurar Disponibilidad
         </CardTitle>
         <CardDescription>
-          Configura tu disponibilidad para una o varias semanas de la fase
+          Configura tu disponibilidad para la semana {currentWeekNumber} o aplícala a más semanas
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Mode selector */}
-        <div className="space-y-3">
-          <Label className="text-base font-semibold">¿A qué semanas aplicar?</Label>
-          <RadioGroup value={applyMode} onValueChange={(v) => setApplyMode(v as 'all' | 'selected')}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="all" id="apply-all" />
-              <Label htmlFor="apply-all" className="cursor-pointer">
-                📅 Todas las semanas de la fase ({phaseWeeks.length} semanas)
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="selected" id="apply-selected" />
-              <Label htmlFor="apply-selected" className="cursor-pointer">
-                ✅ Solo semanas seleccionadas
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        {/* Week selector (shown when mode is 'selected') */}
-        {applyMode === 'selected' && (
-          <Collapsible open={showWeekSelector} onOpenChange={setShowWeekSelector}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
-                <span>Seleccionar semanas ({selectedWeeks.length} seleccionadas)</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showWeekSelector ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              <PhaseWeekSelector
-                weeks={phaseWeeks}
-                selectedWeeks={selectedWeeks}
-                onSelectionChange={setSelectedWeeks}
-                mode="multiple"
-              />
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-
         {/* Day availability */}
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">¿Qué días puedes trabajar?</h3>
@@ -318,15 +288,51 @@ export function AvailabilityBulkConfig({
           </RadioGroup>
         </div>
 
-        {/* Submit buttons */}
-        <div className="flex gap-3 pt-4">
+        {/* Submit buttons - Two separate buttons */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          {/* Save for current week only */}
           <Button
-            onClick={handleSubmit}
+            onClick={handleSaveCurrentWeek}
             disabled={isSubmitting}
-            className="flex-1 h-12"
+            className="w-full h-12"
           >
-            {isSubmitting ? 'Guardando...' : `✅ Guardar para ${applyMode === 'all' ? 'todas las semanas' : `${selectedWeeks.length} semana(s)`}`}
+            {isSubmitting ? 'Guardando...' : `✅ Guardar solo para esta semana (Semana ${currentWeekNumber})`}
           </Button>
+
+          {/* Save for more weeks - Collapsible */}
+          <Collapsible open={showWeekSelector} onOpenChange={setShowWeekSelector}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full h-12 justify-between">
+                <span>📅 Guardar para más semanas</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showWeekSelector ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4 space-y-4">
+              <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Selecciona las semanas en las que quieres aplicar esta disponibilidad:
+                </p>
+                <PhaseWeekSelector
+                  weeks={phaseWeeks}
+                  selectedWeeks={selectedWeeks}
+                  onSelectionChange={setSelectedWeeks}
+                  mode="multiple"
+                />
+              </div>
+              
+              <Button
+                onClick={handleSaveSelectedWeeks}
+                disabled={isSubmitting || selectedWeeks.length === 0}
+                className="w-full h-12"
+                variant="default"
+              >
+                {isSubmitting 
+                  ? 'Guardando...' 
+                  : `✅ Guardar para ${selectedWeeks.length} semana(s) seleccionada(s)`
+                }
+              </Button>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </CardContent>
     </Card>
