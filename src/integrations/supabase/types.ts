@@ -4718,6 +4718,7 @@ export type Database = {
           updated_at: string
           urgency: string | null
           value_proposition: string
+          week_start_day: number | null
         }
         Insert: {
           admin_visibility_team?: boolean | null
@@ -4804,6 +4805,7 @@ export type Database = {
           updated_at?: string
           urgency?: string | null
           value_proposition: string
+          week_start_day?: number | null
         }
         Update: {
           admin_visibility_team?: boolean | null
@@ -4890,6 +4892,7 @@ export type Database = {
           updated_at?: string
           urgency?: string | null
           value_proposition?: string
+          week_start_day?: number | null
         }
         Relationships: []
       }
