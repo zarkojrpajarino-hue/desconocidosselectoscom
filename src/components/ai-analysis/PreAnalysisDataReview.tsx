@@ -60,6 +60,23 @@ interface OrganizationData {
   products_services: ProductService[];
   monthly_revenue_goal: number;
   team_members_count: number;
+  business_stage?: string;
+}
+
+interface DiscoveryProfileData {
+  current_situation: string;
+  hours_weekly: number;
+  risk_tolerance: number;
+  motivations: string[];
+  skills: string[];
+  industries: string[];
+  target_audience_preference: string;
+  initial_capital: string;
+  existing_idea: string;
+  business_type_preference: string;
+  revenue_urgency: string;
+  generated_ideas: unknown[];
+  selected_idea_id: string | null;
 }
 
 interface ProductService {
@@ -224,6 +241,8 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
   const [competitors, setCompetitors] = useState<Record<string, unknown>[]>([]);
   const [answers, setAnswers] = useState<Record<string, string | number | boolean | string[]>>({});
   const [dataCompleteness, setDataCompleteness] = useState(0);
+  const [discoveryProfile, setDiscoveryProfile] = useState<DiscoveryProfileData | null>(null);
+  const isDiscovery = orgData?.business_stage === 'discovery';
 
   useEffect(() => {
     if (open && currentOrganizationId) {
@@ -252,6 +271,18 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
             .eq('country_code', org.country_code)
             .single();
           setCountryData(country as Record<string, unknown>);
+        }
+        
+        // Load Discovery profile if Discovery user
+        if (org.business_stage === 'discovery') {
+          const { data: dp } = await supabase
+            .from('discovery_profiles')
+            .select('*')
+            .eq('organization_id', currentOrganizationId)
+            .maybeSingle();
+          if (dp) {
+            setDiscoveryProfile(dp as unknown as DiscoveryProfileData);
+          }
         }
       }
 
@@ -534,20 +565,75 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
                 </AlertDescription>
               </Alert>
 
+              {/* Discovery-specific profile section */}
+              {isDiscovery && discoveryProfile && (
+                <Card className="md:col-span-2 border-primary/30 bg-primary/5">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      Perfil de Descubrimiento
+                    </CardTitle>
+                    <CardDescription>Datos de tu proceso de validación de idea</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <DataRow label="Situación actual" value={discoveryProfile.current_situation} />
+                      <DataRow label="Horas/semana" value={discoveryProfile.hours_weekly?.toString()} />
+                      <DataRow label="Tolerancia al riesgo" value={`${discoveryProfile.risk_tolerance}/5`} />
+                      <DataRow label="Capital inicial" value={discoveryProfile.initial_capital} />
+                      <DataRow label="Público objetivo" value={discoveryProfile.target_audience_preference} />
+                      <DataRow label="Tipo de negocio" value={discoveryProfile.business_type_preference} />
+                      <DataRow label="Urgencia ingresos" value={discoveryProfile.revenue_urgency} />
+                      <DataRow label="Idea seleccionada" value={discoveryProfile.selected_idea_id ? 'Sí' : 'No'} />
+                    </div>
+                    {discoveryProfile.motivations?.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Motivaciones:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {discoveryProfile.motivations.map((m, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">{m}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {discoveryProfile.skills?.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Habilidades:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {discoveryProfile.skills.map((s, i) => (
+                            <Badge key={i} variant="outline" className="text-xs">{s}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {discoveryProfile.existing_idea && (
+                      <div className="mt-4 p-3 bg-background rounded-lg">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Idea existente:</p>
+                        <p className="text-sm">{discoveryProfile.existing_idea}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-primary" />
-                      Información General
+                      {isDiscovery ? 'Tu Proyecto' : 'Información General'}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <DataRow label="Nombre" value={orgData?.name} />
                     <DataRow label="Industria" value={orgData?.industry} />
-                    <DataRow label="Tamaño" value={orgData?.company_size} />
-                    <DataRow label="Año fundación" value={orgData?.founded_year?.toString()} />
-                    <DataRow label="Modelo de negocio" value={orgData?.business_model} />
+                    {!isDiscovery && (
+                      <>
+                        <DataRow label="Tamaño" value={orgData?.company_size} />
+                        <DataRow label="Año fundación" value={orgData?.founded_year?.toString()} />
+                        <DataRow label="Modelo de negocio" value={orgData?.business_model} />
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 
