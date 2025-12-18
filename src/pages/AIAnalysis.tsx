@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Brain, Lock, AlertCircle, Sparkles, FileCheck, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Brain, Lock, AlertCircle, Sparkles, FileCheck, BarChart3, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { useAIAnalysis } from '@/hooks/useAIAnalysis';
@@ -11,8 +11,13 @@ import { PreAnalysisDataReview } from '@/components/ai-analysis/PreAnalysisDataR
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { DEMO_AI_ANALYSIS, DEMO_MARKET_STUDY } from '@/data/demo-ai-analysis';
+import type { AIAnalysisResult } from '@/types/ai-analysis.types';
 
 const AIAnalysis = () => {
   const { user, loading, currentOrganizationId } = useAuth();
@@ -21,6 +26,7 @@ const AIAnalysis = () => {
   const { canUseAiAnalysis: validateAiBackend, validating } = useBackendValidation();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showPreAnalysisModal, setShowPreAnalysisModal] = useState(false);
+  const [showDemoData, setShowDemoData] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -72,6 +78,11 @@ const AIAnalysis = () => {
   // Verificar si tiene acceso
   const { allowed: hasAccess, remaining } = canUseAiAnalysis();
 
+  // Determine which data to display
+  const displayData: AIAnalysisResult | null = showDemoData 
+    ? { ...DEMO_AI_ANALYSIS, market_study: DEMO_MARKET_STUDY } as AIAnalysisResult
+    : analysis.data;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
@@ -87,7 +98,19 @@ const AIAnalysis = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            {/* Demo Data Toggle */}
+            <div className="hidden sm:flex items-center gap-2">
+              <Switch
+                id="demo-mode"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+              <Label htmlFor="demo-mode" className="text-xs md:text-sm cursor-pointer flex items-center gap-1">
+                {showDemoData ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                <span className="hidden md:inline">Demo</span>
+              </Label>
+            </div>
             <SectionTourButton sectionId="ai-analysis" className="hidden sm:flex" />
             <Button variant="outline" size="sm" onClick={() => navigate('/home')} className="gap-1 md:gap-2">
               <ArrowLeft className="h-4 w-4" />
@@ -98,7 +121,43 @@ const AIAnalysis = () => {
       </header>
 
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
-        {!hasAccess && !analysis.data ? (
+        {/* Demo Mode Alert */}
+        {showDemoData && (
+          <Alert className="mb-6 border-primary/50 bg-primary/5">
+            <Eye className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>
+                <strong>Modo Demo Activo:</strong> Visualizando datos de ejemplo profesionales. 
+                Genera tu propio análisis para ver datos reales de tu negocio.
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowDemoData(false)}
+                className="ml-4 hidden sm:flex"
+              >
+                Desactivar Demo
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Mobile Demo Toggle */}
+        <div className="sm:hidden mb-4">
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <Label htmlFor="demo-mode-mobile" className="text-sm cursor-pointer flex items-center gap-2">
+              {showDemoData ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              Modo Demo
+            </Label>
+            <Switch
+              id="demo-mode-mobile"
+              checked={showDemoData}
+              onCheckedChange={setShowDemoData}
+            />
+          </div>
+        </div>
+
+        {!hasAccess && !analysis.data && !showDemoData ? (
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
               <div className="flex items-center gap-3 mb-4">
@@ -133,12 +192,13 @@ const AIAnalysis = () => {
               </div>
             </CardContent>
           </Card>
-        ) : analysis.data ? (
+        ) : displayData ? (
           <AIAnalysisDashboard
-            data={analysis.data}
-            onRefresh={handleStartGeneration}
-            onExport={(format) => analysis.exportAnalysis(format)}
+            data={displayData}
+            onRefresh={showDemoData ? undefined : handleStartGeneration}
+            onExport={showDemoData ? undefined : (format) => analysis.exportAnalysis(format)}
             loading={analysis.loading}
+            isDemo={showDemoData}
           />
         ) : (
           <Card className="max-w-3xl mx-auto overflow-hidden">
@@ -213,15 +273,26 @@ const AIAnalysis = () => {
                 </div>
               </div>
 
-              <Button 
-                onClick={handleStartGeneration}
-                disabled={analysis.loading}
-                size="lg"
-                className="w-full text-lg py-6 gap-3"
-              >
-                <Sparkles className="w-5 h-5" />
-                {analysis.loading ? 'Generando análisis...' : 'Comenzar Análisis con IA'}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={handleStartGeneration}
+                  disabled={analysis.loading}
+                  size="lg"
+                  className="flex-1 text-lg py-6 gap-3"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  {analysis.loading ? 'Generando análisis...' : 'Comenzar Análisis con IA'}
+                </Button>
+                <Button 
+                  onClick={() => setShowDemoData(true)}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  <Eye className="w-5 h-5" />
+                  Ver Demo
+                </Button>
+              </div>
 
               <p className="text-xs text-center text-muted-foreground">
                 Antes de generar, podrás revisar y actualizar los datos que la IA utilizará
