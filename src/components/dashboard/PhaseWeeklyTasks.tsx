@@ -307,6 +307,8 @@ export function PhaseWeeklyTasks() {
                   onComplete={handleTaskComplete}
                   remainingSwaps={remainingSwaps}
                   onSwapComplete={handleSwapComplete}
+                  currentWeek={weeklyData.currentWeek}
+                  isCarriedOver={task.week_number < displayWeek}
                 />
               ))}
             </div>
@@ -351,6 +353,8 @@ export function PhaseWeeklyTasks() {
                       onComplete={handleTaskComplete}
                       remainingSwaps={remainingSwaps}
                       onSwapComplete={handleSwapComplete}
+                      currentWeek={weeklyData.currentWeek}
+                      isCarriedOver={false}
                     />
                   ))}
                 </div>

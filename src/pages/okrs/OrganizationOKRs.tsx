@@ -399,6 +399,7 @@ const OrganizationOKRs = () => {
   const displayObjectives = (objectives.length === 0 && showDemoData) ? DEMO_OBJECTIVES : objectives;
   const displayPhase = (!activePhase && showDemoData) ? DEMO_PHASE : activePhase;
   const isDemo = objectives.length === 0 && showDemoData;
+  const hasNoPhase = !loading && !activePhase;
 
   if (loading) {
     return (
@@ -409,6 +410,83 @@ const OrganizationOKRs = () => {
             <p className="text-muted-foreground">Cargando OKRs organizacionales...</p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // No active phase - show explanation
+  if (hasNoPhase && !showDemoData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
+          <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <Building2 className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                  OKRs Organizacionales
+                </h1>
+                <p className="text-xs md:text-sm text-muted-foreground truncate">
+                  Objetivos estratégicos
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="hidden sm:flex items-center gap-2 mr-2 bg-muted/50 rounded-lg px-3 py-1.5">
+                <Eye className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="demo-okr-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                  Demo
+                </Label>
+                <Switch
+                  id="demo-okr-toggle"
+                  checked={showDemoData}
+                  onCheckedChange={setShowDemoData}
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/okrs')}
+                className="gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm"
+              >
+                <ArrowLeft className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden md:inline">Volver</span>
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
+          <Card className="border-dashed border-2 border-muted-foreground/25">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 rounded-full bg-warning/10 flex items-center justify-center mb-6">
+                <AlertTriangle className="w-10 h-10 text-warning" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">No hay fase activa</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                Los OKRs Organizacionales se generan automáticamente cuando el administrador 
+                activa la <strong>Fase 1</strong> del negocio. Esto asegura que los objetivos 
+                estén alineados con la estrategia de cada fase.
+              </p>
+              <div className="bg-info/10 border border-info/30 rounded-lg p-4 max-w-md">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">¿Qué hacer?</strong><br />
+                  El administrador debe ir al <strong>Dashboard → Progreso General</strong> y 
+                  generar las fases del negocio. Una vez activa la Fase 1, los OKRs 
+                  organizacionales se generarán automáticamente.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="mt-6 gap-2"
+                onClick={() => navigate('/dashboard')}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Ir al Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     );
   }

@@ -85,6 +85,7 @@ const OKRsDashboard = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
   const [generatingWithAI, setGeneratingWithAI] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [hasActivePhase, setHasActivePhase] = useState<boolean | null>(null);
   const [selectedKR, setSelectedKR] = useState<{
     id: string;
     title: string;
@@ -95,13 +96,33 @@ const OKRsDashboard = () => {
 
   useEffect(() => {
     fetchWeekStart();
-  }, []);
+    checkActivePhase();
+  }, [currentOrganizationId]);
 
   useEffect(() => {
     if (currentWeekStart) {
       fetchOKRs();
     }
   }, [currentWeekStart]);
+
+  const checkActivePhase = async () => {
+    if (!currentOrganizationId) return;
+    try {
+      const { data, error } = await supabase
+        .from('business_phases')
+        .select('id')
+        .eq('organization_id', currentOrganizationId)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setHasActivePhase(!!data);
+    } catch (error) {
+      logger.error('Error checking active phase:', error);
+      setHasActivePhase(false);
+    }
+  };
 
   const fetchWeekStart = async () => {
     try {
@@ -322,13 +343,41 @@ const OKRsDashboard = () => {
     );
   }
 
+  // No active phase - show explanation
+  if (hasActivePhase === false) {
+    return (
+      <Card className="border-dashed border-2 border-muted-foreground/25">
+        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-20 h-20 rounded-full bg-warning/10 flex items-center justify-center mb-6">
+            <AlertTriangle className="w-10 h-10 text-warning" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3">No hay fase activa</h3>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            Los OKRs semanales se generan <strong>automáticamente</strong> cuando el administrador 
+            activa la <strong>Fase 1</strong> del negocio y genera las tareas. Los OKRs se 
+            sincronizan con el inicio de semana configurado en tu organización.
+          </p>
+          <div className="bg-info/10 border border-info/30 rounded-lg p-4 max-w-md">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground">¿Cómo funciona?</strong><br />
+              1. El admin genera las fases del negocio<br />
+              2. Se generan tareas automáticamente para cada usuario<br />
+              3. Los OKRs semanales se crean en base a tus tareas<br />
+              4. Cada semana se regeneran según el día de inicio configurado
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">OKRs Semanales Personalizados</h2>
-          <p className="text-muted-foreground">
-            Semana actual: {currentWeekStart}
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">OKRs Semanales Personalizados</h2>
+          <p className="text-muted-foreground text-sm">
+            Semana actual: {currentWeekStart} • Generados automáticamente cada semana
           </p>
         </div>
 
@@ -340,7 +389,7 @@ const OKRsDashboard = () => {
             className="gap-2"
           >
             <RefreshCw className="w-4 h-4" />
-            Actualizar
+            <span className="hidden md:inline">Actualizar</span>
           </Button>
 
           <TooltipProvider>
@@ -349,6 +398,7 @@ const OKRsDashboard = () => {
                 <div>
                   <Button
                     size="sm"
+                    variant={weeklyOKR.canRegenerateEnterprise ? "default" : "secondary"}
                     onClick={handleGenerateWeeklyOKR}
                     disabled={generatingWithAI || weeklyOKR.loading || !weeklyOKR.canGenerate}
                     className="gap-2"
@@ -361,21 +411,23 @@ const OKRsDashboard = () => {
                     {generatingWithAI 
                       ? 'Generando...' 
                       : weeklyOKR.canRegenerateEnterprise 
-                        ? 'Regenerar OKRs (Enterprise)'
+                        ? 'Regenerar (Enterprise)'
                         : weeklyOKR.hasGeneratedThisWeek 
-                          ? 'OKRs Generados'
-                          : 'Generar OKR Semanal con IA'}
+                          ? 'Generados esta semana'
+                          : 'Forzar regeneración'}
                   </Button>
                 </div>
               </TooltipTrigger>
-              {!weeklyOKR.canGenerate && (
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                    <p className="text-sm">{weeklyOKR.getBlockedMessage()}</p>
-                  </div>
-                </TooltipContent>
-              )}
+              <TooltipContent side="bottom" className="max-w-xs">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-sm">
+                    {!weeklyOKR.canGenerate 
+                      ? weeklyOKR.getBlockedMessage()
+                      : 'Los OKRs se generan automáticamente. Este botón es para casos especiales donde necesites regenerar manualmente.'}
+                  </p>
+                </div>
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
