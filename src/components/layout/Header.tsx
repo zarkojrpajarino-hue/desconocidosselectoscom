@@ -53,7 +53,7 @@ const breadcrumbMap: Record<string, string> = {
   'herramientas-hub': 'Herramientas',
   herramientas: 'Herramientas',
   practicar: 'Practicar',
-  calculadora: 'Calculadora',
+  
   profile: 'Perfil',
   alerts: 'Alertas',
   scalability: 'Escalabilidad',

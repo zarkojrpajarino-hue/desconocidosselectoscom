@@ -75,7 +75,7 @@ const Home = () => {
     },
     {
       title: 'Herramientas',
-      description: 'Herramientas Visuales, Practicar y Calculadora',
+      description: 'Herramientas Visuales y Módulos de Práctica',
       icon: Palette,
       path: '/herramientas-hub',
       gradient: 'from-purple-500 to-pink-500'

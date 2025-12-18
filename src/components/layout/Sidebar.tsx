@@ -12,7 +12,7 @@ import {
   Brain,
   Palette,
   GraduationCap,
-  Calculator,
+  
   Trophy,
   Bell,
   Settings,
@@ -106,7 +106,6 @@ const navigation: NavItemProps[] = [
       { to: '/herramientas/customer-journey', icon: Palette, label: 'Customer Journey' },
       { to: '/herramientas/brand-kit', icon: Palette, label: 'Brand Kit' },
       { to: '/practicar/simulador', icon: GraduationCap, label: 'Simulador' },
-      { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
     ],
   },
   {

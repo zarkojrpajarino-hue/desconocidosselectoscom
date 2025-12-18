@@ -41,7 +41,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 // Lazy loaded pages - Features
 const Herramientas = lazy(() => import("./pages/Herramientas"));
 const Practicar = lazy(() => import("./pages/Practicar"));
-const Calculadora = lazy(() => import("./pages/Calculadora"));
+
 const Gamification = lazy(() => import("./pages/Gamification"));
 const AIAnalysis = lazy(() => import("./pages/AIAnalysis"));
 const AlertsPage = lazy(() => import("./pages/AlertsPage"));
@@ -190,7 +190,7 @@ const AppContent = () => {
           </Route>
           
           {/* Páginas individuales */}
-          <Route path="/calculadora" element={<Calculadora />} />
+          
           <Route path="/gamification" element={<Gamification />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-analysis" element={<AIAnalysis />} />

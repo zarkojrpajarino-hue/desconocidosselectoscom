@@ -11,7 +11,6 @@ export type ToolType =
   | 'sales_playbook'
   | 'sales_simulator'
   | 'communication_guide'
-  | 'opportunity_calculator'
   | 'brand_kit'
   | 'web_generator';
 
@@ -24,7 +23,6 @@ export const TOOL_PLAN_REQUIREMENTS: Record<ToolType, 'free' | 'starter' | 'prof
   sales_playbook: 'professional',
   sales_simulator: 'professional',
   communication_guide: 'professional',
-  opportunity_calculator: 'professional',
   brand_kit: 'professional',
   web_generator: 'professional'
 };
