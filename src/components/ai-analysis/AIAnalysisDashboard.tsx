@@ -247,7 +247,7 @@ export function AIAnalysisDashboard({ data, onRefresh, onExport, loading, isDemo
 
         {/* TAB MERCADO */}
         <TabsContent value="market" className="space-y-6">
-          <MarketStudySection data={(data as unknown as Record<string, unknown>).market_study as Record<string, unknown>} />
+          <MarketStudySection data={data.market_study || {}} />
         </TabsContent>
 
         {/* TAB FUTURO */}

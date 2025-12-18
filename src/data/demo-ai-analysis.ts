@@ -884,6 +884,97 @@ export const DEMO_AI_ANALYSIS: AIAnalysisResult = {
   },
 
   // ============================================
+  // MARKET STUDY
+  // ============================================
+  market_study: {
+    country_data: {
+      country_name: 'España',
+      country_code: 'ES',
+      currency: 'EUR',
+      vat_rate: 21,
+      corporate_tax_rate: 25,
+      population: 47420000,
+      gdp_per_capita: 29600,
+      internet_penetration: 93,
+      ecommerce_penetration: 71,
+      median_age: 44.9,
+      unemployment_rate: 11.7,
+      top_social_platforms: ['WhatsApp', 'Instagram', 'Facebook', 'TikTok', 'Twitter'],
+      top_ecommerce_platforms: ['Amazon', 'El Corte Inglés', 'Zalando', 'AliExpress', 'PCComponentes'],
+      data_privacy_law: 'GDPR + LOPDGDD',
+    },
+    market_analysis: {
+      market_size: '€2.4B',
+      market_growth_rate: '18% CAGR',
+      competition_level: 'Medio-Alto',
+      entry_barriers: [
+        'Inversión inicial en tecnología significativa',
+        'Necesidad de certificaciones de seguridad',
+        'Relaciones establecidas con clientes enterprise',
+        'Conocimiento especializado del sector',
+      ],
+      key_trends: [
+        'Adopción acelerada de soluciones cloud post-COVID',
+        'Mayor demanda de automatización e IA',
+        'Consolidación del mercado vía M&A',
+        'Foco creciente en compliance y seguridad',
+        'Shift hacia modelos de pricing basados en uso',
+      ],
+      opportunities: [
+        'Mercado mid-market desatendido por grandes players',
+        'Demanda creciente de integraciones con ecosistema local',
+        'Expansión a Latinoamérica con producto localizado',
+        'Verticales específicos con poca competencia',
+      ],
+      threats: [
+        'Entrada de competidores internacionales bien financiados',
+        'Grandes players desarrollando soluciones similares',
+        'Posible recession que afecte presupuestos IT',
+        'Talento tech escaso y caro en España',
+      ],
+    },
+    competitive_analysis: {
+      positioning: 'Líder en segmento mid-market español con mejor relación calidad-precio',
+      threats: [
+        'CompetitorX acaba de levantar €50M y está entrando a España',
+        'SAP está desarrollando módulo que competirá directamente',
+      ],
+      opportunities: [
+        'Ningún competidor tiene integración nativa con ERPs españoles',
+        'Somos los únicos con soporte en español 24/7',
+      ],
+      differentiation: [
+        'Implementación más rápida del mercado (2 semanas vs 2 meses)',
+        'Mejor soporte al cliente (NPS 72 vs industria 45)',
+        'Único con integraciones nativas a SAP, Sage, A3',
+      ],
+    },
+    competitors: [
+      {
+        name: 'CompetidorX',
+        description: 'Startup bien financiada enfocada en enterprise',
+        strengths: ['€50M funding', 'Equipo senior', 'Producto maduro'],
+        weaknesses: ['Nuevo en España', 'Precios altos', 'Soporte en inglés'],
+        market_position: 'Enterprise high-ticket',
+      },
+      {
+        name: 'LegacyCorp',
+        description: 'Player establecido con base de clientes legacy',
+        strengths: ['Base instalada grande', 'Reconocimiento de marca', 'Relaciones enterprise'],
+        weaknesses: ['Tecnología anticuada', 'UX pobre', 'Implementación lenta'],
+        market_position: 'Legacy enterprise',
+      },
+      {
+        name: 'StartupY',
+        description: 'Competidor directo en segmento mid-market',
+        strengths: ['Producto ágil', 'Buen marketing', 'Precios competitivos'],
+        weaknesses: ['Equipo pequeño', 'Menos integraciones', 'Soporte limitado'],
+        market_position: 'Mid-market challenger',
+      },
+    ],
+  },
+
+  // ============================================
   // METADATA
   // ============================================
   confidence_score: 87,
@@ -899,91 +990,5 @@ export const DEMO_AI_ANALYSIS: AIAnalysisResult = {
   version: '3.0',
 };
 
-// Market study data for the Market Study section
-export const DEMO_MARKET_STUDY = {
-  country_data: {
-    country_name: 'España',
-    country_code: 'ES',
-    currency: 'EUR',
-    vat_rate: 21,
-    corporate_tax_rate: 25,
-    population: 47420000,
-    gdp_per_capita: 29600,
-    internet_penetration: 93,
-    ecommerce_penetration: 71,
-    median_age: 44.9,
-    unemployment_rate: 11.7,
-    top_social_platforms: ['WhatsApp', 'Instagram', 'Facebook', 'TikTok', 'Twitter'],
-    top_ecommerce_platforms: ['Amazon', 'El Corte Inglés', 'Zalando', 'AliExpress', 'PCComponentes'],
-    data_privacy_law: 'GDPR + LOPDGDD',
-  },
-  market_analysis: {
-    market_size: '€2.4B',
-    market_growth_rate: '18% CAGR',
-    competition_level: 'Medio-Alto',
-    entry_barriers: [
-      'Inversión inicial en tecnología significativa',
-      'Necesidad de certificaciones de seguridad',
-      'Relaciones establecidas con clientes enterprise',
-      'Conocimiento especializado del sector',
-    ],
-    key_trends: [
-      'Adopción acelerada de soluciones cloud post-COVID',
-      'Mayor demanda de automatización e IA',
-      'Consolidación del mercado vía M&A',
-      'Foco creciente en compliance y seguridad',
-      'Shift hacia modelos de pricing basados en uso',
-    ],
-    opportunities: [
-      'Mercado mid-market desatendido por grandes players',
-      'Demanda creciente de integraciones con ecosistema local',
-      'Expansión a Latinoamérica con producto localizado',
-      'Verticales específicos con poca competencia',
-    ],
-    threats: [
-      'Entrada de competidores internacionales bien financiados',
-      'Grandes players desarrollando soluciones similares',
-      'Posible recession que afecte presupuestos IT',
-      'Talento tech escaso y caro en España',
-    ],
-  },
-  competitive_analysis: {
-    positioning: 'Líder en segmento mid-market español con mejor relación calidad-precio',
-    threats: [
-      'CompetitorX acaba de levantar €50M y está entrando a España',
-      'SAP está desarrollando módulo que competirá directamente',
-    ],
-    opportunities: [
-      'Ningún competidor tiene integración nativa con ERPs españoles',
-      'Somos los únicos con soporte en español 24/7',
-    ],
-    differentiation: [
-      'Implementación más rápida del mercado (2 semanas vs 2 meses)',
-      'Mejor soporte al cliente (NPS 72 vs industria 45)',
-      'Único con integraciones nativas a SAP, Sage, A3',
-    ],
-  },
-  competitors: [
-    {
-      name: 'CompetidorX',
-      description: 'Startup bien financiada enfocada en enterprise',
-      strengths: ['€50M funding', 'Equipo senior', 'Producto maduro'],
-      weaknesses: ['Nuevo en España', 'Precios altos', 'Soporte en inglés'],
-      market_position: 'Enterprise high-ticket',
-    },
-    {
-      name: 'LegacyCorp',
-      description: 'Player establecido con base de clientes legacy',
-      strengths: ['Base instalada grande', 'Reconocimiento de marca', 'Relaciones enterprise'],
-      weaknesses: ['Tecnología anticuada', 'UX pobre', 'Implementación lenta'],
-      market_position: 'Legacy enterprise',
-    },
-    {
-      name: 'StartupY',
-      description: 'Competidor directo en segmento mid-market',
-      strengths: ['Producto ágil', 'Buen marketing', 'Precios competitivos'],
-      weaknesses: ['Equipo pequeño', 'Menos integraciones', 'Soporte limitado'],
-      market_position: 'Mid-market challenger',
-    },
-  ],
-};
+// Legacy export for backwards compatibility
+export const DEMO_MARKET_STUDY = DEMO_AI_ANALYSIS.market_study;
