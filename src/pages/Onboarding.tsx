@@ -624,6 +624,13 @@ ${data.teamStructure.map(t => `- ${t.role}: ${t.count} usuario(s)`).join('\n')}
         console.error('AI business phases generation error:', error);
       });
 
+      // 10. Trigger AI Tools generation (async) - generates all tools automatically
+      supabase.functions.invoke('generate-all-tools', {
+        body: { organizationId: org.id }
+      }).catch((error) => {
+        console.error('AI tools generation error:', error);
+      });
+
       // 9. Redirect to select-plan para que el usuario elija su organización
       toast.success('¡Organización creada exitosamente!', {
         description: 'Ahora selecciona tu plan...'
