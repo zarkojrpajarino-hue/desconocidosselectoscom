@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, AlertTriangle, Lightbulb, Filter, PartyPopper } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { AlertCircle, AlertTriangle, Lightbulb, Filter, PartyPopper, Info, BellRing } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import AlertCard from './AlertCard';
 import type { Json } from '@/integrations/supabase/types';
+import { DEMO_ALERTS } from '@/data/demo-gamification-alerts-data';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 type AlertSeverity = 'urgent' | 'important' | 'opportunity' | 'celebration' | 'info';
 
@@ -26,7 +29,6 @@ interface SmartAlertData {
   dismissed: boolean;
 }
 
-// Helper function to convert Json context to proper typed context
 const parseContext = (context: Json | null | undefined): Record<string, string | number | boolean | null> | undefined => {
   if (!context) return undefined;
   if (typeof context === 'object' && !Array.isArray(context) && context !== null) {
@@ -42,7 +44,6 @@ const parseContext = (context: Json | null | undefined): Record<string, string |
   return undefined;
 };
 
-// Helper function to validate severity
 const parseSeverity = (severity: string): AlertSeverity => {
   const validSeverities: AlertSeverity[] = ['urgent', 'important', 'opportunity', 'celebration', 'info'];
   return validSeverities.includes(severity as AlertSeverity) ? (severity as AlertSeverity) : 'info';
@@ -53,6 +54,9 @@ const SmartAlerts = () => {
   const [alerts, setAlerts] = useState<SmartAlertData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [showDemo, setShowDemo] = useState(false);
+  
+  const { permission, isSubscribed, subscribe } = usePushNotifications();
 
   useEffect(() => {
     if (!user) return;
@@ -90,7 +94,6 @@ const SmartAlerts = () => {
 
       if (error) throw error;
       
-      // Transform database data to SmartAlertData with proper types
       const transformedAlerts: SmartAlertData[] = (data || []).map(alert => ({
         id: alert.id,
         alert_type: alert.alert_type,
@@ -116,6 +119,11 @@ const SmartAlerts = () => {
   };
 
   const handleDismiss = async (alertId: string) => {
+    if (showDemo) {
+      toast.success('Alerta demo descartada');
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from('smart_alerts')
@@ -142,6 +150,22 @@ const SmartAlerts = () => {
     }
   };
 
+  const handleEnablePushNotifications = async () => {
+    try {
+      const success = await subscribe();
+      if (success) {
+        toast.success('Notificaciones push activadas', {
+          description: 'Recibirás alertas importantes en tiempo real'
+        });
+      }
+    } catch (error) {
+      toast.error('Error al activar notificaciones');
+    }
+  };
+
+  // Use demo or real data
+  const displayAlerts = showDemo ? DEMO_ALERTS : alerts;
+
   const filterByTab = (alert: SmartAlertData) => {
     switch (activeTab) {
       case 'urgent':
@@ -157,14 +181,14 @@ const SmartAlerts = () => {
     }
   };
 
-  const filteredAlerts = alerts.filter(filterByTab);
+  const filteredAlerts = displayAlerts.filter(filterByTab);
 
-  const urgentCount = alerts.filter(a => a.severity === 'urgent').length;
-  const importantCount = alerts.filter(a => a.severity === 'important').length;
-  const opportunityCount = alerts.filter(a => a.severity === 'opportunity').length;
-  const celebrationCount = alerts.filter(a => a.severity === 'celebration').length;
+  const urgentCount = displayAlerts.filter(a => a.severity === 'urgent').length;
+  const importantCount = displayAlerts.filter(a => a.severity === 'important').length;
+  const opportunityCount = displayAlerts.filter(a => a.severity === 'opportunity').length;
+  const celebrationCount = displayAlerts.filter(a => a.severity === 'celebration').length;
 
-  if (loading) {
+  if (loading && !showDemo) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="text-muted-foreground">Cargando alertas...</p>
@@ -174,49 +198,89 @@ const SmartAlerts = () => {
 
   return (
     <div className="space-y-6">
+      {/* Demo Toggle & Push Notification Status */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Modo Demo</span>
+          <Switch checked={showDemo} onCheckedChange={setShowDemo} />
+        </div>
+        
+        {!isSubscribed && permission !== 'denied' && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleEnablePushNotifications}
+            className="gap-2"
+          >
+            <BellRing className="w-4 h-4" />
+            Activar Push Notifications
+          </Button>
+        )}
+        
+        {isSubscribed && (
+          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+            <BellRing className="w-4 h-4" />
+            Notificaciones push activas
+          </div>
+        )}
+      </div>
+
+      {/* How it works */}
+      <Card className="bg-muted/30 border-dashed">
+        <CardContent className="pt-4">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">¿Cómo funcionan las alertas?</p>
+              <p>Las alertas inteligentes se generan automáticamente cuando el sistema detecta cambios importantes en tus métricas, tareas pendientes, oportunidades de venta, o logros alcanzados. Activa las push notifications para recibir alertas urgentes en tiempo real.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
             <Filter className="w-5 h-5 text-primary" />
             Filtrar Alertas
           </CardTitle>
           <CardDescription>
-            {alerts.length} alertas activas • {urgentCount} urgentes • {importantCount} importantes
+            {displayAlerts.length} alertas activas • {urgentCount} urgentes • {importantCount} importantes
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="all" className="gap-2">
+            <TabsList className="grid w-full grid-cols-5 h-auto">
+              <TabsTrigger value="all" className="gap-1 text-xs md:text-sm py-2">
                 Todas
-                {alerts.length > 0 && (
-                  <span className="text-xs">({alerts.length})</span>
+                {displayAlerts.length > 0 && (
+                  <span className="hidden md:inline text-xs">({displayAlerts.length})</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="urgent" className="gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Urgentes
+              <TabsTrigger value="urgent" className="gap-1 text-xs md:text-sm py-2">
+                <AlertCircle className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline">Urgentes</span>
                 {urgentCount > 0 && (
                   <span className="text-xs">({urgentCount})</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="important" className="gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                Importantes
+              <TabsTrigger value="important" className="gap-1 text-xs md:text-sm py-2">
+                <AlertTriangle className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline">Importantes</span>
                 {importantCount > 0 && (
                   <span className="text-xs">({importantCount})</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="opportunity" className="gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Oportunidades
+              <TabsTrigger value="opportunity" className="gap-1 text-xs md:text-sm py-2">
+                <Lightbulb className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline">Oportunidades</span>
                 {opportunityCount > 0 && (
                   <span className="text-xs">({opportunityCount})</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="celebration" className="gap-2">
-                <PartyPopper className="w-4 h-4" />
-                Logros
+              <TabsTrigger value="celebration" className="gap-1 text-xs md:text-sm py-2">
+                <PartyPopper className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline">Logros</span>
                 {celebrationCount > 0 && (
                   <span className="text-xs">({celebrationCount})</span>
                 )}
@@ -256,7 +320,7 @@ const SmartAlerts = () => {
         </CardContent>
       </Card>
 
-      {alerts.length > 5 && (
+      {displayAlerts.length > 5 && (
         <div className="text-center">
           <Button
             variant="outline"
