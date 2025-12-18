@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Target, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { DEMO_EXECUTIVE_SUMMARY } from '@/data/demo-bi-data';
 
 interface ExecutiveSummaryProps {
   organizationId: string;
   dateRange: string;
+  showDemoData?: boolean;
 }
 
 interface SummaryMetrics {
@@ -24,7 +26,7 @@ interface SummaryMetrics {
   expensesChange: number;
 }
 
-export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummaryProps) => {
+export const ExecutiveSummary = ({ organizationId, dateRange, showDemoData = false }: ExecutiveSummaryProps) => {
   const [metrics, setMetrics] = useState<SummaryMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -138,7 +140,10 @@ export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummary
     };
 
     fetchMetrics();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, showDemoData]);
+
+  // Use demo data if enabled
+  const displayMetrics = showDemoData ? DEMO_EXECUTIVE_SUMMARY : metrics;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
@@ -148,7 +153,7 @@ export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummary
     return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
   };
 
-  if (loading) {
+  if (loading && !showDemoData) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[...Array(6)].map((_, i) => (
@@ -166,21 +171,21 @@ export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummary
     );
   }
 
-  if (!metrics) return null;
+  if (!displayMetrics) return null;
 
   const cards = [
     {
       title: 'Ingresos',
-      value: formatCurrency(metrics.totalRevenue),
-      change: metrics.revenueChange,
+      value: formatCurrency(displayMetrics.totalRevenue),
+      change: displayMetrics.revenueChange,
       icon: DollarSign,
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-500/10',
     },
     {
       title: 'Gastos',
-      value: formatCurrency(metrics.totalExpenses),
-      change: metrics.expensesChange,
+      value: formatCurrency(displayMetrics.totalExpenses),
+      change: displayMetrics.expensesChange,
       icon: TrendingDown,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10',
@@ -188,24 +193,24 @@ export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummary
     },
     {
       title: 'Clientes',
-      value: metrics.totalCustomers.toString(),
-      change: metrics.customersChange,
+      value: displayMetrics.totalCustomers.toString(),
+      change: displayMetrics.customersChange,
       icon: Users,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
     },
     {
       title: 'Deals',
-      value: metrics.totalDeals.toString(),
-      change: metrics.dealsChange,
+      value: displayMetrics.totalDeals.toString(),
+      change: displayMetrics.dealsChange,
       icon: ShoppingCart,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10',
     },
     {
       title: 'Conversión',
-      value: `${metrics.conversionRate.toFixed(1)}%`,
-      change: metrics.conversionChange,
+      value: `${displayMetrics.conversionRate.toFixed(1)}%`,
+      change: displayMetrics.conversionChange,
       icon: Target,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
@@ -213,8 +218,8 @@ export const ExecutiveSummary = ({ organizationId, dateRange }: ExecutiveSummary
     },
     {
       title: 'Ticket Promedio',
-      value: formatCurrency(metrics.avgDealSize),
-      change: metrics.dealSizeChange,
+      value: formatCurrency(displayMetrics.avgDealSize),
+      change: displayMetrics.dealSizeChange,
       icon: TrendingUp,
       color: 'text-cyan-500',
       bgColor: 'bg-cyan-500/10',

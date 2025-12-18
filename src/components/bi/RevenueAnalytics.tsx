@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+import { DEMO_REVENUE_ANALYTICS } from '@/data/demo-bi-data';
 
 interface RevenueAnalyticsProps {
   organizationId: string;
   dateRange: string;
+  showDemoData?: boolean;
 }
 
 interface RevenueData {
@@ -23,7 +25,7 @@ interface RevenueData {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
-export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalyticsProps) => {
+export const RevenueAnalytics = ({ organizationId, dateRange, showDemoData = false }: RevenueAnalyticsProps) => {
   const [data, setData] = useState<RevenueData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -136,13 +138,16 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
     };
 
     fetchData();
-  }, [organizationId, dateRange]);
+  }, [organizationId, dateRange, showDemoData]);
+
+  // Use demo data if enabled
+  const displayData = showDemoData ? DEMO_REVENUE_ANALYTICS : data;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
   };
 
-  if (loading) {
+  if (loading && !showDemoData) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
@@ -159,7 +164,7 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
     );
   }
 
-  if (!data) return null;
+  if (!displayData) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -172,7 +177,7 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
         <CardContent>
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.daily}>
+              <AreaChart data={displayData.daily}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -228,7 +233,7 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={data.byProduct}
+                  data={displayData.byProduct}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -237,7 +242,7 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
                   dataKey="value"
                   label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                 >
-                  {data.byProduct.map((_, index) => (
+                  {displayData.byProduct.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -257,7 +262,7 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.byChannel} layout="vertical">
+              <BarChart data={displayData.byChannel} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} />
                 <YAxis dataKey="name" type="category" width={100} className="text-xs" />
@@ -279,20 +284,20 @@ export const RevenueAnalytics = ({ organizationId, dateRange }: RevenueAnalytics
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
               <p className="text-sm text-muted-foreground">Promedio Diario</p>
-              <p className="text-2xl font-bold text-primary">{formatCurrency(data.trends.avgDaily)}</p>
+              <p className="text-2xl font-bold text-primary">{formatCurrency(displayData.trends.avgDaily)}</p>
             </div>
             <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
               <p className="text-sm text-muted-foreground">Mejor Día</p>
-              <p className="text-2xl font-bold text-emerald-600">{data.trends.bestDay}</p>
+              <p className="text-2xl font-bold text-emerald-600">{displayData.trends.bestDay}</p>
             </div>
             <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/10">
               <p className="text-sm text-muted-foreground">Peor Día</p>
-              <p className="text-2xl font-bold text-red-600">{data.trends.worstDay}</p>
+              <p className="text-2xl font-bold text-red-600">{displayData.trends.worstDay}</p>
             </div>
             <div className="p-4 rounded-lg bg-accent/5 border border-accent/10">
               <p className="text-sm text-muted-foreground">Tasa de Crecimiento</p>
-              <p className={`text-2xl font-bold ${data.trends.growthRate >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                {data.trends.growthRate >= 0 ? '+' : ''}{data.trends.growthRate.toFixed(1)}%
+              <p className={`text-2xl font-bold ${displayData.trends.growthRate >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                {displayData.trends.growthRate >= 0 ? '+' : ''}{displayData.trends.growthRate.toFixed(1)}%
               </p>
             </div>
           </div>
