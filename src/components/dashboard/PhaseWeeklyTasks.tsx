@@ -91,9 +91,14 @@ export function PhaseWeeklyTasks() {
         toast.info('Tarea marcada como pendiente');
       }
       
-      // Force immediate cache clear and refetch
-      queryClient.removeQueries({ queryKey: ['phase-weekly-tasks'] });
-      await queryClient.refetchQueries({ queryKey: ['phase-weekly-tasks'] });
+      // Clear ALL related queries and force fresh refetch
+      await queryClient.invalidateQueries({ queryKey: ['phase-weekly-tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ['agenda-phase-weeks'] });
+      // Force refetch with no cache
+      await queryClient.refetchQueries({ 
+        queryKey: ['phase-weekly-tasks'],
+        exact: false,
+      });
     } catch (error) {
       console.error('Error updating task:', error);
       toast.error('Error al actualizar la tarea');

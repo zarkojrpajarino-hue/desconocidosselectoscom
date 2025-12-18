@@ -138,7 +138,8 @@ export function usePhaseWeeklyTasks(phaseNumber: number | undefined) {
       };
     },
     enabled: !!user?.id && !!currentOrganizationId && !!phaseNumber,
-    staleTime: 30000,
+    staleTime: 0, // Always fetch fresh data after mutations
+    gcTime: 30000, // Keep in cache for 30s for navigation
   });
 }
 
