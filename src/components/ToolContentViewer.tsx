@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Sparkles, RefreshCw, Lock, Eye, Settings2 } from 'lucide-react';
+import { Loader2, Sparkles, Lock, Eye, Settings2 } from 'lucide-react';
 import { ToolType, useToolContent } from '@/hooks/useToolContent';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { UpgradeModal } from '@/components/UpgradeModal';
@@ -22,7 +22,15 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
   const { canUseAiTool, plan } = useSubscriptionLimits();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDataReviewModal, setShowDataReviewModal] = useState(false);
-  const [showDemo, setShowDemo] = useState(false);
+  // Show demo by default if no content exists
+  const [showDemo, setShowDemo] = useState(!hasContent && !!demoData);
+
+  // Update showDemo when hasContent changes
+  useEffect(() => {
+    if (!hasContent && demoData) {
+      setShowDemo(true);
+    }
+  }, [hasContent, demoData]);
 
   const { allowed: hasToolAccess, message: toolMessage } = canUseAiTool(toolType);
 
@@ -38,6 +46,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
     generateContent();
   };
 
+  // Show loading state only briefly, then fall back to demo
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
