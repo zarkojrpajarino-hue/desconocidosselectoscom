@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Palette, Target, Calculator, ArrowLeft, Crown } from 'lucide-react';
+import { Palette, Target, ArrowLeft, Crown } from 'lucide-react';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { EnterpriseToolsCatalog } from '@/components/enterprise/EnterpriseToolsCatalog';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
@@ -27,13 +27,6 @@ const HerramientasHub = () => {
       icon: Target,
       path: '/practicar',
       gradient: 'from-orange-500 to-red-500'
-    },
-    {
-      title: 'Calculadora',
-      description: 'Oportunidad de Negocio',
-      icon: Calculator,
-      path: '/calculadora',
-      gradient: 'from-green-500 to-emerald-500'
     }
   ];
 

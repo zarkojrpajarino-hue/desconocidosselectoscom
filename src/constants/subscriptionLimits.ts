@@ -416,7 +416,6 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
       'sales_playbook',
       'sales_simulator',
       'communication_guide',
-      'opportunity_calculator',
       'brand_kit',
       'web_generator'
     ],
