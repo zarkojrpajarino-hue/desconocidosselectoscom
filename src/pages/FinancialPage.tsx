@@ -203,66 +203,145 @@ const FinancialPage = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 mt-6">
-            {/* Financial Stats Cards */}
-            {transactions && transactions.length > 0 && (() => {
-              const income = transactions
-                .filter(t => t.type === 'revenue')
-                .reduce((sum, t) => sum + (t.amount || 0), 0);
-              const expenses = transactions
-                .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + (t.amount || 0), 0);
-              const profit = income - expenses;
-              const profitMargin = income > 0 ? Math.round((profit / income) * 100) : 0;
+            {/* Financial Stats Cards - Demo or Real Data */}
+            {(() => {
+              // Demo data for professional appearance
+              const demoData = {
+                income: 47500,
+                expenses: 28200,
+                profit: 19300,
+                profitMargin: 41,
+                monthlyGrowth: 12,
+                pendingInvoices: 8500,
+                recurringRevenue: 32000
+              };
+              
+              const realIncome = transactions?.filter(t => t.type === 'revenue').reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+              const realExpenses = transactions?.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+              const realProfit = realIncome - realExpenses;
+              const realProfitMargin = realIncome > 0 ? Math.round((realProfit / realIncome) * 100) : 0;
+
+              const useDemo = showDemoData && !hasRealData;
+              const income = useDemo ? demoData.income : realIncome;
+              const expenses = useDemo ? demoData.expenses : realExpenses;
+              const profit = useDemo ? demoData.profit : realProfit;
+              const profitMargin = useDemo ? demoData.profitMargin : realProfitMargin;
+
+              if (!hasRealData && !showDemoData) {
+                return (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-16">
+                      <DollarSign className="w-16 h-16 text-muted-foreground mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">{t('financial.noTransactions')}</h3>
+                      <p className="text-muted-foreground text-center max-w-md mb-4">
+                        {t('financial.noTransactionsDesc')}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button onClick={() => setRevenueModalOpen(true)} className="gap-2">
+                          <Plus className="w-4 h-4" />{t('financial.newRevenue')}
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowDemoData(true)} className="gap-2">
+                          <Eye className="w-4 h-4" />Ver Demo
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatCard
-                    variant="success"
-                    size="lg"
-                    value={`€${income.toLocaleString()}`}
-                    label={t('financial.revenue')}
-                    change={t('financial.thisPeriod')}
-                    trend="up"
-                    icon={<TrendingUp className="w-6 h-6 text-success" />}
-                    className="animate-fade-in"
-                  />
-                  
-                  <StatCard
-                    variant="danger"
-                    size="lg"
-                    value={`€${expenses.toLocaleString()}`}
-                    label={t('financial.expenses')}
-                    change={t('financial.thisPeriod')}
-                    trend="down"
-                    icon={<TrendingDown className="w-6 h-6 text-destructive" />}
-                    className="animate-fade-in"
-                    style={{ animationDelay: '100ms' }}
-                  />
-                  
-                  <StatCard
-                    variant={profit > 0 ? "success" : "danger"}
-                    size="lg"
-                    value={`€${profit.toLocaleString()}`}
-                    label={t('financial.netProfit')}
-                    change={`${profitMargin}% ${t('financial.margin')}`}
-                    trend={profit > 0 ? "up" : "down"}
-                    icon={<DollarSign className="w-6 h-6" />}
-                    className="animate-fade-in"
-                    style={{ animationDelay: '200ms' }}
-                  />
-                  
-                  <StatCard
-                    variant={profitMargin > 20 ? "success" : profitMargin > 0 ? "warning" : "danger"}
-                    size="lg"
-                    value={`${profitMargin}%`}
-                    label={t('financial.profitMargin')}
-                    change={profitMargin > 20 ? t('financial.healthy') : profitMargin > 0 ? t('financial.improvable') : t('financial.inLosses')}
-                    trend={profitMargin > 20 ? "up" : profitMargin > 0 ? "neutral" : "down"}
-                    icon={<PiggyBank className="w-6 h-6" />}
-                    className="animate-fade-in"
-                    style={{ animationDelay: '300ms' }}
-                  />
-                </div>
+                <>
+                  {useDemo && (
+                    <Alert className="bg-primary/10 border-primary/30">
+                      <Eye className="h-4 w-4" />
+                      <AlertTitle>Datos de demostración</AlertTitle>
+                      <AlertDescription>
+                        Estás viendo datos de ejemplo. Registra tus transacciones reales para ver tu situación financiera.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                      variant="success"
+                      size="lg"
+                      value={`€${income.toLocaleString()}`}
+                      label={t('financial.revenue')}
+                      change={useDemo ? "+12% vs mes anterior" : t('financial.thisPeriod')}
+                      trend="up"
+                      icon={<TrendingUp className="w-6 h-6 text-success" />}
+                      className="animate-fade-in"
+                    />
+                    
+                    <StatCard
+                      variant="danger"
+                      size="lg"
+                      value={`€${expenses.toLocaleString()}`}
+                      label={t('financial.expenses')}
+                      change={useDemo ? "-5% optimizado" : t('financial.thisPeriod')}
+                      trend="down"
+                      icon={<TrendingDown className="w-6 h-6 text-destructive" />}
+                      className="animate-fade-in"
+                      style={{ animationDelay: '100ms' }}
+                    />
+                    
+                    <StatCard
+                      variant={profit > 0 ? "success" : "danger"}
+                      size="lg"
+                      value={`€${profit.toLocaleString()}`}
+                      label={t('financial.netProfit')}
+                      change={`${profitMargin}% ${t('financial.margin')}`}
+                      trend={profit > 0 ? "up" : "down"}
+                      icon={<DollarSign className="w-6 h-6" />}
+                      className="animate-fade-in"
+                      style={{ animationDelay: '200ms' }}
+                    />
+                    
+                    <StatCard
+                      variant={profitMargin > 20 ? "success" : profitMargin > 0 ? "warning" : "danger"}
+                      size="lg"
+                      value={`${profitMargin}%`}
+                      label={t('financial.profitMargin')}
+                      change={profitMargin > 20 ? t('financial.healthy') : profitMargin > 0 ? t('financial.improvable') : t('financial.inLosses')}
+                      trend={profitMargin > 20 ? "up" : profitMargin > 0 ? "neutral" : "down"}
+                      icon={<PiggyBank className="w-6 h-6" />}
+                      className="animate-fade-in"
+                      style={{ animationDelay: '300ms' }}
+                    />
+                  </div>
+
+                  {/* KPIs adicionales demo */}
+                  {useDemo && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-gradient-to-br from-blue-500/10 to-background border-blue-500/20">
+                        <CardHeader className="pb-2">
+                          <CardDescription className="text-blue-600 dark:text-blue-400">MRR (Ingresos Recurrentes)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">€{demoData.recurringRevenue.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">+8% crecimiento mensual</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-gradient-to-br from-amber-500/10 to-background border-amber-500/20">
+                        <CardHeader className="pb-2">
+                          <CardDescription className="text-amber-600 dark:text-amber-400">Facturas Pendientes</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">€{demoData.pendingInvoices.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">3 facturas por cobrar</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-gradient-to-br from-emerald-500/10 to-background border-emerald-500/20">
+                        <CardHeader className="pb-2">
+                          <CardDescription className="text-emerald-600 dark:text-emerald-400">Runway Estimado</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-2xl font-bold">18 meses</p>
+                          <p className="text-xs text-muted-foreground">Saludable &gt;12 meses</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                </>
               );
             })()}
 
