@@ -142,24 +142,46 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
               </div>
             ) : (
               <div className="text-center py-8 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-                  <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto">
+                  <Sparkles className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div className="text-muted-foreground">
-                  Esta herramienta se está generando automáticamente...
+                <div className="font-medium text-foreground">
+                  Herramienta no generada aún
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Puede tardar unos minutos. Mientras tanto, puedes ver una demostración.
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Esta herramienta se genera automáticamente al completar el onboarding. Si ya completaste el onboarding, puedes generarla manualmente.
                 </p>
-                <Button
-                  onClick={() => setShowDemo(true)}
-                  variant="outline"
-                  size="lg"
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Ver Demo
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                  {isAdmin && hasToolAccess && (
+                    <Button
+                      onClick={handleUpdateData}
+                      disabled={generating}
+                      size="lg"
+                      className="gap-2"
+                    >
+                      {generating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Generando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Generar Ahora
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => setShowDemo(true)}
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Ver Demo
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
@@ -176,7 +198,7 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
     );
   }
 
-  // No content and no demo data - show generating state
+  // No content and no demo data - show generation option
   if (!hasContent) {
     return (
       <>
@@ -190,15 +212,35 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mx-auto">
+                <Sparkles className="w-8 h-8 text-amber-600 dark:text-amber-400" />
               </div>
-              <div className="text-muted-foreground">
-                Esta herramienta se está generando automáticamente...
+              <div className="font-medium text-foreground">
+                Herramienta no generada aún
               </div>
-              <p className="text-sm text-muted-foreground">
-                Se genera con los datos de tu onboarding. Recarga la página en unos minutos.
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Esta herramienta se genera automáticamente al completar el onboarding. Si ya completaste el onboarding, puedes generarla manualmente.
               </p>
+              {isAdmin && hasToolAccess && (
+                <Button
+                  onClick={handleUpdateData}
+                  disabled={generating}
+                  size="lg"
+                  className="gap-2"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generar Ahora
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -209,6 +251,14 @@ const ToolContentViewer = ({ toolType, title, description, renderContent, demoDa
           currentPlan={plan}
           limitType="ai_tools"
           featureName={title}
+        />
+
+        <ToolDataReviewModal
+          open={showDataReviewModal}
+          onOpenChange={setShowDataReviewModal}
+          toolType={toolType}
+          toolName={title}
+          onRegenerate={handleRegenerate}
         />
       </>
     );
