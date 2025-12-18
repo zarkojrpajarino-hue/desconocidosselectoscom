@@ -199,9 +199,13 @@ const OrganizationOKRs = () => {
           duration_weeks: data.duration_weeks || 4,
           status: data.status || 'active'
         });
+      } else {
+        // No hay fase activa - desactivar loading para mostrar estado vacío
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching active phase:', error);
+      setLoading(false);
     }
   };
 
