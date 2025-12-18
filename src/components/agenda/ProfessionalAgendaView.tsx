@@ -180,16 +180,51 @@ export function ProfessionalAgendaView({
     );
   }
 
-  // If no tasks/weeks, show empty state
+  // If no tasks/weeks, show empty state with explanation
   if (phaseWeeks.length === 0) {
     return (
       <div className="space-y-6">
-        <Alert className="bg-muted/50 border-muted">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="text-sm">
-            No hay tareas programadas para esta fase. Las tareas se generarán automáticamente.
-          </AlertDescription>
-        </Alert>
+        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-muted/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-primary" />
+              </div>
+              Tu agenda está vacía
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              No hay tareas programadas en tu agenda. Esto puede deberse a:
+            </p>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary font-bold text-xs">1</span>
+                </div>
+                <span><strong className="text-foreground">No has generado fases todavía:</strong> Ve al Dashboard y genera tu primera fase estratégica con IA para recibir tareas personalizadas.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary font-bold text-xs">2</span>
+                </div>
+                <span><strong className="text-foreground">Fase sin tareas activas:</strong> La fase actual no tiene tareas asignadas. Espera a que se generen automáticamente o crea tareas personales.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-primary font-bold text-xs">3</span>
+                </div>
+                <span><strong className="text-foreground">Todas las tareas completadas:</strong> ¡Felicidades! Si completaste todas las tareas, las nuevas aparecerán en la siguiente semana.</span>
+              </li>
+            </ul>
+            <Alert className="bg-info/10 border-info/30 mt-4">
+              <Info className="h-4 w-4 text-info" />
+              <AlertDescription className="text-sm">
+                <strong>Tip:</strong> Puedes crear tareas personales usando el botón "Nueva Tarea" una vez que tengas una fase activa.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
       </div>
     );
   }
