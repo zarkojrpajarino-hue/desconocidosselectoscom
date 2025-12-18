@@ -176,12 +176,31 @@ const Pipeline = () => {
               </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="space-y-2 text-sm pt-0">
-                <p>✅ <strong>Arrastra</strong> las tarjetas entre columnas para mover leads de una etapa a otra</p>
-                <p>✅ <strong>Haz clic</strong> en una tarjeta para ver detalles completos y editar información</p>
-                <p>✅ <strong>Prioriza</strong> leads con alta prioridad (rojo) y alto valor estimado</p>
-                <p>✅ <strong>Revisa</strong> las métricas del encabezado para ver el estado general de tu pipeline</p>
-                <p>✅ <strong>Actualiza</strong> regularmente para mantener tu pipeline limpio y realista</p>
+              <CardContent className="space-y-4 pt-0">
+                <div className="space-y-2 text-sm">
+                  <p>✅ <strong>Arrastra</strong> las tarjetas entre columnas para mover leads de una etapa a otra</p>
+                  <p>✅ <strong>Haz clic</strong> en una tarjeta para ver detalles completos y editar información</p>
+                  <p>✅ <strong>Prioriza</strong> leads con alta prioridad (rojo) y alto valor estimado</p>
+                  <p>✅ <strong>Revisa</strong> las métricas del encabezado para ver el estado general de tu pipeline</p>
+                  <p>✅ <strong>Actualiza</strong> regularmente para mantener tu pipeline limpio y realista</p>
+                </div>
+
+                <Alert className="border-info/30 bg-info/5">
+                  <AlertTitle className="flex items-center gap-2 text-sm">
+                    🔗 Relación CRM ↔ Pipeline
+                  </AlertTitle>
+                  <AlertDescription className="text-sm space-y-2">
+                    <p>
+                      <strong>CRM y Pipeline comparten los mismos leads</strong> - son dos vistas del mismo dato.
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
+                      <li>Los leads que creas en CRM aparecen <strong>automáticamente</strong> en el Pipeline</li>
+                      <li>Al mover un lead aquí, se actualiza su etapa en todo el sistema</li>
+                      <li>Mover a "Ganado" o "Perdido" actualiza automáticamente el estado del lead</li>
+                      <li>Los KPIs de marketing también pueden generar leads automáticamente</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </CollapsibleContent>
           </Card>
