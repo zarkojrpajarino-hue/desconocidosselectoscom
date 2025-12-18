@@ -779,13 +779,13 @@ const OrganizationOKRs = () => {
                 </Button>
               </CardContent>
             </Card>
-          ) : objectives.length === 0 ? (
+          ) : displayObjectives.length === 0 && !isDemo ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <Building2 className="w-16 h-16 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Sin OKRs para esta fase</h3>
                 <p className="text-muted-foreground text-center max-w-md mb-4">
-                  No hay OKRs organizacionales para la Fase {activePhase?.phase_number ?? displayPhase.phase_number}. 
+                  No hay OKRs organizacionales para la Fase {displayPhase.phase_number}. 
                   Genera objetivos estratégicos basados en las {totalPhaseTasks} tareas de 
                   {isIndividual ? ' tu trabajo.' : ' tu equipo.'}
                 </p>
@@ -801,7 +801,7 @@ const OrganizationOKRs = () => {
             </Card>
           ) : (
             <div className="space-y-6">
-              {objectives.map((objective) => (
+              {displayObjectives.map((objective) => (
                 <Card key={objective.id} className="border-2">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -810,7 +810,7 @@ const OrganizationOKRs = () => {
                           <CardTitle className="text-xl md:text-2xl">{objective.title}</CardTitle>
                           <Badge variant="secondary" className="gap-1">
                             <Building2 className="w-3 h-3" />
-                            Fase {activePhase?.phase_number}
+                            Fase {displayPhase.phase_number}
                           </Badge>
                         </div>
                         {objective.description && (

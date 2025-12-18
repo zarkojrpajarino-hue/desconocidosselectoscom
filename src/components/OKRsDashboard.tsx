@@ -75,12 +75,12 @@ interface Objective {
   playbook?: PlaybookData | null;
 }
 
-// Demo data for weekly OKRs
+// Demo data for weekly OKRs - Professional and complete
 const DEMO_WEEKLY_OBJECTIVES: Objective[] = [
   {
     id: 'demo-weekly-1',
-    title: 'Completar tareas prioritarias de la semana',
-    description: 'Maximizar productividad en las tareas clave de esta semana',
+    title: 'Maximizar productividad y cumplir objetivos semanales',
+    description: 'Completar las tareas críticas de la semana manteniendo alta calidad y eficiencia',
     quarter: new Date().toISOString().split('T')[0],
     year: new Date().getFullYear(),
     status: 'active',
@@ -88,30 +88,71 @@ const DEMO_WEEKLY_OBJECTIVES: Objective[] = [
     owner_name: 'Tu nombre',
     progress: 65,
     key_results: [
-      { id: 'demo-kr-1', title: 'Completar 5 tareas de alta prioridad', description: '', metric_type: 'number', start_value: 0, target_value: 5, current_value: 3, unit: 'tareas', status: 'on_track', weight: 1, progress: 60 },
-      { id: 'demo-kr-2', title: 'Dedicar 4 horas a deep work diario', description: '', metric_type: 'number', start_value: 0, target_value: 20, current_value: 14, unit: 'horas', status: 'on_track', weight: 1, progress: 70 },
+      { id: 'demo-kr-1', title: 'Completar 5 tareas de alta prioridad', description: 'Tareas marcadas como críticas para esta semana', metric_type: 'number', start_value: 0, target_value: 5, current_value: 3, unit: 'tareas', status: 'on_track', weight: 1, progress: 60 },
+      { id: 'demo-kr-2', title: 'Dedicar 20 horas a deep work', description: 'Trabajo enfocado sin interrupciones', metric_type: 'number', start_value: 0, target_value: 20, current_value: 14, unit: 'horas', status: 'on_track', weight: 1, progress: 70 },
+      { id: 'demo-kr-3', title: 'Cerrar 3 conversaciones con prospectos', description: 'Avanzar pipeline de ventas', metric_type: 'number', start_value: 0, target_value: 3, current_value: 2, unit: 'conversaciones', status: 'on_track', weight: 1, progress: 67 },
     ],
-    total_key_results: 2,
+    total_key_results: 3,
     achieved_krs: 0,
-    on_track_krs: 2,
+    on_track_krs: 3,
     at_risk_krs: 0,
     behind_krs: 0,
     playbook: {
-      title: 'Playbook: Productividad Semanal',
-      description: 'Guía para maximizar tu rendimiento esta semana',
+      title: 'Playbook: Productividad Semanal Óptima',
+      description: 'Guía estratégica para maximizar tu rendimiento y alcanzar tus objetivos esta semana',
       steps: [
-        'Revisar y priorizar tareas al inicio del día',
-        'Bloquear tiempo para deep work sin interrupciones',
-        'Usar técnica Pomodoro para tareas complejas',
-        'Revisar progreso al final del día',
-        'Ajustar prioridades según avance'
+        'Revisar y priorizar todas las tareas pendientes al inicio del día',
+        'Bloquear 4 horas de deep work sin reuniones ni interrupciones',
+        'Usar técnica Pomodoro (25 min trabajo / 5 min descanso) para tareas complejas',
+        'Revisar progreso de KRs cada día a las 18:00',
+        'Preparar el día siguiente antes de terminar la jornada'
       ],
       tips: [
-        'Empieza con las tareas más difíciles por la mañana',
-        'Limita reuniones a lo esencial',
-        'Toma descansos regulares para mantener energía'
+        'Empieza siempre con la tarea más difícil cuando tu energía está alta',
+        'Limita las reuniones a máximo 2 horas diarias',
+        'Toma descansos de 10 min cada 2 horas para mantener productividad',
+        'Desactiva notificaciones durante las sesiones de deep work'
       ],
-      daily_focus: ['Revisar KRs', 'Actualizar progreso', 'Planificar siguiente día']
+      resources: ['Template de planificación semanal', 'Checklist de priorización', 'Guía de técnicas de productividad'],
+      daily_focus: ['Revisión KRs', 'Deep work', 'Prospección', 'Seguimiento', 'Planificación']
+    }
+  },
+  {
+    id: 'demo-weekly-2',
+    title: 'Avanzar iniciativas estratégicas del trimestre',
+    description: 'Contribuir al progreso de los OKRs organizacionales con acciones concretas',
+    quarter: new Date().toISOString().split('T')[0],
+    year: new Date().getFullYear(),
+    status: 'at_risk',
+    target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    owner_name: 'Tu nombre',
+    progress: 42,
+    key_results: [
+      { id: 'demo-kr-4', title: 'Documentar 2 procesos clave del negocio', description: 'Crear SOPs para operaciones críticas', metric_type: 'number', start_value: 0, target_value: 2, current_value: 1, unit: 'procesos', status: 'at_risk', weight: 1, progress: 50 },
+      { id: 'demo-kr-5', title: 'Realizar 5 llamadas de feedback con clientes', description: 'Recoger insights para mejorar producto', metric_type: 'number', start_value: 0, target_value: 5, current_value: 2, unit: 'llamadas', status: 'behind', weight: 1, progress: 40 },
+    ],
+    total_key_results: 2,
+    achieved_krs: 0,
+    on_track_krs: 0,
+    at_risk_krs: 1,
+    behind_krs: 1,
+    playbook: {
+      title: 'Playbook: Recuperación de OKR en Riesgo',
+      description: 'Plan de acción para recuperar el progreso y cumplir los objetivos a tiempo',
+      steps: [
+        'Identificar bloqueadores específicos que frenan el progreso',
+        'Priorizar este OKR sobre tareas no críticas',
+        'Pedir ayuda o recursos adicionales si es necesario',
+        'Establecer checkpoints diarios para monitorear avance',
+        'Comunicar estado y plan de acción a stakeholders'
+      ],
+      tips: [
+        'No intentes hacer todo a la vez - enfócate en un KR cada vez',
+        'Dedica las primeras horas del día exclusivamente a este OKR',
+        'Considera dividir tareas grandes en subtareas más manejables'
+      ],
+      resources: ['Template de plan de recuperación', 'Matriz de priorización urgente/importante'],
+      daily_focus: ['Documentación', 'Llamadas', 'Revisión', 'Ajuste', 'Cierre']
     }
   }
 ];
@@ -393,8 +434,8 @@ const OKRsDashboard = ({ showDemoData = false }: OKRsDashboardProps) => {
     );
   }
 
-  // No active phase - show explanation
-  if (hasActivePhase === false) {
+  // No active phase - show explanation (but show demo if enabled)
+  if (hasActivePhase === false && !showDemoData) {
     return (
       <Card className="border-dashed border-2 border-muted-foreground/25">
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -503,7 +544,7 @@ const OKRsDashboard = ({ showDemoData = false }: OKRsDashboardProps) => {
         </div>
       )}
 
-      {objectives.length > 0 && (
+      {displayObjectives.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-3">
@@ -512,7 +553,7 @@ const OKRsDashboard = ({ showDemoData = false }: OKRsDashboardProps) => {
                 Objetivos Activos
               </CardDescription>
               <CardTitle className="text-3xl">
-                {objectives.filter(o => o.status === 'active').length}
+                {displayObjectives.filter(o => o.status === 'active').length}
               </CardTitle>
             </CardHeader>
           </Card>
