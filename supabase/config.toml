@@ -227,3 +227,6 @@ verify_jwt = true
 
 [functions.generate-all-tools]
 verify_jwt = false
+
+[functions.generate-discovery-ideas]
+verify_jwt = true

@@ -266,39 +266,60 @@ const Landing = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t('landing.choosePath.title')}</h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">{t('landing.choosePath.subtitle')}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary" onClick={() => navigate('/onboarding')}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <Card className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary" onClick={() => navigate('/onboarding')}>
             <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Building2 className="h-10 w-10 text-primary" />
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Building2 className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">{t('landing.choosePath.business.title')}</h3>
-              <p className="text-muted-foreground mb-6">{t('landing.choosePath.business.description')}</p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature1')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature2')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.business.feature3')}</span></li>
+              <h3 className="text-xl font-bold mb-2">{t('landing.choosePath.business.title')}</h3>
+              <p className="text-muted-foreground text-sm mb-4">{t('landing.choosePath.business.description')}</p>
+              <ul className="text-xs text-left space-y-1 mb-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.business.feature1')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.business.feature2')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.business.feature3')}</span></li>
               </ul>
-              <Button className="w-full group-hover:bg-primary/90">{t('landing.choosePath.business.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button className="w-full group-hover:bg-primary/90" size="sm">{t('landing.choosePath.business.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
             </div>
           </Card>
 
-          <Card className="p-8 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding?type=startup')}>
+          <Card className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-accent" onClick={() => navigate('/onboarding?type=startup')}>
             <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Rocket className="h-10 w-10 text-accent" />
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Rocket className="h-8 w-8 text-accent" />
               </div>
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-2xl font-bold">{t('landing.choosePath.startup.title')}</h3>
-                <Sparkles className="h-5 w-5 text-accent" />
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-xl font-bold">{t('landing.choosePath.startup.title')}</h3>
+                <Sparkles className="h-4 w-4 text-accent" />
               </div>
-              <p className="text-muted-foreground mb-6">{t('landing.choosePath.startup.description')}</p>
-              <ul className="text-sm text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature1')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature2')}</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{t('landing.choosePath.startup.feature3')}</span></li>
+              <p className="text-muted-foreground text-sm mb-4">{t('landing.choosePath.startup.description')}</p>
+              <ul className="text-xs text-left space-y-1 mb-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.startup.feature1')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.startup.feature2')}</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>{t('landing.choosePath.startup.feature3')}</span></li>
               </ul>
-              <Button variant="outline" className="w-full group-hover:border-accent group-hover:text-accent">{t('landing.choosePath.startup.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button variant="outline" className="w-full group-hover:border-accent group-hover:text-accent" size="sm">{t('landing.choosePath.startup.cta')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </div>
+          </Card>
+
+          <Card className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-yellow-500 relative overflow-hidden" onClick={() => navigate('/onboarding?type=discovery')}>
+            <div className="absolute top-2 right-2">
+              <Badge className="bg-yellow-500 text-yellow-950">GRATIS</Badge>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Lightbulb className="h-8 w-8 text-yellow-500" />
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-xl font-bold">Quiero Emprender</h3>
+              </div>
+              <p className="text-muted-foreground text-sm mb-4">Aún no tengo clara mi idea de negocio</p>
+              <ul className="text-xs text-left space-y-1 mb-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>12 preguntas rápidas</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>3 ideas personalizadas</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-green-500" /><span>Plan de validación incluido</span></li>
+              </ul>
+              <Button variant="outline" className="w-full group-hover:border-yellow-500 group-hover:text-yellow-600 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-950" size="sm">Descubrir mi idea<ArrowRight className="ml-2 h-4 w-4" /></Button>
             </div>
           </Card>
         </div>

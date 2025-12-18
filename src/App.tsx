@@ -94,6 +94,8 @@ const GuiaInteractiva = lazy(() => import("./pages/practicar/GuiaInteractiva"));
 // Lazy loaded pages - Onboarding
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OnboardingStartup = lazy(() => import("./pages/onboarding/OnboardingStartup"));
+const OnboardingDiscovery = lazy(() => import("./pages/onboarding/OnboardingDiscovery"));
+const DiscoveryResults = lazy(() => import("./pages/onboarding/DiscoveryResults"));
 const OnboardingSuccess = lazy(() => import("./pages/OnboardingSuccess"));
 const AdminOnboardings = lazy(() => import("./pages/AdminOnboardings"));
 const SelectPlan = lazy(() => import("./pages/SelectPlan"));
