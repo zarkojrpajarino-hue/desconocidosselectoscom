@@ -59,10 +59,10 @@ const DAYS_OF_WEEK = [
 export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesModalProps) {
   const { t } = useTranslation();
   const { user, currentOrganizationId, userOrganizations } = useAuth();
-  const [hasTeam, setHasTeam] = useState(false);
-  const [teamSize, setTeamSize] = useState<string>('1-5');
+  const [hasTeam, setHasTeam] = useState<boolean | null>(null);
+  const [teamSize, setTeamSize] = useState<string>('');
   const [collaborativePercentage, setCollaborativePercentage] = useState(0);
-  const [weekStartDay, setWeekStartDay] = useState<string>('1');
+  const [weekStartDay, setWeekStartDay] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState<string>('');
@@ -94,10 +94,13 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
       if (data) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const orgData = data as any;
-        setHasTeam(orgData.has_team ?? false);
-        setTeamSize(orgData.team_size ?? '1-5');
+        // Only set values if they exist in database - leave blank if not configured
+        setHasTeam(orgData.has_team ?? null);
+        setTeamSize(orgData.team_size ?? '');
         setCollaborativePercentage(orgData.collaborative_percentage ?? 0);
-        setWeekStartDay(String(orgData.week_start_day ?? 1));
+        setWeekStartDay(orgData.week_start_day !== null && orgData.week_start_day !== undefined 
+          ? String(orgData.week_start_day) 
+          : '');
         setOrgName(orgData.name ?? 'tu organización');
       }
     } catch (error) {
@@ -153,8 +156,14 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
     if (!currentOrganizationId) return;
     
     // Validate week_start_day is set
-    if (weekStartDay === null || weekStartDay === undefined) {
+    if (!weekStartDay) {
       toast.error('Debes seleccionar el día de inicio de semana');
+      return;
+    }
+
+    // Validate has_team is set
+    if (hasTeam === null) {
+      toast.error('Debes indicar si tu organización cuenta con equipo');
       return;
     }
     
@@ -216,14 +225,15 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
     setHasTeam(value);
     if (!value) {
       setCollaborativePercentage(0);
-      setTeamSize('1-5');
+      setTeamSize('');
     } else {
       setCollaborativePercentage(70);
+      if (!teamSize) setTeamSize('1-5');
     }
   };
 
   const individualPercentage = 100 - collaborativePercentage;
-  const selectedDayName = DAYS_OF_WEEK.find(d => d.value === weekStartDay)?.label || 'Lunes';
+  const selectedDayName = weekStartDay ? DAYS_OF_WEEK.find(d => d.value === weekStartDay)?.label : null;
 
   if (loading) {
     return (
@@ -299,7 +309,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             </SelectContent>
           </Select>
 
-          {isAdmin && hasTeam && (
+          {isAdmin && hasTeam === true && selectedDayName && (
             <Alert className="mt-3 border-amber-500/30 bg-amber-500/10">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
@@ -312,33 +322,75 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
             </Alert>
           )}
           
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Actualmente: La semana comienza los <strong className="text-primary">{selectedDayName}</strong>
-          </p>
+          {selectedDayName ? (
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Actualmente: La semana comienza los <strong className="text-primary">{selectedDayName}</strong>
+            </p>
+          ) : (
+            <p className="text-xs text-orange-500 mt-2 text-center font-medium">
+              Selecciona un día de inicio de semana
+            </p>
+          )}
         </div>
 
         <Separator />
 
         {/* Team Question */}
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${hasTeam ? 'bg-primary/20' : 'bg-muted'}`}>
-              {hasTeam ? <Users className="w-5 h-5 text-primary" /> : <User className="w-5 h-5 text-muted-foreground" />}
+        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-full bg-muted">
+              <Users className="w-5 h-5 text-muted-foreground" />
             </div>
-            <div>
-              <Label className="text-sm font-medium">¿La organización cuenta con equipo?</Label>
+            <div className="flex-1">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                ¿La organización cuenta con equipo?
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                  OBLIGATORIO
+                </Badge>
+              </Label>
               <p className="text-xs text-muted-foreground">
-                {hasTeam 
-                  ? 'Trabajo colaborativo con otros miembros' 
-                  : 'Trabajo individual (autónomo/emprendedor)'}
+                Esto determina cómo se generan y distribuyen las tareas
               </p>
             </div>
           </div>
-          <Switch
-            checked={hasTeam}
-            onCheckedChange={handleTeamToggle}
-            disabled={!isAdmin}
-          />
+          
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => isAdmin && handleTeamToggle(false)}
+              disabled={!isAdmin}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                hasTeam === false 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-border hover:border-primary/50 bg-background'
+              } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <User className={`w-6 h-6 mb-2 ${hasTeam === false ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className={`font-medium text-sm ${hasTeam === false ? 'text-primary' : ''}`}>Individual</div>
+              <p className="text-xs text-muted-foreground mt-1">Trabajo autónomo/emprendedor</p>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => isAdmin && handleTeamToggle(true)}
+              disabled={!isAdmin}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                hasTeam === true 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-border hover:border-primary/50 bg-background'
+              } ${!isAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <Users className={`w-6 h-6 mb-2 ${hasTeam === true ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className={`font-medium text-sm ${hasTeam === true ? 'text-primary' : ''}`}>Con Equipo</div>
+              <p className="text-xs text-muted-foreground mt-1">Trabajo colaborativo</p>
+            </button>
+          </div>
+          
+          {hasTeam === null && (
+            <p className="text-xs text-orange-500 mt-2 text-center font-medium">
+              Selecciona una opción
+            </p>
+          )}
         </div>
 
         {/* Team Size Selector (only if has team) */}
@@ -412,14 +464,14 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         )}
 
         {/* Mode indicator for solo workers */}
-        {!hasTeam && (
+        {hasTeam === false && (
           <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
             <div className="flex items-center gap-2 text-sm font-medium mb-2">
               <User className="w-4 h-4 text-accent-foreground" />
               Modo Individual Activado
             </div>
             <p className="text-xs text-muted-foreground">
-              Todas las tareas serán individuales. Tu semana personal comienza los {selectedDayName}.
+              Todas las tareas serán individuales.{selectedDayName && ` Tu semana personal comienza los ${selectedDayName}.`}
             </p>
           </div>
         )}
