@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 /**
- * Calculate current week start based on user's preferred day
+ * Calculate current week start based on organization's preferred day
  */
 function getCurrentWeekStart(preferredStartDay: number): string {
   const today = new Date();
@@ -34,21 +34,33 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // ============================================
-    // NUEVO: Obtener preferencias de semana del usuario
+    // Get user's organization and its week_start_day
     // ============================================
-    const { data: userSettings } = await supabase
-      .from('user_global_agenda_settings')
-      .select('preferred_week_start_day, personal_week_start')
+    const { data: userRole } = await supabase
+      .from('user_roles')
+      .select('organization_id')
       .eq('user_id', userId)
       .single();
-    
-    const preferredStartDay = userSettings?.preferred_week_start_day ?? 1; // Default Monday
-    const currentWeekStart = getCurrentWeekStart(preferredStartDay);
 
-    console.log(`User ${userId} - Preferred start day: ${preferredStartDay}, Week start: ${currentWeekStart}`);
+    if (!userRole?.organization_id) {
+      throw new Error('Usuario no pertenece a ninguna organización');
+    }
+
+    // Get organization's week start day configuration
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('week_start_day, name, plan')
+      .eq('id', userRole.organization_id)
+      .single();
+
+    const preferredStartDay = orgData?.week_start_day ?? 1; // Default Monday
+    const currentWeekStart = getCurrentWeekStart(preferredStartDay);
+    const orgName = orgData?.name || 'Organización';
+
+    console.log(`User ${userId} - Org: ${orgName} - Week start day: ${preferredStartDay} - Week: ${currentWeekStart}`);
 
     // ============================================
-    // Verificar OKRs pendientes de semanas anteriores
+    // Check for pending OKRs from previous weeks
     // ============================================
     const { data: pendingOKRs } = await supabase
       .from('objectives')
@@ -69,11 +81,11 @@ serve(async (req) => {
       .eq('owner_user_id', userId)
       .neq('status', 'completed')
       .lt('week_start', currentWeekStart)
-      .is('phase', null); // Solo OKRs semanales, no organizacionales
+      .is('phase', null); // Only weekly OKRs, not organizational
 
-    // Si hay OKRs pendientes de semanas anteriores
+    // If there are pending OKRs from previous weeks
     if (pendingOKRs && pendingOKRs.length > 0 && !autoGenerate) {
-      // Contar Key Results incompletos
+      // Count incomplete Key Results
       const incompleteKRs = pendingOKRs.flatMap(okr => 
         // deno-lint-ignore no-explicit-any
         (okr.key_results as any[] || []).filter((kr: any) => 
@@ -82,7 +94,7 @@ serve(async (req) => {
       );
 
       if (incompleteKRs.length > 0) {
-        // Arrastrar los OKRs pendientes a la semana actual
+        // Carry over pending OKRs to current week
         const okrIds = pendingOKRs.map(okr => okr.id);
         
         await supabase
@@ -90,7 +102,7 @@ serve(async (req) => {
           .update({ week_start: currentWeekStart })
           .in('id', okrIds);
 
-        console.log(`Arrastrados ${pendingOKRs.length} OKRs pendientes con ${incompleteKRs.length} KRs incompletos a la semana actual`);
+        console.log(`Carried over ${pendingOKRs.length} pending OKRs with ${incompleteKRs.length} incomplete KRs`);
 
         return new Response(
           JSON.stringify({ 
@@ -105,7 +117,7 @@ serve(async (req) => {
       }
     }
 
-    // Verificar si ya tiene OKRs para esta semana
+    // Check if already has OKRs for this week
     const { data: existingWeekOKRs } = await supabase
       .from('objectives')
       .select('id')
@@ -123,40 +135,25 @@ serve(async (req) => {
       );
     }
 
-    // Verificar límite de generaciones en plan gratuito
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('organization_id')
-      .eq('user_id', userId)
-      .single();
+    // Check plan limits for free/trial
+    if (orgData && (orgData.plan === 'free' || orgData.plan === 'trial')) {
+      const { count: existingOKRs } = await supabase
+        .from('objectives')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_user_id', userId)
+        .is('phase', null);
 
-    if (userRole) {
-      const { data: org } = await supabase
-        .from('organizations')
-        .select('plan')
-        .eq('id', userRole.organization_id)
-        .single();
-
-      // En plan gratuito o trial: máximo 2 OKRs por usuario (2 semanas)
-      if (org && (org.plan === 'free' || org.plan === 'trial')) {
-        const { count: existingOKRs } = await supabase
-          .from('objectives')
-          .select('*', { count: 'exact', head: true })
-          .eq('owner_user_id', userId)
-          .is('phase', null);
-
-        if (existingOKRs && existingOKRs >= 2) {
-          return new Response(
-            JSON.stringify({ 
-              error: 'Has alcanzado el límite de 2 OKRs semanales del plan gratuito. Actualiza a plan premium para generación ilimitada.'
-            }),
-            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      if (existingOKRs && existingOKRs >= 2) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Has alcanzado el límite de 2 OKRs semanales del plan gratuito. Actualiza a plan premium para generación ilimitada.'
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
 
-    // Obtener datos del usuario incluyendo objetivos estratégicos
+    // Get user data including strategic objectives
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('full_name, role, email, strategic_objectives')
@@ -167,7 +164,7 @@ serve(async (req) => {
       throw new Error('Usuario no encontrado');
     }
 
-    // Obtener TODAS las tareas programadas para esta semana del usuario
+    // Get ALL scheduled tasks for this week
     const { data: scheduledTasks } = await supabase
       .from('task_schedule')
       .select(`
@@ -184,7 +181,7 @@ serve(async (req) => {
       .eq('user_id', userId)
       .eq('week_start', currentWeekStart);
 
-    // Procesar tareas
+    // Process tasks
     const userTasks = (scheduledTasks || [])
       .filter(st => st.tasks && typeof st.tasks === 'object' && !Array.isArray(st.tasks))
       .map(st => {
@@ -199,7 +196,7 @@ serve(async (req) => {
         };
       });
 
-    // Obtener completions recientes
+    // Get recent completions
     const { data: completions } = await supabase
       .from('task_completions')
       .select('task_id, validated_by_leader, leader_evaluation')
@@ -207,13 +204,14 @@ serve(async (req) => {
       .order('completed_at', { ascending: false })
       .limit(10);
 
-    // Preparar contexto para la IA
+    // Prepare context for AI
     const context = {
       usuario: {
         nombre: user.full_name,
         rol: user.role,
         objetivos_estrategicos: user.strategic_objectives || 'No definidos'
       },
+      organizacion: orgName,
       semana_actual: currentWeekStart,
       tareas_de_la_semana: userTasks,
       total_tareas: userTasks.length,
@@ -259,7 +257,7 @@ El Playbook debe tener:
 - steps: Array de 5-7 pasos concretos y accionables para lograr el objetivo
 - tips: Array de 3-5 consejos profesionales específicos para el rol del usuario
 - resources: Array de 2-3 recursos o herramientas recomendadas
-- daily_focus: Array de 5 strings con el enfoque para cada día laboral (lunes a viernes)
+- daily_focus: Array de 5 strings con el enfoque para cada día laboral
 
 IMPORTANTE: 
 - Los KRs deben ser REALISTAS para UNA SEMANA
@@ -366,7 +364,7 @@ IMPORTANTE:
     }
 
     const aiData = await aiResponse.json();
-    console.log('AI Response:', JSON.stringify(aiData, null, 2));
+    console.log('AI Response received');
 
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
@@ -375,7 +373,7 @@ IMPORTANTE:
 
     const generated = JSON.parse(toolCall.function.arguments);
     
-    // Insertar el Objetivo semanal CON PLAYBOOK y week_start
+    // Insert weekly Objective with PLAYBOOK and week_start
     const { data: newObjective, error: objInsertError } = await supabase
       .from('objectives')
       .insert({
@@ -388,9 +386,9 @@ IMPORTANTE:
         owner_user_id: userId,
         created_by: userId,
         status: 'active',
-        organization_id: userRole?.organization_id,
+        organization_id: userRole.organization_id,
         playbook: generated.playbook || null,
-        week_start: currentWeekStart // Guardar la semana de este OKR
+        week_start: currentWeekStart
       })
       .select()
       .single();
@@ -400,7 +398,7 @@ IMPORTANTE:
       throw objInsertError;
     }
     
-    // Insertar los KRs
+    // Insert KRs
     const krsToInsert = generated.key_results.map((kr: Record<string, unknown>) => ({
       objective_id: newObjective.id,
       title: kr.title,

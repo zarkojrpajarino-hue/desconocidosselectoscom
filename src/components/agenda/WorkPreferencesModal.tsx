@@ -8,7 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, User, Info, Lock
+  Users, User, Info, Lock, Calendar, Bell, AlertCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -26,6 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 
 interface WorkPreferencesModalProps {
   onPreferencesChange?: () => void;
@@ -41,14 +46,26 @@ const TEAM_SIZE_OPTIONS = [
   { value: '100+', label: 'Más de 100 personas' },
 ];
 
+const DAYS_OF_WEEK = [
+  { value: '0', label: 'Domingo', short: 'Dom' },
+  { value: '1', label: 'Lunes', short: 'Lun' },
+  { value: '2', label: 'Martes', short: 'Mar' },
+  { value: '3', label: 'Miércoles', short: 'Mié' },
+  { value: '4', label: 'Jueves', short: 'Jue' },
+  { value: '5', label: 'Viernes', short: 'Vie' },
+  { value: '6', label: 'Sábado', short: 'Sáb' },
+];
+
 export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesModalProps) {
   const { t } = useTranslation();
   const { user, currentOrganizationId, userOrganizations } = useAuth();
   const [hasTeam, setHasTeam] = useState(false);
   const [teamSize, setTeamSize] = useState<string>('1-5');
   const [collaborativePercentage, setCollaborativePercentage] = useState(0);
+  const [weekStartDay, setWeekStartDay] = useState<string>('1');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [orgName, setOrgName] = useState<string>('');
 
   // Verificar si el usuario es admin
   const currentUserRole = userOrganizations.find(
@@ -80,11 +97,50 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         setHasTeam(orgData.has_team ?? false);
         setTeamSize(orgData.team_size ?? '1-5');
         setCollaborativePercentage(orgData.collaborative_percentage ?? 0);
+        setWeekStartDay(String(orgData.week_start_day ?? 1));
+        setOrgName(orgData.name ?? 'tu organización');
       }
     } catch (error) {
       console.error('Error loading work preferences:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const notifyTeamMembers = async (newWeekStartDay: number) => {
+    if (!currentOrganizationId || !hasTeam) return;
+    
+    try {
+      // Get all team members except admin
+      const { data: teamMembers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('organization_id', currentOrganizationId)
+        .neq('user_id', user?.id);
+
+      if (!teamMembers || teamMembers.length === 0) return;
+
+      const dayName = DAYS_OF_WEEK.find(d => d.value === String(newWeekStartDay))?.label || 'Lunes';
+      
+      // Create notifications for all team members using correct smart_alerts schema
+      const notifications = teamMembers.map(member => ({
+        user_id: member.user_id,
+        organization_id: currentOrganizationId,
+        title: 'Cambio en el ciclo semanal',
+        message: `El administrador ha establecido que la semana de ${orgName} ahora comienza los ${dayName}. Tus tareas y OKRs se calcularán según este nuevo ciclo.`,
+        alert_type: 'week_start_change',
+        severity: 'info' as const,
+        source: 'system',
+        priority: 'high',
+        read: false,
+        dismissed: false
+      }));
+
+      await supabase.from('smart_alerts').insert(notifications);
+      
+      console.log(`Notified ${teamMembers.length} team members about week start change`);
+    } catch (error) {
+      console.error('Error notifying team members:', error);
     }
   };
 
@@ -96,8 +152,25 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
 
     if (!currentOrganizationId) return;
     
+    // Validate week_start_day is set
+    if (weekStartDay === null || weekStartDay === undefined) {
+      toast.error('Debes seleccionar el día de inicio de semana');
+      return;
+    }
+    
     setSaving(true);
     try {
+      const newWeekStartDay = parseInt(weekStartDay);
+      
+      // Get current org data to check if week_start_day changed
+      const { data: currentOrg } = await supabase
+        .from('organizations')
+        .select('week_start_day')
+        .eq('id', currentOrganizationId)
+        .single();
+
+      const weekStartChanged = currentOrg?.week_start_day !== newWeekStartDay;
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase
         .from('organizations')
@@ -105,16 +178,29 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
           has_team: hasTeam,
           team_size: hasTeam ? teamSize : null,
           collaborative_percentage: hasTeam ? collaborativePercentage : 0,
+          week_start_day: newWeekStartDay,
         } as any)
         .eq('id', currentOrganizationId);
 
       if (error) throw error;
 
-      toast.success('Configuración de trabajo guardada', {
-        description: hasTeam 
-          ? `Equipo de ${teamSize} · ${collaborativePercentage}% colaborativas`
-          : 'Modo individual activado'
+      // Notify team if week start day changed and has team
+      if (weekStartChanged && hasTeam) {
+        await notifyTeamMembers(newWeekStartDay);
+      }
+
+      const dayName = DAYS_OF_WEEK.find(d => d.value === weekStartDay)?.label || 'Lunes';
+      
+      toast.success('Configuración guardada', {
+        description: `Semana comienza los ${dayName}${hasTeam ? ` · Equipo: ${teamSize} · ${collaborativePercentage}% colaborativas` : ' · Modo individual'}`,
       });
+
+      if (weekStartChanged && hasTeam) {
+        toast.info('Equipo notificado', {
+          description: 'Todos los miembros del equipo han sido notificados del cambio.',
+          icon: <Bell className="w-4 h-4" />,
+        });
+      }
       
       onPreferencesChange?.();
     } catch (error) {
@@ -137,6 +223,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
   };
 
   const individualPercentage = 100 - collaborativePercentage;
+  const selectedDayName = DAYS_OF_WEEK.find(d => d.value === weekStartDay)?.label || 'Lunes';
 
   if (loading) {
     return (
@@ -171,6 +258,67 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        
+        {/* ========================================= */}
+        {/* WEEK START DAY - OBLIGATORIO */}
+        {/* ========================================= */}
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border-2 border-primary/30">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-full bg-primary/20">
+              <Calendar className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                Día de inicio de semana
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                  OBLIGATORIO
+                </Badge>
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Todos los OKRs y tareas se calcularán desde este día
+              </p>
+            </div>
+          </div>
+          
+          <Select 
+            value={weekStartDay} 
+            onValueChange={(value) => isAdmin && setWeekStartDay(value)}
+            disabled={!isAdmin}
+          >
+            <SelectTrigger className="w-full bg-background border-primary/30">
+              <SelectValue placeholder="Selecciona el día de inicio" />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS_OF_WEEK.map((day) => (
+                <SelectItem key={day.value} value={day.value}>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{day.label}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {isAdmin && hasTeam && (
+            <Alert className="mt-3 border-amber-500/30 bg-amber-500/10">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                Importante para tu equipo
+              </AlertTitle>
+              <AlertDescription className="text-xs text-amber-600 dark:text-amber-300">
+                Al cambiar este día, <strong>todos los miembros serán notificados automáticamente</strong>.
+                La app enviará un recordatorio semanal cada {selectedDayName}.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Actualmente: La semana comienza los <strong className="text-primary">{selectedDayName}</strong>
+          </p>
+        </div>
+
+        <Separator />
+
         {/* Team Question */}
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border">
           <div className="flex items-center gap-3">
@@ -271,7 +419,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
               Modo Individual Activado
             </div>
             <p className="text-xs text-muted-foreground">
-              Todas las tareas serán individuales, adaptadas al rol y objetivos de cada miembro.
+              Todas las tareas serán individuales. Tu semana personal comienza los {selectedDayName}.
             </p>
           </div>
         )}
@@ -280,6 +428,26 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
 
         {/* Explanations Accordion */}
         <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="week-start">
+            <AccordionTrigger className="text-sm hover:no-underline">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                ¿Cómo funciona el inicio de semana?
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-muted-foreground space-y-2">
+              <p>
+                El <strong>día de inicio de semana</strong> determina cuándo comienza cada ciclo semanal para tu organización.
+              </p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>Los <strong>OKRs semanales</strong> se generan al inicio de cada semana</li>
+                <li>Las <strong>tareas</strong> se distribuyen según este ciclo</li>
+                <li>Los <strong>recordatorios</strong> se envían el día de inicio</li>
+                <li>Todos los miembros comparten el mismo ciclo</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="collaborative">
             <AccordionTrigger className="text-sm hover:no-underline">
               <div className="flex items-center gap-2">

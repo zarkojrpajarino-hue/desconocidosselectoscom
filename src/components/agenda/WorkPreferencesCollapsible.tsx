@@ -29,7 +29,7 @@ export function WorkPreferencesCollapsible({ onPreferencesChange }: WorkPreferen
     try {
       const { data, error } = await supabase
         .from('organizations')
-        .select('*')
+        .select('has_team, week_start_day')
         .eq('id', currentOrganizationId)
         .single();
 
@@ -37,8 +37,11 @@ export function WorkPreferencesCollapsible({ onPreferencesChange }: WorkPreferen
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const orgData = data as any;
-      // Consider configured if has_team has been explicitly set (true or false)
-      setIsConfigured(orgData?.has_team !== null && orgData?.has_team !== undefined);
+      // Consider configured if has_team AND week_start_day have been set
+      const hasTeamConfigured = orgData?.has_team !== null && orgData?.has_team !== undefined;
+      const weekStartConfigured = orgData?.week_start_day !== null && orgData?.week_start_day !== undefined;
+      
+      setIsConfigured(hasTeamConfigured && weekStartConfigured);
     } catch (error) {
       console.error('Error checking work preferences:', error);
     } finally {
@@ -96,8 +99,8 @@ export function WorkPreferencesCollapsible({ onPreferencesChange }: WorkPreferen
               </div>
               <span className="text-xs text-muted-foreground">
                 {!isConfigured 
-                  ? 'El admin debe configurar antes de generar tareas' 
-                  : 'Define cómo trabaja el equipo: solo o colaborativo'}
+                  ? 'El admin debe configurar día de inicio y tipo de equipo' 
+                  : 'Día de inicio de semana y distribución de tareas'}
               </span>
             </div>
           </div>
