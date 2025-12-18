@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { 
   Plus, Trash2, Edit2, Save, X, Package, DollarSign, 
-  TrendingUp, Clock, AlertCircle, Loader2 
+  TrendingUp, Clock, AlertCircle, Loader2, Eye 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DEMO_PRODUCTS } from '@/data/demo-profile-data';
 
 interface Product {
   name: string;
@@ -69,6 +71,9 @@ export default function ProductsManager() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
+  
+  const displayProducts = showDemo ? DEMO_PRODUCTS : products;
   
   const role = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
@@ -191,13 +196,13 @@ export default function ProductsManager() {
     return `${margin.toFixed(1)}%`;
   };
 
-  const totalRevenue = products.reduce((sum, p) => {
+  const totalRevenue = displayProducts.reduce((sum, p) => {
     const price = parseFloat(p.price) || 0;
     const units = parseFloat(p.unitsSoldPerMonth) || 0;
     return sum + (price * units);
   }, 0);
 
-  if (isLoading) {
+  if (isLoading && !showDemo) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
@@ -209,6 +214,19 @@ export default function ProductsManager() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Toggle */}
+      <div className="flex items-center justify-end gap-2 p-2 bg-muted/30 rounded-lg">
+        <Eye className="w-4 h-4 text-muted-foreground" />
+        <Label htmlFor="products-demo-toggle" className="text-sm text-muted-foreground">
+          Ver datos demo
+        </Label>
+        <Switch
+          id="products-demo-toggle"
+          checked={showDemo}
+          onCheckedChange={setShowDemo}
+        />
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -219,7 +237,7 @@ export default function ProductsManager() {
             Gestiona los productos/servicios de tu organización
           </p>
         </div>
-        {isAdmin && (
+        {isAdmin && !showDemo && (
           <Button onClick={handleAddProduct} className="gap-2">
             <Plus className="h-4 w-4" />
             Añadir Producto
@@ -228,7 +246,7 @@ export default function ProductsManager() {
       </div>
 
       {/* Stats */}
-      {products.length > 0 && (
+      {displayProducts.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-3 md:p-4">
@@ -236,7 +254,7 @@ export default function ProductsManager() {
                 <Package className="h-4 w-4 text-primary" />
                 <span className="text-xs text-muted-foreground">Total</span>
               </div>
-              <p className="text-xl md:text-2xl font-bold mt-1">{products.length}</p>
+              <p className="text-xl md:text-2xl font-bold mt-1">{displayProducts.length}</p>
             </CardContent>
           </Card>
           <Card className="bg-green-500/5 border-green-500/20">
@@ -257,8 +275,8 @@ export default function ProductsManager() {
                 <span className="text-xs text-muted-foreground">Promedio</span>
               </div>
               <p className="text-xl md:text-2xl font-bold mt-1">
-                €{products.length > 0 
-                  ? Math.round(products.reduce((s, p) => s + (parseFloat(p.price) || 0), 0) / products.length)
+                €{displayProducts.length > 0 
+                  ? Math.round(displayProducts.reduce((s, p) => s + (parseFloat(p.price) || 0), 0) / displayProducts.length)
                   : 0}
               </p>
             </CardContent>
@@ -270,7 +288,7 @@ export default function ProductsManager() {
                 <span className="text-xs text-muted-foreground">Categorías</span>
               </div>
               <p className="text-xl md:text-2xl font-bold mt-1">
-                {new Set(products.map(p => p.category).filter(Boolean)).size}
+                {new Set(displayProducts.map(p => p.category).filter(Boolean)).size}
               </p>
             </CardContent>
           </Card>
@@ -278,7 +296,7 @@ export default function ProductsManager() {
       )}
 
       {/* Products List */}
-      {products.length === 0 ? (
+      {displayProducts.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <AlertCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -288,7 +306,7 @@ export default function ProductsManager() {
                 ? 'Añade tus productos o servicios para que aparezcan en el CRM y otros módulos.'
                 : 'El administrador debe configurar los productos de la organización.'}
             </p>
-            {isAdmin && (
+            {isAdmin && !showDemo && (
               <Button onClick={handleAddProduct} className="mt-4 gap-2">
                 <Plus className="h-4 w-4" />
                 Añadir Primer Producto
@@ -298,7 +316,7 @@ export default function ProductsManager() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {products.map((product, index) => (
+          {displayProducts.map((product, index) => (
             <Card key={index} className="hover:border-primary/30 transition-colors">
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -341,7 +359,7 @@ export default function ProductsManager() {
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
+                  {isAdmin && !showDemo && (
                     <div className="flex gap-2 shrink-0">
                       <Button 
                         variant="outline" 

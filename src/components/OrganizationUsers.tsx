@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Crown, Shield, User as UserIcon, Trash2, Mail, Calendar, CheckCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Users, Crown, Shield, User as UserIcon, Trash2, Mail, Calendar, CheckCircle, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -19,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { DEMO_TEAM_USERS } from '@/data/demo-profile-data';
 
 interface OrganizationUser {
   user_id: string;
@@ -38,6 +41,9 @@ export default function OrganizationUsers() {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [hasTeam, setHasTeam] = useState<boolean | null>(null);
+  const [showDemo, setShowDemo] = useState(false);
+
+  const displayUsers = showDemo ? DEMO_TEAM_USERS : users;
 
   const isAdmin = userOrganizations.find(
     org => org.organization_id === currentOrganizationId
@@ -219,7 +225,7 @@ export default function OrganizationUsers() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !showDemo) {
     return (
       <Card>
         <CardHeader>
@@ -229,12 +235,25 @@ export default function OrganizationUsers() {
     );
   }
 
-  const adminCount = users.filter(u => u.role === 'admin').length;
-  const leaderCount = users.filter(u => u.role === 'leader').length;
-  const memberCount = users.filter(u => u.role !== 'admin' && u.role !== 'leader').length;
+  const adminCount = displayUsers.filter(u => u.role === 'admin').length;
+  const leaderCount = displayUsers.filter(u => u.role === 'leader').length;
+  const memberCount = displayUsers.filter(u => u.role !== 'admin' && u.role !== 'leader').length;
 
   return (
     <div className="space-y-6">
+      {/* Demo Toggle */}
+      <div className="flex items-center justify-end gap-2 p-2 bg-muted/30 rounded-lg">
+        <Eye className="w-4 h-4 text-muted-foreground" />
+        <Label htmlFor="team-demo-toggle" className="text-sm text-muted-foreground">
+          Ver datos demo
+        </Label>
+        <Switch
+          id="team-demo-toggle"
+          checked={showDemo}
+          onCheckedChange={setShowDemo}
+        />
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -242,7 +261,7 @@ export default function OrganizationUsers() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Usuarios</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <div className="text-2xl font-bold">{displayUsers.length}</div>
           </CardContent>
         </Card>
 
@@ -283,9 +302,9 @@ export default function OrganizationUsers() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {users.map((orgUser) => {
-            const isCurrentUser = orgUser.user_id === user?.id;
-            const canDelete = isAdmin && !isCurrentUser && orgUser.role !== 'admin';
+          {displayUsers.map((orgUser) => {
+            const isCurrentUser = !showDemo && orgUser.user_id === user?.id;
+            const canDelete = isAdmin && !isCurrentUser && orgUser.role !== 'admin' && !showDemo;
 
             return (
               <Card key={orgUser.user_id} className="hover:border-primary/50 transition-all">

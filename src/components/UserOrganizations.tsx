@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Check, Bell, Crown, Shield, User as UserIcon } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Users, Check, Bell, Crown, Shield, User as UserIcon, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { DEMO_ORGANIZATIONS } from '@/data/demo-profile-data';
 
 interface OrganizationWithNotifications {
   organization_id: string;
@@ -19,6 +22,9 @@ export default function UserOrganizations() {
   const [orgsWithNotifications, setOrgsWithNotifications] = useState<OrganizationWithNotifications[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
+
+  const displayOrgs = showDemo ? DEMO_ORGANIZATIONS : orgsWithNotifications;
 
   useEffect(() => {
     fetchNotificationsPerOrg();
@@ -88,10 +94,10 @@ export default function UserOrganizations() {
     }
   };
 
-  const totalNotifications = orgsWithNotifications.reduce((sum, org) => sum + org.unreadNotifications, 0);
-  const adminOrgsCount = orgsWithNotifications.filter(org => org.role === 'admin').length;
+  const totalNotifications = displayOrgs.reduce((sum, org) => sum + org.unreadNotifications, 0);
+  const adminOrgsCount = displayOrgs.filter(org => org.role === 'admin').length;
 
-  if (isLoading) {
+  if (isLoading && !showDemo) {
     return (
       <Card>
         <CardHeader>
@@ -101,7 +107,7 @@ export default function UserOrganizations() {
     );
   }
 
-  if (orgsWithNotifications.length === 0) {
+  if (displayOrgs.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -116,6 +122,19 @@ export default function UserOrganizations() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Toggle */}
+      <div className="flex items-center justify-end gap-2 p-2 bg-muted/30 rounded-lg">
+        <Eye className="w-4 h-4 text-muted-foreground" />
+        <Label htmlFor="org-demo-toggle" className="text-sm text-muted-foreground">
+          Ver datos demo
+        </Label>
+        <Switch
+          id="org-demo-toggle"
+          checked={showDemo}
+          onCheckedChange={setShowDemo}
+        />
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -123,7 +142,7 @@ export default function UserOrganizations() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Organizaciones</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{orgsWithNotifications.length}</div>
+            <div className="text-2xl font-bold">{displayOrgs.length}</div>
           </CardContent>
         </Card>
 
@@ -155,8 +174,8 @@ export default function UserOrganizations() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {orgsWithNotifications.map((org) => {
-            const isCurrent = org.organization_id === currentOrganizationId;
+          {displayOrgs.map((org) => {
+            const isCurrent = !showDemo && org.organization_id === currentOrganizationId;
             
             return (
               <Card key={org.organization_id} className={`transition-all ${isCurrent ? 'border-2 border-primary' : 'hover:border-primary/50'}`}>
@@ -194,7 +213,7 @@ export default function UserOrganizations() {
                     </div>
 
                     {/* Right: Action Button */}
-                    {!isCurrent && (
+                    {!isCurrent && !showDemo && (
                       <Button
                         onClick={() => handleSwitchOrganization(org.organization_id)}
                         disabled={isSwitching}
