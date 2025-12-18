@@ -556,6 +556,42 @@ serve(async (req) => {
           adaptive_system: 'v10'
         }
       });
+
+      // 11. AUTO-GENERATE WEEKLY OKRs for each user
+      console.log(`Auto-generating weekly OKRs for ${usersToAssign.length} users...`);
+      const okrsGenerated: string[] = [];
+      const okrErrors: string[] = [];
+
+      for (const userId of usersToAssign) {
+        try {
+          // Call generate-personalized-krs for each user
+          const okrResponse = await fetch(
+            `${supabaseUrl}/functions/v1/generate-personalized-krs`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({ userId, autoGenerate: true }),
+            }
+          );
+
+          if (okrResponse.ok) {
+            okrsGenerated.push(userId);
+            console.log(`Weekly OKRs generated for user ${userId}`);
+          } else {
+            const errorText = await okrResponse.text();
+            okrErrors.push(`User ${userId}: ${errorText}`);
+            console.error(`Failed to generate OKRs for user ${userId}:`, errorText);
+          }
+        } catch (okrErr) {
+          okrErrors.push(`User ${userId}: ${okrErr instanceof Error ? okrErr.message : 'Unknown error'}`);
+          console.error(`Error generating OKRs for user ${userId}:`, okrErr);
+        }
+      }
+
+      console.log(`Weekly OKRs generated for ${okrsGenerated.length}/${usersToAssign.length} users`);
     }
 
     return new Response(
@@ -571,6 +607,7 @@ serve(async (req) => {
           work_mode: workMode,
           version: 'v10'
         },
+        okrs_auto_generated: true,
         errors: errors.length > 0 ? errors : undefined,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
