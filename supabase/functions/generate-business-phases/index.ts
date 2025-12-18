@@ -101,15 +101,18 @@ serve(async (req) => {
     const existingOKRs = existingObjectives || [];
     console.log(`Found ${existingOKRs.length} existing OKRs for organization`);
 
-    // 2. Determinar si es startup o empresa consolidada
-    const isStartup = org.business_stage === 'startup' || 
-                      org.company_size === 'solo' || 
-                      org.company_size === '2-5' ||
-                      org.business_type === 'startup';
+    // 2. Determinar tipo de negocio: Discovery (validación), Startup, o Consolidado
+    const isDiscovery = org.business_stage === 'discovery';
+    const isStartup = !isDiscovery && (
+      org.business_stage === 'startup' || 
+      org.company_size === 'solo' || 
+      org.company_size === '2-5' ||
+      org.business_type === 'startup'
+    );
 
     // 3. Construir contexto específico para IA
-    const context = buildContext(org, isStartup);
-    const methodology = isStartup ? 'lean_startup' : 'scaling_up';
+    const context = isDiscovery ? buildDiscoveryContext(org) : buildContext(org, isStartup);
+    const methodology = isDiscovery ? 'customer_development' : (isStartup ? 'lean_startup' : 'scaling_up');
 
     // 4. Generar fases con Lovable AI Gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -125,13 +128,18 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Eres un consultor de negocios experto que usa metodología ${isStartup ? 'Lean Startup' : 'Scaling Up'}.
+            content: isDiscovery 
+              ? `Eres un experto en Customer Development y validación de ideas de negocio.
+Genera 4 fases de VALIDACIÓN para un emprendedor que está validando una idea de negocio.
+Las fases deben ser: 1) Problem Validation, 2) Solution Design, 3) Build-Measure-Learn, 4) Product-Market Fit.
+RESPONDE SOLO EN JSON válido sin markdown.`
+              : `Eres un consultor de negocios experto que usa metodología ${isStartup ? 'Lean Startup' : 'Scaling Up'}.
 Genera 4 fases de negocio PERSONALIZADAS y REALISTAS.
 RESPONDE SOLO EN JSON válido sin markdown.`
           },
           {
             role: "user",
-            content: buildPrompt(context, isStartup, methodology, existingOKRs)
+            content: isDiscovery ? buildDiscoveryPrompt(context, existingOKRs) : buildPrompt(context, isStartup, methodology, existingOKRs)
           }
         ]
       }),
@@ -866,4 +874,67 @@ function getUnitFromMetric(metric: string): string {
     'count': 'unidades'
   };
   return unitMap[metric?.toLowerCase()] || 'unidades';
+}
+
+// ============================================
+// FUNCIONES ESPECÍFICAS PARA DISCOVERY
+// ============================================
+
+function buildDiscoveryContext(org: any): string {
+  return `
+TIPO: Idea de Negocio en Validación (Discovery)
+IDEA: ${org.name || 'Idea de negocio'}
+INDUSTRIA: ${org.industry || 'No especificada'}
+DESCRIPCIÓN: ${org.business_description || 'No especificada'}
+ETAPA: Validación inicial - Pre-revenue
+PRODUCTO/SERVICIO PROPUESTO: ${JSON.stringify(org.products_services) || 'Por definir'}
+CLIENTES POTENCIALES: 0 (buscando primeros early adopters)
+PROPUESTA DE VALOR: ${org.value_proposition || 'Por validar'}
+PÚBLICO OBJETIVO: ${org.target_customers || 'Por definir'}
+
+CONTEXTO ESPECIAL:
+- Este es un EMPRENDEDOR INDIVIDUAL validando una idea
+- NO tiene equipo todavía
+- NO tiene clientes todavía
+- NO tiene ingresos todavía
+- El objetivo es VALIDAR la idea antes de invertir tiempo/dinero
+`.trim();
+}
+
+function buildDiscoveryPrompt(context: string, existingOKRs: any[]): string {
+  let okrsContext = "";
+  if (existingOKRs && existingOKRs.length > 0) {
+    okrsContext = "\nOKRs EXISTENTES:\n" + existingOKRs.map(obj => {
+      const krs = obj.key_results?.map((kr: any) => 
+        `  - KR ID: "${kr.id}" | "${kr.title}" | Target: ${kr.target_value} ${kr.unit || ''}`
+      ).join('\n') || '  (sin key results)';
+      return `Objetivo: "${obj.title}" (${obj.status})\n${krs}`;
+    }).join('\n\n');
+  }
+
+  return `
+CONTEXTO DEL EMPRENDEDOR:
+${context}
+${okrsContext}
+
+GENERA 4 FASES DE VALIDACIÓN siguiendo Customer Development de Steve Blank.
+Cada fase debe tener 8 tareas específicas para un emprendedor individual.
+
+{
+  "phases": [
+    {
+      "phase_number": 1,
+      "phase_name": "Problem Validation",
+      "phase_description": "Validar que el problema existe y las personas están dispuestas a pagar",
+      "methodology": "customer_development",
+      "duration_weeks": 2,
+      "objectives": [{"name": "Entrevistas de validación", "metric": "count", "target": 10, "current": 0, "linked_kr_id": null}],
+      "checklist": [{"task": "Crear guía de preguntas", "completed": false, "category": "validacion", "functional_role": "general"}],
+      "playbook": {"title": "Guía de Validación", "description": "Cómo validar tu problema", "steps": [], "tips": [], "resources": []}
+    }
+  ]
+}
+
+REGLAS: 8 tareas por fase, functional_role siempre "general", métricas de validación no crecimiento.
+`;
 }
