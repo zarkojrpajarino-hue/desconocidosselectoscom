@@ -8,18 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ArrowLeft, Users, Clock, User, Lightbulb, Zap, ChevronDown, AlertTriangle } from 'lucide-react';
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
-import { toast } from 'sonner';
 import StatsCards from '@/components/StatsCards';
 import TeamProgress from '@/components/TeamProgress';
 import NotificationBell from '@/components/NotificationBell';
-import AvailabilityBlockScreen from '@/components/AvailabilityBlockScreen';
-import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
-import { getCurrentWeekDeadline, getCurrentWeekStart, getNextWeekStart } from '@/lib/weekUtils';
+import { getCurrentWeekStart, getNextWeekStart } from '@/lib/weekUtils';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { TrialCountdown } from '@/components/TrialCountdown';
 import { PhaseWeeklyTasks } from '@/components/dashboard/PhaseWeeklyTasks';
-
 import { RoadmapPreview } from '@/components/phases/RoadmapPreview';
 import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
 import { format } from 'date-fns';
@@ -70,10 +66,6 @@ const DashboardHome = () => {
   const [userWeeklyData, setUserWeeklyData] = useState<UserWeeklyData | null>(null);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [completions, setCompletions] = useState<CompletionItem[]>([]);
-  const [showAvailabilityBlock, setShowAvailabilityBlock] = useState(false);
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-  const [availabilityDeadline, setAvailabilityDeadline] = useState<Date | null>(null);
-  const [nextWeekStart, setNextWeekStart] = useState<string>('');
   const [roadmapOpen, setRoadmapOpen] = useState(false);
   
   const [adminVisibilityTeam, setAdminVisibilityTeam] = useState(false);
@@ -172,11 +164,6 @@ const DashboardHome = () => {
       fetchTasksAndCompletions();
     }
   }, [user, systemConfig, userWeeklyData]);
-  useEffect(() => {
-    if (user) {
-      checkAvailabilityStatus();
-    }
-  }, [user]);
   const fetchSystemConfig = async () => {
     const {
       data
@@ -191,43 +178,6 @@ const DashboardHome = () => {
       ascending: false
     }).limit(1).maybeSingle();
     if (data) setUserWeeklyData(data as UserWeeklyData);
-  };
-  const checkAvailabilityStatus = async () => {
-    if (!user) return;
-    try {
-      // Usar las funciones de weekUtils para obtener la semana actual
-      const currentWeekStart = getCurrentWeekStart(new Date());
-      const currentWeekDeadline = getCurrentWeekDeadline(new Date());
-      const today = new Date();
-      
-      const weekStartStr = currentWeekStart.toISOString().split('T')[0];
-      setNextWeekStart(weekStartStr);
-      setAvailabilityDeadline(currentWeekDeadline);
-
-      // Verificar si ya pasó el deadline (Miércoles 10:30)
-      if (today > currentWeekDeadline) {
-        // Ya pasó el deadline de esta semana, no bloquear
-        setShowAvailabilityBlock(false);
-        return;
-      }
-
-      // Verificar si usuario completó disponibilidad para la semana actual
-      const { data } = await supabase
-        .from('user_weekly_availability')
-        .select('submitted_at')
-        .eq('user_id', user.id)
-        .eq('week_start', weekStartStr)
-        .maybeSingle();
-        
-      if (!data || !data.submitted_at) {
-        // No ha completado, mostrar bloqueo
-        setShowAvailabilityBlock(true);
-      } else {
-        setShowAvailabilityBlock(false);
-      }
-    } catch (error) {
-      console.error('Error checking availability:', error);
-    }
   };
   const fetchTasksAndCompletions = async () => {
     if (!user || !systemConfig || !userWeeklyData) return;
@@ -292,18 +242,8 @@ const DashboardHome = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 space-y-4 md:space-y-6 max-w-7xl">
-        {/* MOSTRAR BLOQUEO SI NO COMPLETÓ DISPONIBILIDAD */}
-        {showAvailabilityBlock && !showQuestionnaire && availabilityDeadline && <AvailabilityBlockScreen deadlineDate={availabilityDeadline} onConfigure={() => setShowQuestionnaire(true)} />}
-
-        {/* MOSTRAR CUESTIONARIO SI LO PIDIÓ */}
-        {showQuestionnaire && <AvailabilityQuestionnaire userId={user!.id} weekStart={nextWeekStart} onComplete={() => {
-        setShowQuestionnaire(false);
-        setShowAvailabilityBlock(false);
-        toast.success('Disponibilidad guardada correctamente');
-      }} />}
-
-        {/* DASHBOARD NORMAL (solo si no está bloqueado) */}
-        {!showAvailabilityBlock && !showQuestionnaire && <>
+        {/* DASHBOARD NORMAL */}
+        <>
             {/* Trial Countdown */}
             <TrialCountdown />
 
@@ -357,7 +297,7 @@ const DashboardHome = () => {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   <IntegrationButton type="slack" action="notify" data={{
-                message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` + `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` + `📅 Deadline: ${getCurrentWeekDeadline().toLocaleDateString()}\n\n` + `_¡Seguimos avanzando! 💪_`,
+                message: `📊 *Resumen del día - ${userProfile?.full_name}*\n\n` + `✅ Tareas completadas: ${completions.length}/${tasks.length}\n` + `📅 Semana: ${format(getCurrentWeekStart(), "d 'de' MMMM", { locale: es })}\n\n` + `_¡Seguimos avanzando! 💪_`,
                 channel: '#daily-updates'
               }} label="Resumen a Slack" size="sm" />
                   
@@ -365,7 +305,7 @@ const DashboardHome = () => {
                 title: 'Sincronizar tareas pendientes',
                 description: `${tasks.length - completions.length} tareas por completar`,
                 start_time: new Date().toISOString(),
-                end_time: getCurrentWeekDeadline().toISOString()
+                end_time: getNextWeekStart().toISOString()
               }} label="Sync Calendario" size="sm" variant="outline" />
                   
                   <IntegrationButton type="asana" action="export" data={{
@@ -446,7 +386,7 @@ const DashboardHome = () => {
 
             {/* Tareas de la Fase por Semanas */}
             <PhaseWeeklyTasks />
-          </>}
+          </>
       </main>
     </>;
 };
