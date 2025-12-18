@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowLeft, 
@@ -18,7 +21,8 @@ import {
   RefreshCw,
   CalendarDays,
   Link2,
-  RotateCcw
+  RotateCcw,
+  Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PhaseTimeline } from '@/components/phases/PhaseTimeline';
@@ -51,12 +55,63 @@ interface Objective {
   key_results: KeyResult[];
 }
 
+// Datos demo para el historial
+const DEMO_OBJECTIVES: Objective[] = [
+  {
+    id: 'demo-1',
+    title: 'Incrementar ingresos recurrentes mensuales (MRR)',
+    description: 'Objetivo estratégico para aumentar la base de ingresos recurrentes de la empresa',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'active',
+    target_date: '2024-03-31',
+    created_at: '2024-01-01',
+    progress: 75,
+    key_results: [
+      { id: 'kr-1', title: 'Aumentar MRR a €50,000', current_value: 37500, target_value: 50000, start_value: 25000, unit: '€', status: 'on_track', weight: 1 },
+      { id: 'kr-2', title: 'Conseguir 20 nuevos clientes enterprise', current_value: 16, target_value: 20, start_value: 0, unit: 'clientes', status: 'on_track', weight: 1 },
+      { id: 'kr-3', title: 'Reducir churn rate al 3%', current_value: 4.5, target_value: 3, start_value: 8, unit: '%', status: 'at_risk', weight: 1 }
+    ]
+  },
+  {
+    id: 'demo-2',
+    title: 'Mejorar satisfacción y retención de clientes',
+    description: 'Aumentar NPS y métricas de satisfacción del cliente',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'at_risk',
+    target_date: '2024-03-31',
+    created_at: '2024-01-01',
+    progress: 58,
+    key_results: [
+      { id: 'kr-4', title: 'NPS score > 50', current_value: 42, target_value: 50, start_value: 30, unit: 'pts', status: 'at_risk', weight: 1 },
+      { id: 'kr-5', title: 'Tiempo de respuesta soporte < 4h', current_value: 3.5, target_value: 4, start_value: 8, unit: 'horas', status: 'achieved', weight: 1 }
+    ]
+  },
+  {
+    id: 'demo-3',
+    title: 'Optimizar eficiencia operativa',
+    description: 'Reducir costes y mejorar procesos internos',
+    quarter: 'Q1',
+    year: 2024,
+    status: 'completed',
+    target_date: '2024-02-28',
+    created_at: '2024-01-01',
+    progress: 100,
+    key_results: [
+      { id: 'kr-6', title: 'Automatizar 5 procesos manuales', current_value: 5, target_value: 5, start_value: 0, unit: 'procesos', status: 'achieved', weight: 1 },
+      { id: 'kr-7', title: 'Reducir costes operativos 15%', current_value: 18, target_value: 15, start_value: 0, unit: '%', status: 'achieved', weight: 1 }
+    ]
+  }
+];
+
 const OrganizationOKRHistory = () => {
   const { user, currentOrganizationId } = useAuth();
   const navigate = useNavigate();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('historial');
+  const [showDemoData, setShowDemoData] = useState(true);
 
   useEffect(() => {
     if (user && currentOrganizationId) {
@@ -188,6 +243,11 @@ const OrganizationOKRHistory = () => {
     );
   }
 
+  // Determinar si mostrar demo data
+  const hasRealData = objectives.length > 0;
+  const displayObjectives = (showDemoData && !hasRealData) ? DEMO_OBJECTIVES : objectives;
+  const isDemo = showDemoData && !hasRealData;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background pb-20 md:pb-0">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 shadow-card">
@@ -203,15 +263,29 @@ const OrganizationOKRHistory = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/okrs/organization')}
-            className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3 flex-shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden md:inline">Volver</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Toggle de datos demo */}
+            <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="okr-demo" className="text-xs text-muted-foreground hidden md:inline">
+                Demo
+              </Label>
+              <Switch
+                id="okr-demo"
+                checked={showDemoData}
+                onCheckedChange={setShowDemoData}
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/okrs/organization')}
+              className="gap-1 md:gap-2 h-8 md:h-9 px-2 md:px-3 flex-shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden md:inline">Volver</span>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -243,6 +317,17 @@ const OrganizationOKRHistory = () => {
 
           {/* Tab: Historial */}
           <TabsContent value="historial" className="space-y-6">
+            {/* Demo Alert */}
+            {isDemo && (
+              <Alert className="bg-primary/10 border-primary/30">
+                <Eye className="h-4 w-4" />
+                <AlertDescription className="flex items-center gap-2">
+                  <Badge variant="secondary">DEMO</Badge>
+                  Datos de ejemplo. Genera tus OKRs organizacionales para ver datos reales.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Progreso General */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -263,7 +348,7 @@ const OrganizationOKRHistory = () => {
                 <div>
                   <h2 className="text-2xl font-bold">Historial Completo</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {objectives.length} objetivo(s) organizacional(es)
+                    {displayObjectives.length} objetivo(s) organizacional(es) {isDemo && '(demo)'}
                   </p>
                 </div>
                 <Button
@@ -271,25 +356,30 @@ const OrganizationOKRHistory = () => {
                   size="sm"
                   onClick={fetchOrganizationOKRHistory}
                   className="gap-2"
+                  disabled={isDemo}
                 >
                   <RefreshCw className="w-4 h-4" />
                   Actualizar
                 </Button>
               </div>
 
-              {objectives.length === 0 ? (
+              {displayObjectives.length === 0 ? (
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-16">
                     <History className="w-16 h-16 text-muted-foreground mb-4" />
                     <h3 className="text-xl font-semibold mb-2">No hay OKRs organizacionales</h3>
-                    <p className="text-muted-foreground text-center max-w-md">
-                      El historial de OKRs organizacionales aparecerá aquí una vez que se generen durante el onboarding.
+                    <p className="text-muted-foreground text-center max-w-md mb-4">
+                      El historial de OKRs organizacionales aparecerá aquí una vez que se generen.
                     </p>
+                    <Button variant="outline" onClick={() => setShowDemoData(true)} className="gap-2">
+                      <Eye className="w-4 h-4" />
+                      Ver datos demo
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-6">
-                  {objectives.map((objective) => (
+                  {displayObjectives.map((objective) => (
                     <Card key={objective.id}>
                       <CardHeader>
                         <div className="flex items-start justify-between">
@@ -367,22 +457,22 @@ const OrganizationOKRHistory = () => {
 
           {/* Tab: Trimestral */}
           <TabsContent value="trimestral">
-            <OKRQuarterlyView />
+            <OKRQuarterlyView showDemoData={showDemoData} />
           </TabsContent>
 
           {/* Tab: Check-in */}
           <TabsContent value="checkin">
-            <OKRCheckInForm />
+            <OKRCheckInForm showDemoData={showDemoData} />
           </TabsContent>
 
           {/* Tab: Dependencias */}
           <TabsContent value="dependencias">
-            <OKRDependencyMap type="organizational" />
+            <OKRDependencyMap type="organizational" showDemoData={showDemoData} />
           </TabsContent>
 
           {/* Tab: Retrospectiva */}
           <TabsContent value="retrospectiva">
-            <OKRRetrospective type="organizational" />
+            <OKRRetrospective type="organizational" showDemoData={showDemoData} />
           </TabsContent>
         </Tabs>
       </main>
