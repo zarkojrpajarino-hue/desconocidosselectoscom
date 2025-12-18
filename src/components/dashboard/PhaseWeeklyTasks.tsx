@@ -146,6 +146,14 @@ export function PhaseWeeklyTasks() {
     ? Math.round((completedThisWeek / currentWeekTasks.length) * 100) 
     : 0;
   
+  // Get next week's tasks for "Extra Tasks" section
+  const nextWeekTasks = weeklyData.tasksByWeek[displayWeek + 1] || [];
+  const hasNextWeek = displayWeek < weeklyData.totalWeeks && nextWeekTasks.length > 0;
+  const showExtraTasks = weekProgress === 100 && hasNextWeek;
+  
+  // Count completed extra tasks
+  const completedExtraTasks = nextWeekTasks.filter(t => t.is_completed).length;
+  
   const goToPreviousWeek = () => {
     if (displayWeek > 1) {
       setSelectedWeek(displayWeek - 1);
@@ -308,31 +316,47 @@ export function PhaseWeeklyTasks() {
             </div>
           )}
           
-          {/* Week Complete - Continue Working Card */}
-          {weekProgress === 100 && displayWeek < weeklyData.totalWeeks && (
+          {/* Week Complete - Extra Tasks Section */}
+          {showExtraTasks && (
             <Card className="mt-4 border-success/30 bg-gradient-to-r from-success/5 to-success/10">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
                       <CheckCircle2 className="w-5 h-5 text-success" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">
-                        ¡Semana completada!
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        ¿Quieres seguir trabajando con tareas de la próxima semana?
-                      </p>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-success" />
+                        Tareas Extra - Semana {displayWeek + 1}
+                      </CardTitle>
+                      <CardDescription>
+                        ¡Semana completada! Puedes adelantar trabajo ({completedExtraTasks}/{nextWeekTasks.length} completadas)
+                      </CardDescription>
                     </div>
                   </div>
-                  <Button 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={goToNextWeek}
                     className="shrink-0"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Ver tareas de semana {displayWeek + 1}
+                    Ir a semana {displayWeek + 1}
                   </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {nextWeekTasks.map((task) => (
+                    <PhaseTaskCard
+                      key={task.id}
+                      task={{ ...task, organization_id: currentOrganizationId }}
+                      userId={user?.id || ''}
+                      onComplete={handleTaskComplete}
+                      remainingSwaps={remainingSwaps}
+                      onSwapComplete={handleSwapComplete}
+                    />
+                  ))}
                 </div>
               </CardContent>
             </Card>
