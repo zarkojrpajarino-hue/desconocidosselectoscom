@@ -10,6 +10,7 @@ import {
   AlertTriangle, CheckCircle, BarChart3, PieChart,
   ArrowUpRight, ArrowDownRight, Shield, Zap
 } from 'lucide-react';
+import { DEMO_CALCULADORA } from '@/data/demo-practicar-data';
 
 // Types for Calculadora content
 interface MarketValue { value?: string; calculation?: string }
@@ -72,8 +73,21 @@ const Calculadora = () => {
     }
   };
 
-  const renderContent = (calc: CalculadoraData) => {
+  const renderContent = (data: Record<string, unknown>) => {
+    const calc = data as CalculadoraData;
     if (!calc) return null;
+
+    // Safety checks for arrays
+    const trends = Array.isArray(calc.market_analysis?.trends) ? calc.market_analysis.trends : [];
+    const growthLevers = Array.isArray(calc.growth_levers) ? calc.growth_levers : [];
+    const riskAssessment = Array.isArray(calc.risk_assessment) ? calc.risk_assessment : [];
+    const strengths = Array.isArray(calc.competitive_position?.strengths) ? calc.competitive_position.strengths : [];
+    const weaknesses = Array.isArray(calc.competitive_position?.weaknesses) ? calc.competitive_position.weaknesses : [];
+    const opportunities = Array.isArray(calc.competitive_position?.opportunities) ? calc.competitive_position.opportunities : [];
+    const threats = Array.isArray(calc.competitive_position?.threats) ? calc.competitive_position.threats : [];
+    const immediate = Array.isArray(calc.action_plan?.immediate) ? calc.action_plan.immediate : [];
+    const shortTerm = Array.isArray(calc.action_plan?.short_term) ? calc.action_plan.short_term : [];
+    const longTerm = Array.isArray(calc.action_plan?.long_term) ? calc.action_plan.long_term : [];
 
     return (
       <div className="space-y-6 md:space-y-8">
@@ -486,6 +500,7 @@ const Calculadora = () => {
             title="Calculadora de Oportunidad de Negocio"
             description="Análisis de mercado, proyecciones financieras, unit economics y plan de acción personalizado"
             renderContent={renderContent}
+            demoData={DEMO_CALCULADORA}
           />
         </div>
       </div>

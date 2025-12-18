@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, User, Briefcase, ArrowRight, RotateCcw, Trophy, Lightbulb } from 'lucide-react';
+import { DEMO_SIMULADOR } from '@/data/demo-practicar-data';
 
 interface QuickTip {
   category: string;
@@ -61,7 +62,8 @@ const Simulador = () => {
 
   const handleNextStage = (scenario: Scenario) => {
     setShowFeedback(false);
-    if (scenario.conversation_flow && currentStage < scenario.conversation_flow.length - 1) {
+    const flow = scenario.conversation_flow || [];
+    if (currentStage < flow.length - 1) {
       setCurrentStage(currentStage + 1);
     } else {
       setCompleted(true);
@@ -79,22 +81,35 @@ const Simulador = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
-      case 'fácil': return 'bg-green-500/10 text-green-700 border-green-200';
-      case 'medio': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
-      case 'difícil': return 'bg-red-500/10 text-red-700 border-red-200';
+      case 'fácil': return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800';
+      case 'medio': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
+      case 'difícil': return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
       default: return 'bg-muted text-muted-foreground';
     }
   };
 
-  const renderContent = (simulador: SimuladorContent) => {
-    if (!simulador?.scenarios) return null;
+  const renderContent = (data: Record<string, unknown>) => {
+    // Safety check: ensure data exists and cast properly
+    const simulador = data as SimuladorContent;
+    
+    // Safety check: ensure scenarios is an array
+    const scenarios = Array.isArray(simulador?.scenarios) ? simulador.scenarios : [];
+    const quickTips = Array.isArray(simulador?.quick_tips) ? simulador.quick_tips : [];
+
+    if (scenarios.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No hay escenarios disponibles</p>
+        </div>
+      );
+    }
 
     // Vista de selección de escenarios
     if (activeScenario === null) {
       return (
         <div className="space-y-6">
           {/* Quick Tips */}
-          {simulador.quick_tips && (
+          {quickTips.length > 0 && (
             <Card className="bg-primary/5 border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -104,7 +119,7 @@ const Simulador = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-3">
-                  {simulador.quick_tips.map((tip: QuickTip, idx: number) => (
+                  {quickTips.map((tip: QuickTip, idx: number) => (
                     <div key={idx} className="flex items-start gap-2 text-sm">
                       <Badge variant="outline" className="shrink-0">{tip.category}</Badge>
                       <span className="text-muted-foreground">{tip.tip}</span>
@@ -117,7 +132,7 @@ const Simulador = () => {
 
           {/* Scenario Selection */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {simulador.scenarios.map((scenario: Scenario, idx: number) => (
+            {scenarios.map((scenario: Scenario, idx: number) => (
               <Card 
                 key={idx} 
                 className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
@@ -162,18 +177,31 @@ const Simulador = () => {
       );
     }
 
-    const scenario = simulador.scenarios[activeScenario];
-    const flow = scenario.conversation_flow || [];
+    const scenario = scenarios[activeScenario];
+    if (!scenario) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Escenario no encontrado</p>
+          <Button onClick={resetScenario} className="mt-4">Volver</Button>
+        </div>
+      );
+    }
+    
+    const flow = Array.isArray(scenario.conversation_flow) ? scenario.conversation_flow : [];
     const currentFlow = flow[currentStage];
     const totalStages = flow.length;
     const maxPossibleScore = flow.reduce((acc: number, stage: ConversationStage) => {
-      const maxOption = Math.max(...(stage.options?.map((o: ResponseOption) => o.score) || [0]));
+      const options = Array.isArray(stage.options) ? stage.options : [];
+      const scores = options.map((o: ResponseOption) => o.score || 0);
+      const maxOption = scores.length > 0 ? Math.max(...scores) : 0;
       return acc + maxOption;
     }, 0);
 
     // Vista de escenario completado
     if (completed) {
-      const percentage = Math.round((score / maxPossibleScore) * 100);
+      const percentage = maxPossibleScore > 0 ? Math.round((score / maxPossibleScore) * 100) : 0;
+      const learningPoints = Array.isArray(scenario.learning_points) ? scenario.learning_points : [];
+      
       return (
         <div className="max-w-2xl mx-auto">
           <Card>
@@ -197,11 +225,11 @@ const Simulador = () => {
                 </div>
               )}
 
-              {scenario.learning_points && scenario.learning_points.length > 0 && (
+              {learningPoints.length > 0 && (
                 <div>
                   <h4 className="font-semibold mb-2">Aprendizajes Clave</h4>
                   <ul className="space-y-2">
-                    {scenario.learning_points.map((point: string, idx: number) => (
+                    {learningPoints.map((point: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2 text-sm">
                         <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                         <span>{point}</span>
@@ -236,6 +264,17 @@ const Simulador = () => {
     }
 
     // Vista de simulación activa
+    if (!currentFlow) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Error en el flujo de conversación</p>
+          <Button onClick={resetScenario} className="mt-4">Volver</Button>
+        </div>
+      );
+    }
+
+    const currentOptions = Array.isArray(currentFlow.options) ? currentFlow.options : [];
+
     return (
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
@@ -268,7 +307,9 @@ const Simulador = () => {
                   </p>
                   <div className="flex gap-2 mt-1">
                     <Badge variant="outline" className="text-xs">{scenario.client_profile.personality}</Badge>
-                    <Badge variant="outline" className="text-xs">{scenario.client_profile.budget_level} presupuesto</Badge>
+                    {scenario.client_profile.budget_level && (
+                      <Badge variant="outline" className="text-xs">{scenario.client_profile.budget_level} presupuesto</Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -277,76 +318,76 @@ const Simulador = () => {
         )}
 
         {/* Conversation */}
-        {currentFlow && (
-          <Card>
-            <CardHeader>
-              <Badge className="w-fit">{currentFlow.stage}</Badge>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Client Message */}
-              <div className="bg-muted rounded-lg p-4">
-                <p className="text-sm text-muted-foreground mb-1">El cliente dice:</p>
-                <p className="font-medium">"{currentFlow.client_says}"</p>
-              </div>
+        <Card>
+          <CardHeader>
+            <Badge className="w-fit">{currentFlow.stage}</Badge>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Client Message */}
+            <div className="bg-muted rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">El cliente dice:</p>
+              <p className="font-medium">"{currentFlow.client_says}"</p>
+            </div>
 
-              {/* Response Options */}
-              {!showFeedback ? (
-                <div className="space-y-3">
-                  <p className="text-sm font-medium">¿Cómo respondes?</p>
-                  {currentFlow.options?.map((option: ResponseOption, idx: number) => (
-                    <Button
+            {/* Response Options */}
+            {!showFeedback ? (
+              <div className="space-y-3">
+                <p className="text-sm font-medium">¿Cómo respondes?</p>
+                {currentOptions.map((option: ResponseOption, idx: number) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    className="w-full text-left justify-start h-auto py-3 px-4"
+                    onClick={() => handleSelectResponse(idx, option.score || 0)}
+                  >
+                    <span className="whitespace-normal">{option.response}</span>
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Selected Response Feedback */}
+                {currentOptions.map((option: ResponseOption, idx: number) => {
+                  const isSelected = selectedResponses[currentStage] === idx;
+                  const scores = currentOptions.map((o: ResponseOption) => o.score || 0);
+                  const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
+                  const isBest = (option.score || 0) === maxScore;
+                  
+                  return (
+                    <div 
                       key={idx}
-                      variant="outline"
-                      className="w-full text-left justify-start h-auto py-3 px-4"
-                      onClick={() => handleSelectResponse(idx, option.score)}
+                      className={`rounded-lg p-4 border-2 ${
+                        isSelected 
+                          ? isBest ? 'border-green-500 bg-green-500/10' : 'border-orange-500 bg-orange-500/10'
+                          : isBest ? 'border-green-500/30 bg-green-500/5' : 'border-transparent bg-muted/50'
+                      }`}
                     >
-                      <span className="whitespace-normal">{option.response}</span>
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Selected Response Feedback */}
-                  {currentFlow.options?.map((option: ResponseOption, idx: number) => {
-                    const isSelected = selectedResponses[currentStage] === idx;
-                    const isBest = option.score === Math.max(...(currentFlow.options?.map((o: ResponseOption) => o.score) || [0]));
-                    
-                    return (
-                      <div 
-                        key={idx}
-                        className={`rounded-lg p-4 border-2 ${
-                          isSelected 
-                            ? isBest ? 'border-green-500 bg-green-500/10' : 'border-orange-500 bg-orange-500/10'
-                            : isBest ? 'border-green-500/30 bg-green-500/5' : 'border-transparent bg-muted/50'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          {isSelected && (isBest ? 
-                            <CheckCircle className="h-5 w-5 text-green-500 shrink-0" /> : 
-                            <XCircle className="h-5 w-5 text-orange-500 shrink-0" />
-                          )}
-                          {!isSelected && isBest && <CheckCircle className="h-5 w-5 text-green-500/50 shrink-0" />}
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{option.response}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{option.feedback}</p>
-                            <Badge variant="secondary" className="mt-2 text-xs">
-                              +{option.score} puntos
-                            </Badge>
-                          </div>
+                      <div className="flex items-start gap-2">
+                        {isSelected && (isBest ? 
+                          <CheckCircle className="h-5 w-5 text-green-500 shrink-0" /> : 
+                          <XCircle className="h-5 w-5 text-orange-500 shrink-0" />
+                        )}
+                        {!isSelected && isBest && <CheckCircle className="h-5 w-5 text-green-500/50 shrink-0" />}
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{option.response}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{option.feedback}</p>
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            +{option.score || 0} puntos
+                          </Badge>
                         </div>
                       </div>
-                    );
-                  })}
-                  
-                  <Button onClick={() => handleNextStage(scenario)} className="w-full">
-                    {currentStage < totalStages - 1 ? 'Siguiente Etapa' : 'Ver Resultados'}
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                    </div>
+                  );
+                })}
+                
+                <Button onClick={() => handleNextStage(scenario)} className="w-full">
+                  {currentStage < totalStages - 1 ? 'Siguiente Etapa' : 'Ver Resultados'}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -357,6 +398,7 @@ const Simulador = () => {
       title="Simulador de Ventas"
       description="Practica tus habilidades de venta con escenarios interactivos y obtén feedback inmediato"
       renderContent={renderContent}
+      demoData={DEMO_SIMULADOR}
     />
   );
 };

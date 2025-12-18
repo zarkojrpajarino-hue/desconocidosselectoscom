@@ -2,6 +2,7 @@ import ToolContentViewer from '@/components/ToolContentViewer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, MessageSquare, Mail, Lightbulb } from 'lucide-react';
+import { DEMO_GUIA } from '@/data/demo-practicar-data';
 
 interface PreferredTerm {
   instead_of: string;
@@ -271,6 +272,7 @@ const Guia = () => {
       title="Guía de Comunicación"
       description="Guía completa de tono de voz, mensajes clave y templates de comunicación para tu marca"
       renderContent={renderContent}
+      demoData={DEMO_GUIA}
     />
   );
 };
