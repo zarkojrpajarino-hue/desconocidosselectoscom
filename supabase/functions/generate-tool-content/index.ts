@@ -957,6 +957,130 @@ Genera SOLO el JSON con este formato exacto:
           required: ['objections'],
           additionalProperties: false
         }
+      },
+      sales_playbook: {
+        name: 'generate_sales_playbook',
+        description: 'Genera un playbook de ventas completo',
+        parameters: {
+          type: 'object',
+          properties: {
+            intro: {
+              type: 'object',
+              properties: {
+                big_message: { type: 'string' },
+                key_points: { type: 'array', items: { type: 'string' } }
+              },
+              required: ['big_message', 'key_points']
+            },
+            scenarios: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  icon: { type: 'string' },
+                  tone: { type: 'string' },
+                  channels: {
+                    type: 'object',
+                    properties: {
+                      instagram: { type: 'string' },
+                      whatsapp: { type: 'string' },
+                      email: { type: 'string' },
+                      phone: { type: 'string' },
+                      presencial: { type: 'string' }
+                    }
+                  },
+                  key_phrases: { type: 'array', items: { type: 'string' } },
+                  objections: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        question: { type: 'string' },
+                        response: { type: 'string' }
+                      },
+                      required: ['question', 'response']
+                    }
+                  },
+                  closing_steps: { type: 'array', items: { type: 'string' } }
+                },
+                required: ['name', 'icon', 'tone', 'channels', 'key_phrases', 'objections', 'closing_steps']
+              }
+            },
+            tips: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' }
+                },
+                required: ['title', 'description']
+              }
+            },
+            final_message: { type: 'string' }
+          },
+          required: ['intro', 'scenarios', 'tips', 'final_message'],
+          additionalProperties: false
+        }
+      },
+      communication_guide: {
+        name: 'generate_communication_guide',
+        description: 'Genera una guía de comunicación de marca',
+        parameters: {
+          type: 'object',
+          properties: {
+            brand_voice: {
+              type: 'object',
+              properties: {
+                personality: { type: 'string' },
+                tone: { type: 'string' },
+                style: { type: 'string' },
+                do_list: { type: 'array', items: { type: 'string' } },
+                dont_list: { type: 'array', items: { type: 'string' } }
+              },
+              required: ['personality', 'tone', 'style', 'do_list', 'dont_list']
+            },
+            messaging: {
+              type: 'object',
+              properties: {
+                tagline: { type: 'string' },
+                elevator_pitch: { type: 'string' },
+                key_messages: { type: 'array', items: { type: 'string' } },
+                value_propositions: { type: 'array', items: { type: 'string' } }
+              },
+              required: ['tagline', 'elevator_pitch', 'key_messages', 'value_propositions']
+            },
+            audience_messaging: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  segment: { type: 'string' },
+                  pain_points: { type: 'array', items: { type: 'string' } },
+                  messaging_focus: { type: 'string' },
+                  sample_copy: { type: 'string' }
+                },
+                required: ['segment', 'pain_points', 'messaging_focus', 'sample_copy']
+              }
+            },
+            channel_guidelines: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  channel: { type: 'string' },
+                  tone: { type: 'string' },
+                  content_types: { type: 'array', items: { type: 'string' } },
+                  best_practices: { type: 'array', items: { type: 'string' } }
+                },
+                required: ['channel', 'tone', 'content_types', 'best_practices']
+              }
+            }
+          },
+          required: ['brand_voice', 'messaging', 'audience_messaging', 'channel_guidelines'],
+          additionalProperties: false
+        }
       }
     }
 
