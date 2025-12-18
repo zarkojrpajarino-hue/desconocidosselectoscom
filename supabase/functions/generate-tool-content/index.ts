@@ -703,47 +703,59 @@ Genera SOLO el JSON con este formato exacto:
 
     console.log('Calling Lovable AI...')
 
-    // Llamar a Lovable AI
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-      }),
-    })
+    // Función para llamar a la IA con reintentos
+    const callAIWithRetry = async (retries = 2): Promise<Record<string, unknown>> => {
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 4096, // Asegurar respuestas completas
+        }),
+      })
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text()
-      console.error('AI API error:', aiResponse.status, errorText)
-      throw new Error(`Error de IA: ${aiResponse.status}`)
-    }
-
-    const aiData = await aiResponse.json()
-    const content = aiData.choices[0].message.content
-
-    console.log('AI response received')
-
-    // Parsear respuesta
-    let toolContent
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('No se encontró JSON en la respuesta')
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text()
+        console.error('AI API error:', aiResponse.status, errorText)
+        throw new Error(`Error de IA: ${aiResponse.status}`)
       }
-      toolContent = JSON.parse(jsonMatch[0])
-    } catch (parseError) {
-      console.error('Error parsing AI response:', parseError)
-      console.log('AI content:', content)
-      throw new Error('Error al parsear respuesta de IA')
+
+      const aiData = await aiResponse.json()
+      const content = aiData.choices[0].message.content
+
+      console.log('AI response received, length:', content.length)
+
+      // Parsear respuesta
+      try {
+        // Intentar extraer JSON de la respuesta
+        const jsonMatch = content.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) {
+          throw new Error('No se encontró JSON en la respuesta')
+        }
+        return JSON.parse(jsonMatch[0])
+      } catch (parseError) {
+        console.error('Parse error:', parseError)
+        console.log('AI content preview:', content.substring(0, 500))
+        
+        if (retries > 0) {
+          console.log(`Reintentando... (${retries} intentos restantes)`)
+          // Esperar un poco antes de reintentar
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return callAIWithRetry(retries - 1)
+        }
+        throw new Error('Error al parsear respuesta de IA después de varios intentos')
+      }
     }
+
+    const toolContent = await callAIWithRetry()
 
     console.log('Saving tool content to database...')
 
