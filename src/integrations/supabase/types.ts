@@ -7475,6 +7475,8 @@ export type Database = {
           id: string
           linked_organization_ids: string[] | null
           org_color_map: Json | null
+          personal_week_start: string | null
+          preferred_week_start_day: number | null
           saved_filters: Json | null
           show_org_tasks: boolean | null
           show_personal_tasks: boolean | null
@@ -7489,6 +7491,8 @@ export type Database = {
           id?: string
           linked_organization_ids?: string[] | null
           org_color_map?: Json | null
+          personal_week_start?: string | null
+          preferred_week_start_day?: number | null
           saved_filters?: Json | null
           show_org_tasks?: boolean | null
           show_personal_tasks?: boolean | null
@@ -7503,6 +7507,8 @@ export type Database = {
           id?: string
           linked_organization_ids?: string[] | null
           org_color_map?: Json | null
+          personal_week_start?: string | null
+          preferred_week_start_day?: number | null
           saved_filters?: Json | null
           show_org_tasks?: boolean | null
           show_personal_tasks?: boolean | null
@@ -8754,6 +8760,8 @@ export type Database = {
           id: string
           linked_organization_ids: string[] | null
           org_color_map: Json | null
+          personal_week_start: string | null
+          preferred_week_start_day: number | null
           saved_filters: Json | null
           show_org_tasks: boolean | null
           show_personal_tasks: boolean | null

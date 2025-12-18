@@ -10,6 +10,7 @@ import UserOrganizations from '@/components/UserOrganizations';
 import OrganizationUsers from '@/components/OrganizationUsers';
 import ProductsManager from '@/components/ProductsManager';
 import { NotificationSettings } from '@/components/mobile/NotificationSettings';
+import { WeekStartDaySelector } from '@/components/settings/WeekStartDaySelector';
 import { useOnboardingTour } from '@/hooks/useOnboardingTour';
 import { useIsMobileDevice } from '@/hooks/useDeviceType';
 
@@ -122,8 +123,9 @@ const Profile = () => {
             )}
           </TabsList>
 
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="space-y-6">
             <UserProfile />
+            <WeekStartDaySelector />
           </TabsContent>
 
           <TabsContent value="organizations">
