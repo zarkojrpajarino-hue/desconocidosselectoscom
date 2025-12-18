@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Target, TrendingUp, TrendingDown, CheckCircle2,
-  AlertTriangle, Calendar, Users 
+  AlertTriangle, Calendar, Users, ChevronDown, Info, Eye
 } from 'lucide-react';
 
 interface OKRQuarterlyViewProps {
   type?: 'organizational' | 'weekly';
+  showDemoData?: boolean;
 }
 
 interface Objective {
@@ -36,6 +39,38 @@ interface KeyResult {
   status: string;
 }
 
+// Datos demo
+const DEMO_OBJECTIVES: Objective[] = [
+  {
+    id: 'demo-1',
+    title: 'Incrementar ingresos recurrentes mensuales',
+    description: 'Objetivo estratégico para Q1',
+    quarter: 'Semana 1-2',
+    year: 2024,
+    status: 'on_track',
+    progress: 75,
+    owner_name: 'Tu nombre',
+    key_results: [
+      { id: 'kr-1', title: 'Aumentar MRR a €50k', current_value: 37500, target_value: 50000, progress: 75, status: 'on_track' },
+      { id: 'kr-2', title: 'Conseguir 20 nuevos clientes', current_value: 16, target_value: 20, progress: 80, status: 'on_track' },
+    ]
+  },
+  {
+    id: 'demo-2',
+    title: 'Mejorar satisfacción del cliente',
+    description: 'NPS y retención',
+    quarter: 'Semana 1-2',
+    year: 2024,
+    status: 'at_risk',
+    progress: 45,
+    owner_name: 'Tu nombre',
+    key_results: [
+      { id: 'kr-3', title: 'NPS > 50', current_value: 42, target_value: 50, progress: 84, status: 'on_track' },
+      { id: 'kr-4', title: 'Reducir churn a <5%', current_value: 8, target_value: 5, progress: 38, status: 'at_risk' },
+    ]
+  }
+];
+
 const statusConfig = {
   achieved: { color: 'text-emerald-600', bg: 'bg-emerald-500/10', icon: CheckCircle2, label: 'Logrado' },
   on_track: { color: 'text-blue-600', bg: 'bg-blue-500/10', icon: TrendingUp, label: 'En camino' },
@@ -44,7 +79,7 @@ const statusConfig = {
   active: { color: 'text-blue-600', bg: 'bg-blue-500/10', icon: Target, label: 'Activo' },
 };
 
-export function OKRQuarterlyView({ type = 'organizational' }: OKRQuarterlyViewProps) {
+export function OKRQuarterlyView({ type = 'organizational', showDemoData = false }: OKRQuarterlyViewProps) {
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
   const [data, setData] = useState<Objective[]>([]);
@@ -180,15 +215,61 @@ export function OKRQuarterlyView({ type = 'organizational' }: OKRQuarterlyViewPr
     );
   }
 
-  const objectives = data || [];
+  // Use demo data if enabled and no real data
+  const displayData = (data.length === 0 && showDemoData) ? DEMO_OBJECTIVES : data;
+  const objectives = displayData || [];
+  const isDemo = data.length === 0 && showDemoData;
+  
   const avgProgress = objectives.length > 0
     ? Math.round(objectives.reduce((sum, o) => sum + o.progress, 0) / objectives.length)
     : 0;
   const onTrackCount = objectives.filter(o => o.progress >= 70).length;
   const atRiskCount = objectives.filter(o => o.progress < 50).length;
 
+  const [showExplanation, setShowExplanation] = useState(false);
+
   return (
     <div className="space-y-6">
+      {/* Explanation Collapsible */}
+      <Collapsible open={showExplanation} onOpenChange={setShowExplanation}>
+        <Card className="border-primary/20 bg-primary/5">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-primary/10 transition-colors py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">¿Qué es la Vista Trimestral?</CardTitle>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform ${showExplanation ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 text-sm text-muted-foreground space-y-2">
+              <p><strong className="text-foreground">Vista panorámica de todos tus OKRs</strong> en el período actual (trimestre u semanas).</p>
+              <p>Aquí puedes ver:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>El progreso global de todos tus objetivos</li>
+                <li>Cuántos OKRs van "en camino" vs "en riesgo"</li>
+                <li>El desglose de cada Key Result por objetivo</li>
+              </ul>
+              <p className="text-primary">💡 Usa esta vista para tener una foto completa de tu progreso antes de reuniones de seguimiento.</p>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Demo Badge */}
+      {isDemo && (
+        <Alert className="border-info/50 bg-info/10">
+          <Eye className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <Badge variant="secondary">DEMO</Badge>
+            Datos de ejemplo. Genera tus OKRs para ver datos reales.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

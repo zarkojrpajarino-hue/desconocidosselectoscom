@@ -6,17 +6,20 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Target, TrendingUp, Save, CheckCircle2,
-  Calendar, MessageSquare 
+  Calendar, MessageSquare, ChevronDown, Info, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OKRCheckInFormProps {
   type?: 'organizational' | 'weekly';
+  showDemoData?: boolean;
 }
 
 interface KeyResult {
@@ -30,7 +33,14 @@ interface KeyResult {
   comment?: string;
 }
 
-export function OKRCheckInForm({ type = 'organizational' }: OKRCheckInFormProps) {
+// Datos demo
+const DEMO_KEY_RESULTS: KeyResult[] = [
+  { id: 'demo-kr-1', title: 'Aumentar MRR a €50k', current_value: 37500, target_value: 50000, objective_title: 'Incrementar ingresos', quarter: 'Semana 1-2', new_value: 37500, comment: '' },
+  { id: 'demo-kr-2', title: 'Conseguir 20 nuevos clientes', current_value: 16, target_value: 20, objective_title: 'Incrementar ingresos', quarter: 'Semana 1-2', new_value: 16, comment: '' },
+  { id: 'demo-kr-3', title: 'NPS > 50', current_value: 42, target_value: 50, objective_title: 'Satisfacción cliente', quarter: 'Semana 1-2', new_value: 42, comment: '' },
+];
+
+export function OKRCheckInForm({ type = 'organizational', showDemoData = false }: OKRCheckInFormProps) {
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
   const [data, setData] = useState<KeyResult[]>([]);
@@ -185,11 +195,57 @@ export function OKRCheckInForm({ type = 'organizational' }: OKRCheckInFormProps)
     );
   }
 
-  const keyResults = data || [];
+  // Use demo data if enabled and no real data
+  const displayData = (data.length === 0 && showDemoData) ? DEMO_KEY_RESULTS : data;
+  const keyResults = displayData || [];
+  const isDemo = data.length === 0 && showDemoData;
   const hasChanges = keyResults.some(kr => kr.new_value !== kr.current_value || kr.comment);
+
+  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <div className="space-y-6">
+      {/* Explanation Collapsible */}
+      <Collapsible open={showExplanation} onOpenChange={setShowExplanation}>
+        <Card className="border-primary/20 bg-primary/5">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-primary/10 transition-colors py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">¿Qué es el Check-in?</CardTitle>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform ${showExplanation ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 text-sm text-muted-foreground space-y-2">
+              <p><strong className="text-foreground">Actualización periódica del progreso</strong> de tus Key Results.</p>
+              <p>El check-in te permite:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Registrar el valor actual de cada métrica</li>
+                <li>Añadir comentarios sobre acciones tomadas</li>
+                <li>Documentar obstáculos encontrados</li>
+                <li>Mantener un historial de actualizaciones</li>
+              </ul>
+              <p className="text-primary">💡 Recomendado: Haz check-in al menos una vez por semana para mantener visibilidad.</p>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Demo Badge */}
+      {isDemo && (
+        <Alert className="border-info/50 bg-info/10">
+          <Eye className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <Badge variant="secondary">DEMO</Badge>
+            Datos de ejemplo. Genera tus OKRs para hacer check-in real.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -203,7 +259,7 @@ export function OKRCheckInForm({ type = 'organizational' }: OKRCheckInFormProps)
         </div>
         <Button 
           onClick={handleSubmit} 
-          disabled={!hasChanges || saving}
+          disabled={!hasChanges || saving || isDemo}
           className="gap-2"
         >
           {saving ? (

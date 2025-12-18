@@ -291,19 +291,19 @@ const OKRsPage = () => {
           </TabsContent>
 
           <TabsContent value="quarterly">
-            <OKRQuarterlyView type="weekly" />
+            <OKRQuarterlyView type="weekly" showDemoData={showDemoData} />
           </TabsContent>
 
           <TabsContent value="checkin">
-            <OKRCheckInForm type="weekly" />
+            <OKRCheckInForm type="weekly" showDemoData={showDemoData} />
           </TabsContent>
 
           <TabsContent value="dependencies">
-            <OKRDependencyMap type="weekly" />
+            <OKRDependencyMap type="weekly" showDemoData={showDemoData} />
           </TabsContent>
 
           <TabsContent value="retro">
-            <OKRRetrospective type="weekly" />
+            <OKRRetrospective type="weekly" showDemoData={showDemoData} />
           </TabsContent>
         </Tabs>
       </main>

@@ -7,6 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,13 +16,14 @@ import {
   Target, CheckCircle2, XCircle, TrendingUp,
   Lightbulb, AlertTriangle, Award,
   Calendar, ThumbsUp, ThumbsDown, Star,
-  Save, FileText, RefreshCw
+  Save, FileText, RefreshCw, ChevronDown, Info, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 interface OKRRetrospectiveProps {
   type?: 'organizational' | 'weekly';
+  showDemoData?: boolean;
 }
 
 interface ObjectiveSummary {
@@ -49,7 +52,22 @@ interface RetroData {
   satisfaction_rating: number;
 }
 
-export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectiveProps) {
+// Datos demo
+const DEMO_OBJECTIVES: ObjectiveSummary[] = [
+  { id: 'demo-1', title: 'Incrementar MRR a €50k', quarter: 'Semana 1-2', final_progress: 95, status: 'achieved', key_results_achieved: 2, key_results_total: 2 },
+  { id: 'demo-2', title: 'Mejorar satisfacción cliente', quarter: 'Semana 1-2', final_progress: 72, status: 'partial', key_results_achieved: 1, key_results_total: 2 },
+  { id: 'demo-3', title: 'Lanzar nueva feature', quarter: 'Semana 1-2', final_progress: 45, status: 'missed', key_results_achieved: 0, key_results_total: 2 },
+];
+
+const DEMO_STATS: PeriodStats = {
+  total_objectives: 3,
+  achieved: 1,
+  partial: 1,
+  missed: 1,
+  average_progress: 71,
+};
+
+export function OKRRetrospective({ type = 'organizational', showDemoData = false }: OKRRetrospectiveProps) {
   const { t } = useTranslation();
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
@@ -313,8 +331,56 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
     missed: { color: 'text-rose-600', bg: 'bg-rose-500/10', icon: XCircle, label: 'No logrado' },
   };
 
+  // Use demo data if enabled and no real data
+  const displayObjectives = (objectives.length === 0 && showDemoData) ? DEMO_OBJECTIVES : objectives;
+  const displayStats = (objectives.length === 0 && showDemoData) ? DEMO_STATS : stats;
+  const isDemo = objectives.length === 0 && showDemoData;
+
+  const [showExplanation, setShowExplanation] = useState(false);
+
   return (
     <div className="space-y-6">
+      {/* Explanation Collapsible */}
+      <Collapsible open={showExplanation} onOpenChange={setShowExplanation}>
+        <Card className="border-primary/20 bg-primary/5">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-primary/10 transition-colors py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">¿Qué es la Retrospectiva?</CardTitle>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform ${showExplanation ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 text-sm text-muted-foreground space-y-2">
+              <p><strong className="text-foreground">Reflexión estructurada</strong> sobre tus OKRs completados.</p>
+              <p>La retrospectiva te permite:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li><strong>Qué funcionó:</strong> Identificar prácticas exitosas</li>
+                <li><strong>Qué mejorar:</strong> Detectar obstáculos y áreas de mejora</li>
+                <li><strong>Lecciones aprendidas:</strong> Documentar aprendizajes clave</li>
+                <li><strong>Satisfacción:</strong> Evaluar cómo te sientes con el resultado</li>
+              </ul>
+              <p className="text-primary">💡 Haz retrospectiva al final de cada ciclo para mejorar continuamente.</p>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Demo Badge */}
+      {isDemo && (
+        <Alert className="border-info/50 bg-info/10">
+          <Eye className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <Badge variant="secondary">DEMO</Badge>
+            Datos de ejemplo. Completa OKRs para hacer retrospectivas reales.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -326,14 +392,14 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
             {selectedPeriod}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchRetrospective}>
+        <Button variant="outline" size="sm" onClick={fetchRetrospective} disabled={isDemo}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Actualizar
         </Button>
       </div>
 
       {/* Stats Cards */}
-      {stats && (
+      {displayStats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
@@ -341,7 +407,7 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
                 <Target className="h-4 w-4" />
                 <span className="text-sm">Progreso General</span>
               </div>
-              <p className="text-3xl font-bold text-primary">{stats.average_progress}%</p>
+              <p className="text-3xl font-bold text-primary">{displayStats.average_progress}%</p>
             </CardContent>
           </Card>
           <Card className="bg-emerald-500/10">
@@ -350,7 +416,7 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-sm">Logrados</span>
               </div>
-              <p className="text-3xl font-bold text-emerald-600">{stats.achieved}</p>
+              <p className="text-3xl font-bold text-emerald-600">{displayStats.achieved}</p>
             </CardContent>
           </Card>
           <Card className="bg-amber-500/10">
@@ -359,7 +425,7 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">Parciales</span>
               </div>
-              <p className="text-3xl font-bold text-amber-600">{stats.partial}</p>
+              <p className="text-3xl font-bold text-amber-600">{displayStats.partial}</p>
             </CardContent>
           </Card>
           <Card className="bg-rose-500/10">
@@ -368,14 +434,14 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
                 <XCircle className="h-4 w-4" />
                 <span className="text-sm">No Logrados</span>
               </div>
-              <p className="text-3xl font-bold text-rose-600">{stats.missed}</p>
+              <p className="text-3xl font-bold text-rose-600">{displayStats.missed}</p>
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* Objectives Summary */}
-      {objectives.length === 0 ? (
+      {displayObjectives.length === 0 && !isDemo ? (
         <Card>
           <CardContent className="pt-6 text-center py-12">
             <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -391,7 +457,7 @@ export function OKRRetrospective({ type = 'organizational' }: OKRRetrospectivePr
         </Card>
       ) : (
         <div className="space-y-4">
-          {objectives.map((obj) => {
+          {displayObjectives.map((obj) => {
             const config = statusConfig[obj.status];
             const StatusIcon = config.icon;
             const hasRetro = existingRetros[obj.id];

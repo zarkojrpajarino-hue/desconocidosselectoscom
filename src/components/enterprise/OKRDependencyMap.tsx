@@ -8,19 +8,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Target, ArrowRight, Users, Link2, 
   AlertTriangle, CheckCircle2, Plus, Trash2,
-  RefreshCw
+  RefreshCw, ChevronDown, Info, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 interface OKRDependencyMapProps {
   type?: 'organizational' | 'weekly';
+  showDemoData?: boolean;
 }
 
 interface Objective {
@@ -42,7 +45,19 @@ interface DependencyLink {
   status: 'healthy' | 'at_risk' | 'blocked';
 }
 
-export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapProps) {
+// Datos demo
+const DEMO_OBJECTIVES: Objective[] = [
+  { id: 'demo-1', title: 'Incrementar MRR', progress: 75, status: 'active', owner_name: 'Tu nombre' },
+  { id: 'demo-2', title: 'Mejorar NPS', progress: 45, status: 'active', owner_name: 'Tu nombre' },
+  { id: 'demo-3', title: 'Lanzar nueva feature', progress: 30, status: 'active', owner_name: 'Tu nombre' },
+];
+
+const DEMO_LINKS: DependencyLink[] = [
+  { id: 'dep-1', from: 'demo-3', to: 'demo-1', from_title: 'Lanzar nueva feature', to_title: 'Incrementar MRR', dependency_type: 'enables', status: 'at_risk' },
+  { id: 'dep-2', from: 'demo-2', to: 'demo-1', from_title: 'Mejorar NPS', to_title: 'Incrementar MRR', dependency_type: 'relates_to', status: 'healthy' },
+];
+
+export function OKRDependencyMap({ type = 'organizational', showDemoData = false }: OKRDependencyMapProps) {
   const { t } = useTranslation();
   const { organizationId } = useCurrentOrganization();
   const { user } = useAuth();
@@ -244,10 +259,6 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
     );
   }
 
-  const healthyLinks = links.filter(l => l.status === 'healthy').length;
-  const atRiskLinks = links.filter(l => l.status === 'at_risk').length;
-  const blockedLinks = links.filter(l => l.status === 'blocked').length;
-
   const statusColors = {
     healthy: 'border-emerald-500 bg-emerald-500/10',
     at_risk: 'border-amber-500 bg-amber-500/10',
@@ -261,8 +272,60 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
     depends_on: 'Depende de',
   };
 
+  // Use demo data if enabled and no real data
+  const displayObjectives = (objectives.length === 0 && showDemoData) ? DEMO_OBJECTIVES : objectives;
+  const displayLinks = (links.length === 0 && showDemoData) ? DEMO_LINKS : links;
+  const isDemo = objectives.length === 0 && showDemoData;
+
+  const healthyLinks = displayLinks.filter(l => l.status === 'healthy').length;
+  const atRiskLinks = displayLinks.filter(l => l.status === 'at_risk').length;
+  const blockedLinks = displayLinks.filter(l => l.status === 'blocked').length;
+
+  const [showExplanation, setShowExplanation] = useState(false);
+
   return (
     <div className="space-y-6">
+      {/* Explanation Collapsible */}
+      <Collapsible open={showExplanation} onOpenChange={setShowExplanation}>
+        <Card className="border-primary/20 bg-primary/5">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-primary/10 transition-colors py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">¿Qué es el Mapa de Dependencias?</CardTitle>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform ${showExplanation ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 text-sm text-muted-foreground space-y-2">
+              <p><strong className="text-foreground">Visualiza las relaciones entre tus OKRs</strong> para identificar cuellos de botella.</p>
+              <p>Tipos de dependencias:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li><strong>Bloquea:</strong> Un objetivo debe completarse antes de otro</li>
+                <li><strong>Habilita:</strong> Un objetivo facilita el progreso de otro</li>
+                <li><strong>Depende de:</strong> Un objetivo requiere el progreso de otro</li>
+                <li><strong>Relacionado:</strong> Conexión informativa sin bloqueo</li>
+              </ul>
+              <p className="text-primary">💡 Si un OKR bloqueante tiene bajo progreso, afectará a los objetivos dependientes.</p>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Demo Badge */}
+      {isDemo && (
+        <Alert className="border-info/50 bg-info/10">
+          <Eye className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <Badge variant="secondary">DEMO</Badge>
+            Datos de ejemplo. Crea OKRs y configura dependencias reales.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -272,13 +335,13 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
           <p className="text-muted-foreground">Visualiza cómo se relacionan tus OKRs</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchDependencies}>
+          <Button variant="outline" size="sm" onClick={fetchDependencies} disabled={isDemo}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Actualizar
           </Button>
           <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
             <DialogTrigger asChild>
-              <Button size="sm" disabled={objectives.length < 2}>
+              <Button size="sm" disabled={displayObjectives.length < 2 || isDemo}>
                 <Plus className="w-4 h-4 mr-2" />
                 Nueva Dependencia
               </Button>
@@ -404,7 +467,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
       </Card>
 
       {/* Dependency Links */}
-      {links.length === 0 ? (
+      {displayLinks.length === 0 && !isDemo ? (
         <Card>
           <CardContent className="pt-6 text-center py-12">
             <Link2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -412,7 +475,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
             <p className="text-sm text-muted-foreground mb-4">
               Las dependencias ayudan a identificar cuellos de botella y planificar mejor
             </p>
-            {objectives.length >= 2 && (
+            {displayObjectives.length >= 2 && !isDemo && (
               <Button onClick={() => setShowAddModal(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Crear Primera Dependencia
@@ -422,7 +485,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
         </Card>
       ) : (
         <div className="space-y-4">
-          {links.map((link) => (
+          {displayLinks.map((link) => (
             <Card key={link.id} className={`border-2 ${statusColors[link.status]}`}>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -433,7 +496,7 @@ export function OKRDependencyMap({ type = 'organizational' }: OKRDependencyMapPr
                       <span className="font-medium text-sm line-clamp-2">{link.from_title}</span>
                     </div>
                     {(() => {
-                      const fromObj = objectives.find(o => o.id === link.from);
+                      const fromObj = displayObjectives.find(o => o.id === link.from);
                       return fromObj ? (
                         <>
                           <Progress value={fromObj.progress} className="h-2 mb-2" />
