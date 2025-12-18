@@ -44,11 +44,15 @@ interface AIAnalysisDashboardProps {
   onRefresh?: () => void;
   onExport?: (format: 'pdf' | 'csv') => void;
   loading?: boolean;
+  isDemo?: boolean;
 }
 
-export function AIAnalysisDashboard({ data, onRefresh, onExport, loading }: AIAnalysisDashboardProps) {
+export function AIAnalysisDashboard({ data, onRefresh, onExport, loading, isDemo }: AIAnalysisDashboardProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Show demo badge if in demo mode
+  const showDemoBadge = isDemo;
 
   // Handle both old format (executive_summary) and new format (executive_dashboard)
   const rawData = data as unknown as Record<string, unknown>;
