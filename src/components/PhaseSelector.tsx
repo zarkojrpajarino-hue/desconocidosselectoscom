@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { TrendingUp, Sparkles, RefreshCw, Play, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Sparkles, RefreshCw, Play, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useBusinessPhases } from '@/hooks/useBusinessPhases';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
+import { WorkPreferencesCollapsible } from '@/components/agenda/WorkPreferencesCollapsible';
 
 interface PhaseSelectorProps {
   currentPhase: number;
@@ -31,6 +33,46 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
   } = useBusinessPhases({ organizationId: currentOrganizationId });
 
   const [activatingPhase, setActivatingPhase] = useState<number | null>(null);
+  const [isWorkPreferencesConfigured, setIsWorkPreferencesConfigured] = useState<boolean | null>(null);
+  const [checkingConfig, setCheckingConfig] = useState(true);
+
+  // Check if work preferences are configured
+  useEffect(() => {
+    const checkWorkPreferences = async () => {
+      if (!currentOrganizationId) {
+        setCheckingConfig(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('organizations')
+          .select('has_team, week_start_day')
+          .eq('id', currentOrganizationId)
+          .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orgData = data as any;
+        const hasTeamConfigured = orgData?.has_team !== null && orgData?.has_team !== undefined;
+        const weekStartConfigured = orgData?.week_start_day !== null && orgData?.week_start_day !== undefined;
+        
+        setIsWorkPreferencesConfigured(hasTeamConfigured && weekStartConfigured);
+      } catch (error) {
+        console.error('Error checking work preferences:', error);
+        setIsWorkPreferencesConfigured(false);
+      } finally {
+        setCheckingConfig(false);
+      }
+    };
+
+    checkWorkPreferences();
+  }, [currentOrganizationId]);
+
+  const handlePreferencesConfigured = () => {
+    setIsWorkPreferencesConfigured(true);
+  };
 
   const handlePhaseChange = async (phaseNumber: number) => {
     if (activatingPhase || !isAdmin) return;
@@ -47,7 +89,7 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || checkingConfig) {
     return (
       <Card className="shadow-card">
         <CardHeader>
@@ -67,8 +109,38 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
     );
   }
 
-  // If no phases exist, show generate button
+  // If no phases exist, show generate button OR work preferences config
   if (phases.length === 0) {
+    // If work preferences are not configured, show the config requirement first
+    if (!isWorkPreferencesConfigured) {
+      return (
+        <Card className="shadow-card border-dashed border-2 border-orange-500/30">
+          <CardContent className="flex flex-col py-6 space-y-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-500">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Configuración Obligatoria</h3>
+                <p className="text-sm text-muted-foreground">
+                  Antes de generar las fases, debes configurar los ajustes de trabajo
+                </p>
+              </div>
+            </div>
+            
+            <WorkPreferencesCollapsible onPreferencesChange={handlePreferencesConfigured} />
+            
+            <div className="text-center pt-2">
+              <p className="text-xs text-muted-foreground">
+                Una vez configurado, podrás generar las fases con IA
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Work preferences configured, show generate button
     return (
       <Card className="shadow-card border-dashed border-2">
         <CardContent className="flex flex-col items-center justify-center py-8 space-y-4">
