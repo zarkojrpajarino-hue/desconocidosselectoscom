@@ -360,7 +360,7 @@ const Landing = () => {
                 <img 
                   src={integration.logo} 
                   alt={`${integration.name} logo`} 
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </div>
               <span className="text-sm font-medium text-center">{integration.name}</span>
