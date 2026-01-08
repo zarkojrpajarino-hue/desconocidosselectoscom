@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,6 +36,15 @@ serve(async (req) => {
     }
 
     const { organizationId, taskId } = await req.json();
+
+    // Apply rate limiting (20 syncs per hour per organization)
+    const rateLimitResult = withRateLimit(organizationId, 'sync-to-asana', { 
+      maxRequests: 20, 
+      windowMs: 60 * 60 * 1000 // 1 hour
+    });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     // Verify user belongs to the organization (IDOR protection)
     const { data: membership, error: membershipError } = await supabase

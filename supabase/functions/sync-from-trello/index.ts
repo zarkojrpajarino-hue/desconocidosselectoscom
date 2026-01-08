@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +47,15 @@ serve(async (req) => {
     }
 
     const { organizationId, limit = 50 } = await req.json();
+
+    // Apply rate limiting (10 syncs per hour per organization)
+    const rateLimitResult = withRateLimit(organizationId, 'sync-from-trello', { 
+      maxRequests: 10, 
+      windowMs: 60 * 60 * 1000 // 1 hour
+    });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
 
     // Verify user belongs to the organization
     const { data: membership } = await supabase
