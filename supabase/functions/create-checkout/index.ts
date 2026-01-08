@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { handleError, createErrorResponse } from "../_shared/errorHandler.ts";
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const stripe = new Stripe(Deno.env.get('SECRET_KEY_stripe')!, {
   apiVersion: '2024-11-20.acacia',
@@ -44,6 +45,12 @@ serve(async (req) => {
     
     if (userError || !user) {
       return createErrorResponse('Invalid authentication token', 401, corsHeaders);
+    }
+
+    // Rate limiting: 5 requests per minute per user (payment operations)
+    const rateLimitResult = withRateLimit(user.id, 'create-checkout', { maxRequests: 5, windowMs: 60000 });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     // Verify user has admin role in this organization

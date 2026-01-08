@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { generateOAuthState } from '../_shared/oauth-csrf.ts';
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +17,12 @@ serve(async (req) => {
 
     if (!user_id) {
       throw new Error('user_id is required');
+    }
+
+    // Rate limiting: 10 requests per minute per user
+    const rateLimitResult = withRateLimit(user_id, 'google-auth-url', { maxRequests: 10, windowMs: 60000 });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID')!;
