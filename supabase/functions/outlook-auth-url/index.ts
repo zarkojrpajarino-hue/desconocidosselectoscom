@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID') || ''
 const APP_URL = Deno.env.get('APP_URL') || 'https://lovable.dev'
@@ -21,6 +22,12 @@ serve(async (req) => {
         JSON.stringify({ error: 'user_id required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    }
+
+    // Rate limiting: 10 requests per minute per user
+    const rateLimitResult = withRateLimit(user_id, 'outlook-auth-url', { maxRequests: 10, windowMs: 60000 });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/outlook-auth-callback`

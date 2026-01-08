@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const HUBSPOT_CLIENT_ID = Deno.env.get('HUBSPOT_CLIENT_ID')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -18,6 +19,12 @@ serve(async (req) => {
 
     if (!organization_id) {
       throw new Error('Missing organization_id')
+    }
+
+    // Rate limiting: 10 requests per minute per organization
+    const rateLimitResult = withRateLimit(organization_id, 'hubspot-auth-url', { maxRequests: 10, windowMs: 60000 });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
     }
 
     const redirectUri = `${SUPABASE_URL}/functions/v1/hubspot-auth-callback`

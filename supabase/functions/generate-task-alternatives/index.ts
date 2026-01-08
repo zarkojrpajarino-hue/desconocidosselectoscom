@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +21,17 @@ serve(async (req) => {
   }
 
   try {
+    // Get user identifier for rate limiting (use IP if no auth)
+    const authHeader = req.headers.get('Authorization');
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const identifier = authHeader ? authHeader.slice(-20) : clientIP;
+
+    // Rate limiting: 5 requests per minute (AI-intensive operation)
+    const rateLimitResult = withRateLimit(identifier, 'generate-task-alternatives', { maxRequests: 5, windowMs: 60000 });
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
     const { task } = await req.json();
     
     if (!task) {
