@@ -8,6 +8,7 @@ import { Resend } from 'https://esm.sh/resend@4.0.0';
 import { validateInput, WelcomeEmailSchema, validationErrorResponse, ValidationError } from '../_shared/validation.ts';
 import { welcomeEmail, emailConfig } from '../_shared/email-templates.ts';
 import { handleError, createErrorResponse } from '../_shared/errorHandler.ts';
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -61,6 +62,17 @@ const handler = async (req: Request): Promise<Response> => {
     if (!isCronCall && !isAdminCall) {
       console.error(`[${FUNCTION_NAME}] Unauthorized: Missing valid CRON_SECRET or admin authentication (requestId: ${requestId})`);
       return createErrorResponse('Unauthorized', 401, corsHeaders);
+    }
+
+    // Apply rate limiting (5 emails per hour per function) - skip for cron jobs
+    if (!isCronCall) {
+      const rateLimitResult = withRateLimit('admin-email', FUNCTION_NAME, { 
+        maxRequests: 5, 
+        windowMs: 60 * 60 * 1000 // 1 hour
+      });
+      if (!rateLimitResult.allowed) {
+        return rateLimitResponse(rateLimitResult, corsHeaders);
+      }
     }
 
     // Validate input using schema

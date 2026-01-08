@@ -7,6 +7,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
 import { urgentAlertEmail, emailConfig } from '../_shared/email-templates.ts';
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -51,6 +52,15 @@ const handler = async (req: Request): Promise<Response> => {
           JSON.stringify({ error: 'Authorization required' }),
           { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
+      }
+
+      // Apply rate limiting (10 alerts per hour per user)
+      const rateLimitResult = withRateLimit(userId, 'send-urgent-alert', { 
+        maxRequests: 10, 
+        windowMs: 60 * 60 * 1000 // 1 hour
+      });
+      if (!rateLimitResult.allowed) {
+        return rateLimitResponse(rateLimitResult, corsHeaders);
       }
     }
 

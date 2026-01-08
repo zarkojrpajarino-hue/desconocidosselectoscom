@@ -7,6 +7,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from 'https://esm.sh/resend@4.0.0';
 import { weeklySummaryEmail, emailConfig } from '../_shared/email-templates.ts';
 import { handleError, createErrorResponse } from '../_shared/errorHandler.ts';
+import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
@@ -51,6 +52,15 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
       if (authError || !authUser || authUser.id !== userId) {
         return createErrorResponse('Not authorized', 403, corsHeaders);
+      }
+
+      // Apply rate limiting (5 emails per hour per user)
+      const rateLimitResult = withRateLimit(authUser.id, FUNCTION_NAME, { 
+        maxRequests: 5, 
+        windowMs: 60 * 60 * 1000 // 1 hour
+      });
+      if (!rateLimitResult.allowed) {
+        return rateLimitResponse(rateLimitResult, corsHeaders);
       }
     }
 
