@@ -1,15 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { validateOAuthState } from '../_shared/oauth-csrf.ts'
 
 const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID') || ''
 const MICROSOFT_CLIENT_SECRET = Deno.env.get('MICROSOFT_CLIENT_SECRET') || ''
-const APP_URL = Deno.env.get('APP_URL') || 'https://lovable.dev'
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com'
 
 serve(async (req) => {
   try {
     const url = new URL(req.url)
     const code = url.searchParams.get('code')
-    const state = url.searchParams.get('state') // Contains user_id
+    const state = url.searchParams.get('state')
     const error = url.searchParams.get('error')
 
     if (error) {
@@ -26,6 +27,20 @@ serve(async (req) => {
         headers: { 'Location': `${APP_URL}/settings/api-keys?outlook=error&message=missing_params` },
       })
     }
+
+    // Validate CSRF state token and extract user_id
+    const stateValidation = await validateOAuthState(state)
+    
+    if (!stateValidation.valid || !stateValidation.identifier) {
+      console.error('❌ Invalid Outlook state token:', stateValidation.error)
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?outlook=error&message=invalid_state_token` },
+      })
+    }
+    
+    const userId = stateValidation.identifier
+    console.log('✅ Outlook state token validated for user:', userId)
 
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/outlook-auth-callback`
 
@@ -71,8 +86,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const userId = state
-
     const { error: dbError } = await supabase
       .from('outlook_accounts')
       .upsert({
@@ -94,6 +107,8 @@ serve(async (req) => {
         headers: { 'Location': `${APP_URL}/settings/api-keys?outlook=error&message=db_error` },
       })
     }
+
+    console.log('✅ Outlook connected for user:', userId)
 
     return new Response(null, {
       status: 302,

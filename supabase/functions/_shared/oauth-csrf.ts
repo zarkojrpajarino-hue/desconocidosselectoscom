@@ -3,7 +3,14 @@
  * Generates and validates cryptographic state tokens for OAuth flows
  */
 
-const OAUTH_STATE_SECRET = Deno.env.get('OAUTH_STATE_SECRET') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || 'fallback-secret';
+function getOAuthSecret(): string {
+  const secret = Deno.env.get('OAUTH_STATE_SECRET') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!secret) {
+    throw new Error('OAUTH_STATE_SECRET or SUPABASE_SERVICE_ROLE_KEY must be configured');
+  }
+  return secret;
+}
+
 const STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
@@ -33,9 +40,10 @@ async function generateHMAC(data: string, secret: string): Promise<string> {
  * Format: base64(timestamp:identifier:hmac)
  */
 export async function generateOAuthState(identifier: string): Promise<string> {
+  const secret = getOAuthSecret();
   const timestamp = Date.now();
   const data = `${timestamp}:${identifier}`;
-  const hmac = await generateHMAC(data, OAUTH_STATE_SECRET);
+  const hmac = await generateHMAC(data, secret);
   const state = `${timestamp}:${identifier}:${hmac}`;
   
   // Base64 encode for URL safety
@@ -65,8 +73,9 @@ export async function validateOAuthState(state: string): Promise<{ valid: boolea
     }
     
     // Verify HMAC
+    const secret = getOAuthSecret();
     const data = `${timestamp}:${identifier}`;
-    const expectedHmac = await generateHMAC(data, OAUTH_STATE_SECRET);
+    const expectedHmac = await generateHMAC(data, secret);
     
     if (providedHmac !== expectedHmac) {
       return { valid: false, identifier: null, error: 'Invalid state signature' };

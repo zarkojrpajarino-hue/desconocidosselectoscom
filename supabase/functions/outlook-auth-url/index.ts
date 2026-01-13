@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
+import { generateOAuthState } from '../_shared/oauth-csrf.ts';
 
 const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID') || ''
-const APP_URL = Deno.env.get('APP_URL') || 'https://lovable.dev'
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,12 +39,16 @@ serve(async (req) => {
       'User.Read'
     ].join(' ')
 
+    // Generate secure CSRF-protected state token
+    const state = await generateOAuthState(user_id)
+    console.log('🔐 Generated secure Outlook state token for user:', user_id)
+
     const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
       `client_id=${MICROSOFT_CLIENT_ID}` +
       `&response_type=code` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&scope=${encodeURIComponent(scopes)}` +
-      `&state=${user_id}` +
+      `&state=${encodeURIComponent(state)}` +
       `&response_mode=query`
 
     return new Response(

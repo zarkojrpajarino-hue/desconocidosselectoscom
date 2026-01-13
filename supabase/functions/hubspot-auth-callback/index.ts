@@ -1,22 +1,47 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { validateOAuthState } from '../_shared/oauth-csrf.ts'
 
 const HUBSPOT_CLIENT_ID = Deno.env.get('HUBSPOT_CLIENT_ID')!
 const HUBSPOT_CLIENT_SECRET = Deno.env.get('HUBSPOT_CLIENT_SECRET')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const APP_URL = Deno.env.get('APP_URL') || 'https://nrsrzfqtzjrxrvqyypdn.lovableproject.com'
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com'
 
 serve(async (req) => {
   try {
     const url = new URL(req.url)
     const code = url.searchParams.get('code')
-    const state = url.searchParams.get('state') // organization_id
+    const state = url.searchParams.get('state')
+    const error = url.searchParams.get('error')
 
-    if (!code || !state) {
-      throw new Error('Missing code or state')
+    if (error) {
+      console.error('[hubspot-auth-callback] OAuth error:', error)
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?hubspot=error&message=${error}` },
+      })
     }
 
-    console.log('[hubspot-auth-callback] Processing callback for org:', state)
+    if (!code || !state) {
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?hubspot=error&message=missing_params` },
+      })
+    }
+
+    // Validate CSRF state token and extract organization_id
+    const stateValidation = await validateOAuthState(state)
+    
+    if (!stateValidation.valid || !stateValidation.identifier) {
+      console.error('❌ Invalid HubSpot state token:', stateValidation.error)
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?hubspot=error&message=invalid_state_token` },
+      })
+    }
+    
+    const organizationId = stateValidation.identifier
+    console.log('✅ HubSpot state token validated for org:', organizationId)
 
     const redirectUri = `${SUPABASE_URL}/functions/v1/hubspot-auth-callback`
 
@@ -37,7 +62,10 @@ serve(async (req) => {
 
     if (tokens.error) {
       console.error('[hubspot-auth-callback] Token error:', tokens)
-      throw new Error(tokens.message || tokens.error)
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?hubspot=error&message=${tokens.error}` },
+      })
     }
 
     // Get account info
@@ -61,7 +89,7 @@ serve(async (req) => {
     const { error: dbError } = await supabase
       .from('hubspot_accounts')
       .upsert({
-        organization_id: state,
+        organization_id: organizationId,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         token_expires_at: expiresAt.toISOString(),
@@ -74,10 +102,13 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('[hubspot-auth-callback] DB error:', dbError)
-      throw dbError
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${APP_URL}/settings/api-keys?hubspot=error&message=db_error` },
+      })
     }
 
-    console.log('[hubspot-auth-callback] HubSpot connected for portal:', accountInfo.portalId)
+    console.log('✅ HubSpot connected for portal:', accountInfo.portalId)
 
     // Redirect back to app
     return new Response(null, {
