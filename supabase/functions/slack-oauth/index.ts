@@ -4,7 +4,7 @@ import { generateOAuthState, validateOAuthState } from '../_shared/oauth-csrf.ts
 
 const SLACK_CLIENT_ID = Deno.env.get('SLACK_CLIENT_ID') || ''
 const SLACK_CLIENT_SECRET = Deno.env.get('SLACK_CLIENT_SECRET') || ''
-const APP_URL = Deno.env.get('APP_URL') || 'https://lovable.dev'
+const APP_URL = Deno.env.get('APP_URL') || 'https://optimus-k.com'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

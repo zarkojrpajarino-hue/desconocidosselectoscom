@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { withRateLimit, rateLimitResponse } from '../_shared/rateLimiter.ts';
+import { generateOAuthState } from '../_shared/oauth-csrf.ts';
 
 const HUBSPOT_CLIENT_ID = Deno.env.get('HUBSPOT_CLIENT_ID')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -38,11 +39,15 @@ serve(async (req) => {
       'crm.schemas.deals.read'
     ].join(' ')
 
+    // Generate secure CSRF-protected state token
+    const state = await generateOAuthState(organization_id)
+    console.log('🔐 Generated secure HubSpot state token for org:', organization_id)
+
     const authUrl = `https://app.hubspot.com/oauth/authorize?` +
       `client_id=${HUBSPOT_CLIENT_ID}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&scope=${encodeURIComponent(scopes)}` +
-      `&state=${organization_id}`
+      `&state=${encodeURIComponent(state)}`
 
     console.log('[hubspot-auth-url] Generated auth URL for org:', organization_id)
 
