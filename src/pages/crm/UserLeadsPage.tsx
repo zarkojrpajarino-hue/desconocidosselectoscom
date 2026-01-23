@@ -10,8 +10,8 @@ import { toast } from 'sonner';
 import { Lead } from '@/types';
 import { formatDate } from '@/lib/dateUtils';
 import { exportLeadsToExcel } from '@/lib/excelUtils';
-import LeadDetailModal from '@/components/LeadDetailModal';
-import CreateLeadModal from '@/components/CreateLeadModal';
+import LeadDetailModal from '@/components/crm/LeadDetailModal';
+import CreateLeadModal from '@/components/crm/CreateLeadModal';
 
 const UserLeadsPage = () => {
   const { userId } = useParams<{ userId: string }>();

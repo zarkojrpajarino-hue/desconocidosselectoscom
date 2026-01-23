@@ -15,7 +15,7 @@ import {
   MessageSquare, PhoneCall, Video, Send, FileText, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import CreateLeadModal from '@/components/CreateLeadModal';
+import CreateLeadModal from './CreateLeadModal';
 
 interface LeadInteraction {
   id: string;

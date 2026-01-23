@@ -1,4 +1,4 @@
-import SmartAlerts from '@/components/SmartAlerts';
+import SmartAlerts from '@/components/notifications/SmartAlerts';
 
 const DashboardNotifications = () => {
   return (

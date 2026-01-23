@@ -9,9 +9,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Lead } from '@/types';
 import { Plus, Filter, TrendingUp, Users, Target, ArrowUpRight, Sparkles, GripVertical } from 'lucide-react';
-import LeadDetailModal from '@/components/LeadDetailModal';
-import CreateLeadModal from '@/components/CreateLeadModal';
-import PipelineLeadCard from '@/components/PipelineLeadCard';
+import LeadDetailModal from './LeadDetailModal';
+import CreateLeadModal from './CreateLeadModal';
+import PipelineLeadCard from './PipelineLeadCard';
 
 // Colores modernos para las etapas con gradientes
 const STAGE_COLORS = [

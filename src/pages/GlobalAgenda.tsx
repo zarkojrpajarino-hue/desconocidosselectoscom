@@ -11,7 +11,7 @@ import { CreatePersonalTaskModal } from '@/components/agenda/CreatePersonalTaskM
 import { GlobalAgendaLockedCard } from '@/components/plan/GlobalAgendaLockedCard';
 import { WorkConfigReadOnly } from '@/components/agenda/WorkConfigReadOnly';
 import { ProfessionalAgendaView } from '@/components/agenda/ProfessionalAgendaView';
-import GoogleCalendarConnect from '@/components/GoogleCalendarConnect';
+import GoogleCalendarConnect from '@/components/agenda/GoogleCalendarConnect';
 import { useGenerateGlobalSchedule, type AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { useAuth } from '@/contexts/AuthContext';

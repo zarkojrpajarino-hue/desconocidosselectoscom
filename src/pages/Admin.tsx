@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import PhaseSelector from '@/components/PhaseSelector';
-import NotificationBell from '@/components/NotificationBell';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { format, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';

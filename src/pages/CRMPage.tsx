@@ -19,8 +19,8 @@ import { exportLeadsToExcel, exportUserStatsToExcel } from '@/lib/excelUtils';
 import { useLeads } from '@/hooks/useLeads';
 import { useDebounce } from '@/hooks/useDebounce';
 import { LoadingTable, LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import CreateLeadModal from '@/components/CreateLeadModal';
-import LeadDetailModal from '@/components/LeadDetailModal';
+import CreateLeadModal from '@/components/crm/CreateLeadModal';
+import LeadDetailModal from '@/components/crm/LeadDetailModal';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 

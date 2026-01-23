@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bell, Search, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import NotificationCenter from '@/components/NotificationCenter';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 interface MobileHeaderProps {
   title: string;

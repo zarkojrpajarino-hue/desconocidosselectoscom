@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bell } from 'lucide-react';
-import SmartAlerts from '@/components/SmartAlerts';
+import SmartAlerts from '@/components/notifications/SmartAlerts';
 
 const AlertsPage = () => {
   const { user, loading } = useAuth();

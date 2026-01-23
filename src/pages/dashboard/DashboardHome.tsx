@@ -10,7 +10,7 @@ import { ArrowLeft, Users, Clock, User, Lightbulb, Zap, ChevronDown, AlertTriang
 import { InfoMessage } from '@/components/marketing/MarketingMessage';
 import StatsCards from '@/components/StatsCards';
 import TeamProgress from '@/components/TeamProgress';
-import NotificationBell from '@/components/NotificationBell';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { getCurrentWeekStart, getNextWeekStart } from '@/lib/weekUtils';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';

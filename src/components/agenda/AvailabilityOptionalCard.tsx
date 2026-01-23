@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Calendar, ChevronDown, ChevronUp, Clock, Users } from 'lucide-react';
-import AvailabilityQuestionnaire from '@/components/AvailabilityQuestionnaire';
+import AvailabilityQuestionnaire from './AvailabilityQuestionnaire';
 
 interface AvailabilityOptionalCardProps {
   userId: string;
