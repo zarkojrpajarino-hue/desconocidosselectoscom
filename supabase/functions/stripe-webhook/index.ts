@@ -38,7 +38,7 @@ serve(async (req) => {
 
   const requestId = crypto.randomUUID();
   const signature = req.headers.get('stripe-signature');
-  const webhookSecret = Deno.env.get('WEEBHOOK_SECRET_STRIPE')!;
+  const webhookSecret = Deno.env.get('WEBHOOK_SECRET_STRIPE')!;
   
   if (!signature || !webhookSecret) {
     console.error(`[${FUNCTION_NAME}] ❌ Missing signature or secret (requestId: ${requestId})`);

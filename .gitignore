@@ -12,6 +12,26 @@ dist
 dist-ssr
 *.local
 
+# Environment variables - CRITICAL
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# SSL certificates and keys
+*.pem
+*.key
+*.p12
+*.cert
+*.pfx
+
+# Database dumps
+*.sql.gz
+*.dump
+*.backup
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +42,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary Claude files
+tmpclaude-*
+supabase/tmpclaude-*
