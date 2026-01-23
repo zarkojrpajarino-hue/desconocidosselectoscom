@@ -21,7 +21,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { LoadingTable, LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import CreateLeadModal from '@/components/crm/CreateLeadModal';
 import LeadDetailModal from '@/components/crm/LeadDetailModal';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 
 const CRMPage = () => {

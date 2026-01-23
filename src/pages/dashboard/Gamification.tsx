@@ -1,5 +1,5 @@
-import GamificationDashboard from '@/components/GamificationDashboard';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import GamificationDashboard from '@/components/dashboard/GamificationDashboard';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 
 const Gamification = () => {
   return (

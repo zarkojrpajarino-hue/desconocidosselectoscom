@@ -10,7 +10,7 @@ import AvailabilityQuestionnaire from '@/components/agenda/AvailabilityQuestionn
 import WeeklySchedulePreview from '@/components/agenda/WeeklySchedulePreview';
 import AvailabilityBlockScreen from '@/components/agenda/AvailabilityBlockScreen';
 import { toast } from 'sonner';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { logger } from '@/lib/logger';
 
 const AgendaSemanal = () => {

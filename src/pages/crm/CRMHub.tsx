@@ -17,7 +17,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLeads } from '@/hooks/useLeads';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { formatCurrency } from '@/lib/currencyUtils';
 import {
   BarChart,

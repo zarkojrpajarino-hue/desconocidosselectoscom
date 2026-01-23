@@ -23,7 +23,7 @@ import { OKRProgressModal } from './OKRProgressModal';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { useBackendValidation } from '@/hooks/useBackendValidation';
 import { useWeeklyOKRGeneration } from '@/hooks/useWeeklyOKRGeneration';
-import { UpgradeModal } from '@/components/UpgradeModal';
+import { UpgradeModal } from '@/components/plan/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
 import { OKRPlaybook } from './OKRPlaybook';

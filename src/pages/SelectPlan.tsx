@@ -26,7 +26,7 @@ import {
   Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { BackButton } from '@/components/BackButton';
+import { BackButton } from '@/components/shared/BackButton';
 import { cn } from '@/lib/utils';
 
 interface Plan {

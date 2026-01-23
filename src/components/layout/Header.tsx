@@ -31,8 +31,8 @@ import {
   ArrowUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { OrganizationSwitcher } from '@/components/OrganizationSwitcher';
+import { LanguageSelector } from '@/components/shared/LanguageSelector';
+import { OrganizationSwitcher } from '@/components/organization/OrganizationSwitcher';
 
 interface HeaderProps {
   onMenuClick?: () => void;

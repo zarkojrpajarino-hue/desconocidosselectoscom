@@ -3,7 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Palette, Target, ArrowLeft, Crown } from 'lucide-react';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { EnterpriseToolsCatalog } from '@/components/enterprise/EnterpriseToolsCatalog';
 import { usePlanAccess } from '@/hooks/usePlanAccess';
 import { Badge } from '@/components/ui/badge';

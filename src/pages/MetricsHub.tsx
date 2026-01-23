@@ -3,7 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Target, DollarSign, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 
 const MetricsHub = () => {
   const { userProfile } = useAuth();

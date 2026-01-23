@@ -1,4 +1,4 @@
-import BusinessMetricsDashboard from '@/components/BusinessMetricsDashboard';
+import BusinessMetricsDashboard from '@/components/dashboard/BusinessMetricsDashboard';
 
 const MyMetrics = () => {
   return <BusinessMetricsDashboard />;

@@ -14,7 +14,7 @@ import {
   Gauge, Crown, Star, Gift, Moon, Sun
 } from "lucide-react";
 import { PLAN_PRICES } from "@/constants/subscriptionLimits";
-import { LanguageSelector } from "@/components/LanguageSelector";
+import { LanguageSelector } from "@/components/shared/LanguageSelector";
 import { LoginModal } from "@/components/auth/LoginModal";
 
 // Integration logos

@@ -6,7 +6,7 @@ import { Calendar, Check, X, RefreshCw, AlertCircle, Lock, Sparkles } from 'luci
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
-import { UpgradeModal } from '@/components/UpgradeModal';
+import { UpgradeModal } from '@/components/plan/UpgradeModal';
 
 interface GoogleCalendarConnectProps {
   userId: string;

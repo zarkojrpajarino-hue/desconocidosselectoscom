@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowLeft, Share2 } from 'lucide-react';
-import GamificationDashboard from '@/components/GamificationDashboard';
+import GamificationDashboard from '@/components/dashboard/GamificationDashboard';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { supabase } from '@/integrations/supabase/client';
 

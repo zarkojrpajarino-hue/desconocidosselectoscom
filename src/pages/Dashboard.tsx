@@ -1,10 +1,10 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Trophy, Bell } from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
+import { NavLink } from '@/components/shared/NavLink';
 import { useEffect } from 'react';
 import { useTrialExpiration } from '@/hooks/useTrialExpiration';
-import { SubscriptionBanner } from '@/components/SubscriptionBanner';
+import { SubscriptionBanner } from '@/components/plan/SubscriptionBanner';
 
 const Dashboard = () => {
   const navigate = useNavigate();

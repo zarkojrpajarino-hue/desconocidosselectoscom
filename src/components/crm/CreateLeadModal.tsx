@@ -15,7 +15,7 @@ import { leadSchema, LeadFormData } from '@/lib/validation';
 import { Lead } from '@/types';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
 import { useBackendValidation } from '@/hooks/useBackendValidation';
-import { UpgradeModal } from '@/components/UpgradeModal';
+import { UpgradeModal } from '@/components/plan/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
 import { ChevronDown, Target, DollarSign, UserCheck, Clock, X } from 'lucide-react';

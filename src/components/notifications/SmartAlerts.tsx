@@ -7,7 +7,7 @@ import { AlertCircle, AlertTriangle, Lightbulb, Filter, PartyPopper, Info, BellR
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import AlertCard from '@/components/AlertCard';
+import AlertCard from '@/components/shared/AlertCard';
 import type { Json } from '@/integrations/supabase/types';
 import { DEMO_ALERTS } from '@/data/demo-gamification-alerts-data';
 import { usePushNotifications } from '@/hooks/usePushNotifications';

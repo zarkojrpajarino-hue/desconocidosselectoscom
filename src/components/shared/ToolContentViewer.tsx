@@ -6,8 +6,8 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Sparkles, Lock, Eye, Settings2 } from 'lucide-react';
 import { ToolType, useToolContent } from '@/hooks/useToolContent';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
-import { UpgradeModal } from '@/components/UpgradeModal';
-import { ToolDataReviewModal } from '@/components/ToolDataReviewModal';
+import { UpgradeModal } from '@/components/plan/UpgradeModal';
+import { ToolDataReviewModal } from '@/components/shared/ToolDataReviewModal';
 
 interface ToolContentViewerProps {
   toolType: ToolType;

@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Copy, Users, UserPlus, AlertCircle, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits'
-import { UpgradeModal } from '@/components/UpgradeModal'
+import { UpgradeModal } from '@/components/plan/UpgradeModal'
 
 export const RoleInvitationCard = () => {
   // ✅ CORREGIDO: Obtener currentOrganizationId y userOrganizations del contexto

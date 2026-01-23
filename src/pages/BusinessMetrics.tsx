@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useMetricsReminder } from '@/hooks/useMetricsReminder';
 import MyMetrics from './businessMetrics/MyMetrics';
 import TeamRanking from './businessMetrics/TeamRanking';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import {
   KPITargetsManager,
   KPIChangeAnalysis,

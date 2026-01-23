@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
+import { NavLink } from '@/components/shared/NavLink';
 import { useEffect } from 'react';
 
 const Herramientas = () => {

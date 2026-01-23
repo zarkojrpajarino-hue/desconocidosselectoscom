@@ -11,14 +11,14 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import FinancialDashboard from '@/components/FinancialDashboard';
+import FinancialDashboard from '@/components/dashboard/FinancialDashboard';
 import RevenueFormModal from '@/components/financial/RevenueFormModal';
 import ExpenseFormModal from '@/components/financial/ExpenseFormModal';
 import MarketingFormModal from '@/components/financial/MarketingFormModal';
 import { useFinancialData } from '@/hooks/useFinancialData';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { toast } from 'sonner';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import { 
   FinancialFromKPIs, 

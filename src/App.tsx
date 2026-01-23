@@ -8,8 +8,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoModeProvider } from "@/contexts/DemoModeContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 // Loading component for Suspense
 const PageLoader = () => (

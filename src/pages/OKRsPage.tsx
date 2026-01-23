@@ -15,7 +15,7 @@ import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import OKRsDashboard from '@/components/okrs/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
-import { SectionTourButton } from '@/components/SectionTourButton';
+import { SectionTourButton } from '@/components/guide/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import {
   OKRQuarterlyView,
