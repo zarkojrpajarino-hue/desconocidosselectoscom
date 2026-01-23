@@ -53,8 +53,7 @@ const PhaseSelector = ({ currentPhase, onPhaseChange }: PhaseSelectorProps) => {
 
         if (error && error.code !== 'PGRST116') throw error;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const orgData = data as any;
+        const orgData = data as typeof data & { has_team?: boolean | null; week_start_day?: number | null };
         const hasTeamConfigured = orgData?.has_team !== null && orgData?.has_team !== undefined;
         const weekStartConfigured = orgData?.week_start_day !== null && orgData?.week_start_day !== undefined;
         

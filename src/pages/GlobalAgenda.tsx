@@ -55,8 +55,7 @@ export default function GlobalAgenda() {
 
   const hasTeam = orgSettings?.has_team ?? false;
   const collaborativePercentage = orgSettings?.collaborative_percentage ?? 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const weekStartDay = (orgSettings as any)?.week_start_day ?? 1; // Default Monday
+  const weekStartDay = (orgSettings as typeof orgSettings & { week_start_day?: number })?.week_start_day ?? 1; // Default Monday
 
   // Calculate week start based on organization's configured day
   const weekStart = useMemo(() => {

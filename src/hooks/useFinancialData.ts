@@ -43,9 +43,9 @@ export const useFinancialData = () => {
         .single();
 
       if (error) throw error;
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const orgData = data as any;
+
+      // Type assertion for organization with financial_visibility_team field
+      const orgData = data as typeof data & { financial_visibility_team?: boolean };
       const visibility = orgData.financial_visibility_team ?? true;
       setFinancialVisibility(visibility);
       
@@ -65,10 +65,9 @@ export const useFinancialData = () => {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase
         .from('organizations')
-        .update({ financial_visibility_team: visible } as any)
+        .update({ financial_visibility_team: visible })
         .eq('id', currentOrganizationId);
 
       if (error) throw error;

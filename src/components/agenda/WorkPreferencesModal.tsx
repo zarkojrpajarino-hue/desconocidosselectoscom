@@ -92,14 +92,19 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const orgData = data as any;
+        // Type assertion for organization with work preferences fields
+        const orgData = data as typeof data & {
+          has_team?: boolean | null;
+          team_size?: string;
+          collaborative_percentage?: number;
+          week_start_day?: number | null;
+        };
         // Only set values if they exist in database - leave blank if not configured
         setHasTeam(orgData.has_team ?? null);
         setTeamSize(orgData.team_size ?? '');
         setCollaborativePercentage(orgData.collaborative_percentage ?? 0);
-        setWeekStartDay(orgData.week_start_day !== null && orgData.week_start_day !== undefined 
-          ? String(orgData.week_start_day) 
+        setWeekStartDay(orgData.week_start_day !== null && orgData.week_start_day !== undefined
+          ? String(orgData.week_start_day)
           : '');
         setOrgName(orgData.name ?? 'tu organización');
       }
@@ -180,7 +185,6 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
 
       const weekStartChanged = currentOrg?.week_start_day !== newWeekStartDay;
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase
         .from('organizations')
         .update({
@@ -188,7 +192,7 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
           team_size: hasTeam ? teamSize : null,
           collaborative_percentage: hasTeam ? collaborativePercentage : 0,
           week_start_day: newWeekStartDay,
-        } as any)
+        })
         .eq('id', currentOrganizationId);
 
       if (error) throw error;

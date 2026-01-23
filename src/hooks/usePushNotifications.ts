@@ -100,9 +100,8 @@ export function usePushNotifications() {
       if (organizationId) {
         insertData.organization_id = organizationId;
       }
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from('push_subscriptions') as any)
+
+      const { error } = await supabase.from('push_subscriptions')
         .upsert(insertData, {
           onConflict: 'endpoint',
         });

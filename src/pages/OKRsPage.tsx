@@ -56,8 +56,7 @@ const OKRsPage = () => {
     try {
       // Bypass deep type instantiation by breaking the chain
       const table = supabase.from('objectives');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const query = (table as any).select('id, title, status, key_results(id, title, current_value, target_value)');
+      const query = table.select('id, title, status, key_results(id, title, current_value, target_value)');
       const response = await query.eq('user_id', user.id);
       setObjectives((response.data as ObjectiveData[]) || []);
     } catch (error) {
