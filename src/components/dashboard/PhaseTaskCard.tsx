@@ -15,7 +15,7 @@ import {
 import { TimeTracker } from '@/components/tasks/TimeTracker';
 import { TimeLogsModal } from '@/components/tasks/TimeLogsModal';
 import { AIResourcesPanel } from '@/components/tasks/ai-resources';
-import { TaskSwapModal } from '@/components/TaskSwapModal';
+import { TaskSwapModal } from '@/components/tasks/TaskSwapModal';
 import { TaskCompletionModal } from '@/components/tasks/TaskCompletionModal';
 import { IntegrationButton } from '@/components/IntegrationButton';
 import type { PhaseTask } from '@/hooks/usePhaseWeeklyTasks';

@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Target, History, Building2, ChevronDown, Calendar, CheckSquare, Link2, RotateCcw, CheckCircle2, AlertTriangle, TrendingUp, Eye } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import OKRsDashboard from '@/components/OKRsDashboard';
+import OKRsDashboard from '@/components/okrs/OKRsDashboard';
 import { LoadingSpinner } from '@/components/ui/loading-skeleton';
 import { SectionTourButton } from '@/components/SectionTourButton';
 import { IntegrationButton } from '@/components/IntegrationButton';

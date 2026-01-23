@@ -26,7 +26,7 @@ import { useWeeklyOKRGeneration } from '@/hooks/useWeeklyOKRGeneration';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { logger } from '@/lib/logger';
 import { handleError } from '@/utils/errorHandler';
-import { OKRPlaybook } from './okrs/OKRPlaybook';
+import { OKRPlaybook } from './OKRPlaybook';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PlaybookData {

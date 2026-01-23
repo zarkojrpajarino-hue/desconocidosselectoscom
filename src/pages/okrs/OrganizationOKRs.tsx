@@ -26,7 +26,7 @@ import {
   Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { OKRProgressModal } from '@/components/OKRProgressModal';
+import { OKRProgressModal } from '@/components/okrs/OKRProgressModal';
 import { OKRPlaybook } from '@/components/okrs/OKRPlaybook';
 
 interface PlaybookData {
