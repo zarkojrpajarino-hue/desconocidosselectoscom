@@ -152,22 +152,16 @@ export const useBrandKit = (organizationId: string | null) => {
     queryFn: () => fetchBrandKit(organizationId),
     enabled: !!organizationId,
     staleTime: 5 * 60 * 1000, // 5 minutes - brand kits don't change frequently
-    onError: (error: Error) => {
-      console.error('Error loading brand kit:', error);
-    },
   });
 
   // Query for color palettes
   const {
-    data: palettes = [],
+    data: palettes = [] as ColorPalette[],
     isLoading: palettesLoading,
   } = useQuery({
     queryKey: brandKitKeys.palettes(),
     queryFn: fetchColorPalettes,
     staleTime: Infinity, // Palettes are static, cache indefinitely
-    onError: (error: Error) => {
-      console.error('Error loading palettes:', error);
-    },
   });
 
   // Cargar fuentes cuando hay brand kit

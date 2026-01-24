@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Clock, Users, User, Target, Circle } from 'lucide-react';
@@ -15,7 +15,7 @@ interface TeamAgendaViewProps {
   collaborativePercentage: number;
 }
 
-export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: TeamAgendaViewProps) {
+export function TeamAgendaView({ weekStart, collaborativePercentage }: TeamAgendaViewProps) {
   const { user, currentOrganizationId } = useAuth();
   const queryClient = useQueryClient();
 
@@ -123,7 +123,7 @@ export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: 
     );
   }
 
-  const TaskCard = ({ task, isCollaborative }: { task: typeof tasks[0], isCollaborative: boolean }) => (
+  const TaskCard = ({ task, isCollaborative }: { task: NonNullable<typeof tasks>[number], isCollaborative: boolean }) => (
     <div
       className={`p-3 rounded-lg border transition-colors ${
         task.status === 'completed'
@@ -133,7 +133,7 @@ export function TeamAgendaView({ weekStart, filters, collaborativePercentage }: 
     >
       <div className="flex items-start gap-3">
         <button
-          onClick={() => handleToggleComplete(task.task_id, task.status, isCollaborative)}
+          onClick={() => task.task_id && handleToggleComplete(task.task_id, task.status || 'pending', isCollaborative)}
           className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-colors cursor-pointer ${
             task.status === 'completed' 
               ? 'bg-success text-success-foreground hover:bg-success/80' 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useBrandKit, useGenerateBrandKit, ColorPalette, BrandKitInput } from '@/hooks/useBrandKit';
+import { useBrandKit, useGenerateBrandKit } from '@/hooks/useBrandKit';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

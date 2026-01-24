@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Users, User, Info, Lock, Calendar, Bell, AlertCircle
+  Users, User, Lock, Calendar, Bell, AlertCircle, Info
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -57,7 +55,6 @@ const DAYS_OF_WEEK = [
 ];
 
 export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesModalProps) {
-  const { t } = useTranslation();
   const { user, currentOrganizationId, userOrganizations } = useAuth();
   const [hasTeam, setHasTeam] = useState<boolean | null>(null);
   const [teamSize, setTeamSize] = useState<string>('');
@@ -123,8 +120,8 @@ export function WorkPreferencesModal({ onPreferencesChange }: WorkPreferencesMod
       const { data: teamMembers } = await supabase
         .from('user_roles')
         .select('user_id')
-        .eq('organization_id', currentOrganizationId)
-        .neq('user_id', user?.id);
+        .eq('organization_id', currentOrganizationId!)
+        .neq('user_id', user?.id ?? '');
 
       if (!teamMembers || teamMembers.length === 0) return;
 

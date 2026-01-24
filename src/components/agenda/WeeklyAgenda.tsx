@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Users, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Users, CheckCircle2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import RescheduleModal from './RescheduleModal';
@@ -109,10 +109,10 @@ const WeeklyAgenda = ({ userId, weekStart, isLocked }: WeeklyAgendaProps) => {
         
         // Transform data to proper ScheduledTask type
         const dayTasks: ScheduledTask[] = (data || [])
-          .filter(t => t.scheduled_date === dateStr)
+          .filter(t => t.scheduled_date === dateStr && t.task_id)
           .map(t => ({
             id: t.id,
-            task_id: t.task_id,
+            task_id: t.task_id!,
             scheduled_date: t.scheduled_date || '',
             scheduled_start: t.scheduled_start || '',
             scheduled_end: t.scheduled_end || '',

@@ -36,8 +36,6 @@ import {
   Brain,
   FileText,
   BarChart3,
-  Settings,
-  RefreshCw,
   ChevronRight,
   Info,
   Loader2,
@@ -232,7 +230,7 @@ const PREDEFINED_QUESTIONS: PreAnalysisQuestion[] = [
 ];
 
 export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnalysisDataReviewProps) {
-  const { currentOrganizationId, user } = useAuth();
+  const { currentOrganizationId } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [orgData, setOrgData] = useState<OrganizationData | null>(null);
@@ -257,7 +255,7 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
       const { data: org } = await supabase
         .from('organizations')
         .select('*')
-        .eq('id', currentOrganizationId)
+        .eq('id', currentOrganizationId!)
         .single();
 
       if (org) {
@@ -278,7 +276,7 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
           const { data: dp } = await supabase
             .from('discovery_profiles')
             .select('*')
-            .eq('organization_id', currentOrganizationId)
+            .eq('organization_id', currentOrganizationId!)
             .maybeSingle();
           if (dp) {
             setDiscoveryProfile(dp as unknown as DiscoveryProfileData);
@@ -288,11 +286,11 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
 
       // Load metrics summary
       const [revenueRes, expenseRes, leadsRes, teamRes, okrsRes, tasksRes] = await Promise.all([
-        supabase.from('revenue_entries').select('amount').eq('organization_id', currentOrganizationId),
-        supabase.from('expense_entries').select('amount').eq('organization_id', currentOrganizationId),
-        supabase.from('leads').select('id, stage, pipeline_stage').eq('organization_id', currentOrganizationId),
-        supabase.from('user_roles').select('id').eq('organization_id', currentOrganizationId),
-        supabase.from('objectives').select('id').eq('organization_id', currentOrganizationId),
+        supabase.from('revenue_entries').select('amount').eq('organization_id', currentOrganizationId!),
+        supabase.from('expense_entries').select('amount').eq('organization_id', currentOrganizationId!),
+        supabase.from('leads').select('id, stage, pipeline_stage').eq('organization_id', currentOrganizationId!),
+        supabase.from('user_roles').select('id').eq('organization_id', currentOrganizationId!),
+        supabase.from('objectives').select('id').eq('organization_id', currentOrganizationId!),
         supabase.from('task_completions').select('id').eq('completed_by_user', true),
       ]);
 
@@ -319,7 +317,7 @@ export function PreAnalysisDataReview({ open, onOpenChange, onProceed }: PreAnal
       const { data: comps } = await supabase
         .from('competitors')
         .select('*')
-        .eq('organization_id', currentOrganizationId);
+        .eq('organization_id', currentOrganizationId!);
       setCompetitors((comps || []) as Record<string, unknown>[]);
 
       // Calculate data completeness
