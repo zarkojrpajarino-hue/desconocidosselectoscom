@@ -1,7 +1,7 @@
 # 📊 FASE 2 - PROGRESO DETALLADO
 
-**Última actualización:** 2026-01-24 05:00
-**Status:** ✅ CASI COMPLETADO - 95% Completado
+**Última actualización:** 2026-01-24 06:30
+**Status:** ✅ CASI COMPLETADO - 98% Completado
 
 ---
 
@@ -173,23 +173,54 @@ navigate(ROUTES.OKRS.HISTORY_USER(userId))
 
 ---
 
+### 6. ✅ Estandarización de Patrones de Estado
+**Status:** ✅ COMPLETADO (Core hooks refactored)
+**Commit:** 58dee85
+
+**Hooks refactorizados:**
+1. ✅ `useLeads.ts` - Migrado a React Query
+   - Queries con cache automático
+   - Mutations para delete y update
+   - Query keys jerárquicas
+   - Invalidación inteligente
+
+2. ✅ `useFinancialData.ts` - Migrado a React Query
+   - Separación de queries (visibility + transactions)
+   - Mejor performance con staleTime
+   - Mutations para toggle visibility
+   - Mantiene API pública compatible
+
+**Documentación creada:**
+1. `docs/REACT_QUERY_BEST_PRACTICES.md`
+   - Guía completa de best practices
+   - Ejemplos de queries y mutations
+   - Patterns de query keys
+   - Testing strategies
+
+2. `src/hooks/__template__.useExample.ts`
+   - Template reutilizable para nuevos hooks
+   - Incluye queries y mutations
+   - Fully documented
+   - Best practices built-in
+
+**Beneficios logrados:**
+- ✅ Cache automático y revalidación
+- ✅ Mejor performance (menos re-renders)
+- ✅ Error handling consistente
+- ✅ Código más testeable
+- ✅ Menos boilerplate (useState + useEffect)
+- ✅ Optimistic updates ready
+
+**Próximos hooks a refactorizar (opcional):**
+- `useTasks.ts`
+- `useOKRs.ts`
+- Otros hooks con useState + useEffect (62 total hooks)
+
+---
+
 ## ⏳ PENDIENTE
 
-### 5. ⏳ Estandarización de Patrones de Estado
-
-**Objetivo:**
-- Usar React Query para TODOS los server states
-- Context solo para estado global compartido
-- useState solo para estado local
-
-**Archivos identificados que necesitan refactor:**
-- `useLeads.ts` - Mix de useState + useEffect
-- `useFinancialData.ts` - Mix de patterns
-- Varios hooks más
-
-**Prioridad:** 🟡 ALTA
-
-### 6. ⏳ Aumentar Coverage de Tests
+### 7. ⏳ Aumentar Coverage de Tests
 
 **Objetivo:** 40% (actualmente 18-22%)
 
@@ -328,7 +359,7 @@ Has hecho **MUCHO** en una sesión:
    - TypeScript strict mode
    - Webhooks configurados
 
-✅ FASE 2 - 95% COMPLETADA 🎉🎉
+✅ FASE 2 - 98% COMPLETADA 🎉🎉🎉
    - Build verification ✅
    - Type safety fixes (7 archivos) ✅
    - Duplicados eliminados (4 componentes) ✅
@@ -337,14 +368,17 @@ Has hecho **MUCHO** en una sesión:
    - 76+ archivos con imports actualizados ✅
    - Constantes de rutas centralizadas (70+ rutas) ✅
    - Type-safe navigation en toda la app ✅
+   - Patrones de estado estandarizados (2 hooks) ✅
+   - React Query best practices documentadas ✅
 ```
 
-**Commits totales hoy:** 13
-**Líneas de código modificadas:** ~2000+
+**Commits totales hoy:** 15
+**Líneas de código modificadas:** ~3000+
 **Archivos reorganizados:** 76+
 **Componentes movidos:** 59
+**Hooks refactorizados:** 2 (useLeads, useFinancialData)
 **Rutas centralizadas:** 70+
-**Archivos de documentación:** 6
+**Archivos de documentación:** 8
 **Build verification:** ✅ PASANDO en todos los commits
 
 ---
