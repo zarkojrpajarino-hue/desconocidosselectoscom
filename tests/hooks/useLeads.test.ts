@@ -1,26 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useLeads } from '@/hooks/useLeads';
+import { createWrapper } from '../test-utils';
 
 // Mock Supabase
 const mockSelect = vi.fn();
 const mockEq = vi.fn();
 const mockOrder = vi.fn();
+const mockInsert = vi.fn();
+const mockUpdate = vi.fn();
+const mockDelete = vi.fn();
+const mockSingle = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: mockSelect,
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
     })),
   },
 }));
 
 // Mock toast
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-  },
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: vi.fn(() => ({
+    toast: vi.fn(),
+  })),
 }));
 
 describe('useLeads Hook', () => {
@@ -29,6 +36,10 @@ describe('useLeads Hook', () => {
     mockSelect.mockReturnThis();
     mockEq.mockReturnThis();
     mockOrder.mockReturnThis();
+    mockInsert.mockReturnThis();
+    mockUpdate.mockReturnThis();
+    mockDelete.mockReturnThis();
+    mockSingle.mockReturnThis();
   });
 
   describe('Fetching leads', () => {
@@ -62,7 +73,9 @@ describe('useLeads Hook', () => {
 
       mockOrder.mockResolvedValue({ data: mockLeads, error: null });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-123'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -76,7 +89,9 @@ describe('useLeads Hook', () => {
     it('should filter leads by organization_id (multi-tenancy)', async () => {
       mockOrder.mockResolvedValue({ data: [], error: null });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-456'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-456'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -86,7 +101,9 @@ describe('useLeads Hook', () => {
     });
 
     it('should not fetch when userId is undefined', async () => {
-      const { result } = renderHook(() => useLeads(undefined, 'org-123'));
+      const { result } = renderHook(() => useLeads(undefined, 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       expect(result.current.leads).toEqual([]);
       expect(result.current.loading).toBe(false);
@@ -96,7 +113,9 @@ describe('useLeads Hook', () => {
       const error = new Error('Database error');
       mockOrder.mockResolvedValue({ data: null, error });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-123'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy();
@@ -113,7 +132,9 @@ describe('useLeads Hook', () => {
 
       mockOrder.mockResolvedValue({ data: mockLeads, error: null });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-123'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -135,7 +156,9 @@ describe('useLeads Hook', () => {
 
       mockOrder.mockResolvedValue({ data: mockLeads, error: null });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-123'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -161,7 +184,9 @@ describe('useLeads Hook', () => {
 
       mockOrder.mockResolvedValue({ data: mockLeads, error: null });
 
-      const { result } = renderHook(() => useLeads('user-123', 'org-123'));
+      const { result } = renderHook(() => useLeads('user-123', 'org-123'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -172,6 +197,29 @@ describe('useLeads Hook', () => {
         .reduce((sum, l) => sum + (l.estimated_value || 0), 0);
 
       expect(pipelineValue).toBe(15000);
+    });
+  });
+
+  describe('React Query Integration', () => {
+    it('should use correct query key structure', async () => {
+      const { leadsKeys } = await import('@/hooks/useLeads');
+
+      const key = leadsKeys.list('user-123', 'org-123');
+
+      expect(key).toEqual([
+        'leads',
+        'list',
+        { userId: 'user-123', organizationId: 'org-123' },
+      ]);
+    });
+
+    it('should be disabled when userId is null', () => {
+      const { result } = renderHook(() => useLeads(null, 'org-123'), {
+        wrapper: createWrapper(),
+      });
+
+      expect(result.current.leads).toEqual([]);
+      expect(result.current.loading).toBe(false);
     });
   });
 });
