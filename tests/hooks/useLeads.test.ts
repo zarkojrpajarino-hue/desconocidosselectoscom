@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeads, leadsKeys } from '@/hooks/useLeads';
 import { createWrapper } from '../test-utils';
 
 // Mock Supabase
@@ -33,13 +33,36 @@ vi.mock('@/hooks/use-toast', () => ({
 describe('useLeads Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSelect.mockReturnThis();
-    mockEq.mockReturnThis();
-    mockOrder.mockReturnThis();
-    mockInsert.mockReturnThis();
-    mockUpdate.mockReturnThis();
-    mockDelete.mockReturnThis();
-    mockSingle.mockReturnThis();
+
+    // Setup chain methods
+    mockSelect.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+    });
+
+    mockEq.mockReturnValue({
+      eq: mockEq,
+      order: mockOrder,
+      single: mockSingle,
+    });
+
+    mockOrder.mockReturnValue({
+      data: [],
+      error: null,
+    });
+
+    mockInsert.mockReturnValue({
+      select: mockSelect,
+      single: mockSingle,
+    });
+
+    mockUpdate.mockReturnValue({
+      eq: mockEq,
+    });
+
+    mockDelete.mockReturnValue({
+      eq: mockEq,
+    });
   });
 
   describe('Fetching leads', () => {
@@ -201,15 +224,13 @@ describe('useLeads Hook', () => {
   });
 
   describe('React Query Integration', () => {
-    it('should use correct query key structure', async () => {
-      const { leadsKeys } = await import('@/hooks/useLeads');
-
-      const key = leadsKeys.list('user-123', 'org-123');
+    it('should use correct query key structure', () => {
+      const key = leadsKeys.list('org-123');
 
       expect(key).toEqual([
         'leads',
         'list',
-        { userId: 'user-123', organizationId: 'org-123' },
+        { organizationId: 'org-123' },
       ]);
     });
 
