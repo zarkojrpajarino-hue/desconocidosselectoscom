@@ -58,8 +58,8 @@ describe('ApiKeysTab', () => {
   it('should show key prefixes', () => {
     render(<ApiKeysTab organizationId="org-123" />);
 
-    expect(screen.getByText(/sk_live_/)).toBeInTheDocument();
-    expect(screen.getByText(/sk_test_/)).toBeInTheDocument();
+    expect(screen.getAllByText(/sk_live_/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/sk_test_/)[0]).toBeInTheDocument();
   });
 
   it('should display active/inactive badges', () => {
