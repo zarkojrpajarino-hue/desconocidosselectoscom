@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Clock, Target, Zap, Circle } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,7 +14,7 @@ interface IndividualAgendaViewProps {
   filters: AgendaFilters;
 }
 
-export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaViewProps) {
+export function IndividualAgendaView({ weekStart }: IndividualAgendaViewProps) {
   const { user, currentOrganizationId } = useAuth();
   const queryClient = useQueryClient();
 
@@ -42,7 +42,7 @@ export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaVie
   });
 
   // Group tasks by day
-  const tasksByDay = React.useMemo(() => {
+  const tasksByDay = useMemo(() => {
     if (!tasks) return {};
     
     return tasks.reduce((acc, task) => {
@@ -215,7 +215,7 @@ export function IndividualAgendaView({ weekStart, filters }: IndividualAgendaVie
                   >
                     <div className="flex items-start gap-3">
                       <button
-                        onClick={() => handleToggleComplete(task.task_id, task.status)}
+                        onClick={() => task.task_id && handleToggleComplete(task.task_id, task.status || 'pending')}
                         className={`w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-colors cursor-pointer ${
                           task.status === 'completed' 
                             ? 'bg-success text-success-foreground hover:bg-success/80' 

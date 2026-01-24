@@ -83,6 +83,7 @@ export const CustomerInsights = ({ organizationId, dateRange, showDemoData = fal
         // Customer lifecycle
         const lifecycle = [
           { stage: 'Nuevos', count: leadsData?.filter(l => {
+            if (!l.created_at) return false;
             const created = new Date(l.created_at);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -112,6 +113,7 @@ export const CustomerInsights = ({ organizationId, dateRange, showDemoData = fal
         // Cohort analysis (monthly)
         const cohortMap = new Map<string, { newCustomers: number; retained: number }>();
         leadsData?.forEach(lead => {
+          if (!lead.created_at) return;
           const month = new Date(lead.created_at).toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
           const existing = cohortMap.get(month) || { newCustomers: 0, retained: 0 };
           existing.newCustomers += 1;
