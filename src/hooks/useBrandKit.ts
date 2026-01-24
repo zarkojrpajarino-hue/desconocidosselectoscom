@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -57,6 +58,63 @@ export interface BrandKitInput {
   brand_personality?: string[];
 }
 
+// ============================================================================
+// QUERY KEYS
+// ============================================================================
+
+export const brandKitKeys = {
+  all: ['brandKits'] as const,
+  brandKit: (organizationId: string | null) =>
+    [...brandKitKeys.all, 'brandKit', { organizationId }] as const,
+  palettes: () => [...brandKitKeys.all, 'palettes'] as const,
+};
+
+// ============================================================================
+// FETCH FUNCTIONS
+// ============================================================================
+
+/**
+ * Fetch brand kit for organization
+ */
+async function fetchBrandKit(
+  organizationId: string | null
+): Promise<BrandKit | null> {
+  if (!organizationId) return null;
+
+  const { data, error } = await supabase
+    .from('brand_kits')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  // Parse brand_personality si viene como string
+  if (data) {
+    return {
+      ...data,
+      brand_personality: Array.isArray(data.brand_personality)
+        ? data.brand_personality
+        : [],
+    } as BrandKit;
+  }
+
+  return null;
+}
+
+/**
+ * Fetch all color palettes
+ */
+async function fetchColorPalettes(): Promise<ColorPalette[]> {
+  const { data, error } = await supabase
+    .from('brand_color_palettes')
+    .select('*')
+    .order('industry');
+
+  if (error) throw error;
+  return data || [];
+}
+
 // Hook para cargar Google Fonts dinámicamente
 export const useGoogleFonts = (fonts: string[]) => {
   useEffect(() => {
@@ -80,78 +138,50 @@ export const useGoogleFonts = (fonts: string[]) => {
 };
 
 export const useBrandKit = (organizationId: string | null) => {
-  const [brandKit, setBrandKit] = useState<BrandKit | null>(null);
-  const [palettes, setPalettes] = useState<ColorPalette[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Query for brand kit
+  const {
+    data: brandKit = null,
+    isLoading: brandKitLoading,
+    error: brandKitError,
+    refetch: refetchBrandKit,
+  } = useQuery({
+    queryKey: brandKitKeys.brandKit(organizationId),
+    queryFn: () => fetchBrandKit(organizationId),
+    enabled: !!organizationId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - brand kits don't change frequently
+    onError: (error: Error) => {
+      console.error('Error loading brand kit:', error);
+    },
+  });
+
+  // Query for color palettes
+  const {
+    data: palettes = [],
+    isLoading: palettesLoading,
+  } = useQuery({
+    queryKey: brandKitKeys.palettes(),
+    queryFn: fetchColorPalettes,
+    staleTime: Infinity, // Palettes are static, cache indefinitely
+    onError: (error: Error) => {
+      console.error('Error loading palettes:', error);
+    },
+  });
 
   // Cargar fuentes cuando hay brand kit
   useGoogleFonts(brandKit ? [brandKit.font_heading, brandKit.font_body] : []);
 
-  const loadBrandKit = useCallback(async () => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
-    }
+  const loading = brandKitLoading || palettesLoading;
 
-    try {
-      const { data, error } = await supabase
-        .from('brand_kits')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      // Parse brand_personality si viene como string
-      if (data) {
-        const parsed = {
-          ...data,
-          brand_personality: Array.isArray(data.brand_personality) 
-            ? data.brand_personality 
-            : []
-        };
-        setBrandKit(parsed as BrandKit);
-      } else {
-        setBrandKit(null);
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: BrandKitInput) => {
+      if (!organizationId) {
+        throw new Error('No hay organización seleccionada');
       }
-    } catch (error) {
-      console.error('Error loading brand kit:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [organizationId]);
 
-  const loadPalettes = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('brand_color_palettes')
-        .select('*')
-        .order('industry');
-
-      if (error) throw error;
-      setPalettes(data || []);
-    } catch (error) {
-      console.error('Error loading palettes:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadBrandKit();
-    loadPalettes();
-  }, [loadBrandKit, loadPalettes]);
-
-  const createBrandKit = async (data: BrandKitInput): Promise<BrandKit | null> => {
-    if (!organizationId) {
-      toast({
-        title: 'Error',
-        description: 'No hay organización seleccionada',
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    try {
       const { data: newKit, error } = await supabase
         .from('brand_kits')
         .insert({
@@ -164,35 +194,37 @@ export const useBrandKit = (organizationId: string | null) => {
 
       if (error) throw error;
 
-      const parsed = {
+      return {
         ...newKit,
-        brand_personality: Array.isArray(newKit.brand_personality) 
-          ? newKit.brand_personality 
-          : []
+        brand_personality: Array.isArray(newKit.brand_personality)
+          ? newKit.brand_personality
+          : [],
       } as BrandKit;
-
-      setBrandKit(parsed);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: brandKitKeys.brandKit(organizationId),
+      });
       toast({
         title: '¡Brand Kit creado!',
         description: 'Tu identidad de marca ha sido guardada',
       });
-
-      return parsed;
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       console.error('Error creating brand kit:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo crear el brand kit',
+        description: error.message || 'No se pudo crear el brand kit',
         variant: 'destructive',
       });
-      return null;
-    }
-  };
+    },
+  });
 
-  const updateBrandKit = async (updates: Partial<BrandKitInput>): Promise<BrandKit | null> => {
-    if (!brandKit) return null;
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: async (updates: Partial<BrandKitInput>) => {
+      if (!brandKit) throw new Error('No brand kit to update');
 
-    try {
       const { data, error } = await supabase
         .from('brand_kits')
         .update(updates)
@@ -202,65 +234,68 @@ export const useBrandKit = (organizationId: string | null) => {
 
       if (error) throw error;
 
-      const parsed = {
+      return {
         ...data,
-        brand_personality: Array.isArray(data.brand_personality) 
-          ? data.brand_personality 
-          : []
+        brand_personality: Array.isArray(data.brand_personality)
+          ? data.brand_personality
+          : [],
       } as BrandKit;
-
-      setBrandKit(parsed);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: brandKitKeys.brandKit(organizationId),
+      });
       toast({
         title: 'Brand Kit actualizado',
         description: 'Los cambios han sido guardados',
       });
-
-      return parsed;
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       console.error('Error updating brand kit:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo actualizar el brand kit',
+        description: error.message || 'No se pudo actualizar el brand kit',
         variant: 'destructive',
       });
-      return null;
-    }
-  };
+    },
+  });
 
-  const deleteBrandKit = async (): Promise<boolean> => {
-    if (!brandKit) return false;
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!brandKit) throw new Error('No brand kit to delete');
 
-    try {
       const { error } = await supabase
         .from('brand_kits')
         .delete()
         .eq('id', brandKit.id);
 
       if (error) throw error;
-
-      setBrandKit(null);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: brandKitKeys.brandKit(organizationId),
+      });
       toast({
         title: 'Brand Kit eliminado',
         description: 'Tu identidad de marca ha sido eliminada',
       });
-
-      return true;
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       console.error('Error deleting brand kit:', error);
       toast({
         title: 'Error',
-        description: 'No se pudo eliminar el brand kit',
+        description: error.message || 'No se pudo eliminar el brand kit',
         variant: 'destructive',
       });
-      return false;
-    }
-  };
+    },
+  });
 
   const getPalettesByIndustry = (industry: string): ColorPalette[] => {
     return palettes.filter((p) => p.industry === industry);
   };
 
-  const applyPalette = async (palette: ColorPalette): Promise<BrandKit | null> => {
+  const applyPalette = async (palette: ColorPalette): Promise<void> => {
     const updates = {
       primary_color: palette.primary_color,
       secondary_color: palette.secondary_color,
@@ -270,9 +305,9 @@ export const useBrandKit = (organizationId: string | null) => {
     };
 
     if (brandKit) {
-      return updateBrandKit(updates);
+      updateMutation.mutate(updates);
     } else {
-      return createBrandKit({
+      createMutation.mutate({
         ...updates,
         font_heading: 'Montserrat',
         font_body: 'Open Sans',
@@ -282,56 +317,79 @@ export const useBrandKit = (organizationId: string | null) => {
   };
 
   return {
+    // Data
     brandKit,
     palettes,
     loading,
-    createBrandKit,
-    updateBrandKit,
-    deleteBrandKit,
+    error: brandKitError as Error | null,
+
+    // Actions
+    createBrandKit: (data: BrandKitInput) => createMutation.mutateAsync(data),
+    updateBrandKit: (updates: Partial<BrandKitInput>) => updateMutation.mutateAsync(updates),
+    deleteBrandKit: () => deleteMutation.mutateAsync(),
     getPalettesByIndustry,
     applyPalette,
-    refetch: loadBrandKit,
+    refetch: refetchBrandKit,
+
+    // Mutation states
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 };
 
-// Hook para generar brand kit con IA
+// ============================================================================
+// AI GENERATION HOOK
+// ============================================================================
+
+/**
+ * Hook para generar brand kit con IA
+ *
+ * @example
+ * const { generateBrandKit, isGenerating } = useGenerateBrandKit();
+ */
 export const useGenerateBrandKit = () => {
-  const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
 
-  const generateBrandKit = async (params: {
-    industry: string;
-    businessName: string;
-    targetAudience: string;
-    brandPersonality: string[];
-    countryCode?: string;
-  }): Promise<BrandKitInput | null> => {
-    setGenerating(true);
-    
-    try {
+  const generateMutation = useMutation({
+    mutationFn: async (params: {
+      industry: string;
+      businessName: string;
+      targetAudience: string;
+      brandPersonality: string[];
+      countryCode?: string;
+    }) => {
       const { data, error } = await supabase.functions.invoke('generate-brand-kit', {
         body: params,
       });
 
       if (error) throw error;
-      
+
       if (data.error) {
         throw new Error(data.error);
       }
 
       return data as BrandKitInput;
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       console.error('Error generating brand kit:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'No se pudo generar el brand kit',
+        description: error.message || 'No se pudo generar el brand kit',
         variant: 'destructive',
       });
-      return null;
-    } finally {
-      setGenerating(false);
-    }
-  };
+    },
+  });
 
-  return { generateBrandKit, generating };
+  return {
+    generateBrandKit: (params: {
+      industry: string;
+      businessName: string;
+      targetAudience: string;
+      brandPersonality: string[];
+      countryCode?: string;
+    }) => generateMutation.mutateAsync(params),
+    generating: generateMutation.isPending,
+    isGenerating: generateMutation.isPending,
+  };
 };
