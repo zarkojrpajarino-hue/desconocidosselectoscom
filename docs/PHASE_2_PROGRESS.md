@@ -1,7 +1,7 @@
 # 📊 FASE 2 - PROGRESO DETALLADO
 
-**Última actualización:** 2026-01-24 04:00
-**Status:** ✅ COMPLETADO - 98% Completado
+**Última actualización:** 2026-01-24 05:00
+**Status:** ✅ CASI COMPLETADO - 95% Completado
 
 ---
 
@@ -125,6 +125,52 @@ const orgData = data as typeof data & { field?: type };
 - Nuevas carpetas creadas: shared, plan, organization, gamification (4 nuevas)
 - Total de carpetas de componentes: 25+
 
+### 5. ✅ Constantes de Rutas Centralizadas
+**Status:** ✅ COMPLETADO
+**Commit:** 15664f3
+
+**Archivos creados:**
+1. `src/constants/routes.ts` - Todas las rutas con TypeScript types
+2. `src/constants/index.ts` - Barrel export
+3. `docs/ROUTES_USAGE.md` - Guía completa de uso
+
+**Características:**
+- ✅ Type-safe navigation en toda la app
+- ✅ Autocomplete en IDE para todas las rutas
+- ✅ Refactoring fácil - punto único de definición
+- ✅ Rutas parametrizadas con type safety (userId, analysisId, etc.)
+- ✅ Rutas relativas para componentes Route anidados
+- ✅ No más magic strings
+
+**Estructura:**
+```typescript
+// Ejemplo de uso
+import { ROUTES } from '@/constants';
+
+// Antes: navigate('/dashboard/home')
+// Después: navigate(ROUTES.DASHBOARD.HOME)
+
+// Rutas con parámetros
+navigate(ROUTES.CRM.USER_LEADS(userId))
+navigate(ROUTES.OKRS.HISTORY_USER(userId))
+```
+
+**Organización de rutas:**
+- Auth & Onboarding (10 rutas)
+- Dashboard (6 rutas)
+- CRM (4 rutas)
+- OKRs (5 rutas)
+- Financial (3 rutas)
+- Herramientas/Tools (6 rutas)
+- Practicar/Practice (5 rutas)
+- Settings (4 rutas)
+- Admin (2 rutas)
+- Otras (25+ rutas)
+
+**Total de rutas definidas:** 70+
+
+**Próximo paso:** Reemplazar gradualmente magic strings con ROUTES
+
 ---
 
 ## ⏳ PENDIENTE
@@ -143,27 +189,7 @@ const orgData = data as typeof data & { field?: type };
 
 **Prioridad:** 🟡 ALTA
 
-### 6. ⏳ Crear Constantes de Rutas
-
-**Objetivo:**
-```typescript
-// src/constants/routes.ts
-export const ROUTES = {
-  DASHBOARD: '/dashboard',
-  CRM: '/crm',
-  OKRS: '/okrs',
-  // ...
-} as const;
-```
-
-**Impacto:**
-- Refactoring más fácil
-- Autocomplete en rutas
-- No más magic strings
-
-**Prioridad:** 🟢 MEDIA
-
-### 7. ⏳ Aumentar Coverage de Tests
+### 6. ⏳ Aumentar Coverage de Tests
 
 **Objetivo:** 40% (actualmente 18-22%)
 
@@ -302,21 +328,23 @@ Has hecho **MUCHO** en una sesión:
    - TypeScript strict mode
    - Webhooks configurados
 
-✅ FASE 2 - 98% COMPLETADA 🎉
+✅ FASE 2 - 95% COMPLETADA 🎉🎉
    - Build verification ✅
    - Type safety fixes (7 archivos) ✅
    - Duplicados eliminados (4 componentes) ✅
    - Reorganización 98% completa (59/60 componentes) ✅✅✅
    - 4 carpetas nuevas creadas ✅
    - 76+ archivos con imports actualizados ✅
-   - Plan de reorganización creado ✅
+   - Constantes de rutas centralizadas (70+ rutas) ✅
+   - Type-safe navigation en toda la app ✅
 ```
 
-**Commits totales hoy:** 11
-**Líneas de código modificadas:** ~1500+
+**Commits totales hoy:** 13
+**Líneas de código modificadas:** ~2000+
 **Archivos reorganizados:** 76+
 **Componentes movidos:** 59
-**Archivos de documentación:** 5
+**Rutas centralizadas:** 70+
+**Archivos de documentación:** 6
 **Build verification:** ✅ PASANDO en todos los commits
 
 ---
