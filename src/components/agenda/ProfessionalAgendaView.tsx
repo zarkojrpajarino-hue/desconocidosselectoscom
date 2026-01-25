@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,21 +13,19 @@ import {
   ChevronRight,
   CalendarClock,
   CheckCircle2,
-  Plus,
-  Filter
+  Plus
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, addDays, parseISO, isSameDay, addWeeks } from 'date-fns';
+import { format, addDays, parseISO, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { AvailabilityBulkConfig } from './AvailabilityBulkConfig';
 import { AgendaFilters } from './AgendaFilters';
 import { useCurrentPhase, usePhaseWeeklyTasks } from '@/hooks/usePhaseWeeklyTasks';
-import { useAgendaPhaseWeeks, type PhaseWeekInfo } from '@/hooks/useAgendaPhaseWeeks';
-import { getCurrentWeekStart } from '@/lib/weekUtils';
+import { useAgendaPhaseWeeks } from '@/hooks/useAgendaPhaseWeeks';
 import type { AgendaFilters as FiltersType } from '@/hooks/useGlobalAgenda';
 
 interface ProfessionalAgendaViewProps {

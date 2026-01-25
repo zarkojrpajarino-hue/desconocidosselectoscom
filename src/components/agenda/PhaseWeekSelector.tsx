@@ -1,5 +1,4 @@
-import React from 'react';
-import { format, addWeeks, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Check, Calendar } from 'lucide-react';
 import {

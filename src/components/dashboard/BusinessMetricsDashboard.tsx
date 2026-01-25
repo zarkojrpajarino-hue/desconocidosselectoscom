@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw, Download, MessageSquare } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Package, Save, RefreshCw, Download } from 'lucide-react';
 import { IntegrationButton } from '@/components/IntegrationButton';
 
 interface BusinessMetrics {

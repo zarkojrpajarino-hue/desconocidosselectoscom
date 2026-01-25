@@ -6,31 +6,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import {
-  TrendingUp,
-  TrendingDown,
   Target,
   Users,
   DollarSign,
   AlertTriangle,
-  Zap,
-  Rocket,
   Shield,
   Clock,
   CheckCircle2,
-  ArrowRight,
   Lightbulb,
-  BarChart3,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,

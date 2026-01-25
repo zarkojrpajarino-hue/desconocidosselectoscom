@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Lead } from '@/types';
 import { 
-  Building2, Mail, Phone, Calendar, Euro, TrendingUp, User, Edit, 
+  Building2, Mail, Phone, Euro, TrendingUp, User, Edit, 
   MessageSquare, PhoneCall, Video, Send, FileText, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
