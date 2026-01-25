@@ -66,7 +66,7 @@ export function GrowthAnalysisSection({ data }: GrowthAnalysisSectionProps) {
     return configs[rate] || configs.moderate;
   };
 
-  const getSeverityColor = (severity: Severity) => {
+  const _getSeverityColor = (severity: Severity) => {
     const colors = {
       critical: 'bg-destructive/10 text-destructive border-destructive',
       high: 'bg-orange-500/10 text-orange-500 border-orange-500',
@@ -75,8 +75,9 @@ export function GrowthAnalysisSection({ data }: GrowthAnalysisSectionProps) {
     };
     return colors[severity];
   };
+  void _getSeverityColor;
 
-  const getImpactColor = (impact: ImpactLevel) => {
+  const _getImpactColor = (impact: ImpactLevel) => {
     const colors = {
       high: 'bg-success/10 text-success border-success',
       medium: 'bg-primary/10 text-primary border-primary',
@@ -84,6 +85,7 @@ export function GrowthAnalysisSection({ data }: GrowthAnalysisSectionProps) {
     };
     return colors[impact];
   };
+  void _getImpactColor;
 
   const stageConfig = getStageConfig(data.current_stage);
   const rateConfig = getGrowthRateConfig(data.growth_rate);

@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -15,21 +14,19 @@ import {
   RefreshCw,
   Sparkles
 } from 'lucide-react';
-import { usePhaseWeeklyTasks, useCurrentPhase, PhaseTask } from '@/hooks/usePhaseWeeklyTasks';
+import { usePhaseWeeklyTasks, useCurrentPhase } from '@/hooks/usePhaseWeeklyTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTaskSwaps } from '@/hooks/useTaskSwaps';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PhaseTaskCard } from './PhaseTaskCard';
-import { useTranslation } from 'react-i18next';
 
 export function PhaseWeeklyTasks() {
-  const { t } = useTranslation();
   const { user, currentOrganizationId } = useAuth();
   const { data: currentPhase, isLoading: phaseLoading } = useCurrentPhase();
   const { data: weeklyData, isLoading: tasksLoading } = usePhaseWeeklyTasks(currentPhase?.phase_number);
-  const { remainingSwaps, totalSwaps, usedSwaps, reload: reloadSwaps } = useTaskSwaps(user?.id || '', currentPhase?.phase_number);
+  const { remainingSwaps, totalSwaps, reload: reloadSwaps } = useTaskSwaps(user?.id || '', currentPhase?.phase_number);
   const queryClient = useQueryClient();
   
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);

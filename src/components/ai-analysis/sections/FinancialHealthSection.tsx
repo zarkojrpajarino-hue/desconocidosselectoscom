@@ -33,6 +33,7 @@ import {
   Legend,
   ComposedChart,
   Cell,
+  Line,
   PieChart,
   Pie,
 } from 'recharts';
@@ -51,15 +52,17 @@ export function FinancialHealthSection({ data }: FinancialHealthSectionProps) {
     }).format(value);
   };
 
-  const formatPercent = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+  const _formatPercent = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+  void _formatPercent;
 
-  const getTrendIcon = (trend: TrendDirection) => {
+  const _getTrendIcon = (trend: TrendDirection) => {
     switch (trend) {
       case 'improving': return <TrendingUp className="w-4 h-4 text-success" />;
       case 'declining': return <TrendingDown className="w-4 h-4 text-destructive" />;
       default: return <Minus className="w-4 h-4 text-muted-foreground" />;
     }
   };
+  void _getTrendIcon;
 
   const getStatusColor = (status: HealthStatus) => {
     switch (status) {

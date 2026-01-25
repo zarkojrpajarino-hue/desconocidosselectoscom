@@ -93,11 +93,12 @@ const WeeklySchedulePreview = ({ userId, weekStart, onSuggestChange }: WeeklySch
   const generatePreview = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-preview-schedule', {
+      const { data: previewData, error } = await supabase.functions.invoke('generate-preview-schedule', {
         body: { userId, weekStart }
       });
 
       if (error) throw error;
+      void previewData;
 
       toast.success('Preview generado', {
         description: 'Tu agenda preliminar está lista'

@@ -1,13 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useDealVelocity } from '@/hooks/useEnterpriseData';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { 
   Clock, AlertTriangle, TrendingUp, TrendingDown,
-  RefreshCw, Target, Zap
+  RefreshCw, Zap
 } from 'lucide-react';
 import {
   BarChart,
@@ -71,16 +70,26 @@ export function DealVelocity() {
     );
   }
 
-  const isOnTarget = data.variance_days <= 0;
-  const hasBottlenecks = data.bottlenecks.length > 0;
-  const hasStalledDeals = data.stalled_deals.length > 0;
+  // Type guard for data properties
+  const velocityData = data as {
+    variance_days?: number;
+    bottlenecks?: Array<{ stage: string; days: number; target: number }>;
+    stalled_deals?: Array<{ name: string; stage: string; days: number }>;
+    average_days_in_stage?: Record<string, number>;
+    total_sales_cycle_days?: number;
+    target_sales_cycle_days?: number;
+  };
+
+  const isOnTarget = (velocityData.variance_days ?? 0) <= 0;
+  const hasBottlenecks = (velocityData.bottlenecks ?? []).length > 0;
+  const hasStalledDeals = (velocityData.stalled_deals ?? []).length > 0;
 
   // Preparar datos para el gráfico
-  const chartData = Object.entries(data.average_days_in_stage).map(([stage, days]) => ({
+  const chartData = Object.entries(velocityData.average_days_in_stage ?? {}).map(([stage, days]) => ({
     stage: STAGE_LABELS[stage] || stage,
-    days: days,
+    days: days as number,
     target: TARGET_DAYS[stage] || 7,
-    isBottleneck: days > (TARGET_DAYS[stage] || 7) * 1.2,
+    isBottleneck: (days as number) > (TARGET_DAYS[stage] || 7) * 1.2,
   }));
 
   return (
@@ -105,9 +114,9 @@ export function DealVelocity() {
               <span className="text-sm text-muted-foreground">Ciclo de Ventas Total</span>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="text-3xl font-bold">{data.total_sales_cycle_days} días</p>
+            <p className="text-3xl font-bold">{velocityData.total_sales_cycle_days ?? 0} días</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Target: {data.target_sales_cycle_days} días
+              Target: {velocityData.target_sales_cycle_days ?? 0} días
             </p>
           </CardContent>
         </Card>
@@ -123,7 +132,7 @@ export function DealVelocity() {
               )}
             </div>
             <p className={`text-3xl font-bold ${isOnTarget ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {data.variance_days > 0 ? '+' : ''}{data.variance_days} días
+              {(velocityData.variance_days ?? 0) > 0 ? '+' : ''}{velocityData.variance_days ?? 0} días
             </p>
             <Badge variant={isOnTarget ? 'default' : 'destructive'} className="mt-2">
               {isOnTarget ? 'En objetivo' : 'Sobre objetivo'}
@@ -140,12 +149,12 @@ export function DealVelocity() {
             <div className="flex gap-2 flex-wrap">
               {hasBottlenecks && (
                 <Badge variant="outline" className="text-amber-600 border-amber-500">
-                  {data.bottlenecks.length} Cuellos de botella
+                  {(velocityData.bottlenecks ?? []).length} Cuellos de botella
                 </Badge>
               )}
               {hasStalledDeals && (
                 <Badge variant="outline" className="text-rose-600 border-rose-500">
-                  {data.stalled_deals.length} Deals estancados
+                  {(velocityData.stalled_deals ?? []).length} Deals estancados
                 </Badge>
               )}
               {!hasBottlenecks && !hasStalledDeals && (
@@ -203,19 +212,19 @@ export function DealVelocity() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {data.bottlenecks.map((bottleneck, index) => (
+            {(velocityData.bottlenecks ?? []).map((bottleneck: { stage: string; average_days?: number; target_days?: number; impact?: string; excess_days?: number }, index: number) => (
               <div key={index} className="flex items-center justify-between p-3 bg-background rounded-lg border">
                 <div>
                   <span className="font-medium">
                     {STAGE_LABELS[bottleneck.stage] || bottleneck.stage}
                   </span>
                   <p className="text-sm text-muted-foreground">
-                    {bottleneck.average_days} días promedio (target: {bottleneck.target_days} días)
+                    {bottleneck.average_days ?? 0} días promedio (target: {bottleneck.target_days ?? 7} días)
                   </p>
                 </div>
                 <div className="text-right">
                   <Badge variant={bottleneck.impact === 'high' ? 'destructive' : 'secondary'}>
-                    +{bottleneck.excess_days} días exceso
+                    +{bottleneck.excess_days ?? 0} días exceso
                   </Badge>
                   <p className="text-xs text-muted-foreground mt-1">
                     Impacto: {bottleneck.impact === 'high' ? 'Alto' : 'Medio'}
@@ -238,30 +247,30 @@ export function DealVelocity() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.stalled_deals.slice(0, 5).map((deal, index) => (
+              {(velocityData.stalled_deals ?? []).slice(0, 5).map((deal: { deal_name?: string; current_stage?: string; days_in_stage?: number; average_for_stage?: number; excess_days?: number; recommended_action?: string }, index: number) => (
                 <div key={index} className="p-4 bg-background rounded-lg border space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">{deal.deal_name}</span>
+                    <span className="font-medium">{deal.deal_name ?? 'Sin nombre'}</span>
                     <Badge variant="outline">
-                      {STAGE_LABELS[deal.current_stage] || deal.current_stage}
+                      {STAGE_LABELS[deal.current_stage ?? ''] || deal.current_stage}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {deal.days_in_stage} días en etapa (promedio: {Math.round(deal.average_for_stage)})
+                      {deal.days_in_stage ?? 0} días en etapa (promedio: {Math.round(deal.average_for_stage ?? 0)})
                     </span>
                     <span className="text-rose-600 font-medium">
-                      +{deal.excess_days} días
+                      +{deal.excess_days ?? 0} días
                     </span>
                   </div>
                   <p className="text-xs bg-rose-500/10 p-2 rounded text-rose-700">
-                    💡 {deal.recommended_action}
+                    💡 {deal.recommended_action ?? 'Revisar estado del deal'}
                   </p>
                 </div>
               ))}
-              {data.stalled_deals.length > 5 && (
+              {(velocityData.stalled_deals ?? []).length > 5 && (
                 <p className="text-center text-sm text-muted-foreground">
-                  +{data.stalled_deals.length - 5} deals más estancados
+                  +{(velocityData.stalled_deals ?? []).length - 5} deals más estancados
                 </p>
               )}
             </div>

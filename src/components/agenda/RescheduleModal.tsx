@@ -70,11 +70,12 @@ const RescheduleModal = ({
     }
   }, [open, task]);
 
-  const calculateDurationForUI = (start: string, end: string): number => {
+  const _calculateDurationForUI = (start: string, end: string): number => {
     const [sh, sm] = start.split(':').map(Number);
     const [eh, em] = end.split(':').map(Number);
     return (eh * 60 + em) - (sh * 60 + sm);
   };
+  void _calculateDurationForUI;
 
   const checkAlternatives = async () => {
     if (!selectedDate || !selectedStart || !selectedEnd) return;

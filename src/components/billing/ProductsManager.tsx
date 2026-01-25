@@ -8,12 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { 
   Plus, Trash2, Edit2, Package, DollarSign, 
-  TrendingUp, Clock, AlertCircle, Loader2, Eye 
+  TrendingUp, Clock, AlertCircle, Loader2, Eye, Save 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+
 import { Json } from '@/integrations/supabase/types';
 import {
   Dialog,
@@ -63,7 +63,6 @@ const CATEGORIES = [
 ];
 
 export default function ProductsManager() {
-  const { t } = useTranslation();
   const { currentOrganizationId, userOrganizations } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);

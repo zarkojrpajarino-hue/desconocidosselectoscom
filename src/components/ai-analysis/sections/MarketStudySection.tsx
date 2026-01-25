@@ -86,7 +86,7 @@ export function MarketStudySection({ data }: MarketStudySectionProps) {
   ];
 
   // Competition strength comparison
-  const competitorStrengthData = competitors.slice(0, 5).map((comp, idx) => ({
+  const competitorStrengthData = competitors.slice(0, 5).map((comp) => ({
     name: comp.name.length > 15 ? comp.name.slice(0, 15) + '...' : comp.name,
     strengths: (comp.strengths || []).length * 20,
     weaknesses: (comp.weaknesses || []).length * 15,
