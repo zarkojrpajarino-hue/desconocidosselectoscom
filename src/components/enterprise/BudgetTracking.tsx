@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { useBudgetComparison } from '@/hooks/useEnterpriseData';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
 import { 
@@ -78,25 +76,28 @@ export function BudgetTracking({ showDemoData = false }: BudgetTrackingProps) {
     );
   }
 
+  // Ensure budgetData is an array
+  const budgetArray = Array.isArray(budgetData) ? budgetData : [];
+
   // Calcular totales
-  const totalBudgeted = budgetData.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0);
-  const totalActual = budgetData.reduce((sum, item) => sum + (item.actual_amount || 0), 0);
+  const totalBudgeted = budgetArray.reduce((sum: number, item: { budgeted_amount?: number }) => sum + (item.budgeted_amount || 0), 0);
+  const totalActual = budgetArray.reduce((sum: number, item: { actual_amount?: number }) => sum + (item.actual_amount || 0), 0);
   const totalVariance = totalBudgeted - totalActual;
   const variancePercentage = totalBudgeted > 0 ? (totalVariance / totalBudgeted) * 100 : 0;
 
   // Stats
-  const onBudgetCount = budgetData.filter(i => i.status === 'on_budget').length;
-  const overBudgetCount = budgetData.filter(i => i.status === 'over_budget').length;
-  const underBudgetCount = budgetData.filter(i => i.status === 'under_budget').length;
+  const onBudgetCount = budgetArray.filter((i: { status?: string }) => i.status === 'on_budget').length;
+  const overBudgetCount = budgetArray.filter((i: { status?: string }) => i.status === 'over_budget').length;
+  const underBudgetCount = budgetArray.filter((i: { status?: string }) => i.status === 'under_budget').length;
 
   // Datos para gráfico de pie
-  const pieData = budgetData.map(item => ({
+  const pieData = budgetArray.map((item: { category?: string; actual_amount?: number }) => ({
     name: item.category,
     value: item.actual_amount || 0,
   }));
 
   // Datos para gráfico de barras
-  const barData = budgetData.map(item => ({
+  const barData = budgetArray.map((item: { category?: string; budgeted_amount?: number; actual_amount?: number }) => ({
     category: item.category?.slice(0, 10) || 'Otro',
     presupuesto: item.budgeted_amount || 0,
     real: item.actual_amount || 0,

@@ -114,7 +114,7 @@ interface FinancialDashboardProps {
 }
 
 const FinancialDashboard = ({ showDemoData = false }: FinancialDashboardProps) => {
-  const { userProfile, currentOrganizationId, userOrganizations } = useAuth();
+  const { currentOrganizationId, userOrganizations } = useAuth();
   const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
   const [revenueByProduct, setRevenueByProduct] = useState<RevenueByProduct[]>([]);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseByCategory[]>([]);
@@ -161,7 +161,7 @@ const FinancialDashboard = ({ showDemoData = false }: FinancialDashboardProps) =
       if (metricsError && metricsError.code !== 'PGRST116') throw metricsError;
 
       if (metricsData) {
-        setMetrics(metricsData);
+        setMetrics(metricsData as unknown as FinancialMetrics);
       } else {
         // Si no existen métricas, calcularlas
         const { error: rpcError } = await supabase.rpc('update_financial_metrics', { target_month: monthStart });
@@ -175,7 +175,9 @@ const FinancialDashboard = ({ showDemoData = false }: FinancialDashboardProps) =
           .maybeSingle();
         
         if (newError) throw newError;
-        setMetrics(newMetrics);
+        if (newMetrics) {
+          setMetrics(newMetrics as unknown as FinancialMetrics);
+        }
       }
 
       // 2. Ingresos por producto (vista agregada - no filtrar por org_id)
@@ -494,7 +496,7 @@ const FinancialDashboard = ({ showDemoData = false }: FinancialDashboardProps) =
                   outerRadius={100}
                   label
                 >
-                  {displayExpensesByCategory.map((entry, index) => (
+                  {displayExpensesByCategory.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

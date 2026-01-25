@@ -27,7 +27,7 @@ interface CashFlowForecastProps {
   showDemoData?: boolean;
 }
 
-export function CashFlowForecast({ showDemoData = false }: CashFlowForecastProps) {
+export function CashFlowForecast(_props: CashFlowForecastProps) {
   const { organizationId } = useCurrentOrganization();
   const [months, setMonths] = useState<6 | 12>(6);
   const { data, loading, error, isUsingDemoData } = useCashFlowForecast(organizationId, months);
@@ -59,7 +59,7 @@ export function CashFlowForecast({ showDemoData = false }: CashFlowForecastProps
   const isPositive = netChange >= 0;
 
   // Preparar datos para gráficos
-  const chartData = data.map(month => ({
+  const chartData = data.map((month: { month: string; closing_balance: number; projected_inflows: number; projected_outflows: number; net_cash_flow: number }) => ({
     name: month.month,
     balance: month.closing_balance,
     inflows: month.projected_inflows,
@@ -244,7 +244,7 @@ export function CashFlowForecast({ showDemoData = false }: CashFlowForecastProps
                 </tr>
               </thead>
               <tbody>
-                {data.map((month, index) => (
+                {data.map((month: { month: string; opening_balance: number; projected_inflows: number; projected_outflows: number; net_cash_flow: number; closing_balance: number }, index: number) => (
                   <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-2 font-medium">{month.month}</td>
                     <td className="text-right py-3 px-2">{formatCurrency(month.opening_balance)}</td>

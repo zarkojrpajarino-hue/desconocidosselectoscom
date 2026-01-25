@@ -59,8 +59,8 @@ const BusinessMetricsDashboard = () => {
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
-        setMetrics(data);
-        setLastUpdate(new Date(data.updated_at).toLocaleString());
+        setMetrics(data as unknown as BusinessMetrics);
+        setLastUpdate(new Date(data.updated_at!).toLocaleString());
       }
     } catch (error) {
       console.error('Error loading metrics:', error);

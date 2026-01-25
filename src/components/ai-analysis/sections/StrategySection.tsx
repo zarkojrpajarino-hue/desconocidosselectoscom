@@ -86,7 +86,7 @@ export function StrategySection({ priorities, questions }: StrategySectionProps)
     return colors[quadrant] || 'hsl(var(--muted))';
   };
 
-  const getCategoryIcon = (category: Category) => {
+  const _getCategoryIcon = (category: Category) => {
     const icons = {
       financial: <DollarSign className="w-4 h-4" />,
       team: <Users className="w-4 h-4" />,
@@ -97,8 +97,9 @@ export function StrategySection({ priorities, questions }: StrategySectionProps)
     };
     return icons[category] || <HelpCircle className="w-4 h-4" />;
   };
+  void _getCategoryIcon;
 
-  const getDeadlineBadge = (deadline: Deadline) => {
+  const _getDeadlineBadge = (deadline: Deadline) => {
     const configs = {
       urgent: { label: '🔥 Urgente', color: 'bg-destructive text-destructive-foreground' },
       this_week: { label: 'Esta semana', color: 'bg-warning text-warning-foreground' },
@@ -107,6 +108,7 @@ export function StrategySection({ priorities, questions }: StrategySectionProps)
     };
     return configs[deadline] || configs.this_quarter;
   };
+  void _getDeadlineBadge;
 
   return (
     <div className="space-y-6">

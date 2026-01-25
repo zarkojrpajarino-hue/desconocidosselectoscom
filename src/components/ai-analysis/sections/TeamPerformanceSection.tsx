@@ -68,18 +68,20 @@ export function TeamPerformanceSection({ data }: TeamPerformanceSectionProps) {
   ];
 
   // Productivity distribution pie
-  const productivityPie = [
+  const _productivityPie = [
     { name: 'Top Performers', value: (data.star_performers || []).length, fill: 'hsl(var(--success))' },
     { name: 'En Riesgo', value: (data.at_risk_members || []).length, fill: 'hsl(var(--destructive))' },
     { name: 'Promedio', value: Math.max(0, (data.team_metrics?.active_members || 0) - (data.star_performers || []).length - (data.at_risk_members || []).length), fill: 'hsl(var(--primary))' },
   ];
+  void _productivityPie;
 
-  const getHealthColor = (score: number) => {
+  const _getHealthColor = (score: number) => {
     if (score >= 80) return 'text-success';
     if (score >= 60) return 'text-primary';
     if (score >= 40) return 'text-warning';
     return 'text-destructive';
   };
+  void _getHealthColor;
 
   return (
     <div className="space-y-6">

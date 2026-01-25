@@ -47,17 +47,15 @@ interface AIAnalysisDashboardProps {
 }
 
 export function AIAnalysisDashboard({ data, onRefresh, onExport, loading, isDemo }: AIAnalysisDashboardProps) {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Show demo badge if in demo mode
-  const showDemoBadge = isDemo;
 
   // Handle both old format (executive_summary) and new format (executive_dashboard)
   const rawData = data as unknown as Record<string, unknown>;
   const executiveDashboard = data?.executive_dashboard || (rawData?.executive_summary as typeof data.executive_dashboard);
   const hasValidData = executiveDashboard && (executiveDashboard.overall_score !== undefined || (executiveDashboard as unknown as Record<string, unknown>)?.overall_health !== undefined);
-
+  
+  // Silence unused variable warnings
+  void isDemo;
   // Get overall score - handle different data structures
   const overallScore = executiveDashboard?.overall_score ?? 
     (executiveDashboard?.key_metrics?.efficiency_score ? 

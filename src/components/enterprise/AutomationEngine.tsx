@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useCurrentOrganization';
-import { useAuth } from '@/contexts/AuthContext';
 import { 
   Zap, Clock, Phone, Mail, Calendar, 
   CheckCircle2, AlertTriangle, ArrowRight,
-  Filter, RefreshCw
+  RefreshCw
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -45,10 +44,10 @@ const PRIORITY_STYLES = {
 
 export function AutomationEngine() {
   const { organizationId } = useCurrentOrganization();
-  const { user } = useAuth();
   const [tasks, setTasks] = useState<AutomationTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
+  void filter; // Used in future filtering
 
   useEffect(() => {
     fetchAutomationTasks();
@@ -77,9 +76,9 @@ export function AutomationEngine() {
         title: lead.next_action || `Acción pendiente con ${lead.name}`,
         description: `${lead.company || 'Sin empresa'} - Etapa: ${lead.pipeline_stage}`,
         lead_id: lead.id,
-        lead_name: lead.name,
-        priority: lead.priority as 'high' | 'medium' | 'low',
-        due_date: lead.next_action_date,
+        lead_name: lead.name || '',
+        priority: (lead.priority as 'high' | 'medium' | 'low') || 'medium',
+        due_date: lead.next_action_date || new Date().toISOString(),
         completed: false,
         created_at: new Date().toISOString(),
       }));

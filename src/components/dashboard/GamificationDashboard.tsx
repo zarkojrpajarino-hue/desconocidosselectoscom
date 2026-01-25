@@ -5,7 +5,6 @@ import { Trophy, Flame, Star, Target, Crown, Award, Lock, TrendingUp } from 'luc
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
-import { logger } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -101,23 +100,46 @@ const GamificationDashboard = () => {
       const { data: achievementData } = await supabase
         .from('user_achievements')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id ?? '')
         .maybeSingle();
       
-      setAchievement(achievementData || null);
+      if (achievementData) {
+        setAchievement({
+          id: achievementData.id,
+          user_id: achievementData.user_id ?? '',
+          total_points: achievementData.total_points ?? 0,
+          current_streak: achievementData.current_streak ?? 0,
+          best_streak: achievementData.best_streak ?? 0,
+          tasks_completed_total: achievementData.tasks_completed_total ?? 0,
+        });
+      } else {
+        setAchievement(null);
+      }
 
       const { data: badgesData } = await supabase
         .from('user_badges')
         .select('*, badges(*)')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id ?? '')
         .order('earned_at', { ascending: false });
       
-      setBadges(badgesData || []);
+      const validBadges = (badgesData || [])
+        .filter((b): b is typeof b & { badges: NonNullable<typeof b.badges> } => b.badges !== null)
+        .map(b => ({
+          id: b.id,
+          badges: {
+            id: b.badges.id,
+            name: b.badges.name,
+            description: b.badges.description ?? '',
+            icon_emoji: b.badges.icon_emoji ?? '',
+            rarity: b.badges.rarity ?? 'common',
+          }
+        }));
+      setBadges(validBadges);
 
       const { data: userRoles } = await supabase
         .from('user_roles')
         .select('user_id')
-        .eq('organization_id', currentOrganizationId);
+        .eq('organization_id', currentOrganizationId ?? '');
       
       const userIds = userRoles?.map(ur => ur.user_id) || [];
       
@@ -132,7 +154,18 @@ const GamificationDashboard = () => {
           .order('total_points', { ascending: false })
           .limit(10);
         
-        setLeaderboard(leaderboardData || []);
+        const validLeaderboard = (leaderboardData || []).map(entry => ({
+          id: entry.id,
+          user_id: entry.user_id ?? '',
+          total_points: entry.total_points ?? 0,
+          current_streak: entry.current_streak ?? 0,
+          tasks_completed_total: entry.tasks_completed_total ?? 0,
+          users: entry.users ? {
+            username: entry.users.username ?? undefined,
+            full_name: entry.users.full_name ?? undefined,
+          } : undefined,
+        }));
+        setLeaderboard(validLeaderboard);
       } else {
         setLeaderboard([]);
       }
@@ -140,11 +173,17 @@ const GamificationDashboard = () => {
       const { data: pointsData } = await supabase
         .from('points_history')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id ?? '')
         .order('created_at', { ascending: false })
         .limit(5);
       
-      setRecentPoints(pointsData || []);
+      const validPointsData = (pointsData || []).map(p => ({
+        id: p.id,
+        reason: p.reason ?? '',
+        points: p.points,
+        created_at: p.created_at ?? '',
+      }));
+      setRecentPoints(validPointsData);
     } catch (error) {
       logger.debug('Gamification data not yet initialized:', error);
       setAchievement(null);

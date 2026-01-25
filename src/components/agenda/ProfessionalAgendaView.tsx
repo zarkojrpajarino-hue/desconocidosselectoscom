@@ -37,7 +37,8 @@ interface ProfessionalAgendaViewProps {
   onCreateTask: () => void;
 }
 
-interface TaskScheduleWithTask {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TaskScheduleWithTask = {
   id: string;
   task_id: string;
   user_id: string;

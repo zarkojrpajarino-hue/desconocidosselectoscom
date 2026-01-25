@@ -74,8 +74,32 @@ export function FinancialFromKPIs({ showDemoData = false }: FinancialFromKPIsPro
 
   if (!data) return null;
 
-  const metrics = data.metrics;
-  const isHealthy = metrics.runway_months > 12 && metrics.ltv_cac_ratio >= 3;
+  // Type guard for data
+  const financialData = data as {
+    period?: string;
+    projected_revenue?: number;
+    projected_expenses?: number;
+    projected_profit?: number;
+    confidence?: number;
+    breakdown?: {
+      revenue_from_pipeline?: number;
+      revenue_from_recurring?: number;
+      revenue_from_new_customers?: number;
+    };
+    metrics?: {
+      calculated_cac?: number;
+      expected_cac?: number;
+      ltv?: number;
+      ltv_cac_ratio?: number;
+      gross_margin?: number;
+      burn_rate?: number;
+      runway_months?: number;
+    };
+    alerts?: Array<{ severity: string; message: string; recommendation: string }>;
+  };
+
+  const metrics = financialData.metrics ?? {};
+  const isHealthy = (metrics.runway_months ?? 0) > 12 && (metrics.ltv_cac_ratio ?? 0) >= 3;
 
   return (
     <div className="space-y-6">

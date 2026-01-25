@@ -37,7 +37,7 @@ interface CreateLeadModalProps {
 const CreateLeadModal = ({ isOpen, onClose, onSuccess, editLead }: CreateLeadModalProps) => {
   const { user, currentOrganizationId } = useAuth();
   const { canAddLead, plan, leadCount, limits } = useSubscriptionLimits();
-  const { canAddLead: validateBackend, validating } = useBackendValidation();
+  const { canAddLead: validateBackend } = useBackendValidation();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
