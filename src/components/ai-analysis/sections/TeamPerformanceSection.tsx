@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import {
   Users,
   TrendingUp,
@@ -18,11 +17,8 @@ import {
   CheckCircle2,
   Heart,
   Zap,
-  Brain,
-  MessageSquare,
   Star,
   Flame,
-  Shield,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -38,9 +34,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts';
 import { TeamPerformance, TrendDirection, IndividualPerformance, ImpactLevel } from '@/types/ai-analysis.types';
 

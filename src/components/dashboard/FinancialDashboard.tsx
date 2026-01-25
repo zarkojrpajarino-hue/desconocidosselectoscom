@@ -15,8 +15,7 @@ import {
   PieChart,
   BarChart3,
   Target,
-  Clock,
-  FileText
+  Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -29,7 +28,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer
 } from 'recharts';
 

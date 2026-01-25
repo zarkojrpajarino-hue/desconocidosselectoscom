@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { 
-  Plus, Trash2, Edit2, Save, X, Package, DollarSign, 
+  Plus, Trash2, Edit2, Package, DollarSign, 
   TrendingUp, Clock, AlertCircle, Loader2, Eye 
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
